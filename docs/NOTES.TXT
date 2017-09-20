@@ -23,6 +23,7 @@ ADDED >> ' for REM
 
 TODO     BTNs functions
          SCREEN procedures
+         MUTE routine (to mute buzzer)
 
 CURRENTLY :
  AND,OR, NOT,MOD

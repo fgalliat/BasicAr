@@ -1,3 +1,10 @@
+/***************************
+* Host.h
+*
+* Xtase - fgalliat @ Sept2017
+* Original Code by Robin Edwards @2014
+***************************/
+
 #include <stdint.h>
 
 // Dirty as is 

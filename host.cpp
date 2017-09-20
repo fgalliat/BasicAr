@@ -1,3 +1,10 @@
+/***************************
+* Host.cpp
+*
+* Xtase - fgalliat @ Sept2017
+* Original Code by Robin Edwards @2014
+***************************/
+
 #include "host.h"
 #include "basic.h"
 

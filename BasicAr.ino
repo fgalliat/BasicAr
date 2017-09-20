@@ -1,6 +1,6 @@
 /*******************
 * Xtase - fgalliat : fgalliat@gmail.com
-* Based on robin hedwards work - (https://github.com/robinhedwards/ArduinoBASIC)
+* Based on robin edwards work - (https://github.com/robinhedwards/ArduinoBASIC)
 *******************/
 //#define REAL_ARDUINO 1
 //#define ALL_DEVICES 1

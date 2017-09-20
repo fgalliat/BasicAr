@@ -18,11 +18,11 @@
 // ====== GPIO initialization ======
 
 static void setupGPIO() {
-  if ( BUZZER_PIN > -1 ) { pinMode(BUZZER_PIN, OUTPUT); }
+  if ( BUZZER_PIN > -1 ) { pinMode(BUZZER_PIN, OUTPUT); digitalWrite(BUZZER_PIN, LOW);  }
 
-  if ( LED1_PIN > -1 ) { pinMode(LED1_PIN, OUTPUT); }
-  if ( LED2_PIN > -1 ) { pinMode(LED2_PIN, OUTPUT); }
-  if ( LED3_PIN > -1 ) { pinMode(LED3_PIN, OUTPUT); }
+  if ( LED1_PIN > -1 ) { pinMode(LED1_PIN, OUTPUT); digitalWrite(LED1_PIN, LOW); }
+  if ( LED2_PIN > -1 ) { pinMode(LED2_PIN, OUTPUT); digitalWrite(LED2_PIN, LOW); }
+  if ( LED3_PIN > -1 ) { pinMode(LED3_PIN, OUTPUT); digitalWrite(LED3_PIN, LOW); }
 
 
 }

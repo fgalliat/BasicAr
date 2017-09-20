@@ -1,6 +1,9 @@
 /* ---------------------------------------------------------------------------
  * Basic Interpreter
- * Robin Edwards 2014
+ *
+ * Modified by Xtase - fgalliat @Sept 2017
+ *
+ * Original Code by : Robin Edwards 2014
  * ---------------------------------------------------------------------------
  * This BASIC is modelled on Sinclair BASIC for the ZX81 and ZX Spectrum. It
  * should be capable of running most of the examples in the manual for both
