@@ -79,7 +79,7 @@ char autorun = 0;
 void setup() {
 
     //BUZZER_MUTE = true;
-    setupGPIO();
+    setupHardware();
 
     keyboard.begin(DataPin, IRQpin);
     oled.ssd1306_init(SSD1306_SWITCHCAPVCC);
@@ -92,6 +92,13 @@ void setup() {
     host_outputFreeMem(sysVARSTART - sysPROGEND);
     host_outputString( "\n" );
     host_outputString( ARCH_TYPE );
+    host_outputString( "\n" );
+
+    #ifdef FS_SUPPORT
+      if ( STORAGE_OK ) { host_outputString("SD : OK.\n"); }
+      else              { host_outputString("SD : FAILED.\n"); }
+    #endif
+
     host_showBuffer();
     
     // IF USING EXTERNAL EEPROM

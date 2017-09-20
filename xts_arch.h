@@ -11,6 +11,7 @@
   #define BUT_TEENSY 1
 
   #define FS_SUPPORT 1
+    #define USE_SDFAT_LIB 1
 
   // ==  GPIO ==
   #define BUZZER_PIN 2
@@ -52,3 +53,23 @@
   #define EEPROM_END (1*1024)-1
   #define SPEED 16
 #endif
+
+
+#ifdef FS_SUPPORT
+  #ifdef USE_SDFAT_LIB
+    // for teensy 3.6 as example...
+    // include SdFat library
+    // 
+    // Test of SdFat-beta @ 03/03/2017
+    // from : https://github.com/greiman/SdFat-beta
+    // copied SdFat-beta-master.zip\SdFat-beta-master\SdFat into C:\Program Files (x86)\Arduino\libraries\SdFat
+
+    #include "SdFat.h"
+    static SdFatSdio SD;
+    static char SDentryName[13];
+  #else 
+    // include the SD library: 
+    #include <SD.h>
+  #endif
+
+  #endif // FS_SUPPORT

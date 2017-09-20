@@ -11,23 +11,68 @@
 #include "xts_arch.h"
 
 
- // forward decl.
+ // external forward decl.
  char charUpCase(char ch);
+ void host_outputString(char* str);
 
+ // internal forward decl.
+ static void activityLed(bool state);
+
+
+#ifdef FS_SUPPORT
+ // static File SD_myFile;
+ static bool STORAGE_OK = false;
+ 
+ static void setupSD() {
+   #ifdef USE_SDFAT_LIB
+     if (!SD.begin()) {
+   #else
+     if (!SD.begin(BUILTIN_SDCARD)) { // Teensy3.6 initialization
+   #endif
+       //outprint("initialization failed!\n");
+       //host_outputString("SD : initialization failed!\n");
+       //Serial.print(F("SD : initialization failed!\n"));
+       activityLed(true);
+       delay(500);
+       activityLed(false);
+       delay(500);
+       activityLed(true);
+     
+       return;
+     }
+     //lcd_println("SD : initialization done.");
+     //host_outputString("SD : initialization done.\n");
+     //Serial.print(F("SD : initialization done.\n"));
+ 
+   #ifdef USE_SDFAT_LIB
+     SD.chvol();
+   #endif
+   STORAGE_OK = true;
+ }
+#endif // FS_SUPPORT
 
 // ====== GPIO initialization ======
 
 static void setupGPIO() {
-  if ( BUZZER_PIN > -1 ) { pinMode(BUZZER_PIN, OUTPUT); digitalWrite(BUZZER_PIN, LOW);  }
+ if ( BUZZER_PIN > -1 ) { pinMode(BUZZER_PIN, OUTPUT); digitalWrite(BUZZER_PIN, LOW);  }
 
-  if ( LED1_PIN > -1 ) { pinMode(LED1_PIN, OUTPUT); digitalWrite(LED1_PIN, LOW); }
-  if ( LED2_PIN > -1 ) { pinMode(LED2_PIN, OUTPUT); digitalWrite(LED2_PIN, LOW); }
-  if ( LED3_PIN > -1 ) { pinMode(LED3_PIN, OUTPUT); digitalWrite(LED3_PIN, LOW); }
-
-
+ if ( LED1_PIN > -1 ) { pinMode(LED1_PIN, OUTPUT); digitalWrite(LED1_PIN, LOW); }
+ if ( LED2_PIN > -1 ) { pinMode(LED2_PIN, OUTPUT); digitalWrite(LED2_PIN, LOW); }
+ if ( LED3_PIN > -1 ) { pinMode(LED3_PIN, OUTPUT); digitalWrite(LED3_PIN, LOW); }
 }
 
-// ========= Led Sub System ========
+// ====== HARD initialization ======
+
+static void setupHardware() {
+ setupGPIO();
+ #ifdef FS_SUPPORT
+   setupSD();
+ #endif
+}
+
+
+
+ // ========= Led Sub System ========
 
 // BEWARE : 1-based
 static void led(int ledID, bool state) {
@@ -37,6 +82,10 @@ static void led(int ledID, bool state) {
     if ( ledID == 3 && LED3_PIN > -1 ) { digitalWrite(LED3_PIN, state ? HIGH : LOW); }
   }
   // no error .... 
+}
+
+static void activityLed(bool state) {
+  led(1, state);
 }
 
  // ======= Sound Sub System =======
