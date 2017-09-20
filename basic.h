@@ -82,9 +82,13 @@
 #define TOKEN_TONE           69
 #define TOKEN_PLAY           70
 #define TOKEN_MUTE           71
-#define TOKEN_LED            72
 
-#define TOKEN_LOCATE         73
+#define TOKEN_PLAYT5K        72
+#define TOKEN_PLAYT53        73
+
+#define TOKEN_LED            74
+
+#define TOKEN_LOCATE         75
 
 
 #define FIRST_IDENT_TOKEN 23

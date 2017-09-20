@@ -14,6 +14,7 @@
  // external forward decl.
  char charUpCase(char ch);
  void host_outputString(char* str);
+ int host_outputInt(long v);
 
  // internal forward decl.
  static void activityLed(bool state);
@@ -84,6 +85,10 @@ static void led(int ledID, bool state) {
   // no error .... 
 }
 
+static void led1(bool state) { led(1, state); }
+static void led2(bool state) { led(2, state); }
+static void led3(bool state) { led(3, state); }
+
 static void activityLed(bool state) {
   led(1, state);
 }
@@ -91,7 +96,6 @@ static void activityLed(bool state) {
  // ======= Sound Sub System =======
  #include "xtase_tone.h"
 
- //static bool BUZZER_MUTE = false;
  extern bool BUZZER_MUTE;
  #define BUZZER BUZZER_PIN
 
@@ -155,6 +159,163 @@ static void playTuneString(char* strTune) {
   }
 } // end of playTuneSTring
 
+// ============ Tmp Compatibility Code ===============
+static void lcd_println(char* text) { Serial.print("LCD:"); Serial.println(text); }
+static bool checkbreak() { return false; }
+static bool anyBtn() { return false; }
+// ============ Tmp Compatibility Code =============== 
+
+
+// T5K Format
+static void __playTune(unsigned char* tune, bool btnStop);
+// T53
+static void __playTuneT53(unsigned char* tune, bool btnStop);
+
+static long t0,t1;
+
+#if ((defined FS_SUPPORT) && (FS_SUPPORT > 0))
+static void playTuneFromStorage(const char* tuneName, int format = AUDIO_FORMAT_T5K, bool btnStop = false) {
+  cleanAudioBuff();
+
+  t0 = millis();
+  File zik = SD.open(tuneName);
+  int nbNotes = (zik.read()<<8)|zik.read();
+  zik.seek(0);
+  int fileLen = (nbNotes*sizeof(Note))+2+16+2;
+  if ( format == AUDIO_FORMAT_T53 ) {
+    fileLen = (nbNotes*(3+3+3))+2+16+2;
+  }
+  zik.readBytes( audiobuff, fileLen );
+  zik.close();
+  t1 = millis();
+  //printfln("load:%d msec", (t1-t0) );
+  host_outputInt( fileLen ); host_outputString( "bytes\n" );
+
+  if ( format == AUDIO_FORMAT_T5K ) {
+    __playTune( audiobuff, btnStop );  
+  } else {
+    __playTuneT53( audiobuff, btnStop );  
+  }
+  
+ }
+#endif
+ 
+// where tune is the audio buffer content
+static void __playTune(unsigned char* tune, bool btnStop = false) {
+  short nbNotes = (*tune++ << 8) | (*tune++);
+  char songname[16];
+  for(int i=0; i < 16; i++) {
+    songname[i] = *tune++;
+  }
+  short tempoPercent = (*tune++ << 8) | (*tune++);
+
+  //printfln("nbN:%d title:'%s' tmp:%d", nbNotes, (const char*)songname, tempoPercent);
+  
+  host_outputString("PLAYING :");
+  host_outputString( songname );
+  host_outputString("\n");
+
+  #if ((defined SCREEN_SUPPORT) && (SCREEN_SUPPORT > 0))
+    //lcd_cls();
+    //           12345678901234567890
+    lcd_println("   -= Playing =-");
+    lcd_println("-=%s=-", (const char*)songname);
+  #endif
+
+  float tempo = (float)tempoPercent / 100.0;
+  // cf a bit too slow (Cf decoding)
+  tempo *= 0.97;
+
+  for (int thisNote = 0; thisNote < nbNotes; thisNote++) {
+    int note = *tune++;
+    short duration = (*tune++ << 8) | (*tune++);
+    // note 0 -> silence
+    if ( note > 0 ) {
+      if (!BUZZER_MUTE) tone(BUZZER, notes[ note-1 ], duration);
+
+      // just a try
+      led2( note > 30 );
+      led3( note > 36 );
+      // just a try
+
+
+    }
+    // to distinguish the notes, set a minimum time between them.
+    // the note's duration + 10% seems to work well => 1.10:
+    int pauseBetweenNotes = duration * tempo;
+    delay(pauseBetweenNotes);
+    // stop the tone playing:
+    noTone(BUZZER);
+
+    if (btnStop && anyBtn() ) {
+      led2(false);
+      led3(false);
+      return;
+    }
+
+    if ( checkbreak() ) { 
+      #if ((defined SCREEN_SUPPORT) && (SCREEN_SUPPORT > 0))
+        lcd_println("STOP"); 
+      #endif
+      led2(false);
+      led3(false);
+      return; 
+    }
+  }
+   led2(false);
+   led3(false);
+ }
+
+ // T53 Format
+ // where tune is the audio buffer content
+ static void __playTuneT53(unsigned char* tune, bool btnStop = false) {
+  short nbNotes = (*tune++ << 8) | (*tune++);
+  char songname[16];
+  for(int i=0; i < 16; i++) {
+    songname[i] = *tune++;
+  }
+  short tempoPercent = (*tune++ << 8) | (*tune++);
+
+  //printfln("nbN:%d title:'%s' tmp:%d", nbNotes, (const char*)songname, tempoPercent);
+  
+  #if ((defined SCREEN_SUPPORT) && (SCREEN_SUPPORT > 0))
+    //lcd_cls();
+    //           12345678901234567890
+    lcd_println("   -= Playing =-");
+    lcd_println("-=%s=-", (const char*)songname);
+  #endif
+
+  float tempo = (float)tempoPercent / 100.0;
+  // cf a bit too slow (Cf decoding)
+  tempo *= 0.97;
+
+  for (int thisNote = 0; thisNote < nbNotes; thisNote++) {
+    short note = (*tune++ << 8) | (*tune++);
+    short duration = (*tune++ << 8) | (*tune++);
+    short wait = (*tune++ << 8) | (*tune++);
+    
+    // note 0 -> silence
+    if ( note > 0 ) {
+      if (!BUZZER_MUTE) tone(BUZZER, note, duration);
+    }
+
+    delay(wait*tempo);
+    // stop the tone playing:
+    noTone(BUZZER);
+
+    if (btnStop && anyBtn() ) {
+      return;
+    }
+
+    if ( checkbreak() ) { 
+      #if ((defined SCREEN_SUPPORT) && (SCREEN_SUPPORT > 0))
+        lcd_println("STOP"); 
+      #endif
+      return; 
+    }
+  }
+   
+ }
 
 
 

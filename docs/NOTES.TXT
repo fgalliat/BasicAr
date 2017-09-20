@@ -22,9 +22,15 @@ ADDED >> ' for REM
          LED [1..3], {0,1}
          MUTE routine (toggle mute buzzer)
 
+         FS_SUPPORT for Teensy3.6
+
+IN PROGRESS 
+        PLAYT53 & PLAYT5K (have storage acess -> seems to not find files ????)
+        have to impl. DIR/FILES
+
 TODO     BTNs functions
          SCREEN procedures + draw pictures (neeed storage acess)
-         PLAYT53 & PLAYT5K (neeed storage acess)
+         
          Better teensy IRQ managment
          
 

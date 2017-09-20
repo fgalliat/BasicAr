@@ -93,6 +93,55 @@ int xts_mute() {
   return 0;	
 }
 
+
+
+
+int __xts_playSpeakerTune(int format) {
+  getNextToken();
+
+  int val = parseExpression();
+  if (val & _ERROR_MASK) return val;
+  if (!_IS_TYPE_STR(val))
+      return _ERROR_EXPR_EXPECTED_STR;
+
+  char* tuneName = stackPopStr();
+  bool btnBreakMusic = false;
+
+  // TODO : get the boolean breakButtons ...
+
+  // getNextToken();
+  // if (curToken != TOKEN_EOL && curToken != TOKEN_CMD_SEP) {
+  //   val = parseExpression();
+  //   if (val & _ERROR_MASK) return val;
+    
+  //     if (!_IS_TYPE_NUM(val))
+  //       return ERROR_EXPR_EXPECTED_NUM;
+      
+  //     btnBreakMusic = stackPopNum() > 0;
+  // }
+
+  if (executeMode) {
+
+    host_outputString("I will play : ");
+    host_outputString( tuneName );
+    host_outputString("\n");
+
+    playTuneFromStorage( (const char*)tuneName, format, btnBreakMusic );
+  }
+
+  return 0;
+}
+
+int xts_playT5K() {
+  return __xts_playSpeakerTune(AUDIO_FORMAT_T5K);
+}
+
+
+int xts_playT53() {
+  return __xts_playSpeakerTune(AUDIO_FORMAT_T53);
+}
+
+
 int xts_tone() {
     getNextToken();
     int freq = expectNumber();

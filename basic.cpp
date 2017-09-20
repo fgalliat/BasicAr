@@ -69,6 +69,7 @@
 
 // -------- Xtase refacto -------------
 static char executeMode;
+static int curToken;
 #include "xtase_fct.h"
 // ------------------------------------
 
@@ -153,6 +154,7 @@ PROGMEM const TokenTableEntry tokenTable[] = {
     // ------ Xtase routines -----------
     {"MEM",0}, {"?",TKN_FMT_POST}, {"'",TKN_FMT_POST}, 
     {"TONE",2}, {"PLAY",1|TKN_ARG1_TYPE_STR}, {"MUTE", 0},
+    {"PLAYT5K",2|TKN_ARG1_TYPE_STR}, {"PLAYT53",2|TKN_ARG1_TYPE_STR},
     {"LED",2}, 
     {"LOCATE",2}, 
 };
@@ -949,7 +951,7 @@ static uint16_t stopLineNumber, stopStmtNumber;
 static char breakCurrentLine;
 
 static unsigned char *tokenBuffer, *prevToken;
-static int curToken;
+//static int curToken;
 static char identVal[MAX_IDENT_LEN+1];
 static char isStrIdent;
 static float numVal;
@@ -1886,6 +1888,9 @@ int parseStmts()
         case TOKEN_TONE: ret = xts_tone(); break;
         case TOKEN_PLAY: ret = xts_play(); break;
         case TOKEN_MUTE: ret = xts_mute(); break;
+
+        case TOKEN_PLAYT5K: ret = xts_playT5K(); break;
+        case TOKEN_PLAYT53: ret = xts_playT53(); break;
 
         case TOKEN_LED:    ret = xts_led(); break;
         case TOKEN_LOCATE: ret = xts_locate(); break;
