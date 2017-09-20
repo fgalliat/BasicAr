@@ -13,6 +13,8 @@
 
  // external forward decl.
  char charUpCase(char ch);
+ bool endsWith(char* str, char* what);
+
  void host_outputString(char* str);
  int host_outputInt(long v);
 
@@ -21,7 +23,7 @@
 
 
 #ifdef FS_SUPPORT
- // static File SD_myFile;
+ //static File SD_myFile;
  static bool STORAGE_OK = false;
  
  static void setupSD() {
@@ -177,25 +179,25 @@ static long t0,t1;
 static void playTuneFromStorage(const char* tuneName, int format = AUDIO_FORMAT_T5K, bool btnStop = false) {
   cleanAudioBuff();
 
-  t0 = millis();
-  File zik = SD.open(tuneName);
-  int nbNotes = (zik.read()<<8)|zik.read();
-  zik.seek(0);
-  int fileLen = (nbNotes*sizeof(Note))+2+16+2;
-  if ( format == AUDIO_FORMAT_T53 ) {
-    fileLen = (nbNotes*(3+3+3))+2+16+2;
-  }
-  zik.readBytes( audiobuff, fileLen );
-  zik.close();
-  t1 = millis();
-  //printfln("load:%d msec", (t1-t0) );
-  host_outputInt( fileLen ); host_outputString( "bytes\n" );
+  // t0 = millis();
+  // File zik = SD.open(tuneName);
+  // int nbNotes = (zik.read()<<8)|zik.read();
+  // zik.seek(0);
+  // int fileLen = (nbNotes*sizeof(Note))+2+16+2;
+  // if ( format == AUDIO_FORMAT_T53 ) {
+  //   fileLen = (nbNotes*(3+3+3))+2+16+2;
+  // }
+  // zik.readBytes( audiobuff, fileLen );
+  // zik.close();
+  // t1 = millis();
+  // //printfln("load:%d msec", (t1-t0) );
+  // host_outputInt( fileLen ); host_outputString( "bytes\n" );
 
-  if ( format == AUDIO_FORMAT_T5K ) {
-    __playTune( audiobuff, btnStop );  
-  } else {
-    __playTuneT53( audiobuff, btnStop );  
-  }
+  // if ( format == AUDIO_FORMAT_T5K ) {
+  //   __playTune( audiobuff, btnStop );  
+  // } else {
+  //   __playTuneT53( audiobuff, btnStop );  
+  // }
   
  }
 #endif
@@ -317,7 +319,91 @@ static void __playTune(unsigned char* tune, bool btnStop = false) {
    
  }
 
+// ==============================================
+// =
+// = FileSystem Ops.
+// =
+// ==============================================
 
+ #ifdef FS_SUPPORT
+  //static bool _lsStorage(File dir, int numTabs, bool recurse, char* filter);
+  //static void lsStorageR(bool recurse, char* filter);
+
+  static bool _lsStorage(File dir, int numTabs, bool recurse, char* filter) {
+    while(true) {
+
+      File entry =  dir.openNextFile();
+
+      if ( checkbreak() ) { entry.close(); return false; }
+
+      
+      if (! entry) {
+        // no more files
+        break;
+      }
+      //for (uint8_t i=0; i<numTabs; i++) {
+      //  outchar(' ');
+      //}
+      bool valid = true;
+      #ifdef USE_SDFAT_LIB
+        // currently used
+        memset(SDentryName, 0x00, 13);
+        entry.getName(SDentryName, 13);
+
+        if ( filter == NULL || endsWith(SDentryName, filter) ) {
+            //outprint(SDentryName);
+            host_outputString(SDentryName);
+        } else {
+          valid = false;
+        }
+      #else
+        if ( filter == NULL || endsWith(entry.name(), filter) ) {
+            //outprint(entry.name());
+            host_outputString(entry.name());
+        } else {
+          valid = false;
+        }
+      #endif
+
+      if ( valid ) {
+        if (entry.isDirectory()) {
+          //outprint("/\n");
+          host_outputString("/\n");
+          if ( recurse ) { if ( _lsStorage(entry, numTabs+1, true, filter) ) { return false; } }
+        } else {
+          // files have sizes, directories do not
+          //outprint("  %d\n", entry.size());
+          host_outputInt( (int)entry.size() );
+          host_outputString("\n");
+        }
+      }
+
+      entry.close();
+    }
+    return true;
+  }
+
+  // NO FOWARD DECLARATION WHEN USE 'static'
+
+  static void lsStorageR(bool recurse, char* filter) {
+    host_outputString("HERE !\n");
+
+    // must not be static for whole .h !!!!!!!
+    //static File SD_myFile;
+    File SD_myFile = SD.open("/");
+
+    // SD_myFile = SD.open("/");
+    SD_myFile.rewindDirectory();
+    _lsStorage(SD_myFile, 0, recurse, filter);
+    SD_myFile.close();
+  }
+
+  static void lsStorage() {
+    lsStorageR(false, NULL);
+  }
+
+
+ #endif // FS_SUPPORT
 
 
 

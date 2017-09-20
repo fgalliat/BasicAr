@@ -80,11 +80,10 @@
 #define TOKEN_REM_EM         68
 
 #define TOKEN_TONE           69
-#define TOKEN_PLAY           70
-#define TOKEN_MUTE           71
-
-#define TOKEN_PLAYT5K        72
-#define TOKEN_PLAYT53        73
+#define TOKEN_PLAYT5K        70
+#define TOKEN_PLAYT53        71
+#define TOKEN_PLAY           72
+#define TOKEN_MUTE           73
 
 #define TOKEN_LED            74
 
@@ -131,7 +130,9 @@
 #define MAX_IDENT_LEN	8
 #define MAX_NUMBER_LEN	10
 
-#define MEMORY_SIZE	1024
+//#define MEMORY_SIZE	1024
+#define MEMORY_SIZE	2048
+
 extern unsigned char mem[];
 extern int sysPROGEND;
 extern int sysSTACKSTART;

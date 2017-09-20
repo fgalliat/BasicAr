@@ -97,6 +97,12 @@ void setup() {
     #ifdef FS_SUPPORT
       if ( STORAGE_OK ) { host_outputString("SD : OK.\n"); }
       else              { host_outputString("SD : FAILED.\n"); }
+
+      #ifdef USE_SDFAT_LIB
+        host_outputString("SD : MODE FAT\n");
+      #else
+        host_outputString("SD : MODE LEG\n");
+      #endif
     #endif
 
     host_showBuffer();

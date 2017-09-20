@@ -26,13 +26,14 @@ ADDED >> ' for REM
 
 IN PROGRESS 
         PLAYT53 & PLAYT5K (have storage acess -> seems to not find files ????)
-        have to impl. DIR/FILES
+        DIR/FILES (in progress)
 
 TODO     BTNs functions
          SCREEN procedures + draw pictures (neeed storage acess)
-         
+         DIR to ARRAY
          Better teensy IRQ managment
-         
+         checkbreak()
+         anyBtn()
 
 CURRENTLY :
  AND,OR, NOT,MOD

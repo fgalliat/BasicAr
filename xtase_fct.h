@@ -62,6 +62,38 @@ int xts_locate() {
   return 0;
 }
 
+// == File System
+
+// beware : SimpleCmd
+// void xts_fs_dir() {
+//   //getNextToken(); ==> NO (SimpleCmd : spe case)
+
+// host_outputString("IN XTS DIR !!!\n");
+
+//   #ifdef FS_SUPPORT
+//   if ( executeMode ) {
+//     lsStorage();
+//   }
+//   #endif
+
+//   //return 0; ==> NO (SimpleCmd)
+// }
+
+int xts_fs_dir2() {
+  getNextToken();
+
+host_outputString("IN XTS DIR !!!\n");
+
+  #ifdef FS_SUPPORT
+  if ( executeMode ) {
+    lsStorage();
+  }
+  #endif
+
+  return 0;
+}
+
+
 
 // == Led
 int xts_led() {

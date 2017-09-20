@@ -150,11 +150,12 @@ PROGMEM const TokenTableEntry tokenTable[] = {
     {"RIGHT$",2|TKN_ARG1_TYPE_STR|TKN_RET_TYPE_STR}, {"MID$",3|TKN_ARG1_TYPE_STR|TKN_RET_TYPE_STR}, {"CLS",TKN_FMT_POST}, {"PAUSE",TKN_FMT_POST},
     {"POSITION", TKN_FMT_POST},  {"PIN",TKN_FMT_POST}, {"PINMODE", TKN_FMT_POST}, {"INKEY$", 0},
     {"SAVE", TKN_FMT_POST}, {"LOAD", TKN_FMT_POST}, {"PINREAD",1}, {"ANALOGRD",1},
-    {"DIR", TKN_FMT_POST}, {"DELETE", TKN_FMT_POST},
+    //{"DIR", TKN_FMT_POST}, 
+    {"FILES", TKN_FMT_POST}, 
+    {"DELETE", TKN_FMT_POST},
     // ------ Xtase routines -----------
     {"MEM",0}, {"?",TKN_FMT_POST}, {"'",TKN_FMT_POST}, 
-    {"TONE",2}, {"PLAY",1|TKN_ARG1_TYPE_STR}, {"MUTE", 0},
-    {"PLAYT5K",2|TKN_ARG1_TYPE_STR}, {"PLAYT53",2|TKN_ARG1_TYPE_STR},
+    {"TONE",2}, {"PLAYT5K",1|TKN_ARG1_TYPE_STR}, {"PLAYT53",1|TKN_ARG1_TYPE_STR}, {"PLAY",1|TKN_ARG1_TYPE_STR}, {"MUTE", 0},
     {"LED",2}, 
     {"LOCATE",2}, 
 };
@@ -1805,11 +1806,18 @@ int parseSimpleCmd() {
                 host_cls();
                 host_showBuffer();
                 break;
-            case TOKEN_DIR:
-#if EXTERNAL_EEPROM
-                host_directoryExtEEPROM();
-#endif
-                break;
+
+//             case TOKEN_DIR:
+// {
+// // #if FS_SUPPORT
+//                 xts_fs_dir();
+// // #endif
+
+// // #if EXTERNAL_EEPROM
+// //                 host_directoryExtEEPROM();
+// // #endif
+//                 break;
+// }
         }
     }
     return 0;
@@ -1877,7 +1885,7 @@ int parseStmts()
         case TOKEN_CONT:
         case TOKEN_RETURN:
         case TOKEN_CLS:
-        case TOKEN_DIR:
+        //case TOKEN_DIR:
             ret = parseSimpleCmd();
             break;
             
@@ -1894,6 +1902,9 @@ int parseStmts()
 
         case TOKEN_LED:    ret = xts_led(); break;
         case TOKEN_LOCATE: ret = xts_locate(); break;
+
+
+        case TOKEN_DIR: ret = xts_fs_dir2(); break;
         // ======== Xtase cmds =============
 
         default: 
