@@ -1,0 +1,98 @@
+git clone git@github.com:fgalliat/BasicAr.git
+
+
+host_showBuffer() dans host.cpp
+
+
+10 DIM a$(5)         
+20 FOR i=1 TO 5      
+30 a$(i)="Hello "+STR$(i)                 
+40 PRINT a$(i)       
+50 NEXT i   
+
+that works !!!
+______________________________________________________________
+
+ADDED >> ' for REM
+         ? for PRINT
+         MEM function to get free mem ammount ----------> <*> shortcut to display it
+         PLAY "ABC#"
+         TONE 100,2
+
+TODO     LOCATE ROW,COL <==================
+         LED [1..3], {0,1} <======= in progress...
+
+
+CURRENTLY :
+ AND,OR, NOT,MOD
+ PRINT -----------------------> <?> shortcut
+ CLS
+ LIST,RUN
+ GOTO,GOSUB,RETURN,
+ REM, ------------------------> <'> shortcut
+ STOP,CONT,PAUSE
+ INPUT, INKEY$ // INKEY$ : non blocking key listening ....
+ IF,THEN
+ FOR,TO,STEP,NEXT
+ VAL()
+ INT(),RND() // int(1.5) -> rounds to 1 / rnd() -> returns between 0.00 & 1.00
+ STR$() // STR$(1) => "1" (allows string concat)
+ LEN(), // LEN("abc") => 3 
+ RIGHT$(),MID$(),LEFT$(),
+ POSITION, 
+ LET,DIM,
+ PIN, PINMODE,PINREAD,ANALOGRD
+ SAVE,LOAD,NEW
+ DIR,DELETE ---------------> TODO : FILES as DIR alias
+
+
+TEENSY 3.2 redirecting SPI SCK :
+  SPI.setSCK(14);       // alternate SCK on pin 14
+  //SPI.setSCK(13);       // default SCK on pin 13 - this is the LED pin !!!!!
+  SPI.setMOSI(11);      // MOSI on pin 11 ....
+  SPI.begin();
+
+
+TODO
+  exisiting PIN FCT to look
+  DRAW FCT (SSD1306 I2C) (Pictures requires STORAGE)
+  TONE & PLAY commands (need buzzer) (PIN 2 on 3.6 // PIN 5 on 3.2)
+  STORAGE (SDCARD SPI)
+  PLAYT5K & PLAYT53 routines (need storage)
+  Serial Vs Screen+Kbd I/O => console mode
+
+______________________________________________________________
+
+basic.cpp => add a token descr in tokenTable
+
+basic.h   => add a TOKEN_<xx> yy ++ FIX : LAST_IDENT_TOKEN
+
+basic.cpp => ex. in parsePrimary() (depending flag used in descriptor)
+             case TOKEN_RND:	
+                return parse_RND();
+
+xtase_fct.h => impl. parse_RND()
+
+
+______________________________________________________________
+Robin Edwards - robin.edwards@gmail.com (Sam 16 Sept 17)
+
+Hi, I am Franck GALLIAT (Xtase),
+I currently building a Teensy 3.6 based computer :
+
+ > https://hackaday.io/project/19223-xts-ubasic <
+ > http://xtase.over-blog.com/2017/01/xts-ubasic.html <
+
+And I tried to write my own BASIC, but I didn't had the
+good approach.
+
+Your code (https://github.com/robinhedwards/ArduinoBASIC)
+does really interest me (even if I have not the same hardware
+layout).
+
+I was wondering if I could post a modified version of
+your work on GitHub (& mention you in copyright comments)
+
+Thanks in advance.
+
+Franck GALLIAT (Xtase)
