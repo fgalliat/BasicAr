@@ -104,9 +104,10 @@ static void playTuneString(char* strTune) {
    delay(defDuration);
 
   }
+} // end of playTuneSTring
 
-   
-}
+
+
 
 
 

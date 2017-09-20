@@ -81,14 +81,15 @@
 
 #define TOKEN_TONE           69
 #define TOKEN_PLAY           70
-
-#define TOKEN_LOCATE         71
+#define TOKEN_MUTE           71
 #define TOKEN_LED            72
+
+#define TOKEN_LOCATE         73
 
 
 #define FIRST_IDENT_TOKEN 23
 //#define LAST_IDENT_TOKEN 65
-#define LAST_IDENT_TOKEN TOKEN_LED
+#define LAST_IDENT_TOKEN TOKEN_LOCATE
 
 // =========================================
 

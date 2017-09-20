@@ -20,10 +20,13 @@ ADDED >> ' for REM
          TONE 100,2
          LOCATE ROW,COL
          LED [1..3], {0,1}
+         MUTE routine (toggle mute buzzer)
 
 TODO     BTNs functions
-         SCREEN procedures
-         MUTE routine (to mute buzzer)
+         SCREEN procedures + draw pictures (neeed storage acess)
+         PLAYT53 & PLAYT5K (neeed storage acess)
+         Better teensy IRQ managment
+         
 
 CURRENTLY :
  AND,OR, NOT,MOD

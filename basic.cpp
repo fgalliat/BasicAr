@@ -152,8 +152,9 @@ PROGMEM const TokenTableEntry tokenTable[] = {
     {"DIR", TKN_FMT_POST}, {"DELETE", TKN_FMT_POST},
     // ------ Xtase routines -----------
     {"MEM",0}, {"?",TKN_FMT_POST}, {"'",TKN_FMT_POST}, 
-    {"TONE",2}, {"PLAY",1|TKN_ARG1_TYPE_STR},
-    {"LOCATE",2}, {"LED",2}, 
+    {"TONE",2}, {"PLAY",1|TKN_ARG1_TYPE_STR}, {"MUTE", 0},
+    {"LED",2}, 
+    {"LOCATE",2}, 
 };
 
 
@@ -1884,9 +1885,10 @@ int parseStmts()
 
         case TOKEN_TONE: ret = xts_tone(); break;
         case TOKEN_PLAY: ret = xts_play(); break;
+        case TOKEN_MUTE: ret = xts_mute(); break;
 
-        case TOKEN_LOCATE: ret = xts_locate(); break;
         case TOKEN_LED:    ret = xts_led(); break;
+        case TOKEN_LOCATE: ret = xts_locate(); break;
         // ======== Xtase cmds =============
 
         default: 

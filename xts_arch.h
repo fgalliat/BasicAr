@@ -10,6 +10,8 @@
   #define ARCH_TYPE "Teensy 3.6"
   #define BUT_TEENSY 1
 
+  #define FS_SUPPORT 1
+
   // ==  GPIO ==
   #define BUZZER_PIN 2
   // finally : White / Blue / Green
