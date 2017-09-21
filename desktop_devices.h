@@ -37,14 +37,15 @@
   
   // =======================================================
 
-  // code in host.cpp
-  extern void _ISR_emul();
+  // NOT FOR TEENSY
+//   // code in host.cpp
+//   extern void _ISR_emul();
   
-  // moa - fake
-  static void emulateInterrupt() {
-    // code in host.cpp
-    _ISR_emul();
-  }
+//   // moa - fake
+//   static void emulateInterrupt() {
+//     // code in host.cpp
+//     _ISR_emul();
+//   }
 
   #define PS2_DELETE 8
   #define PS2_ENTER 13
@@ -65,11 +66,16 @@
           }
           
           int available() { 
-            if ( millis() - this->lastTime > 4000 ) {
-              emulateInterrupt();
-              this->lastTime = millis();
-            }
-            delay(10);
+
+            // #ifndef BUT_TEENSY
+            //     if ( millis() - this->lastTime > 4000 ) {
+            //     emulateInterrupt();
+            //     this->lastTime = millis();
+            //     }
+            //     delay(10);
+            // #endif
+
+
             // EWARE W/ FULL DUPLEX -> use events
             return Serial.available(); 
             //return 0;
@@ -272,7 +278,7 @@
   static int lastChar = -1;
   static bool prevAvailable = false;
   
-  
+  // NOT FOR TEENSY !!!!!!!!
   // code in host.cpp
   extern void _ISR_emul();
   
@@ -293,7 +299,9 @@
               int i = getch();
               if ( i == 10 ) { i = PS2_ENTER; }
               
-              emulateInterrupt();
+              #ifndef BUT_TEENSY
+                emulateInterrupt();
+              #endif
   
               return i;
           }

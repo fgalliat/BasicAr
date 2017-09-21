@@ -147,15 +147,17 @@ PROGMEM const TokenTableEntry tokenTable[] = {
     {"INT",1}, {"STR$", 1|TKN_RET_TYPE_STR}, {"FOR",TKN_FMT_POST}, {"TO",TKN_FMT_PRE|TKN_FMT_POST},
     {"STEP",TKN_FMT_PRE|TKN_FMT_POST}, {"NEXT", TKN_FMT_POST}, {"MOD",TKN_FMT_PRE|TKN_FMT_POST}, {"NEW",TKN_FMT_POST},
     {"GOSUB",TKN_FMT_POST}, {"RETURN",TKN_FMT_POST}, {"DIM", TKN_FMT_POST}, {"LEFT$",2|TKN_ARG1_TYPE_STR|TKN_RET_TYPE_STR},
-    {"RIGHT$",2|TKN_ARG1_TYPE_STR|TKN_RET_TYPE_STR}, {"MID$",3|TKN_ARG1_TYPE_STR|TKN_RET_TYPE_STR}, {"CLS",TKN_FMT_POST}, {"PAUSE",TKN_FMT_POST},
-    {"POSITION", TKN_FMT_POST},  {"PIN",TKN_FMT_POST}, {"PINMODE", TKN_FMT_POST}, {"INKEY$", 0},
+    {"RIGHT$",2|TKN_ARG1_TYPE_STR|TKN_RET_TYPE_STR}, {"MID$",3|TKN_ARG1_TYPE_STR|TKN_RET_TYPE_STR}, {"CLS",TKN_FMT_POST}, 
+    {"PAUSE",TKN_FMT_POST},
+    {"POSITION", TKN_FMT_POST}, {"PIN",TKN_FMT_POST}, {"PINMODE", TKN_FMT_POST}, {"INKEY$", 0},
     {"SAVE", TKN_FMT_POST}, {"LOAD", TKN_FMT_POST}, {"PINREAD",1}, {"ANALOGRD",1},
-    //{"DIR", TKN_FMT_POST}, 
-    {"FILES", TKN_FMT_POST}, 
+    {"DIR", TKN_FMT_POST}, 
     {"DELETE", TKN_FMT_POST},
     // ------ Xtase routines -----------
     {"MEM",0}, {"?",TKN_FMT_POST}, {"'",TKN_FMT_POST}, 
-    {"TONE",2}, {"PLAYT5K",1|TKN_ARG1_TYPE_STR}, {"PLAYT53",1|TKN_ARG1_TYPE_STR}, {"PLAY",1|TKN_ARG1_TYPE_STR}, {"MUTE", 0},
+    {"TONE",2}, 
+      //{"PLAY",1|TKN_ARG1_TYPE_STR}, {"PLAYT5K",1|TKN_ARG1_TYPE_STR}, {"PLAYT53",1|TKN_ARG1_TYPE_STR}, 
+    {"MUTE", 0},
     {"LED",2}, 
     {"LOCATE",2}, 
 };
@@ -884,6 +886,7 @@ int nextToken()
         tokenOutLeft -= 1+identLen;
         *tokenOut++ = TOKEN_IDENT;
         strcpy((char*)tokenOut, identStr);
+        // 0x80 -> 128(dec)
         tokenOut[identLen-1] |= 0x80;
         tokenOut += identLen;
         return 0;
@@ -1894,11 +1897,11 @@ int parseStmts()
         case TOKEN_REM_EM: getNextToken(); getNextToken(); break;
 
         case TOKEN_TONE: ret = xts_tone(); break;
-        case TOKEN_PLAY: ret = xts_play(); break;
         case TOKEN_MUTE: ret = xts_mute(); break;
-
-        case TOKEN_PLAYT5K: ret = xts_playT5K(); break;
-        case TOKEN_PLAYT53: ret = xts_playT53(); break;
+        
+        // case TOKEN_PLAY: ret = xts_play(); break;
+        // case TOKEN_PLAYT5K: ret = xts_playT5K(); break;
+        // case TOKEN_PLAYT53: ret = xts_playT53(); break;
 
         case TOKEN_LED:    ret = xts_led(); break;
         case TOKEN_LOCATE: ret = xts_locate(); break;

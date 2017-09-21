@@ -80,14 +80,14 @@
 #define TOKEN_REM_EM         68
 
 #define TOKEN_TONE           69
-#define TOKEN_PLAYT5K        70
-#define TOKEN_PLAYT53        71
-#define TOKEN_PLAY           72
-#define TOKEN_MUTE           73
 
-#define TOKEN_LED            74
+//#define TOKEN_PLAY           70
+//#define TOKEN_PLAYT5K        71
+//#define TOKEN_PLAYT53        72
 
-#define TOKEN_LOCATE         75
+#define TOKEN_MUTE           70
+#define TOKEN_LED            71
+#define TOKEN_LOCATE         72
 
 
 #define FIRST_IDENT_TOKEN 23

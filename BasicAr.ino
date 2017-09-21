@@ -70,6 +70,8 @@ SSD1306ASCII oled(OLED_DATA, OLED_CLK, OLED_DC, OLED_RST, OLED_CS);
 
 // BASIC
 unsigned char mem[MEMORY_SIZE];
+
+// NB OF TOKEN PER LINES
 #define TOKEN_BUF_SIZE    64
 unsigned char tokenBuf[TOKEN_BUF_SIZE];
 
@@ -78,7 +80,8 @@ char autorun = 0;
 
 void setup() {
 
-    //BUZZER_MUTE = true;
+    BUZZER_MUTE = true;
+    
     setupHardware();
 
     keyboard.begin(DataPin, IRQpin);
