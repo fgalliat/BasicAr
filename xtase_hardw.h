@@ -338,57 +338,43 @@ static void __playTune(unsigned char* tune, bool btnStop = false) {
 // ==============================================
 
  #ifdef FS_SUPPORT
-  //static bool _lsStorage(File dir, int numTabs, bool recurse, char* filter);
-  //static void lsStorageR(bool recurse, char* filter);
+    #ifdef USE_SDFAT_LIB
+      static SdFile file;
+      static SdFile dirFile;
+    #endif
 
-static SdFile file;
-static SdFile dirFile;
-
-extern int curY;
+  extern int curY;
 
   static bool _lsStorage(File dir, int numTabs, bool recurse, char* filter) {
-
      if (!dirFile.open("/", O_READ)) {
-       //sd.errorHalt("dirFile.open failed");
        host_outputString("ERR opening SD root\n");
      }
-
     
     int cpt = 0;
     while (file.openNext(&dirFile, O_READ)) {
       if (!file.isSubDir() && !file.isHidden() ) {
         // //file.printFileSize(&Serial);
-        // host_outputString("The file size");
-        // host_outputString(" ");
         // //file.printModifyDateTime(&Serial);
-        // host_outputString("The file date");
-        // host_outputString(" ");
         // //file.printName(&Serial);
-        // //host_outputString("The file name");
 
         memset(SDentryName, 0x00, 13);
         file.getName( SDentryName, 13 );
 
-        host_outputInt( (cpt+0) );
+        host_outputInt( (cpt+1) );
         host_outputString("\t");
 
         host_outputString(SDentryName);
-
 
         if ( file.isDir() ) {
           // Indicate a directory.
           host_outputString("/");
         }
         host_outputString("\n");
-     //delay(4); // to deal W/ refresh interrupt
-
 
 // TMP - DIRTY ----- begin
 #ifndef SCREEN_HEIGHT
  #define SCREEN_HEIGHT       8
 #endif
-
-        //cpt++;
 
 if ( curY % SCREEN_HEIGHT == SCREEN_HEIGHT-1 ) {
   host_showBuffer();
@@ -408,85 +394,14 @@ if ( curY % SCREEN_HEIGHT == SCREEN_HEIGHT-1 ) {
     dirFile.close();
 host_showBuffer();
 
-    // while(true) {
-
-    //   host_outputString("Here comes another one (x)\n");
-
-    //   File entry =  dir.openNextFile();
-
-    //   host_outputString("Here comes another one (y)\n");
-
-    //   if ( checkbreak() ) { entry.close(); return false; }
-
-      
-    //   if (! entry) {
-    //     // no more files
-    //     host_outputString("invalid (or last) entry (z)\n");
-    //     break;
-    //   }
-    //   //for (uint8_t i=0; i<numTabs; i++) {
-    //   //  outchar(' ');
-    //   //}
-    //   bool valid = true;
-    //   #ifdef USE_SDFAT_LIB
-    //     // currently used
-    //     memset(SDentryName, 0x00, 13);
-    //     entry.getName(SDentryName, 13);
-
-    //     host_outputString("Here comes another one (a)\n");
-
-    //     if ( filter == NULL || endsWith(SDentryName, filter) ) {
-    //         //outprint(SDentryName);
-    //         host_outputString(SDentryName);
-    //     } else {
-    //       valid = false;
-    //     }
-    //   #else
-    //     host_outputString("Here comes another one (b)\n");
-
-    //     if ( filter == NULL || endsWith(entry.name(), filter) ) {
-    //         //outprint(entry.name());
-    //         host_outputString(entry.name());
-    //     } else {
-    //       valid = false;
-    //     }
-    //   #endif
-
-    //   if ( valid ) {
-    //     if (entry.isDirectory()) {
-    //       //outprint("/\n");
-    //       host_outputString("/\n");
-    //       if ( recurse ) { if ( _lsStorage(entry, numTabs+1, true, filter) ) { return false; } }
-    //     } else {
-    //       // files have sizes, directories do not
-    //       //outprint("  %d\n", entry.size());
-    //       host_outputInt( (int)entry.size() );
-    //       host_outputString("\n");
-    //     }
-    //   }
-
-    //   entry.close();
-    // }
     return true;
   }
 
   // NO FOWARD DECLARATION WHEN USE 'static'
 
   static void lsStorageR(bool recurse, char* filter) {
-    // host_outputString("HERE !\n");
-
-    // // must not be static for whole .h !!!!!!!
-    // static SdFile SD_myFile;
-    // // File SD_myFile = SD.open("/");
-    // //SD_myFile = SD.open("/", O_READ);
-    // SD_myFile.open("/", O_READ);
-    // //SD_myFile.rewindDirectory();
-    // _lsStorage(SD_myFile, 0, recurse, filter);
-    // SD_myFile.close();
     File SD_myFile; // IGNORED
     _lsStorage(SD_myFile, 0, recurse, filter);
-
-    // host_outputString("FINISHED !\n");
   }
 
   static void lsStorage() {
