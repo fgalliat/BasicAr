@@ -157,7 +157,7 @@ PROGMEM const TokenTableEntry tokenTable[] = {
     {"MEM",0}, {"?",TKN_FMT_POST}, {"'",TKN_FMT_POST}, 
     {"TONE",2}, 
       {"PLAY",1|TKN_ARG1_TYPE_STR}, 
-      // {"PLAYT5K",1|TKN_ARG1_TYPE_STR}, {"PLAYT53",1|TKN_ARG1_TYPE_STR}, 
+      //{"PLAYT5K",1|TKN_ARG1_TYPE_STR}, {"PLAYT53",1|TKN_ARG1_TYPE_STR}, 
     {"MUTE", 0},
     {"LED",2}, 
     {"LOCATE",2}, 

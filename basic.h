@@ -83,8 +83,7 @@
 
 #define TOKEN_PLAY           70
 //#define TOKEN_PLAYT5K        71
-//#define TOKEN_PLAYT53        72
-
+// #define TOKEN_PLAYT53        72
 #define TOKEN_MUTE           71
 #define TOKEN_LED            72
 #define TOKEN_LOCATE         73
