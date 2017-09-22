@@ -9,6 +9,8 @@
 // in linux_BASIC.cpp & host.h
 #define DESKTOP_COMPUTER 1
 
+// else false if called from another .cpp (when static in an include....)
+bool STORAGE_OK = false;
 bool BUZZER_MUTE = false;
 #include "xtase_hardw.h"
 

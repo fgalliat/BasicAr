@@ -24,8 +24,9 @@
 
 
 #ifdef FS_SUPPORT
- //static File SD_myFile;
- static bool STORAGE_OK = false;
+ //static bool STORAGE_OK = false;
+ // else false if called from another .cpp
+ extern bool STORAGE_OK;
  
  static void setupSD() {
    #ifdef USE_SDFAT_LIB
@@ -345,11 +346,7 @@ static void __playTune(unsigned char* tune, bool btnStop = false) {
 
   extern int curY;
 
-  static bool _lsStorage(File dir, int numTabs, bool recurse, char* filter) {
-     if (!dirFile.open("/", O_READ)) {
-       host_outputString("ERR opening SD root\n");
-     }
-    
+  static bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter) {
     int cpt = 0;
     while (file.openNext(&dirFile, O_READ)) {
       if (!file.isSubDir() && !file.isHidden() ) {
@@ -391,17 +388,26 @@ if ( curY % SCREEN_HEIGHT == SCREEN_HEIGHT-1 ) {
     host_outputInt( cpt );
     host_outputString("\n");
 
-    dirFile.close();
+    
 host_showBuffer();
 
     return true;
   }
 
-  // NO FOWARD DECLARATION WHEN USE 'static'
-
   static void lsStorageR(bool recurse, char* filter) {
-    File SD_myFile; // IGNORED
-    _lsStorage(SD_myFile, 0, recurse, filter);
+    if ( !STORAGE_OK ) {
+      host_outputString("ERR : Storage not ready\n");
+      return;
+    }
+
+    if (!dirFile.open("/", O_READ)) {
+      host_outputString("ERR : opening SD root failed\n");
+      return;
+    }
+
+    _lsStorage(dirFile, 0, recurse, filter);
+
+    dirFile.close();
   }
 
   static void lsStorage() {
