@@ -130,12 +130,11 @@ int xts_mute() {
 
 int __xts_playSpeakerTune(int format) {
   getNextToken();
-
   int val = parseExpression();
-  if (val & _ERROR_MASK) return val;
-  if (!_IS_TYPE_STR(val))
-      return _ERROR_EXPR_EXPECTED_STR;
-
+    if (val & _ERROR_MASK) return val;
+    if (!_IS_TYPE_STR(val))
+        return _ERROR_EXPR_EXPECTED_STR;
+  
   char* tuneName = stackPopStr();
   bool btnBreakMusic = false;
 
@@ -153,11 +152,9 @@ int __xts_playSpeakerTune(int format) {
   // }
 
   if (executeMode) {
-
     host_outputString("I will play : ");
     host_outputString( tuneName );
     host_outputString("\n");
-
     playTuneFromStorage( (const char*)tuneName, format, btnBreakMusic );
   }
 

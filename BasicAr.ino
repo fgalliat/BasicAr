@@ -12,6 +12,15 @@
 // else false if called from another .cpp (when static in an include....)
 bool STORAGE_OK = false;
 bool BUZZER_MUTE = false;
+
+#include "xts_arch.h"
+#ifdef USE_SDFAT_LIB
+ SdFile file;
+ SdFile zik;
+ SdFile dirFile;
+#endif
+
+
 #include "xtase_hardw.h"
 
 

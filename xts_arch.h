@@ -3,7 +3,8 @@
 *
 * Xtase - fgalliat @ Sept2017
 ***************************/
-
+#ifndef __XTS_ARCH_H__
+#define __XTS_ARCH_H__ 1
 
 #if defined(__MK66FX1M0__)
 // Teensy 3.6
@@ -73,3 +74,6 @@
   #endif
 
   #endif // FS_SUPPORT
+
+
+  #endif // include

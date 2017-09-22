@@ -28,6 +28,16 @@
  // else false if called from another .cpp
  extern bool STORAGE_OK;
  
+//  #ifdef USE_SDFAT_LIB
+  // static SdFile file;
+  // static SdFile zik;
+  // static SdFile dirFile;
+  extern SdFile file;
+  extern SdFile zik;
+  extern SdFile dirFile;
+//  #endif
+
+
  static void setupSD() {
    #ifdef USE_SDFAT_LIB
      if (!SD.begin()) {
@@ -188,21 +198,46 @@ static void __playTuneT53(unsigned char* tune, bool btnStop);
 
 static long t0,t1;
 
-#if ((defined FS_SUPPORT) && (FS_SUPPORT > 0))
+#ifdef FS_SUPPORT
 static void playTuneFromStorage(const char* tuneName, int format = AUDIO_FORMAT_T5K, bool btnStop = false) {
   cleanAudioBuff();
 
-  // t0 = millis();
-  // File zik = SD.open(tuneName);
-  // int nbNotes = (zik.read()<<8)|zik.read();
-  // zik.seek(0);
+  //t0 = millis();
+
+  //File zik = SD.open(tuneName);
+
+  // //SdFile myZik(tuneName, O_READ);
+  // SdFile myZik("monkey.t5k", O_READ);
+  
+  // if ( !myZik.isOpen() ) {
+  //  host_outputString( "ERR : Opening : " );
+  //  host_outputString( (char*)tuneName );
+  //  host_outputString( "\n" );
+  //  return;    
+  // }
+
+  // myZik.close();
+
+//  if ( ! zik.open(tuneName, O_READ) ) {
+//    host_outputString( "ERR : Opening : " );
+//    host_outputString( (char*)tuneName );
+//    host_outputString( "\n" );
+//    return;
+//  } 
+  // //file.seek(0);
+  // file.seekSet(0);
+  // int nbNotes = (file.read()<<8)|file.read();
+  // //file.seek(0);
+  // file.seekSet(0);
   // int fileLen = (nbNotes*sizeof(Note))+2+16+2;
   // if ( format == AUDIO_FORMAT_T53 ) {
   //   fileLen = (nbNotes*(3+3+3))+2+16+2;
   // }
-  // zik.readBytes( audiobuff, fileLen );
-  // zik.close();
-  // t1 = millis();
+  // //file.readBytes( audiobuff, fileLen );
+  // file.read( audiobuff, fileLen );
+//  zik.close();
+  //t1 = millis();
+
   // //printfln("load:%d msec", (t1-t0) );
   // host_outputInt( fileLen ); host_outputString( "bytes\n" );
 
@@ -339,10 +374,7 @@ static void __playTune(unsigned char* tune, bool btnStop = false) {
 // ==============================================
 
  #ifdef FS_SUPPORT
-    #ifdef USE_SDFAT_LIB
-      static SdFile file;
-      static SdFile dirFile;
-    #endif
+
 
   extern int curY;
 
