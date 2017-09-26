@@ -13,10 +13,13 @@
 #include <float.h>
 #include <limits.h>
 
+#include <Arduino.h>
+
 #include "host.h"
+//#include "host_xts.h"
 #include "basic.h"
 
-#include <Arduino.h>
+
 
 
 #ifdef DESKTOP_COMPUTER
@@ -28,7 +31,6 @@
  #endif
 
  #include "desktop_devices.h"
- //#include "xtase_hardw.h"
 
 #else
   #include <SSD1306ASCII.h>

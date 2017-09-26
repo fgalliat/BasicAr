@@ -7,10 +7,17 @@
 
 #include <stdint.h>
 
-// Dirty as is 
+
+// Dirty as is ===============================
 // in linux_BASIC.cpp & host.h
 #define DESKTOP_COMPUTER 1
 #define BUT_TEENSY 1
+// ===========================================
+
+#include "host_xts.h"
+
+
+
 
 #define SCREEN_WIDTH        21
 #define SCREEN_HEIGHT       8

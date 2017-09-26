@@ -3,12 +3,26 @@
 * Hardware Layer
 ****************/
 
-#ifndef xtase_hardw_h_
-#define xtase_hardw_h_ 1
-
-//#include <Arduino.h>
+#include <Arduino.h>
 
 #include "xts_arch.h"
+
+// have to factorize this call
+// TODO : remove from basic.cpp
+#ifdef USE_SDFAT_LIB
+  #include "SdFat.h"
+  #include "SdFat.h"
+  SdFatSdio SD;
+  char SDentryName[13];
+#endif
+
+
+#include "host_xts.h"
+
+#include "xtase_tone.h"
+
+extern bool BUZZER_MUTE;
+#define BUZZER BUZZER_PIN
 
 
  // external forward decl.
@@ -19,8 +33,23 @@
  int host_outputInt(long v);
  void host_showBuffer();
 
- // internal forward decl.
- static void activityLed(bool state);
+// ===============================
+void playNote(int note_freq, int duration) {
+  if ( BUZZER_MUTE ) { return; }
+  if ( note_freq >= 1 && note_freq <= 48 ) {
+    // 0..48 octave2 to 5
+    note_freq = notes[ note_freq-1 ];
+  } else if ( note_freq >= 49 && note_freq <= 4096 ) {
+    // 49..4096 -> 19200/note in Hz
+    note_freq *= 20;
+  } else {
+    note_freq = 0;
+  }
+
+  noTone(BUZZER_PIN);
+  tone(BUZZER_PIN, note_freq, duration*50);
+  delay(duration*50);
+}
 
 
 #ifdef FS_SUPPORT
@@ -40,7 +69,7 @@
 //  #endif
 
 
- static void setupSD() {
+ void setupSD() {
    #ifdef USE_SDFAT_LIB
      if (!SD.begin()) {
    #else
@@ -70,7 +99,7 @@
 
 // ====== GPIO initialization ======
 
-static void setupGPIO() {
+void setupGPIO() {
  if ( BUZZER_PIN > -1 ) { pinMode(BUZZER_PIN, OUTPUT); digitalWrite(BUZZER_PIN, LOW);  }
 
  if ( LED1_PIN > -1 ) { pinMode(LED1_PIN, OUTPUT); digitalWrite(LED1_PIN, LOW); }
@@ -103,7 +132,7 @@ void setupHardware() {
  // ========= Led Sub System ========
 
 // BEWARE : 1-based
-static void led(int ledID, bool state) {
+void led(int ledID, bool state) {
   if ( ledID >= 1 && ledID <= 3 ) {
     if ( ledID == 1 && LED1_PIN > -1 ) { digitalWrite(LED1_PIN, state ? HIGH : LOW); }
     if ( ledID == 2 && LED2_PIN > -1 ) { digitalWrite(LED2_PIN, state ? HIGH : LOW); }
@@ -112,36 +141,33 @@ static void led(int ledID, bool state) {
   // no error .... 
 }
 
-static void led1(bool state) { led(1, state); }
-static void led2(bool state) { led(2, state); }
-static void led3(bool state) { led(3, state); }
+void led1(bool state) { led(1, state); }
+void led2(bool state) { led(2, state); }
+void led3(bool state) { led(3, state); }
 
-static void activityLed(bool state) {
+void activityLed(bool state) {
   led(1, state);
 }
 
  // ======= Sound Sub System =======
  #include "xtase_tone.h"
 
- extern bool BUZZER_MUTE;
- #define BUZZER BUZZER_PIN
-
  #define AUDIO_BUFF_SIZE (5*1024)
- static unsigned char audiobuff[AUDIO_BUFF_SIZE];
- static void cleanAudioBuff() { for(int i=0; i < AUDIO_BUFF_SIZE; i++) { audiobuff[i]=0x00; } } 
+ unsigned char audiobuff[AUDIO_BUFF_SIZE];
+ void cleanAudioBuff() { for(int i=0; i < AUDIO_BUFF_SIZE; i++) { audiobuff[i]=0x00; } } 
  
  typedef struct Note {
   unsigned char note;
   unsigned short duration;
  } Note;
 
- enum {
-   AUDIO_FORMAT_T5K = 0,
-   AUDIO_FORMAT_T53,
- };
+//  enum {
+//    AUDIO_FORMAT_T5K = 0,
+//    AUDIO_FORMAT_T53,
+//  };
 
 
-static void playTuneString(char* strTune) {
+void playTuneString(char* strTune) {
   int defDuration = 200;
   int slen = strlen( strTune );
   for (int i=0; i < slen; i++) {
@@ -187,21 +213,21 @@ static void playTuneString(char* strTune) {
 } // end of playTuneSTring
 
 // ============ Tmp Compatibility Code ===============
-static void lcd_println(char* text) { Serial.print("LCD:"); Serial.println(text); }
-static bool checkbreak() { return false; }
-static bool anyBtn() { return false; }
+void lcd_println(char* text) { Serial.print("LCD:"); Serial.println(text); }
+bool checkbreak() { return false; }
+bool anyBtn() { return false; }
 // ============ Tmp Compatibility Code =============== 
 
 
 // T5K Format
-static void __playTune(unsigned char* tune, bool btnStop);
+void __playTune(unsigned char* tune, bool btnStop);
 // T53
-static void __playTuneT53(unsigned char* tune, bool btnStop);
+void __playTuneT53(unsigned char* tune, bool btnStop);
 
-static long t0,t1;
+long t0,t1;
 
 #ifdef FS_SUPPORT
-static void playTuneFromStorage(const char* tuneName, int format = AUDIO_FORMAT_T5K, bool btnStop = false) {
+void playTuneFromStorage(const char* tuneName, int format = AUDIO_FORMAT_T5K, bool btnStop = false) {
 
   if ( !STORAGE_OK ) {
     host_outputString("ERR : Storage not ready\n");
@@ -268,7 +294,7 @@ static void playTuneFromStorage(const char* tuneName, int format = AUDIO_FORMAT_
 #endif
  
 // where tune is the audio buffer content
-static void __playTune(unsigned char* tune, bool btnStop = false) {
+void __playTune(unsigned char* tune, bool btnStop = false) {
   short nbNotes = (*tune++ << 8) | (*tune++);
   char songname[16];
   for(int i=0; i < 16; i++) {
@@ -335,7 +361,7 @@ static void __playTune(unsigned char* tune, bool btnStop = false) {
 
  // T53 Format
  // where tune is the audio buffer content
- static void __playTuneT53(unsigned char* tune, bool btnStop = false) {
+void __playTuneT53(unsigned char* tune, bool btnStop = false) {
   short nbNotes = (*tune++ << 8) | (*tune++);
   char songname[16];
   for(int i=0; i < 16; i++) {
@@ -395,7 +421,7 @@ static void __playTune(unsigned char* tune, bool btnStop = false) {
 
   extern int curY;
 
-  static bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter) {
+bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter) {
     SdFile file;
 
     int cpt = 0;
@@ -445,7 +471,7 @@ host_showBuffer();
     return true;
   }
 
-  static void lsStorageR(bool recurse, char* filter) {
+void lsStorageR(bool recurse, char* filter) {
     SdFile dirFile;
 
     if ( !STORAGE_OK ) {
@@ -463,7 +489,7 @@ host_showBuffer();
     dirFile.close();
   }
 
-  static void lsStorage() {
+ void lsStorage() {
     lsStorageR(false, NULL);
   }
 
@@ -471,5 +497,3 @@ host_showBuffer();
  #endif // FS_SUPPORT
 
 
-
-#endif

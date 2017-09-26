@@ -4,13 +4,8 @@
 * Xtase - fgalliat @Sept17
 *******************/
 
-// BEWARE w/ that
-// #define BUZZER_PIN 5
-
 #include "basic.h"
-
-#include "xtase_hardw.h"
-#include "xtase_tone.h"
+//#include "host.h"
 
 extern int sysVARSTART, sysPROGEND;
 extern int stackPushNum(float val);
@@ -184,19 +179,7 @@ int xts_tone() {
 
     if ( executeMode ) {
       if ( BUZZER_MUTE ) { return 0; }
-      if ( note_freq >= 1 && note_freq <= 48 ) {
-        // 0..48 octave2 to 5
-        note_freq = notes[ note_freq-1 ];
-      } else if ( note_freq >= 49 && note_freq <= 4096 ) {
-        // 49..4096 -> 19200/note in Hz
-        note_freq *= 20;
-      } else {
-        note_freq = 0;
-      }
-
-      noTone(BUZZER_PIN);
-      tone(BUZZER_PIN, note_freq, duration*50);
-      delay(duration*50);
+      playNote(note_freq, duration);
     }
 
   return 0;    

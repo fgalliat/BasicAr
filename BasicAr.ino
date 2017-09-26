@@ -14,25 +14,6 @@ bool STORAGE_OK = false;
 bool BUZZER_MUTE = false;
 
 #include "xts_arch.h"
-// #ifdef USE_SDFAT_LIB
-//    // for teensy 3.6 as example...
-//    // include SdFat library
-//    // 
-//    // Test of SdFat-beta @ 03/03/2017
-//    // from : https://github.com/greiman/SdFat-beta
-//    // copied SdFat-beta-master.zip\SdFat-beta-master\SdFat into C:\Program Files (x86)\Arduino\libraries\SdFat
-
-//    #include "SdFat.h"
-//    static SdFatSdio SD;
-//    static char SDentryName[13];
-
-//    SdFile file;
-//    SdFile zik;
-//    SdFile dirFile;
-// #endif
-
-
-//#include "xtase_hardw.h"
 extern void setupHardware();
 
 

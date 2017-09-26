@@ -54,32 +54,33 @@
 #include <float.h>
 #include <limits.h>
 
+#include <Arduino.h>
+
 #include "basic.h"
 #include "host.h"
 
 #include "xts_arch.h"
-    #ifdef USE_SDFAT_LIB
-    // for teensy 3.6 as example...
-    // include SdFat library
-    // 
-    // Test of SdFat-beta @ 03/03/2017
-    // from : https://github.com/greiman/SdFat-beta
-    // copied SdFat-beta-master.zip\SdFat-beta-master\SdFat into C:\Program Files (x86)\Arduino\libraries\SdFat
+    // #ifdef USE_SDFAT_LIB
+    // // for teensy 3.6 as example...
+    // // include SdFat library
+    // // 
+    // // Test of SdFat-beta @ 03/03/2017
+    // // from : https://github.com/greiman/SdFat-beta
+    // // copied SdFat-beta-master.zip\SdFat-beta-master\SdFat into C:\Program Files (x86)\Arduino\libraries\SdFat
 
-    #include "SdFat.h"
-    static SdFatSdio SD;
-    static char SDentryName[13];
+    // // #include "SdFat.h"
+    // // static SdFatSdio SD;
+    // // static char SDentryName[13];
 
-    // SdFile file;
-    // SdFile zik;
-    // SdFile dirFile;
+    // // SdFile file;
+    // // SdFile zik;
+    // // SdFile dirFile;
 
-    // File file;
-    // File zik;
-    // File dirFile;
+    // // File file;
+    // // File zik;
+    // // File dirFile;
 
-    #endif
-#include "xtase_hardw.h"
+    // #endif
 
 
 #ifdef DESKTOP_COMPUTER
