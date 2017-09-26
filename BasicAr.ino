@@ -10,11 +10,11 @@
 #define DESKTOP_COMPUTER 1
 
 // else false if called from another .cpp (when static in an include....)
-bool STORAGE_OK = false;
+extern bool STORAGE_OK;
 bool BUZZER_MUTE = false;
 
 #include "xts_arch.h"
-extern void setupHardware();
+//extern void setupHardware();
 
 
 #ifdef DESKTOP_COMPUTER

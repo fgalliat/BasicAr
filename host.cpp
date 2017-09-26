@@ -16,7 +16,6 @@
 #include <Arduino.h>
 
 #include "host.h"
-//#include "host_xts.h"
 #include "basic.h"
 
 

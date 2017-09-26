@@ -7,8 +7,6 @@
 
 #include "xts_arch.h"
 
-// have to factorize this call
-// TODO : remove from basic.cpp
 #ifdef USE_SDFAT_LIB
   #include "SdFat.h"
   #include "SdFat.h"
@@ -51,11 +49,12 @@ void playNote(int note_freq, int duration) {
   delay(duration*50);
 }
 
+bool STORAGE_OK = false;
+
 
 #ifdef FS_SUPPORT
  //static bool STORAGE_OK = false;
  // else false if called from another .cpp
- extern bool STORAGE_OK;
  
 //  #ifdef USE_SDFAT_LIB
   // static SdFile file;
@@ -82,7 +81,7 @@ void playNote(int note_freq, int duration) {
        delay(500);
        activityLed(false);
        delay(500);
-       activityLed(true);
+      //  activityLed(true);
      
        return;
      }
@@ -118,7 +117,10 @@ void setupGPIO() {
 void setupHardware() {
  setupGPIO();
  #ifdef FS_SUPPORT
+   led2(true);
    setupSD();
+   delay(500);
+   led2(!true);
  #endif
 
  #ifdef BUT_TEENSY
@@ -174,7 +176,7 @@ void playTuneString(char* strTune) {
     char ch = strTune[i];
     ch = charUpCase(ch);
     bool sharp = false;
-    if ( i < slen-1 && strTune[i] == '#' ) { sharp = true; i++; }  
+    // if ( i < slen-1 && strTune[i] == '#' ) { sharp = true; i++; }  
 
     int pitch = 0;
     switch (ch) {
@@ -236,15 +238,24 @@ void playTuneFromStorage(const char* tuneName, int format = AUDIO_FORMAT_T5K, bo
 
   cleanAudioBuff();
 
-  // SdFile zik("monkey.t5k", O_READ);
-  // // if ( ! zik.open("monkey.t5k", O_READ) ){
+  //SdFile zik("monkey.t5k", O_READ);
+  SdFile zik;
+  if ( ! zik.open("monkey.t5k", O_READ) ){
+  //if ( !zik.isOpen() ) {
   //  host_outputString( "ERR : Opening : " );
   //  host_outputString( (char*)tuneName );
   //  host_outputString( "\n" );
-  //  return;        
-  // }
-  // zik.rewind();
-  // zik.close();
+   led1(true);
+   return;        
+  }
+   led2(true);
+
+  // host_outputString( "OK : Opening : " );
+  // host_outputString( (char*)tuneName );
+  // host_outputString( "\n" );
+
+  //zik.rewind();
+  zik.close();
 
 
   //t0 = millis();
@@ -468,7 +479,7 @@ if ( curY % SCREEN_HEIGHT == SCREEN_HEIGHT-1 ) {
     
 host_showBuffer();
 
-    return true;
+    // return true;
   }
 
 void lsStorageR(bool recurse, char* filter) {
