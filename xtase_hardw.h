@@ -210,7 +210,8 @@ static void playTuneFromStorage(const char* tuneName, int format = AUDIO_FORMAT_
 
   cleanAudioBuff();
 
-  // if ( ! zik.open("monkey.t5k", O_READ) ){
+  // SdFile zik("monkey.t5k", O_READ);
+  // // if ( ! zik.open("monkey.t5k", O_READ) ){
   //  host_outputString( "ERR : Opening : " );
   //  host_outputString( (char*)tuneName );
   //  host_outputString( "\n" );
@@ -394,7 +395,9 @@ static void __playTune(unsigned char* tune, bool btnStop = false) {
 
   extern int curY;
 
-  static bool _lsStorage(File dirFile, int numTabs, bool recurse, char* filter) {
+  static bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter) {
+    SdFile file;
+
     int cpt = 0;
     while (file.openNext(&dirFile, O_READ)) {
       if (!file.isSubDir() && !file.isHidden() ) {
@@ -443,6 +446,8 @@ host_showBuffer();
   }
 
   static void lsStorageR(bool recurse, char* filter) {
+    SdFile dirFile;
+
     if ( !STORAGE_OK ) {
       host_outputString("ERR : Storage not ready\n");
       return;

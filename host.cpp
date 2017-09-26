@@ -5,10 +5,19 @@
 * Original Code by Robin Edwards @2014
 ***************************/
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <math.h>
+#include <float.h>
+#include <limits.h>
+
 #include "host.h"
 #include "basic.h"
 
-#include "Arduino.h"
+#include <Arduino.h>
+
 
 #ifdef DESKTOP_COMPUTER
 

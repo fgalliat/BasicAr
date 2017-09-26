@@ -73,9 +73,11 @@
     // SdFile file;
     // SdFile zik;
     // SdFile dirFile;
-    File file;
-    File zik;
-    File dirFile;
+
+    // File file;
+    // File zik;
+    // File dirFile;
+
     #endif
 #include "xtase_hardw.h"
 
@@ -87,7 +89,7 @@
   #endif
   #include "desktop_devices.h"
 #else
-  #include <avr/pgmspace.h>
+  //#include <avr/pgmspace.h>
 #endif
 
 // -------- Xtase refacto -------------
