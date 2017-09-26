@@ -6,7 +6,7 @@
 #ifndef xtase_hardw_h_
 #define xtase_hardw_h_ 1
 
-#include <Arduino.h>
+//#include <Arduino.h>
 
 #include "xts_arch.h"
 
@@ -32,9 +32,11 @@
   // static SdFile file;
   // static SdFile zik;
   // static SdFile dirFile;
-  extern SdFile file;
-  extern SdFile zik;
-  extern SdFile dirFile;
+
+  // extern SdFile file;
+  // extern SdFile zik;
+  // extern SdFile dirFile;
+
 //  #endif
 
 
@@ -84,7 +86,7 @@ static void setupGPIO() {
   extern void _ISR_emul();
 #endif
 
-static void setupHardware() {
+void setupHardware() {
  setupGPIO();
  #ifdef FS_SUPPORT
    setupSD();
@@ -200,12 +202,26 @@ static long t0,t1;
 
 #ifdef FS_SUPPORT
 static void playTuneFromStorage(const char* tuneName, int format = AUDIO_FORMAT_T5K, bool btnStop = false) {
+
+  if ( !STORAGE_OK ) {
+    host_outputString("ERR : Storage not ready\n");
+    return;
+  }
+
   cleanAudioBuff();
 
+  // if ( ! zik.open("monkey.t5k", O_READ) ){
+  //  host_outputString( "ERR : Opening : " );
+  //  host_outputString( (char*)tuneName );
+  //  host_outputString( "\n" );
+  //  return;        
+  // }
+  // zik.rewind();
+  // zik.close();
+
+
   //t0 = millis();
-
   //File zik = SD.open(tuneName);
-
   // //SdFile myZik(tuneName, O_READ);
   // SdFile myZik("monkey.t5k", O_READ);
   
@@ -378,7 +394,7 @@ static void __playTune(unsigned char* tune, bool btnStop = false) {
 
   extern int curY;
 
-  static bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter) {
+  static bool _lsStorage(File dirFile, int numTabs, bool recurse, char* filter) {
     int cpt = 0;
     while (file.openNext(&dirFile, O_READ)) {
       if (!file.isSubDir() && !file.isHidden() ) {

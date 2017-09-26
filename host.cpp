@@ -8,6 +8,8 @@
 #include "host.h"
 #include "basic.h"
 
+#include "Arduino.h"
+
 #ifdef DESKTOP_COMPUTER
 
  #ifndef BUT_TEENSY
