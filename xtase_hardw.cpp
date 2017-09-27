@@ -19,10 +19,7 @@
 
 #include "host_xts.h"
 
-#include "xtase_tone.h"
 
-extern bool BUZZER_MUTE;
-#define BUZZER BUZZER_PIN
 
 
  // external forward decl.
@@ -34,41 +31,11 @@ extern bool BUZZER_MUTE;
  void host_showBuffer();
 
 // ===============================
-void playNote(int note_freq, int duration) {
-  if ( BUZZER_MUTE ) { return; }
-  if ( note_freq >= 1 && note_freq <= 48 ) {
-    // 0..48 octave2 to 5
-    note_freq = notes[ note_freq-1 ];
-  } else if ( note_freq >= 49 && note_freq <= 4096 ) {
-    // 49..4096 -> 19200/note in Hz
-    note_freq *= 20;
-  } else {
-    note_freq = 0;
-  }
-
-  noTone(BUZZER_PIN);
-  tone(BUZZER_PIN, note_freq, duration*50);
-  delay(duration*50);
-}
 
 bool STORAGE_OK = false;
 
 
 #ifdef FS_SUPPORT
- //static bool STORAGE_OK = false;
- // else false if called from another .cpp
- 
-//  #ifdef USE_SDFAT_LIB
-  // static SdFile file;
-  // static SdFile zik;
-  // static SdFile dirFile;
-
-  // extern SdFile file;
-  // extern SdFile zik;
-  // extern SdFile dirFile;
-
-//  #endif
-
 
  void setupSD() {
    #ifdef USE_SDFAT_LIB
@@ -76,20 +43,14 @@ bool STORAGE_OK = false;
    #else
      if (!SD.begin(BUILTIN_SDCARD)) { // Teensy3.6 initialization
    #endif
-       //outprint("initialization failed!\n");
-       //host_outputString("SD : initialization failed!\n");
-       //Serial.print(F("SD : initialization failed!\n"));
-       activityLed(true);
-       delay(500);
-       activityLed(false);
-       delay(500);
-      //  activityLed(true);
-     
+        led3(true);   delay(500);
+        led3(false);  delay(500);
+        led3(true);   delay(500);
+        led3(false);  delay(500);
        return;
      }
-     //lcd_println("SD : initialization done.");
-     //host_outputString("SD : initialization done.\n");
-     //Serial.print(F("SD : initialization done.\n"));
+   led1(true);   delay(500);
+   led1(false);  delay(500);
  
    #ifdef USE_SDFAT_LIB
      SD.chvol();
@@ -119,10 +80,7 @@ void setupGPIO() {
 void setupHardware() {
  setupGPIO();
  #ifdef FS_SUPPORT
-   led2(true);
    setupSD();
-   delay(500);
-   led2(!true);
  #endif
 
  #ifdef BUT_TEENSY
@@ -170,6 +128,25 @@ void activityLed(bool state) {
 //    AUDIO_FORMAT_T53,
 //  };
 
+extern bool BUZZER_MUTE;
+#define BUZZER BUZZER_PIN
+
+void playNote(int note_freq, int duration) {
+  if ( BUZZER_MUTE ) { return; }
+  if ( note_freq >= 1 && note_freq <= 48 ) {
+    // 0..48 octave2 to 5
+    note_freq = notes[ note_freq-1 ];
+  } else if ( note_freq >= 49 && note_freq <= 4096 ) {
+    // 49..4096 -> 19200/note in Hz
+    note_freq *= 20;
+  } else {
+    note_freq = 0;
+  }
+
+  noTone(BUZZER_PIN);
+  tone(BUZZER_PIN, note_freq, duration*50);
+  delay(duration*50);
+}
 
 void playTuneString(char* strTune) {
   int defDuration = 200;
@@ -178,7 +155,7 @@ void playTuneString(char* strTune) {
     char ch = strTune[i];
     ch = charUpCase(ch);
     bool sharp = false;
-    // if ( i < slen-1 && strTune[i] == '#' ) { sharp = true; i++; }  
+    if ( i < slen-1 && strTune[i] == '#' ) { sharp = true; i++; }  
 
     int pitch = 0;
     switch (ch) {
@@ -214,7 +191,7 @@ void playTuneString(char* strTune) {
    delay(defDuration);
 
   }
-} // end of playTuneSTring
+} // end of playTuneStreamSTring
 
 // ============ Tmp Compatibility Code ===============
 void lcd_println(char* text) { Serial.print("LCD:"); Serial.println(text); }
@@ -224,14 +201,13 @@ bool anyBtn() { return false; }
 
 
 // T5K Format
-void __playTune(unsigned char* tune, bool btnStop);
+void __playTune(unsigned char* tuneStream, bool btnStop);
 // T53
-void __playTuneT53(unsigned char* tune, bool btnStop);
+void __playTuneT53(unsigned char* tuneStream, bool btnStop);
 
 long t0,t1;
 
-#ifdef FS_SUPPORT
-void playTuneFromStorage(const char* tuneName, int format = AUDIO_FORMAT_T5K, bool btnStop = false) {
+void playTuneFromStorage(const char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bool btnStop = false) {
 
   if ( !STORAGE_OK ) {
     host_outputString("ERR : Storage not ready\n");
@@ -244,6 +220,8 @@ void playTuneFromStorage(const char* tuneName, int format = AUDIO_FORMAT_T5K, bo
   // > https://github.com/greiman/SdFat-beta
   // > https://github.com/WMXZ-EU/uSDFS
 
+  #ifdef FS_SUPPORT
+  
 
   // SdFile zik("monkey.t5k", O_READ);
 
@@ -253,7 +231,7 @@ void playTuneFromStorage(const char* tuneName, int format = AUDIO_FORMAT_T5K, bo
   // if ( ! file.open("monkey.t5k", O_READ) ){
   //   // if ( ! zik.isOpen() ){
   // //  host_outputString( "ERR : Opening : " );
-  // //  host_outputString( (char*)tuneName );
+  // //  host_outputString( (char*)tuneStreamName );
   // //  host_outputString( "\n" );
   //  led1(true);
   //  return;        
@@ -261,30 +239,31 @@ void playTuneFromStorage(const char* tuneName, int format = AUDIO_FORMAT_T5K, bo
    led2(true);
 
   //  host_outputString( "OK : Opening : " );
-  //  host_outputString( (char*)tuneName );
+  //  host_outputString( (char*)tuneStreamName );
   //  host_outputString( "\n" );
 
   // //zik.rewind();
   // zik.close();
-
+  #endif
+  
 
   //t0 = millis();
-  //File zik = SD.open(tuneName);
-  // //SdFile myZik(tuneName, O_READ);
+  //File zik = SD.open(tuneStreamName);
+  // //SdFile myZik(tuneStreamName, O_READ);
   // SdFile myZik("monkey.t5k", O_READ);
   
   // if ( !myZik.isOpen() ) {
   //  host_outputString( "ERR : Opening : " );
-  //  host_outputString( (char*)tuneName );
+  //  host_outputString( (char*)tuneStreamName );
   //  host_outputString( "\n" );
   //  return;    
   // }
 
   // myZik.close();
 
-//  if ( ! zik.open(tuneName, O_READ) ) {
+//  if ( ! zik.open(tuneStreamName, O_READ) ) {
 //    host_outputString( "ERR : Opening : " );
-//    host_outputString( (char*)tuneName );
+//    host_outputString( (char*)tuneStreamName );
 //    host_outputString( "\n" );
 //    return;
 //  } 
@@ -306,22 +285,21 @@ void playTuneFromStorage(const char* tuneName, int format = AUDIO_FORMAT_T5K, bo
   // host_outputInt( fileLen ); host_outputString( "bytes\n" );
 
   // if ( format == AUDIO_FORMAT_T5K ) {
-  //   __playTune( audiobuff, btnStop );  
+  //   __playTuneStream( audiobuff, btnStop );  
   // } else {
-  //   __playTuneT53( audiobuff, btnStop );  
+  //   __playTuneStreamT53( audiobuff, btnStop );  
   // }
   
  }
-#endif
  
-// where tune is the audio buffer content
-void __playTune(unsigned char* tune, bool btnStop = false) {
-  short nbNotes = (*tune++ << 8) | (*tune++);
+// where tuneStream is the audio buffer content
+void __playTune(unsigned char* tuneStream, bool btnStop = false) {
+  short nbNotes = (*tuneStream++ << 8) | (*tuneStream++);
   char songname[16];
   for(int i=0; i < 16; i++) {
-    songname[i] = *tune++;
+    songname[i] = *tuneStream++;
   }
-  short tempoPercent = (*tune++ << 8) | (*tune++);
+  short tempoPercent = (*tuneStream++ << 8) | (*tuneStream++);
 
   //printfln("nbN:%d title:'%s' tmp:%d", nbNotes, (const char*)songname, tempoPercent);
   
@@ -341,8 +319,8 @@ void __playTune(unsigned char* tune, bool btnStop = false) {
   tempo *= 0.97;
 
   for (int thisNote = 0; thisNote < nbNotes; thisNote++) {
-    int note = *tune++;
-    short duration = (*tune++ << 8) | (*tune++);
+    int note = *tuneStream++;
+    short duration = (*tuneStream++ << 8) | (*tuneStream++);
     // note 0 -> silence
     if ( note > 0 ) {
       if (!BUZZER_MUTE) tone(BUZZER, notes[ note-1 ], duration);
@@ -381,14 +359,14 @@ void __playTune(unsigned char* tune, bool btnStop = false) {
  }
 
  // T53 Format
- // where tune is the audio buffer content
-void __playTuneT53(unsigned char* tune, bool btnStop = false) {
-  short nbNotes = (*tune++ << 8) | (*tune++);
+ // where tuneStream is the audio buffer content
+void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
+  short nbNotes = (*tuneStream++ << 8) | (*tuneStream++);
   char songname[16];
   for(int i=0; i < 16; i++) {
-    songname[i] = *tune++;
+    songname[i] = *tuneStream++;
   }
-  short tempoPercent = (*tune++ << 8) | (*tune++);
+  short tempoPercent = (*tuneStream++ << 8) | (*tuneStream++);
 
   //printfln("nbN:%d title:'%s' tmp:%d", nbNotes, (const char*)songname, tempoPercent);
   
@@ -404,9 +382,9 @@ void __playTuneT53(unsigned char* tune, bool btnStop = false) {
   tempo *= 0.97;
 
   for (int thisNote = 0; thisNote < nbNotes; thisNote++) {
-    short note = (*tune++ << 8) | (*tune++);
-    short duration = (*tune++ << 8) | (*tune++);
-    short wait = (*tune++ << 8) | (*tune++);
+    short note = (*tuneStream++ << 8) | (*tuneStream++);
+    short duration = (*tuneStream++ << 8) | (*tuneStream++);
+    short wait = (*tuneStream++ << 8) | (*tuneStream++);
     
     // note 0 -> silence
     if ( note > 0 ) {
@@ -437,10 +415,39 @@ void __playTuneT53(unsigned char* tune, bool btnStop = false) {
 // =
 // ==============================================
 
- #ifdef FS_SUPPORT
-
-
+ #ifndef FS_SUPPORT
+  void lsStorage() {
+    host_outputString("ERR : NO Storage support\n");
+  }
+ #else
   extern int curY;
+  bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter);
+
+  void lsStorage() {
+    bool recurse = false;
+    char* filter = NULL;
+
+    SdFile dirFile;
+
+    if ( !STORAGE_OK ) {
+      host_outputString("ERR : Storage not ready\n");
+      return;
+    }
+
+    if (!dirFile.open("/", O_READ)) {
+      host_outputString("ERR : opening SD root failed\n");
+      return;
+    }
+
+    _lsStorage(dirFile, 0, recurse, filter);
+
+    dirFile.close();
+  }
+
+
+ #ifndef SCREEN_HEIGHT
+  #define SCREEN_HEIGHT       8
+ #endif
 
 bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter) {
     SdFile file;
@@ -467,10 +474,6 @@ bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter) {
         host_outputString("\n");
 
 // TMP - DIRTY ----- begin
-#ifndef SCREEN_HEIGHT
- #define SCREEN_HEIGHT       8
-#endif
-
 if ( curY % SCREEN_HEIGHT == SCREEN_HEIGHT-1 ) {
   host_showBuffer();
 }
@@ -491,29 +494,6 @@ host_showBuffer();
 
     // return true;
   }
-
-void lsStorageR(bool recurse, char* filter) {
-    SdFile dirFile;
-
-    if ( !STORAGE_OK ) {
-      host_outputString("ERR : Storage not ready\n");
-      return;
-    }
-
-    if (!dirFile.open("/", O_READ)) {
-      host_outputString("ERR : opening SD root failed\n");
-      return;
-    }
-
-    _lsStorage(dirFile, 0, recurse, filter);
-
-    dirFile.close();
-  }
-
- void lsStorage() {
-    lsStorageR(false, NULL);
-  }
-
 
  #endif // FS_SUPPORT
 
