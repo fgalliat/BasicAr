@@ -149,6 +149,8 @@ void playNote(int note_freq, int duration) {
 }
 
 void playTuneString(char* strTune) {
+  noTone(BUZZER_PIN);
+
   int defDuration = 200;
   int slen = strlen( strTune );
   for (int i=0; i < slen; i++) {
@@ -294,6 +296,8 @@ void playTuneFromStorage(const char* tuneStreamName, int format = AUDIO_FORMAT_T
  
 // where tuneStream is the audio buffer content
 void __playTune(unsigned char* tuneStream, bool btnStop = false) {
+  noTone(BUZZER_PIN);
+
   short nbNotes = (*tuneStream++ << 8) | (*tuneStream++);
   char songname[16];
   for(int i=0; i < 16; i++) {
@@ -361,6 +365,8 @@ void __playTune(unsigned char* tuneStream, bool btnStop = false) {
  // T53 Format
  // where tuneStream is the audio buffer content
 void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
+  noTone(BUZZER_PIN);
+  
   short nbNotes = (*tuneStream++ << 8) | (*tuneStream++);
   char songname[16];
   for(int i=0; i < 16; i++) {

@@ -54,12 +54,17 @@
 #include <float.h>
 #include <limits.h>
 
-#include <Arduino.h>
+#include "xts_arch.h"
+#ifdef BUT_TEENSY
+  #include "xts_teensy.h"
+#else
+  #include <Arduino.h>
+#endif
 
 #include "basic.h"
 #include "host.h"
 
-#include "xts_arch.h"
+
 
 // -------- Xtase refacto -------------
 char executeMode;

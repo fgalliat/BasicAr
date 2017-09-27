@@ -172,7 +172,6 @@ int xts_play() {
   char* tuneStr = stackPopStr();
 
   if ( executeMode ) {
-    noTone(BUZZER_PIN);
     playTuneString( tuneStr );
   }
 
