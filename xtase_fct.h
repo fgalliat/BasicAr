@@ -65,11 +65,9 @@ int xts_locate() {
 
 // host_outputString("IN XTS DIR !!!\n");
 
-//   #ifdef FS_SUPPORT
 //   if ( executeMode ) {
 //     lsStorage();
 //   }
-//   #endif
 
 //   //return 0; ==> NO (SimpleCmd)
 // }
@@ -77,51 +75,16 @@ int xts_locate() {
 int xts_fs_dir2() {
   getNextToken();
 
-host_outputString("IN XTS DIR !!!\n");
-
-  #ifdef FS_SUPPORT
+  host_outputString("IN XTS DIR !!!\n");
+ 
   if ( executeMode ) {
-    lsStorage();
-  }
-  #endif
-
-  return 0;
-}
-
-
-
-// == Led
-int xts_led() {
-  getNextToken();
-  int val = expectNumber();
-  if (val) return val;	// error
-  uint16_t ledID = (uint16_t)stackPopNum(); // 1 based
-
-  getNextToken();
-  val = expectNumber();
-  if (val) return val;	// error
-  uint16_t state = (uint16_t)stackPopNum(); // 1 or 0
-
-  if ( executeMode ) {
-    led(ledID,state >= 1);
+      lsStorage();
   }
 
   return 0;
 }
 
-// == Sound 
-
-int xts_mute() {
-  // sysVARSTART - sysPROGEND
-  getNextToken();
-  if ( executeMode ) {
-    BUZZER_MUTE = !BUZZER_MUTE;
-  }
-  return 0;	
-}
-
-
-
+// =========================================================
 
 int __xts_playSpeakerTune(int format) {
   getNextToken();
@@ -166,24 +129,37 @@ int xts_playT53() {
 }
 
 
-int xts_tone() {
-    getNextToken();
-    int freq = expectNumber();
-    if (freq) return freq;	// error
-    uint16_t note_freq = (uint16_t)stackPopNum();
 
-    getNextToken();
-    int dur = expectNumber();
-    if (dur) return dur;	// error
-    uint16_t duration = (uint16_t)stackPopNum();
+// == Led
+int xts_led() {
+  getNextToken();
+  int val = expectNumber();
+  if (val) return val;	// error
+  uint16_t ledID = (uint16_t)stackPopNum(); // 1 based
 
-    if ( executeMode ) {
-      if ( BUZZER_MUTE ) { return 0; }
-      playNote(note_freq, duration);
-    }
+  getNextToken();
+  val = expectNumber();
+  if (val) return val;	// error
+  uint16_t state = (uint16_t)stackPopNum(); // 1 or 0
 
-  return 0;    
+  if ( executeMode ) {
+    led(ledID,state >= 1);
+  }
+
+  return 0;
 }
+
+// == Sound 
+
+int xts_mute() {
+  // sysVARSTART - sysPROGEND
+  getNextToken();
+  if ( executeMode ) {
+    BUZZER_MUTE = !BUZZER_MUTE;
+  }
+  return 0;	
+}
+
 
 int xts_play() {
   getNextToken();
@@ -204,6 +180,29 @@ int xts_play() {
 }
 
 
+
+int xts_tone() {
+    getNextToken();
+    int freq = expectNumber();
+    if (freq) return freq;	// error
+    uint16_t note_freq = (uint16_t)stackPopNum();
+
+    getNextToken();
+    int dur = expectNumber();
+    if (dur) return dur;	// error
+    uint16_t duration = (uint16_t)stackPopNum();
+
+    if ( executeMode ) {
+      if ( BUZZER_MUTE ) { return 0; }
+      playNote(note_freq, duration);
+    }
+
+  return 0;    
+}
+
+
+
+
 // ===================================================================
 
 char charUpCase(char ch) {
@@ -212,3 +211,7 @@ char charUpCase(char ch) {
     }
     return ch;
 }
+
+
+
+

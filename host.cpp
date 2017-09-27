@@ -15,34 +15,30 @@
 
 #include <Arduino.h>
 
+#include "xts_arch.h"
+
+ #include "desktop_devices.h"
+ #include <EEPROM.h>
+extern SSD1306ASCII oled;
+extern PS2Keyboard keyboard;
+// extern EEPROMClass EEPROM;
+
+//   #include <SSD1306ASCII.h>
+//   #include <PS2Keyboard.h>
+//   #include <EEPROM.h>
+
+
 #include "host.h"
 #include "basic.h"
 
-
-
-
-#ifdef DESKTOP_COMPUTER
-
- #ifndef BUT_TEENSY
-    #include <iostream> 
-    #include <stdio.h>  
-    using namespace std;
- #endif
-
- #include "desktop_devices.h"
-
-#else
-  #include <SSD1306ASCII.h>
-  #include <PS2Keyboard.h>
-  #include <EEPROM.h>
-#endif
+// for dtostre & dtostrf
+#include "xts_compat.h" 
+#include <stdlib.h> 
 
 extern bool BUZZER_MUTE;
 
 
-extern SSD1306ASCII oled;
-extern PS2Keyboard keyboard;
-extern EEPROMClass EEPROM;
+
 int timer1_counter;
 
 char screenBuffer[SCREEN_WIDTH*SCREEN_HEIGHT];
@@ -80,7 +76,7 @@ void initTimer() {
 }
 
 // MOA - TO LOOK
-#ifndef DESKTOP_COMPUTER
+#ifndef BUT_TEENSY
     ISR(TIMER1_OVF_vect)        // interrupt service routine 
     {
         TCNT1 = timer1_counter;   // preload timer

@@ -13,6 +13,11 @@ host_showBuffer() dans host.cpp
 that works !!!
 ______________________________________________________________
 
+OK -> GOTO (30)
+REM -> ... -> fails (31->75)
+
+______________________________________________________________
+
 ADDED >> ' for REM
          ? for PRINT
          MEM function to get free mem ammount ----------> <*> shortcut to display it

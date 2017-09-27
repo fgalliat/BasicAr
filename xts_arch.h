@@ -35,7 +35,9 @@
 // Teensy 3.2
   #define ARCH_TYPE "Teensy 3.2"
   #define BUT_TEENSY 1
+
   #define BUZZER_PIN 5
+  
   #define LED1_PIN 13
   #define LED2_PIN LED1_PIN
   #define LED3_PIN LED1_PIN
@@ -45,7 +47,9 @@
   #define SPEED 72
 #else
   #define ARCH_TYPE "Unknown platform"
+  
   #define BUZZER_PIN -1
+  
   #define LED1_PIN -1
   #define LED2_PIN LED1_PIN
   #define LED3_PIN LED1_PIN
@@ -54,29 +58,6 @@
   #define EEPROM_END (1*1024)-1
   #define SPEED 16
 #endif
-
-
-
-
-
-// #ifdef FS_SUPPORT
-//   #ifdef USE_SDFAT_LIB
-//     // for teensy 3.6 as example...
-//     // include SdFat library
-//     // 
-//     // Test of SdFat-beta @ 03/03/2017
-//     // from : https://github.com/greiman/SdFat-beta
-//     // copied SdFat-beta-master.zip\SdFat-beta-master\SdFat into C:\Program Files (x86)\Arduino\libraries\SdFat
-
-//     #include "SdFat.h"
-//     static SdFatSdio SD;
-//     static char SDentryName[13];
-//   #else 
-//     // include the SD library: 
-//     #include <SD.h>
-//   #endif
-
-//   #endif // FS_SUPPORT
 
 
   #endif // include

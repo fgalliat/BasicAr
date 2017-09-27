@@ -7,13 +7,6 @@
 
 #include <stdint.h>
 
-
-// Dirty as is ===============================
-// in linux_BASIC.cpp & host.h
-#define DESKTOP_COMPUTER 1
-#define BUT_TEENSY 1
-// ===========================================
-
 #include "host_xts.h"
 
 
@@ -22,10 +15,7 @@
 #define SCREEN_WIDTH        21
 #define SCREEN_HEIGHT       8
 
-#ifndef DESKTOP_COMPUTER
-  #define EXTERNAL_EEPROM         1
-#endif
-
+//  #define EXTERNAL_EEPROM         1
 #define EXTERNAL_EEPROM_ADDR    0x50    // I2C address (7 bits)
 #define EXTERNAL_EEPROM_SIZE    32768   // only <=32k tested (64k might work?)
 

@@ -8,10 +8,12 @@
 #include "xts_arch.h"
 
 #ifdef USE_SDFAT_LIB
-  #include "SdFat.h"
+  #include <SPI.h>
   #include "SdFat.h"
   SdFatSdio SD;
   char SDentryName[13];
+
+  // SdFile file;
 #endif
 
 
@@ -238,24 +240,32 @@ void playTuneFromStorage(const char* tuneName, int format = AUDIO_FORMAT_T5K, bo
 
   cleanAudioBuff();
 
-  //SdFile zik("monkey.t5k", O_READ);
-  SdFile zik;
-  if ( ! zik.open("monkey.t5k", O_READ) ){
-  //if ( !zik.isOpen() ) {
-  //  host_outputString( "ERR : Opening : " );
-  //  host_outputString( (char*)tuneName );
-  //  host_outputString( "\n" );
-   led1(true);
-   return;        
-  }
+  // for teensy 3.6
+  // > https://github.com/greiman/SdFat-beta
+  // > https://github.com/WMXZ-EU/uSDFS
+
+
+  // SdFile zik("monkey.t5k", O_READ);
+
+  led3(true);
+
+  // SdFile zik;
+  // if ( ! file.open("monkey.t5k", O_READ) ){
+  //   // if ( ! zik.isOpen() ){
+  // //  host_outputString( "ERR : Opening : " );
+  // //  host_outputString( (char*)tuneName );
+  // //  host_outputString( "\n" );
+  //  led1(true);
+  //  return;        
+  // }
    led2(true);
 
-  // host_outputString( "OK : Opening : " );
-  // host_outputString( (char*)tuneName );
-  // host_outputString( "\n" );
+  //  host_outputString( "OK : Opening : " );
+  //  host_outputString( (char*)tuneName );
+  //  host_outputString( "\n" );
 
-  //zik.rewind();
-  zik.close();
+  // //zik.rewind();
+  // zik.close();
 
 
   //t0 = millis();

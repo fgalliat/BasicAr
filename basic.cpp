@@ -60,42 +60,10 @@
 #include "host.h"
 
 #include "xts_arch.h"
-    // #ifdef USE_SDFAT_LIB
-    // // for teensy 3.6 as example...
-    // // include SdFat library
-    // // 
-    // // Test of SdFat-beta @ 03/03/2017
-    // // from : https://github.com/greiman/SdFat-beta
-    // // copied SdFat-beta-master.zip\SdFat-beta-master\SdFat into C:\Program Files (x86)\Arduino\libraries\SdFat
-
-    // // #include "SdFat.h"
-    // // static SdFatSdio SD;
-    // // static char SDentryName[13];
-
-    // // SdFile file;
-    // // SdFile zik;
-    // // SdFile dirFile;
-
-    // // File file;
-    // // File zik;
-    // // File dirFile;
-
-    // #endif
-
-
-#ifdef DESKTOP_COMPUTER
-  #ifdef BUT_TEENSY
-    //#include <Arduino.h>
-    //#include <avr/pgmspace.h>
-  #endif
-  #include "desktop_devices.h"
-#else
-  //#include <avr/pgmspace.h>
-#endif
 
 // -------- Xtase refacto -------------
-static char executeMode;
-static int curToken;
+char executeMode;
+int curToken;
 #include "xtase_fct.h"
 // ------------------------------------
 
@@ -159,7 +127,8 @@ const char* const errorTable[] PROGMEM = {
 #define TKN_FMT_PRE		0x80
 
 
-PROGMEM const TokenTableEntry tokenTable[] = {
+//PROGMEM const TokenTableEntry tokenTable[] = {
+const TokenTableEntry tokenTable[] PROGMEM = {
     {0, 0}, {0, 0}, {0, 0}, {0, 0},
     {0, 0}, {0, 0}, {0, 0}, {0, 0},
     {"(", 0}, {")",0}, {"+",0}, {"-",0},
@@ -181,13 +150,12 @@ PROGMEM const TokenTableEntry tokenTable[] = {
     {"DELETE", TKN_FMT_POST},
     // ------ Xtase routines -----------
     {"MEM",0}, {"?",TKN_FMT_POST}, {"'",TKN_FMT_POST}, 
-    {"TONE",2}, 
-      {"PLAY",1|TKN_ARG1_TYPE_STR}, 
-      {"PLAYT5K",1|TKN_ARG1_TYPE_STR}, 
-      // {"PLAYT53",1|TKN_ARG1_TYPE_STR}, 
-    {"MUTE", 0},
-    {"LED",2}, 
     {"LOCATE",2}, 
+    {"LED",2}, 
+    {"TONE",2}, {"MUTE", 0},
+    {"PLAY",1|TKN_ARG1_TYPE_STR}, 
+    {"PLAYT5K",1|TKN_ARG1_TYPE_STR}, 
+    {"PLAYT53",1|TKN_ARG1_TYPE_STR}, 
 };
 
 
@@ -886,7 +854,14 @@ int nextToken()
         identStr[identLen] = 0;
         // check to see if this is a keyword
         for (int i = FIRST_IDENT_TOKEN; i <= LAST_IDENT_TOKEN; i++) {
-            if (strcasecmp(identStr, (char *)pgm_read_word(&tokenTable[i].token)) == 0) {
+
+            char* curScanedTk = (char *)pgm_read_word(&tokenTable[i].token);
+            host_outputString( curScanedTk );
+
+            if (strcasecmp(identStr, curScanedTk ) == 0) {
+
+                host_outputString( "*" );
+
                 if (tokenOutLeft <= 1) return ERROR_LEXER_TOO_LONG;
                 tokenOutLeft--;
                 *tokenOut++ = i;
@@ -905,6 +880,8 @@ int nextToken()
                 }
                 return 0;
             }
+
+            host_outputString( "\n" );
         }
         // no matching keyword - this must be an identifier
         // $ is only allowed at the end
@@ -1929,7 +1906,7 @@ int parseStmts()
         
         case TOKEN_PLAY: ret = xts_play(); break;
         case TOKEN_PLAYT5K: ret = xts_playT5K(); break;
-        // case TOKEN_PLAYT53: ret = xts_playT53(); break;
+        case TOKEN_PLAYT53: ret = xts_playT53(); break;
 
         case TOKEN_LED:    ret = xts_led(); break;
         case TOKEN_LOCATE: ret = xts_locate(); break;

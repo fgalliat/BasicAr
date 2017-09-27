@@ -5,40 +5,27 @@
 //#define REAL_ARDUINO 1
 //#define ALL_DEVICES 1
 
-// Dirty as is 
-// in linux_BASIC.cpp & host.h
-#define DESKTOP_COMPUTER 1
+#include "xts_arch.h"
 
-// else false if called from another .cpp (when static in an include....)
 extern bool STORAGE_OK;
 bool BUZZER_MUTE = false;
 
-#include "xts_arch.h"
-//extern void setupHardware();
 
 
-#ifdef DESKTOP_COMPUTER
-
- #ifndef BUT_TEENSY
-   #include <iostream> 
-   #include <stdio.h>  
-   using namespace std;
- #endif
- 
+#ifdef BUT_TEENSY
     #include "desktop_devices.h"
-    #include "basic.h"
-    #include "host.h"
+
+    #include <EEPROM.h>
 #else
     #include <font.h>
     #include <SSD1306ASCII.h>
     // ^ - modified for faster SPI
     #include <PS2Keyboard.h>
+    
     #include <EEPROM.h>
-
-    #include "basic.h"
-    #include "host.h"
-
 #endif
+#include "basic.h"
+#include "host.h"
 
 // Define in host.h if using an external EEPROM e.g. 24LC256
 // Should be connected to the I2C pins
@@ -164,12 +151,16 @@ void loop() {
             host_outputInt(lineNumber);
             host_outputChar('-');
         }
+
+        host_outputString("RET = ");
+        host_outputInt(ret);
+        host_outputString("\n");
         host_outputProgMemString((char *)pgm_read_word(&(errorTable[ret])));
     }
 }
 
+// ___________________________________________________________
 #ifdef DESKTOP_COMPUTER
- #ifndef BUT_TEENSY
   // ========================
   int main(int argc, char** argv) {
     setupComputer();
@@ -183,5 +174,4 @@ void loop() {
     // to call.....
     closeComputer();
   }
- #endif
 #endif

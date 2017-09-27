@@ -79,20 +79,20 @@
 #define TOKEN_PRINT_QM       67
 #define TOKEN_REM_EM         68
 
-#define TOKEN_TONE           69
+#define TOKEN_LOCATE         69
+#define TOKEN_LED            70 // 0x46
 
-#define TOKEN_PLAY           70
-#define TOKEN_PLAYT5K        71
-// #define TOKEN_PLAYT53        72
-
+#define TOKEN_TONE           71
 #define TOKEN_MUTE           72
-#define TOKEN_LED            73
-#define TOKEN_LOCATE         74
+
+#define TOKEN_PLAY           73
+#define TOKEN_PLAYT5K        74
+#define TOKEN_PLAYT53        75
 
 
 #define FIRST_IDENT_TOKEN 23
 //#define LAST_IDENT_TOKEN 65
-#define LAST_IDENT_TOKEN TOKEN_LOCATE
+#define LAST_IDENT_TOKEN TOKEN_PLAYT53
 
 // =========================================
 
