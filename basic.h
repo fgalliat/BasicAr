@@ -85,14 +85,16 @@
 #define TOKEN_TONE           71
 #define TOKEN_MUTE           72
 
-#define TOKEN_PLAY           73
-#define TOKEN_PLAYT5K        74
-#define TOKEN_PLAYT53        75
+// #define TOKEN_PLAY           73
+// #define TOKEN_PLAYT5K        74
+// #define TOKEN_PLAYT53        75
+
+#define TOKEN_LASTONE TOKEN_MUTE
 
 
 #define FIRST_IDENT_TOKEN 23
 //#define LAST_IDENT_TOKEN 65
-#define LAST_IDENT_TOKEN TOKEN_PLAYT53
+#define LAST_IDENT_TOKEN TOKEN_LASTONE
 
 // =========================================
 

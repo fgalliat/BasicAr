@@ -158,9 +158,9 @@ const TokenTableEntry tokenTable[] PROGMEM = {
     {"LOCATE",2}, 
     {"LED",2}, 
     {"TONE",2}, {"MUTE", 0},
-    {"PLAY",1|TKN_ARG1_TYPE_STR}, 
-    {"PLAYT5K",1|TKN_ARG1_TYPE_STR}, 
-    {"PLAYT53",1|TKN_ARG1_TYPE_STR}, 
+    // {"PLAY",1|TKN_ARG1_TYPE_STR}, 
+    // {"PLAYT5K",1|TKN_ARG1_TYPE_STR}, 
+    // {"PLAYT53",1|TKN_ARG1_TYPE_STR}, 
 };
 
 
@@ -798,12 +798,15 @@ int nextToken()
     // Skip any whitespace.
     while (isspace(*tokenIn))
         tokenIn++;
+
     // check for end of line
-    if (*tokenIn == 0) {
+    if (*tokenIn == 0 /* || *tokenIn == '\r' || *tokenIn == '\n'*/ ) {
         *tokenOut++ = TOKEN_EOL;
         tokenOutLeft--;
+        //if ( tokenOutLeft < 0 ) { tokenOutLeft = 0; } // Xtase
         return -1;
     }
+
     // Number: [0-9.]+
     // TODO - handle 1e4 etc
     if (isdigit(*tokenIn) || *tokenIn == '.') {   // Number: [0-9.]+
@@ -857,11 +860,28 @@ int nextToken()
             tokenIn++;
         }
         identStr[identLen] = 0;
+
+        // int tmpLen = strlen( &screenBuffer[startPos] );
+        int tmpLen = identLen;
+        char* tmpStr = (char*)malloc( tmpLen+1 );
+        memcpy(tmpStr, identStr ,tmpLen);
+        tmpStr[ tmpLen ] = 0x00;
+
+        host_outputString( "\n=================\n" );
+        host_outputString( tmpStr );
+        host_outputString( "\n=================\n" );
+        host_showBuffer();
+
+
         // check to see if this is a keyword
         for (int i = FIRST_IDENT_TOKEN; i <= LAST_IDENT_TOKEN; i++) {
 
             char* curScanedTk = (char *)pgm_read_word(&tokenTable[i].token);
+            host_outputInt( i );
+            host_outputString( ":" );
             host_outputString( curScanedTk );
+            host_outputString( ":" );
+            host_outputString( identStr );
 
             if (strcasecmp(identStr, curScanedTk ) == 0) {
 
@@ -1903,21 +1923,21 @@ int parseStmts()
             break;
             
         // ======== Xtase cmds =============
-        case TOKEN_PRINT_QM: ret = parse_PRINT(); break;
-        case TOKEN_REM_EM: getNextToken(); getNextToken(); break;
+        // case TOKEN_PRINT_QM: ret = parse_PRINT(); break;
+        // case TOKEN_REM_EM: getNextToken(); getNextToken(); break;
 
-        case TOKEN_TONE: ret = xts_tone(); break;
-        case TOKEN_MUTE: ret = xts_mute(); break;
+        // case TOKEN_TONE: ret = xts_tone(); break;
+        // case TOKEN_MUTE: ret = xts_mute(); break;
         
-        case TOKEN_PLAY: ret = xts_play(); break;
-        case TOKEN_PLAYT5K: ret = xts_playT5K(); break;
-        case TOKEN_PLAYT53: ret = xts_playT53(); break;
+        // // case TOKEN_PLAY: ret = xts_play(); break;
+        // // case TOKEN_PLAYT5K: ret = xts_playT5K(); break;
+        // // case TOKEN_PLAYT53: ret = xts_playT53(); break;
 
-        case TOKEN_LED:    ret = xts_led(); break;
-        case TOKEN_LOCATE: ret = xts_locate(); break;
+        // case TOKEN_LED:    ret = xts_led(); break;
+        // case TOKEN_LOCATE: ret = xts_locate(); break;
 
 
-        case TOKEN_DIR: ret = xts_fs_dir2(); break;
+        // case TOKEN_DIR: ret = xts_fs_dir2(); break;
         // ======== Xtase cmds =============
 
         default: 

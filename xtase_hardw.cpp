@@ -196,7 +196,9 @@ void playTuneString(char* strTune) {
 } // end of playTuneStreamSTring
 
 // ============ Tmp Compatibility Code ===============
-void lcd_println(char* text) { Serial.print("LCD:"); Serial.println(text); }
+extern boolean isWriting;
+
+void lcd_println(char* text) { isWriting = true; Serial.print("LCD:"); Serial.println(text); isWriting = false; }
 bool checkbreak() { return false; }
 bool anyBtn() { return false; }
 // ============ Tmp Compatibility Code =============== 

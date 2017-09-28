@@ -14,6 +14,9 @@
 #include <limits.h>
 
 #include <Arduino.h>
+#ifdef BUT_TEENSY
+  #include "xts_teensy.h"
+#endif
 
 #include "xts_arch.h"
 
@@ -85,12 +88,20 @@ void initTimer() {
         redraw = 1;
     }
 #else
+
+extern void xts_serialEvent();
+
     void _ISR_emul() // called from desktop_devices.h
     {
+        // xts_serialEvent();
+        
+
         // TCNT1 = timer1_counter;   // preload timer
         //flash = !flash;
         _flash = !_flash;
         redraw = 1;
+
+
     }
 #endif
 
@@ -144,19 +155,23 @@ void host_startupTone() {
 }
 
 void host_cls() {
+    isWriting = true;
     memset(screenBuffer, 32, SCREEN_WIDTH*SCREEN_HEIGHT);
     memset(lineDirty, 1, SCREEN_HEIGHT);
     curX = 0;
     curY = 0;
+    isWriting = false;
 }
 
 void host_moveCursor(int x, int y) {
+    isWriting = true;
     if (x<0) x = 0;
     if (x>=SCREEN_WIDTH) x = SCREEN_WIDTH-1;
     if (y<0) y = 0;
     if (y>=SCREEN_HEIGHT) y = SCREEN_HEIGHT-1;
     curX = x;
     curY = y; 
+    isWriting = false;
 }
 
 
@@ -165,7 +180,7 @@ void host_moveCursor(int x, int y) {
 void host_showBuffer() {
 
 #ifdef BUT_TEENSY
-
+isWriting = true;
     static char line[SCREEN_WIDTH+1];
     boolean dirty = false;
     for (int y=0; y<SCREEN_HEIGHT; y++) {
@@ -175,9 +190,10 @@ void host_showBuffer() {
       }
     }
 
-    if ( !dirty ) { return; }
+    if ( !dirty ) { isWriting = false; return; }
     
     Serial.print( "\n\n\n\n\n\n" );
+    Serial.flush();
     for (int y=0; y<SCREEN_HEIGHT; y++) {
         for (int x=0; x<SCREEN_WIDTH; x++) {
           char c = screenBuffer[y*SCREEN_WIDTH+x];
@@ -186,11 +202,13 @@ void host_showBuffer() {
         }
         line[SCREEN_WIDTH] = 0x00;
         Serial.println( line );
+        Serial.flush();
         
         //if (lineDirty[y] || (inputMode && y==curY)) {
           lineDirty[y] = 0;
         //}
     }
+    isWriting = false;
 #else    
     
     for (int y=0; y<SCREEN_HEIGHT; y++) {
@@ -210,13 +228,16 @@ void host_showBuffer() {
 }
 
 void scrollBuffer() {
+    isWriting = true;
     memcpy(screenBuffer, screenBuffer + SCREEN_WIDTH, SCREEN_WIDTH*(SCREEN_HEIGHT-1));
     memset(screenBuffer + SCREEN_WIDTH*(SCREEN_HEIGHT-1), 32, SCREEN_WIDTH);
     memset(lineDirty, 1, SCREEN_HEIGHT);
     curY--;
+    isWriting = false;
 }
 
 void host_outputString(char *str) {
+    isWriting = true;
     int pos = curY*SCREEN_WIDTH+curX;
     char ch;
     while (*str) {
@@ -234,17 +255,21 @@ void host_outputString(char *str) {
     }
     curX = pos % SCREEN_WIDTH;
     curY = pos / SCREEN_WIDTH;
+    isWriting = false;
 }
 
 void host_outputProgMemString(const char *p) {
+    isWriting = true;
     while (1) {
         unsigned char c = pgm_read_byte(p++);
         if (c == 0) break;
         host_outputChar(c);
     }
+    isWriting = false;
 }
 
 void host_outputChar(char c) {
+    isWriting = true;
     int pos = curY*SCREEN_WIDTH+curX;
     lineDirty[pos / SCREEN_WIDTH] = 1;
     screenBuffer[pos++] = c;
@@ -254,9 +279,11 @@ void host_outputChar(char c) {
     }
     curX = pos % SCREEN_WIDTH;
     curY = pos / SCREEN_WIDTH;
+    isWriting = false;
 }
 
 int host_outputInt(long num) {
+    isWriting = true;
     // returns len
     long i = num, xx = 1;
     int c = 0;
@@ -272,6 +299,7 @@ int host_outputInt(long num) {
         char digit = ((num/xx) % 10) + '0';
         host_outputChar(digit);
     }
+    isWriting = false;
     return c;
 }
 
@@ -309,12 +337,14 @@ void host_outputFloat(float f) {
 }
 
 void host_newLine() {
+    isWriting = true;
     curX = 0;
     curY++;
     if (curY == SCREEN_HEIGHT)
         scrollBuffer();
     memset(screenBuffer + SCREEN_WIDTH*(curY), 32, SCREEN_WIDTH);
     lineDirty[curY] = 1;
+    isWriting = false;
 }
 
 char *host_readLine() {
@@ -332,13 +362,18 @@ char *host_readLine() {
             host_click();
             // read the next key
             lineDirty[pos / SCREEN_WIDTH] = 1;
+            
             char c = keyboard.read();
-            if (c>=32 && c<=126)
+            if (c>=32 && c<=126) {
                 screenBuffer[pos++] = c;
-            else if (c==PS2_DELETE && pos > startPos)
+            }
+            else if (c==PS2_DELETE && pos > startPos) {
                 screenBuffer[--pos] = 0;
-            else if (c==PS2_ENTER)
+            }
+            else if (c==PS2_ENTER) {
                 done = true;
+                //screenBuffer[pos] = 0;
+            }
             curX = pos % SCREEN_WIDTH;
             curY = pos / SCREEN_WIDTH;
             // scroll if we need to
@@ -365,6 +400,19 @@ char *host_readLine() {
     // remove the cursor
     lineDirty[curY] = 1;
     host_showBuffer();
+
+    int tmpLen = strlen( &screenBuffer[startPos] );
+    char* tmpStr = (char*)malloc( tmpLen+1 );
+    memcpy(tmpStr, &screenBuffer[startPos] ,tmpLen);
+    tmpStr[ tmpLen ] = 0x00;
+
+    host_outputString( "\n>>inputline/" );
+    host_outputString( tmpStr );
+    host_outputString( "/<<" );
+    host_outputInt( tmpLen );
+    host_outputString( "<\n" );
+    host_showBuffer();
+
     return &screenBuffer[startPos];
 }
 

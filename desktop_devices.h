@@ -11,6 +11,12 @@
   #define PS2_ENTER 13
   #define PS2_ESC 27
 
+// =========/ Serial Event /==============
+extern String inputString;
+extern boolean stringComplete;
+extern boolean isWriting;
+// =========/ Serial Event /==============
+
   class PS2Keyboard {
       private:
         // N.B. : unsigned long  is very important
@@ -26,26 +32,55 @@
           
           int available() { 
             // BEWARE W/ FULL DUPLEX -> use events
-            return Serial.available(); 
+            delay(5);
+            // return Serial.available(); 
+
+            // if (stringComplete) {
+            //     return inputString.length();
+            // }
+
+            while( isWriting ) {
+                delay(5);
+                Serial.flush();
+            }
+            Serial.flush();
+
+            return isWriting ? 0 : Serial.available();
           }
   
           int read() { 
-              int tmpCh = Serial.read();
-              if ( tmpCh == 10 || tmpCh==13 ) { tmpCh = PS2_ENTER; }
-              return tmpCh;
+            //   int tmpCh = Serial.read();
+            //   if ( tmpCh == 10 || tmpCh==13 ) { tmpCh = PS2_ENTER; }
+            //   delay(5);
+            //   return tmpCh;
+
+            // if (stringComplete) {
+            //     // beware w/ under flow !!!!
+            //     char ch = inputString.charAt(0);
+            //     inputString.remove(0,1);
+            //     return ch;
+            // }
+
+            // return -1;
+            Serial.flush();
+            return isWriting ? 0 : Serial.read();
           }
   
   };
   
   static void gen_clearscreen() {
       //clear();
+      isWriting = true;
       Serial.println("\r\n\r\n\r\n\r\n\r\n\r\n");
+      isWriting = false;
   }
   
   static void printAt(int x, int y, char* str) {
       //mvprintw(y, x, str);
       //refresh();
+      isWriting = true;
       Serial.print( str );
+      isWriting = false;
   }
   
   #define SSD1306_SWITCHCAPVCC 1
@@ -74,10 +109,13 @@
               printAt(this->x, this->y, this->chs);
               this->x++;
               */
+              isWriting = true;
               Serial.write( ch );
+              isWriting = false;
           };
   
           void setCursor(int x, int y) { 
+            isWriting = true;
             //this->x=x; this->y=y; 
             if ( y == 0 ) { 
               lastY = y;
@@ -88,6 +126,7 @@
               //Serial.print("\r\n");
               Serial.write('\n');
             }
+            isWriting = false;
           };
   
           void clear() { 

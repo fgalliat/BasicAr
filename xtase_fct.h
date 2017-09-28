@@ -152,7 +152,6 @@ int xts_led() {
 // == Sound 
 
 int xts_mute() {
-  // sysVARSTART - sysPROGEND
   getNextToken();
   if ( executeMode ) {
     BUZZER_MUTE = !BUZZER_MUTE;
