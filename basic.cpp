@@ -861,7 +861,6 @@ int nextToken()
         }
         identStr[identLen] = 0;
 
-        // int tmpLen = strlen( &screenBuffer[startPos] );
         int tmpLen = identLen;
         char* tmpStr = (char*)malloc( tmpLen+1 );
         memcpy(tmpStr, identStr ,tmpLen);
@@ -877,15 +876,15 @@ int nextToken()
         for (int i = FIRST_IDENT_TOKEN; i <= LAST_IDENT_TOKEN; i++) {
 
             char* curScanedTk = (char *)pgm_read_word(&tokenTable[i].token);
-            host_outputInt( i );
-            host_outputString( ":" );
-            host_outputString( curScanedTk );
-            host_outputString( ":" );
-            host_outputString( identStr );
+            // host_outputInt( i );
+            // host_outputString( ":" );
+            // host_outputString( curScanedTk );
+            // host_outputString( ":" );
+            // host_outputString( identStr );
 
             if (strcasecmp(identStr, curScanedTk ) == 0) {
 
-                host_outputString( "*" );
+                // host_outputString( "*" );
 
                 if (tokenOutLeft <= 1) return ERROR_LEXER_TOO_LONG;
                 tokenOutLeft--;
@@ -906,7 +905,7 @@ int nextToken()
                 return 0;
             }
 
-            host_outputString( "\n" );
+            // host_outputString( "\n" );
         }
         // no matching keyword - this must be an identifier
         // $ is only allowed at the end

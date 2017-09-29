@@ -32,20 +32,21 @@ extern boolean isWriting;
           
           int available() { 
             // BEWARE W/ FULL DUPLEX -> use events
-            delay(5);
+            // delay(5);
             // return Serial.available(); 
 
             // if (stringComplete) {
             //     return inputString.length();
             // }
+            return inputString.length();
 
-            while( isWriting ) {
-                delay(5);
-                Serial.flush();
-            }
-            Serial.flush();
+            // while( isWriting ) {
+            //     delay(5);
+            //     Serial.flush();
+            // }
+            // Serial.flush();
 
-            return isWriting ? 0 : Serial.available();
+            // return isWriting ? 0 : Serial.available();
           }
   
           int read() { 
@@ -60,10 +61,16 @@ extern boolean isWriting;
             //     inputString.remove(0,1);
             //     return ch;
             // }
+            if ( inputString.length() > 0 ) {
+              char ch = inputString.charAt(0);
+              inputString.remove(0,1);
+              return ch;
+            }
+            return -1;
 
-            // return -1;
-            Serial.flush();
-            return isWriting ? 0 : Serial.read();
+            // // return -1;
+            // Serial.flush();
+            // return isWriting ? 0 : Serial.read();
           }
   
   };

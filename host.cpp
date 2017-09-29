@@ -93,7 +93,7 @@ extern void xts_serialEvent();
 
     void _ISR_emul() // called from desktop_devices.h
     {
-        // xts_serialEvent();
+        xts_serialEvent();
         
 
         // TCNT1 = timer1_counter;   // preload timer
@@ -401,17 +401,20 @@ char *host_readLine() {
     lineDirty[curY] = 1;
     host_showBuffer();
 
-    int tmpLen = strlen( &screenBuffer[startPos] );
-    char* tmpStr = (char*)malloc( tmpLen+1 );
-    memcpy(tmpStr, &screenBuffer[startPos] ,tmpLen);
-    tmpStr[ tmpLen ] = 0x00;
-
-    host_outputString( "\n>>inputline/" );
-    host_outputString( tmpStr );
-    host_outputString( "/<<" );
-    host_outputInt( tmpLen );
-    host_outputString( "<\n" );
-    host_showBuffer();
+    // int tmpLen = strlen( &screenBuffer[startPos] );
+    // char* tmpStr = (char*)malloc( tmpLen+1 );
+    // memcpy(tmpStr, &screenBuffer[startPos] ,tmpLen);
+    // tmpStr[ tmpLen ] = 0x00;
+    // host_outputString( "\n>>inputline/" );
+    // host_outputString( tmpStr );
+    // host_outputString( "/<<" );
+    // host_outputInt( tmpLen );
+    // host_outputString( "/<<" );
+    // host_outputInt( tmpLen > 0 ? tmpStr[ tmpLen-1 ] : -1 );
+    // host_outputString( "/<<" );
+    // host_outputInt( tmpLen > 1 ? tmpStr[ tmpLen-2 ] : -1 );
+    // host_outputString( "<\n" );
+    // host_showBuffer();
 
     return &screenBuffer[startPos];
 }
