@@ -866,10 +866,11 @@ int nextToken()
         memcpy(tmpStr, identStr ,tmpLen);
         tmpStr[ tmpLen ] = 0x00;
 
-        host_outputString( "\n=================\n" );
-        host_outputString( tmpStr );
-        host_outputString( "\n=================\n" );
-        host_showBuffer();
+        // avoid value from beeing displayed !!!!!!!
+        // host_outputString( "\n=================\n" );
+        // host_outputString( tmpStr );
+        // host_outputString( "\n=================\n" );
+        // host_showBuffer();
 
 
         // check to see if this is a keyword
@@ -1839,6 +1840,9 @@ int parseSimpleCmd() {
                 host_showBuffer();
                 break;
 
+            case TOKEN_DIR:
+            break;
+
 //             case TOKEN_DIR:
 // {
 // // #if FS_SUPPORT
@@ -1917,24 +1921,23 @@ int parseStmts()
         case TOKEN_CONT:
         case TOKEN_RETURN:
         case TOKEN_CLS:
-        //case TOKEN_DIR:
+        case TOKEN_DIR:
             ret = parseSimpleCmd();
             break;
             
         // ======== Xtase cmds =============
-        // case TOKEN_PRINT_QM: ret = parse_PRINT(); break;
-        // case TOKEN_REM_EM: getNextToken(); getNextToken(); break;
+        case TOKEN_PRINT_QM: ret = parse_PRINT(); break;
+        case TOKEN_REM_EM: getNextToken(); getNextToken(); break;
 
-        // case TOKEN_TONE: ret = xts_tone(); break;
-        // case TOKEN_MUTE: ret = xts_mute(); break;
+        case TOKEN_TONE: ret = xts_tone(); break;
+        case TOKEN_MUTE: ret = xts_mute(); break;
         
+        case TOKEN_LED:    ret = xts_led(); break;
+        case TOKEN_LOCATE: ret = xts_locate(); break;
+
         // // case TOKEN_PLAY: ret = xts_play(); break;
         // // case TOKEN_PLAYT5K: ret = xts_playT5K(); break;
         // // case TOKEN_PLAYT53: ret = xts_playT53(); break;
-
-        // case TOKEN_LED:    ret = xts_led(); break;
-        // case TOKEN_LOCATE: ret = xts_locate(); break;
-
 
         // case TOKEN_DIR: ret = xts_fs_dir2(); break;
         // ======== Xtase cmds =============
