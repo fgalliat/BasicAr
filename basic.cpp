@@ -158,7 +158,7 @@ const TokenTableEntry tokenTable[] PROGMEM = {
     {"LOCATE",2}, 
     {"LED",2}, 
     {"TONE",2}, {"MUTE", 0},
-    // {"PLAY",1|TKN_ARG1_TYPE_STR}, 
+    {"PLAY",1|TKN_ARG1_TYPE_STR}, 
     // {"PLAYT5K",1|TKN_ARG1_TYPE_STR}, 
     // {"PLAYT53",1|TKN_ARG1_TYPE_STR}, 
 };
@@ -1935,7 +1935,7 @@ int parseStmts()
         case TOKEN_LED:    ret = xts_led(); break;
         case TOKEN_LOCATE: ret = xts_locate(); break;
 
-        // // case TOKEN_PLAY: ret = xts_play(); break;
+        case TOKEN_PLAY: ret = xts_play(); break;
         // // case TOKEN_PLAYT5K: ret = xts_playT5K(); break;
         // // case TOKEN_PLAYT53: ret = xts_playT53(); break;
 
