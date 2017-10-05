@@ -1841,19 +1841,12 @@ int parseSimpleCmd() {
                 break;
 
             case TOKEN_DIR:
-            break;
-
-//             case TOKEN_DIR:
-// {
-// // #if FS_SUPPORT
-//                 xts_fs_dir();
-// // #endif
-
+                xts_fs_dir();
 // // #if EXTERNAL_EEPROM
 // //                 host_directoryExtEEPROM();
 // // #endif
-//                 break;
-// }
+                break;
+
         }
     }
     return 0;

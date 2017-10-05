@@ -224,8 +224,9 @@ void playTuneFromStorage(const char* tuneStreamName, int format = AUDIO_FORMAT_T
   // > https://github.com/greiman/SdFat-beta
   // > https://github.com/WMXZ-EU/uSDFS
 
-  #ifdef FS_SUPPORT
-  
+  #ifndef FS_SUPPORT
+    host_outputString("ERR : NO Storage support\n");
+  #else
 
   // SdFile zik("monkey.t5k", O_READ);
 

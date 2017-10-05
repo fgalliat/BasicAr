@@ -60,28 +60,15 @@ int xts_locate() {
 // == File System
 
 // beware : SimpleCmd
-// void xts_fs_dir() {
-//   //getNextToken(); ==> NO (SimpleCmd : spe case)
+void xts_fs_dir() {
+  //getNextToken(); ==> NO (SimpleCmd : spe case)
 
-// host_outputString("IN XTS DIR !!!\n");
-
-//   if ( executeMode ) {
-//     lsStorage();
-//   }
-
-//   //return 0; ==> NO (SimpleCmd)
-// }
-
-int xts_fs_dir2() {
-  getNextToken();
-
-  host_outputString("IN XTS DIR !!!\n");
- 
+  //host_outputString("IN XTS DIR !!!\n");
   if ( executeMode ) {
-      lsStorage();
+    lsStorage();
   }
 
-  return 0;
+  //return 0; ==> NO (SimpleCmd)
 }
 
 // =========================================================
