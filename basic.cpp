@@ -159,8 +159,8 @@ const TokenTableEntry tokenTable[] PROGMEM = {
     {"LED",2}, 
     {"TONE",2}, {"MUTE", 0},
     {"PLAY",1|TKN_ARG1_TYPE_STR}, 
-    // {"PLAYT5K",1|TKN_ARG1_TYPE_STR}, 
-    // {"PLAYT53",1|TKN_ARG1_TYPE_STR}, 
+    {"PLAYT5K",1|TKN_ARG1_TYPE_STR}, 
+    {"PLAYT53",1|TKN_ARG1_TYPE_STR}, 
 };
 
 
@@ -1929,10 +1929,9 @@ int parseStmts()
         case TOKEN_LOCATE: ret = xts_locate(); break;
 
         case TOKEN_PLAY: ret = xts_play(); break;
-        // // case TOKEN_PLAYT5K: ret = xts_playT5K(); break;
-        // // case TOKEN_PLAYT53: ret = xts_playT53(); break;
+        case TOKEN_PLAYT5K: ret = xts_playT5K(); break;
+        case TOKEN_PLAYT53: ret = xts_playT53(); break;
 
-        // case TOKEN_DIR: ret = xts_fs_dir2(); break;
         // ======== Xtase cmds =============
 
         default: 
