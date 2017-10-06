@@ -8,18 +8,23 @@
 #include "xts_arch.h"
 
 #ifdef FS_SUPPORT
-  // #include "SdFat.h"
-  // //SdFatSdio SD;
-  // SdFatSdioEX SD;
-  // char SDentryName[13];
-  // // SdFile file;
+// // BEWARE : THIS IS NOT SDFAT_LIB
+// #include <SD.h>
+// #include <SPI.h>
+// File curFile;
 
-  // BEWARE : THIS IS NOT SDFAT_LIB
-  #include <SD.h>
-  //#include <SPI.h>
-  
-  // File curFile;
-  extern File curFile;
+// for teensy 3.6
+// > https://github.com/greiman/SdFat-beta
+#include "SdFat.h"
+//SdFatSdio sd;
+
+extern SdFatSdio sd;
+
+SdFile file;
+SdFile dirFile;
+
+  // char SDentryName[13];
+
 #endif
 
 
@@ -41,29 +46,29 @@
 bool STORAGE_OK = false;
 
 
-#ifdef FS_SUPPORT
+// #ifdef FS_SUPPORT
 
- void setupSD() {
-  //  #ifdef USE_SDFAT_LIB
-  //    if (!SD.begin()) {
-  //  #else
-     if (!SD.begin(BUILTIN_SDCARD)) { // Teensy3.6 initialization
-  //  #endif
-        led3(true);   delay(500);
-        led3(false);  delay(500);
-        led3(true);   delay(500);
-        led3(false);  delay(500);
-       return;
-     }
-   led1(true);   delay(500);
-   led1(false);  delay(500);
+//  void setupSD() {
+//   //  #ifdef USE_SDFAT_LIB
+//   //    if (!SD.begin()) {
+//   //  #else
+//      if (!SD.begin(BUILTIN_SDCARD)) { // Teensy3.6 initialization
+//   //  #endif
+//         led3(true);   delay(500);
+//         led3(false);  delay(500);
+//         led3(true);   delay(500);
+//         led3(false);  delay(500);
+//        return;
+//      }
+//    led1(true);   delay(500);
+//    led1(false);  delay(500);
  
-  //  #ifdef USE_SDFAT_LIB
-  //    SD.chvol();
-  //  #endif
-   STORAGE_OK = true;
- }
-#endif // FS_SUPPORT
+//   //  #ifdef USE_SDFAT_LIB
+//   //    SD.chvol();
+//   //  #endif
+//    STORAGE_OK = true;
+//  }
+// #endif // FS_SUPPORT
 
 // ====== GPIO initialization ======
 
@@ -86,7 +91,7 @@ void setupGPIO() {
 void setupHardware() {
  setupGPIO();
  #ifdef FS_SUPPORT
-   setupSD();
+   //setupSD();
  #endif
 
  #ifdef BUT_TEENSY
@@ -119,11 +124,6 @@ void activityLed(bool state) {
 
  // ======= Sound Sub System =======
  #include "xtase_tone.h"
-
- #define AUDIO_BUFF_SIZE (5*1024)
- unsigned char audiobuff[AUDIO_BUFF_SIZE];
- void cleanAudioBuff() { for(int i=0; i < AUDIO_BUFF_SIZE; i++) { audiobuff[i]=0x00; } } 
- 
  typedef struct Note {
   unsigned char note;
   unsigned short duration;
@@ -215,7 +215,11 @@ void __playTune(unsigned char* tuneStream, bool btnStop);
 // T53
 void __playTuneT53(unsigned char* tuneStream, bool btnStop);
 
-long t0,t1;
+// //#define AUDIO_BUFF_SIZE (5*1024)
+// #define AUDIO_BUFF_SIZE 256
+// unsigned char audiobuff[AUDIO_BUFF_SIZE];
+extern unsigned char audiobuff[];
+void cleanAudioBuff() { for(int i=0; i < AUDIO_BUFF_SIZE; i++) { audiobuff[i]=0x00; } } 
 
 //void playTuneFromStorage(const char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bool btnStop = false) {
 void playTuneFromStorage(char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bool btnStop = false) {
@@ -227,10 +231,6 @@ void playTuneFromStorage(char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bo
 
   cleanAudioBuff();
 
-  // for teensy 3.6
-  // > https://github.com/greiman/SdFat-beta
-  // > https://github.com/WMXZ-EU/uSDFS
-
   #ifndef FS_SUPPORT
     host_outputString("ERR : NO Storage support\n");
   #else
@@ -239,74 +239,45 @@ void playTuneFromStorage(char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bo
 
   led3(true);
 
-  curFile = SD.open("monkey.t5k", FILE_READ);
+  // regular SD lib
+  // curFile = SD.open("monkey.t5k", FILE_READ);
+  // if (!curFile) {
+  //  led1(true);
+  //  return;        
+  // }
 
-  if (!curFile) {
-  // if ( ! curFile.open("monkey.t5k", O_READ) ){
-
-    // if ( ! zik.isOpen() ){
-  //  host_outputString( "ERR : Opening : " );
-  //  host_outputString( (char*)tuneStreamName );
-  //  host_outputString( "\n" );
-   led1(true);
-   return;        
+  // sdfat lib
+  SdFile file;
+  //if (! file.open("monkey.t5k", O_READ) ) {
+  if (! file.open( tuneStreamName , O_READ) ) {
+    led1(true);
+    return;        
   }
-
-
-   led2(true);
 
   //  host_outputString( "OK : Opening : " );
   //  host_outputString( (char*)tuneStreamName );
   //  host_outputString( "\n" );
-
   //zik.rewind();
 
-  // curFile.close();
+  int nbNotes = (file.read()<<8)|file.read();
+  file.seekSet(0);
+  int fileLen = (nbNotes*sizeof(Note))+2+16+2;
+  if ( format == AUDIO_FORMAT_T53 ) {
+    fileLen = (nbNotes*(3+3+3))+2+16+2;
+  }
+  //file.readBytes( audiobuff, fileLen );
+  file.read( audiobuff, fileLen );
+
+  led3(false);
+  file.close();
+
+  if ( format == AUDIO_FORMAT_T5K ) {
+    __playTune( audiobuff, btnStop );  
+  } else {
+    __playTuneT53( audiobuff, btnStop );  
+  }
+
   #endif
-  
-
-  //t0 = millis();
-  //File zik = SD.open(tuneStreamName);
-  // //SdFile myZik(tuneStreamName, O_READ);
-  // SdFile myZik("monkey.t5k", O_READ);
-  
-  // if ( !myZik.isOpen() ) {
-  //  host_outputString( "ERR : Opening : " );
-  //  host_outputString( (char*)tuneStreamName );
-  //  host_outputString( "\n" );
-  //  return;    
-  // }
-
-  // myZik.close();
-
-//  if ( ! zik.open(tuneStreamName, O_READ) ) {
-//    host_outputString( "ERR : Opening : " );
-//    host_outputString( (char*)tuneStreamName );
-//    host_outputString( "\n" );
-//    return;
-//  } 
-  // //file.seek(0);
-  // file.seekSet(0);
-  // int nbNotes = (file.read()<<8)|file.read();
-  // //file.seek(0);
-  // file.seekSet(0);
-  // int fileLen = (nbNotes*sizeof(Note))+2+16+2;
-  // if ( format == AUDIO_FORMAT_T53 ) {
-  //   fileLen = (nbNotes*(3+3+3))+2+16+2;
-  // }
-  // //file.readBytes( audiobuff, fileLen );
-  // file.read( audiobuff, fileLen );
-//  zik.close();
-  //t1 = millis();
-
-  // //printfln("load:%d msec", (t1-t0) );
-  // host_outputInt( fileLen ); host_outputString( "bytes\n" );
-
-  // if ( format == AUDIO_FORMAT_T5K ) {
-  //   __playTuneStream( audiobuff, btnStop );  
-  // } else {
-  //   __playTuneStreamT53( audiobuff, btnStop );  
-  // }
   
  }
  

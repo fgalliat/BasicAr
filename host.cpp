@@ -44,8 +44,12 @@ extern bool BUZZER_MUTE;
 
 int timer1_counter;
 
-char screenBuffer[SCREEN_WIDTH*SCREEN_HEIGHT];
-char lineDirty[SCREEN_HEIGHT];
+// char screenBuffer[SCREEN_WIDTH*SCREEN_HEIGHT];
+// char lineDirty[SCREEN_HEIGHT];
+
+extern char screenBuffer[];
+extern char lineDirty[];
+
 int curX = 0, curY = 0;
 
 // because of ncurses
@@ -258,15 +262,15 @@ void host_outputString(char *str) {
     isWriting = false;
 }
 
-void host_outputProgMemString(const char *p) {
-    isWriting = true;
-    while (1) {
-        unsigned char c = pgm_read_byte(p++);
-        if (c == 0) break;
-        host_outputChar(c);
-    }
-    isWriting = false;
-}
+// void host_outputProgMemString(const char *p) {
+//     isWriting = true;
+//     while (1) {
+//         unsigned char c = pgm_read_byte(p++);
+//         if (c == 0) break;
+//         host_outputChar(c);
+//     }
+//     isWriting = false;
+// }
 
 void host_outputChar(char c) {
     isWriting = true;
@@ -442,7 +446,8 @@ void host_outputFreeMem(unsigned int val)
     host_newLine();
     host_outputInt(val);
     host_outputChar(' ');
-    host_outputProgMemString(bytesFreeStr);      
+    //host_outputProgMemString(bytesFreeStr);      
+    host_outputString( (char*) bytesFreeStr);      
 }
 
 void host_saveProgram(bool autoexec) {

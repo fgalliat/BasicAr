@@ -82,34 +82,119 @@ int sysSTACKSTART, sysSTACKEND;
 int sysVARSTART, sysVAREND;
 int sysGOSUBSTART, sysGOSUBEND;
 
-const char string_0[] PROGMEM = "OK";
-const char string_1[] PROGMEM = "Bad number";
-const char string_2[] PROGMEM = "Line too long";
-const char string_3[] PROGMEM = "Unexpected input";
-const char string_4[] PROGMEM = "Unterminated string";
-const char string_5[] PROGMEM = "Missing bracket";
-const char string_6[] PROGMEM = "Error in expr";
-const char string_7[] PROGMEM = "Numeric expr expected";
-const char string_8[] PROGMEM = "String expr expected";
-const char string_9[] PROGMEM = "Line number too big";
-const char string_10[] PROGMEM = "Out of memory";
-const char string_11[] PROGMEM = "Div by zero";
-const char string_12[] PROGMEM = "Variable not found";
-const char string_13[] PROGMEM = "Bad command";
-const char string_14[] PROGMEM = "Bad line number";
-const char string_15[] PROGMEM = "Break pressed";
-const char string_16[] PROGMEM = "NEXT without FOR";
-const char string_17[] PROGMEM = "STOP statement";
-const char string_18[] PROGMEM = "Missing THEN in IF";
-const char string_19[] PROGMEM = "RETURN without GOSUB";
-const char string_20[] PROGMEM = "Wrong array dims";
-const char string_21[] PROGMEM = "Bad array index";
-const char string_22[] PROGMEM = "Bad string index";
-const char string_23[] PROGMEM = "Error in VAL input";
-const char string_24[] PROGMEM = "Bad parameter";
+// const char string_0[] PROGMEM = "OK";
+// const char string_1[] PROGMEM = "Bad number";
+// const char string_2[] PROGMEM = "Line too long";
+// const char string_3[] PROGMEM = "Unexpected input";
+// const char string_4[] PROGMEM = "Unterminated string";
+// const char string_5[] PROGMEM = "Missing bracket";
+// const char string_6[] PROGMEM = "Error in expr";
+// const char string_7[] PROGMEM = "Numeric expr expected";
+// const char string_8[] PROGMEM = "String expr expected";
+// const char string_9[] PROGMEM = "Line number too big";
+// const char string_10[] PROGMEM = "Out of memory";
+// const char string_11[] PROGMEM = "Div by zero";
+// const char string_12[] PROGMEM = "Variable not found";
+// const char string_13[] PROGMEM = "Bad command";
+// const char string_14[] PROGMEM = "Bad line number";
+// const char string_15[] PROGMEM = "Break pressed";
+// const char string_16[] PROGMEM = "NEXT without FOR";
+// const char string_17[] PROGMEM = "STOP statement";
+// const char string_18[] PROGMEM = "Missing THEN in IF";
+// const char string_19[] PROGMEM = "RETURN without GOSUB";
+// const char string_20[] PROGMEM = "Wrong array dims";
+// const char string_21[] PROGMEM = "Bad array index";
+// const char string_22[] PROGMEM = "Bad string index";
+// const char string_23[] PROGMEM = "Error in VAL input";
+// const char string_24[] PROGMEM = "Bad parameter";
 
-//PROGMEM const char *errorTable[] = {
-const char* const errorTable[] PROGMEM = {
+// //PROGMEM const char *errorTable[] = {
+// const char* const errorTable[] PROGMEM = {
+//     string_0, string_1, string_2, string_3,
+//     string_4, string_5, string_6, string_7,
+//     string_8, string_9, string_10, string_11,
+//     string_12, string_13, string_14, string_15,
+//     string_16, string_17, string_18, string_19,
+//     string_20, string_21, string_22, string_23,
+//     string_24
+// };
+
+// // Token flags
+// // bits 1+2 number of arguments
+// #define TKN_ARGS_NUM_MASK	0x03
+// // bit 3 return type (set if string)
+// #define TKN_RET_TYPE_STR	0x04
+// // bits 4-6 argument type (set if string)
+// #define TKN_ARG1_TYPE_STR	0x08
+// #define TKN_ARG2_TYPE_STR	0x10
+// #define TKN_ARG3_TYPE_STR	0x20
+
+// #define TKN_ARG_MASK		0x38
+// #define TKN_ARG_SHIFT		3
+// // bits 7,8 formatting
+// #define TKN_FMT_POST		0x40
+// #define TKN_FMT_PRE		0x80
+
+
+//PROGMEM const TokenTableEntry tokenTable[] = {
+// const TokenTableEntry tokenTable[] PROGMEM = {
+//     {0, 0}, {0, 0}, {0, 0}, {0, 0},
+//     {0, 0}, {0, 0}, {0, 0}, {0, 0},
+//     {"(", 0}, {")",0}, {"+",0}, {"-",0},
+//     {"*",0}, {"/",0}, {"=",0}, {">",0},
+//     {"<",0}, {"<>",0}, {">=",0}, {"<=",0},
+//     {":",TKN_FMT_POST}, {";",0}, {",",0}, {"AND",TKN_FMT_PRE|TKN_FMT_POST},
+//     {"OR",TKN_FMT_PRE|TKN_FMT_POST}, {"NOT",TKN_FMT_POST}, {"PRINT",TKN_FMT_POST}, {"LET",TKN_FMT_POST},
+//     {"LIST",TKN_FMT_POST}, {"RUN",TKN_FMT_POST}, {"GOTO",TKN_FMT_POST}, {"REM",TKN_FMT_POST},
+//     {"STOP",TKN_FMT_POST}, {"INPUT",TKN_FMT_POST},  {"CONT",TKN_FMT_POST}, {"IF",TKN_FMT_POST},
+//     {"THEN",TKN_FMT_PRE|TKN_FMT_POST}, {"LEN",1|TKN_ARG1_TYPE_STR}, {"VAL",1|TKN_ARG1_TYPE_STR}, {"RND",0},
+//     {"INT",1}, {"STR$", 1|TKN_RET_TYPE_STR}, {"FOR",TKN_FMT_POST}, {"TO",TKN_FMT_PRE|TKN_FMT_POST},
+//     {"STEP",TKN_FMT_PRE|TKN_FMT_POST}, {"NEXT", TKN_FMT_POST}, {"MOD",TKN_FMT_PRE|TKN_FMT_POST}, {"NEW",TKN_FMT_POST},
+//     {"GOSUB",TKN_FMT_POST}, {"RETURN",TKN_FMT_POST}, {"DIM", TKN_FMT_POST}, {"LEFT$",2|TKN_ARG1_TYPE_STR|TKN_RET_TYPE_STR},
+//     {"RIGHT$",2|TKN_ARG1_TYPE_STR|TKN_RET_TYPE_STR}, {"MID$",3|TKN_ARG1_TYPE_STR|TKN_RET_TYPE_STR}, {"CLS",TKN_FMT_POST}, 
+//     {"PAUSE",TKN_FMT_POST},
+//     {"POSITION", TKN_FMT_POST}, {"PIN",TKN_FMT_POST}, {"PINMODE", TKN_FMT_POST}, {"INKEY$", 0},
+//     {"SAVE", TKN_FMT_POST}, {"LOAD", TKN_FMT_POST}, {"PINREAD",1}, {"ANALOGRD",1},
+//     {"DIR", TKN_FMT_POST}, 
+//     {"DELETE", TKN_FMT_POST},
+//     // ------ Xtase routines -----------
+//     {"MEM",0}, {"?",TKN_FMT_POST}, {"'",TKN_FMT_POST}, 
+//     {"LOCATE",2}, 
+//     {"LED",2}, 
+//     {"TONE",2}, {"MUTE", 0},
+//     {"PLAY",1|TKN_ARG1_TYPE_STR}, 
+//     {"PLAYT5K",1|TKN_ARG1_TYPE_STR}, 
+//     {"PLAYT53",1|TKN_ARG1_TYPE_STR}, 
+// };
+
+const char string_0[]  = "OK";
+const char string_1[]  = "Bad number";
+const char string_2[]  = "Line too long";
+const char string_3[]  = "Unexpected input";
+const char string_4[]  = "Unterminated string";
+const char string_5[]  = "Missing bracket";
+const char string_6[]  = "Error in expr";
+const char string_7[]  = "Numeric expr expected";
+const char string_8[]  = "String expr expected";
+const char string_9[]  = "Line number too big";
+const char string_10[]  = "Out of memory";
+const char string_11[]  = "Div by zero";
+const char string_12[]  = "Variable not found";
+const char string_13[]  = "Bad command";
+const char string_14[]  = "Bad line number";
+const char string_15[]  = "Break pressed";
+const char string_16[]  = "NEXT without FOR";
+const char string_17[]  = "STOP statement";
+const char string_18[]  = "Missing THEN in IF";
+const char string_19[]  = "RETURN without GOSUB";
+const char string_20[]  = "Wrong array dims";
+const char string_21[]  = "Bad array index";
+const char string_22[]  = "Bad string index";
+const char string_23[]  = "Error in VAL input";
+const char string_24[]  = "Bad parameter";
+
+// const char *errorTable[] = {
+const char* const errorTable[]  = {
     string_0, string_1, string_2, string_3,
     string_4, string_5, string_6, string_7,
     string_8, string_9, string_10, string_11,
@@ -119,26 +204,8 @@ const char* const errorTable[] PROGMEM = {
     string_24
 };
 
-// Token flags
-// bits 1+2 number of arguments
-#define TKN_ARGS_NUM_MASK	0x03
-// bit 3 return type (set if string)
-#define TKN_RET_TYPE_STR	0x04
-// bits 4-6 argument type (set if string)
-#define TKN_ARG1_TYPE_STR	0x08
-#define TKN_ARG2_TYPE_STR	0x10
-#define TKN_ARG3_TYPE_STR	0x20
 
-#define TKN_ARG_MASK		0x38
-#define TKN_ARG_SHIFT		3
-// bits 7,8 formatting
-#define TKN_FMT_POST		0x40
-#define TKN_FMT_PRE		0x80
-
-
-//PROGMEM const TokenTableEntry tokenTable[] = {
-const TokenTableEntry tokenTable[] PROGMEM = {
-//TokenTableEntry tokenTable[] = {
+const TokenTableEntry tokenTable[]  = {
     {0, 0}, {0, 0}, {0, 0}, {0, 0},
     {0, 0}, {0, 0}, {0, 0}, {0, 0},
     {"(", 0}, {")",0}, {"+",0}, {"-",0},
@@ -208,10 +275,15 @@ void printTokens(unsigned char *p) {
             }
         }
         else {
-            uint8_t fmt = pgm_read_byte_near(&tokenTable[*p].format);
+            //uint8_t fmt = pgm_read_byte_near(&tokenTable[*p].format);
+            uint8_t fmt = tokenTable[*p].format;
+
             if (fmt & TKN_FMT_PRE)
                 host_outputChar(' ');
-            host_outputString((char *)pgm_read_word(&tokenTable[*p].token));
+            
+            // host_outputString((char *)pgm_read_word(&tokenTable[*p].token));
+            host_outputString((char *)tokenTable[*p].token);
+
             if (fmt & TKN_FMT_POST)
                 host_outputChar(' ');
             //if ( *p==TOKEN_REM )
@@ -881,7 +953,9 @@ int nextToken()
         // check to see if this is a keyword
         for (int i = FIRST_IDENT_TOKEN; i <= LAST_IDENT_TOKEN; i++) {
 
-            char* curScanedTk = (char *)pgm_read_word(&tokenTable[i].token);
+            //char* curScanedTk = (char *)pgm_read_word(&tokenTable[i].token);
+            char* curScanedTk = (char *)tokenTable[i].token;
+
             // host_outputInt( i );
             // host_outputString( ":" );
             // host_outputString( curScanedTk );
@@ -950,8 +1024,10 @@ int nextToken()
     // handle non-alpha tokens e.g. =
     for (int i=LAST_NON_ALPHA_TOKEN; i>=FIRST_NON_ALPHA_TOKEN; i--) {
         // do this "backwards" so we match >= correctly, not as > then =
-        int len = strlen((char *)pgm_read_word(&tokenTable[i].token));
-        if (strncmp((char *)pgm_read_word(&tokenTable[i].token), (char*)tokenIn, len) == 0) {
+        // int len = strlen((char *)pgm_read_word(&tokenTable[i].token));
+        // if (strncmp((char *)pgm_read_word(&tokenTable[i].token), (char*)tokenIn, len) == 0) {
+        int len = strlen((char *)tokenTable[i].token);
+        if (strncmp((char *)tokenTable[i].token, (char*)tokenIn, len) == 0) {
             if (tokenOutLeft <= 1) return ERROR_LEXER_TOO_LONG;
             *tokenOut++ = i;
             tokenOutLeft--;
@@ -1074,7 +1150,8 @@ int parseSubscriptExpr() {
 // parse a function call e.g. LEN(a$)
 int parseFnCallExpr() {
     int op = curToken;
-    int fnSpec = pgm_read_byte_near(&tokenTable[curToken].format);
+    //int fnSpec = pgm_read_byte_near(&tokenTable[curToken].format);
+    int fnSpec = tokenTable[curToken].format;
     getNextToken();
     // get the required arguments and types from the token table
     if (curToken != TOKEN_LBRACKET) return ERROR_EXPR_MISSING_BRACKET;

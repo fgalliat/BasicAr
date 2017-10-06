@@ -14,6 +14,28 @@
   //#define const
 #endif
 
+
+// ===============================
+// Token flags
+// bits 1+2 number of arguments
+#define TKN_ARGS_NUM_MASK	0x03
+// bit 3 return type (set if string)
+#define TKN_RET_TYPE_STR	0x04
+// bits 4-6 argument type (set if string)
+#define TKN_ARG1_TYPE_STR	0x08
+#define TKN_ARG2_TYPE_STR	0x10
+#define TKN_ARG3_TYPE_STR	0x20
+
+#define TKN_ARG_MASK		0x38
+#define TKN_ARG_SHIFT		3
+// bits 7,8 formatting
+#define TKN_FMT_POST		0x40
+#define TKN_FMT_PRE		0x80
+// ===============================
+
+
+
+
 #define TOKEN_EOL		0
 #define TOKEN_IDENT		1	// special case - identifier follows
 #define TOKEN_INTEGER	        2	// special case - integer follows (line numbers only)
@@ -167,6 +189,8 @@ TokenTableEntry;
 
 //extern const char *errorTable[];
 extern const char* const errorTable[];
+
+extern const TokenTableEntry tokenTable[];
 
 
 void reset();

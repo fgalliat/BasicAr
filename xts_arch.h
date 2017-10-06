@@ -15,6 +15,8 @@
     #define FS_SUPPORT_AVOIDS_CONST 1
     #define USE_SDFAT_LIB 1
 
+    #define AUDIO_BUFF_SIZE (5*1024)
+
   // ==  GPIO ==
   #define BUZZER_PIN 2
   // finally : White / Blue / Green
