@@ -19,7 +19,8 @@ void playNote(int note, int duration);
 void playTuneString(char* strTune);
 
 // PLAYT5K "monkey.t5k"
-void playTuneFromStorage(const char* tuneName, int format, bool btnStop);
+//void playTuneFromStorage(const char* tuneName, int format, bool btnStop);
+void playTuneFromStorage(char* tuneName, int format, bool btnStop);
 
 // ============================================
 

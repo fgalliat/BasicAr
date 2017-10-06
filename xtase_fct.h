@@ -100,7 +100,8 @@ int __xts_playSpeakerTune(int format) {
     host_outputString("I will play : ");
     host_outputString( tuneName );
     host_outputString("\n");
-    playTuneFromStorage( (const char*)tuneName, format, btnBreakMusic );
+    //playTuneFromStorage( (const char*)tuneName, format, btnBreakMusic );
+    playTuneFromStorage( tuneName, format, btnBreakMusic );
   }
 
   return 0;

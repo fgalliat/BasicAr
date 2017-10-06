@@ -7,13 +7,19 @@
 
 #include "xts_arch.h"
 
-#ifdef USE_SDFAT_LIB
-  #include <SPI.h>
-  #include "SdFat.h"
-  SdFatSdio SD;
-  char SDentryName[13];
+#ifdef FS_SUPPORT
+  // #include "SdFat.h"
+  // //SdFatSdio SD;
+  // SdFatSdioEX SD;
+  // char SDentryName[13];
+  // // SdFile file;
 
-  // SdFile file;
+  // BEWARE : THIS IS NOT SDFAT_LIB
+  #include <SD.h>
+  //#include <SPI.h>
+  
+  // File curFile;
+  extern File curFile;
 #endif
 
 
@@ -38,11 +44,11 @@ bool STORAGE_OK = false;
 #ifdef FS_SUPPORT
 
  void setupSD() {
-   #ifdef USE_SDFAT_LIB
-     if (!SD.begin()) {
-   #else
+  //  #ifdef USE_SDFAT_LIB
+  //    if (!SD.begin()) {
+  //  #else
      if (!SD.begin(BUILTIN_SDCARD)) { // Teensy3.6 initialization
-   #endif
+  //  #endif
         led3(true);   delay(500);
         led3(false);  delay(500);
         led3(true);   delay(500);
@@ -52,9 +58,9 @@ bool STORAGE_OK = false;
    led1(true);   delay(500);
    led1(false);  delay(500);
  
-   #ifdef USE_SDFAT_LIB
-     SD.chvol();
-   #endif
+  //  #ifdef USE_SDFAT_LIB
+  //    SD.chvol();
+  //  #endif
    STORAGE_OK = true;
  }
 #endif // FS_SUPPORT
@@ -211,7 +217,8 @@ void __playTuneT53(unsigned char* tuneStream, bool btnStop);
 
 long t0,t1;
 
-void playTuneFromStorage(const char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bool btnStop = false) {
+//void playTuneFromStorage(const char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bool btnStop = false) {
+void playTuneFromStorage(char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bool btnStop = false) {
 
   if ( !STORAGE_OK ) {
     host_outputString("ERR : Storage not ready\n");
@@ -232,23 +239,29 @@ void playTuneFromStorage(const char* tuneStreamName, int format = AUDIO_FORMAT_T
 
   led3(true);
 
-  // SdFile zik;
-  // if ( ! file.open("monkey.t5k", O_READ) ){
-  //   // if ( ! zik.isOpen() ){
-  // //  host_outputString( "ERR : Opening : " );
-  // //  host_outputString( (char*)tuneStreamName );
-  // //  host_outputString( "\n" );
-  //  led1(true);
-  //  return;        
-  // }
+  curFile = SD.open("monkey.t5k", FILE_READ);
+
+  if (!curFile) {
+  // if ( ! curFile.open("monkey.t5k", O_READ) ){
+
+    // if ( ! zik.isOpen() ){
+  //  host_outputString( "ERR : Opening : " );
+  //  host_outputString( (char*)tuneStreamName );
+  //  host_outputString( "\n" );
+   led1(true);
+   return;        
+  }
+
+
    led2(true);
 
   //  host_outputString( "OK : Opening : " );
   //  host_outputString( (char*)tuneStreamName );
   //  host_outputString( "\n" );
 
-  // //zik.rewind();
-  // zik.close();
+  //zik.rewind();
+
+  // curFile.close();
   #endif
   
 
@@ -424,33 +437,70 @@ void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
 // =
 // ==============================================
 
- #ifndef FS_SUPPORT
+ #ifndef FS_SUPPORT_____
   void lsStorage() {
     host_outputString("ERR : NO Storage support\n");
   }
  #else
   extern int curY;
-  bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter);
+  // bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter);
+
+  bool _lsStorage2(File dir, int numTabs, bool recurse, char* filter) {
+    while(true) {
+      
+      File entry =  dir.openNextFile();
+      if (! entry) {
+        // no more files
+        //Serial.println("**nomorefiles**");
+        break;
+      }
+      for (uint8_t i=0; i<numTabs; i++) {
+        //Serial.print('\t');
+        host_outputString(" ");
+      }
+      //Serial.print(entry.name());
+      host_outputString("entry name");
+      if (entry.isDirectory()) {
+        //Serial.println("/");
+        host_outputString("/\n");
+        //printDirectory(entry, numTabs+1);
+      } else {
+        // files have sizes, directories do not
+        // Serial.print("\t\t");
+        // Serial.println(entry.size(), DEC);
+        host_outputString("*\n");
+      }
+      entry.close();
+    }
+    host_showBuffer();
+  }
+
+
 
   void lsStorage() {
     bool recurse = false;
     char* filter = NULL;
 
-    SdFile dirFile;
+    // SdFile dirFile;
 
     if ( !STORAGE_OK ) {
       host_outputString("ERR : Storage not ready\n");
       return;
     }
 
-    if (!dirFile.open("/", O_READ)) {
-      host_outputString("ERR : opening SD root failed\n");
-      return;
-    }
+    // if (!dirFile.open("/", O_READ)) {
+    //   host_outputString("ERR : opening SD root failed\n");
+    //   return;
+    // }
 
-    _lsStorage(dirFile, 0, recurse, filter);
+root = SD.open("/");
 
-    dirFile.close();
+    //_lsStorage(dirFile, 0, recurse, filter);
+    _lsStorage2(root, 0, recurse, filter);
+
+root.close();
+
+    // dirFile.close();
   }
 
 
@@ -458,51 +508,51 @@ void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
   #define SCREEN_HEIGHT       8
  #endif
 
-bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter) {
-    SdFile file;
+// bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter) {
+//     SdFile file;
 
-    int cpt = 0;
-    while (file.openNext(&dirFile, O_READ)) {
-      if (!file.isSubDir() && !file.isHidden() ) {
-        // //file.printFileSize(&Serial);
-        // //file.printModifyDateTime(&Serial);
-        // //file.printName(&Serial);
+//     int cpt = 0;
+//     while (file.openNext(&dirFile, O_READ)) {
+//       if (!file.isSubDir() && !file.isHidden() ) {
+//         // //file.printFileSize(&Serial);
+//         // //file.printModifyDateTime(&Serial);
+//         // //file.printName(&Serial);
 
-        memset(SDentryName, 0x00, 13);
-        file.getName( SDentryName, 13 );
+//         memset(SDentryName, 0x00, 13);
+//         file.getName( SDentryName, 13 );
 
-        host_outputInt( (cpt+1) );
-        host_outputString("\t");
+//         host_outputInt( (cpt+1) );
+//         host_outputString("\t");
 
-        host_outputString(SDentryName);
+//         host_outputString(SDentryName);
 
-        if ( file.isDir() ) {
-          // Indicate a directory.
-          host_outputString("/");
-        }
-        host_outputString("\n");
+//         if ( file.isDir() ) {
+//           // Indicate a directory.
+//           host_outputString("/");
+//         }
+//         host_outputString("\n");
 
-// TMP - DIRTY ----- begin
-if ( curY % SCREEN_HEIGHT == SCREEN_HEIGHT-1 ) {
-  host_showBuffer();
-}
-// TMP - DIRTY ----- end
+// // TMP - DIRTY ----- begin
+// if ( curY % SCREEN_HEIGHT == SCREEN_HEIGHT-1 ) {
+//   host_showBuffer();
+// }
+// // TMP - DIRTY ----- end
 
-        cpt++;
+//         cpt++;
 
-      }
-      file.close();
-    }
+//       }
+//       file.close();
+//     }
 
-    host_outputString("nb files : ");
-    host_outputInt( cpt );
-    host_outputString("\n");
+//     host_outputString("nb files : ");
+//     host_outputInt( cpt );
+//     host_outputString("\n");
 
     
-host_showBuffer();
+// host_showBuffer();
 
-    // return true;
-  }
+//     return true;
+//   }
 
  #endif // FS_SUPPORT
 

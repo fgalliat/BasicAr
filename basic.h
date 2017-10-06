@@ -10,6 +10,10 @@
 
 #include <stdint.h>
 
+#ifdef FS_SUPPORT_AVOIDS_CONST
+  //#define const
+#endif
+
 #define TOKEN_EOL		0
 #define TOKEN_IDENT		1	// special case - identifier follows
 #define TOKEN_INTEGER	        2	// special case - integer follows (line numbers only)

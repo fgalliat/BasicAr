@@ -72,6 +72,10 @@ int curToken;
 #include "xtase_fct.h"
 // ------------------------------------
 
+#ifdef FS_SUPPORT_AVOIDS_CONST
+ //#define const
+#endif
+
 
 int sysPROGEND;
 int sysSTACKSTART, sysSTACKEND;
@@ -134,6 +138,7 @@ const char* const errorTable[] PROGMEM = {
 
 //PROGMEM const TokenTableEntry tokenTable[] = {
 const TokenTableEntry tokenTable[] PROGMEM = {
+//TokenTableEntry tokenTable[] = {
     {0, 0}, {0, 0}, {0, 0}, {0, 0},
     {0, 0}, {0, 0}, {0, 0}, {0, 0},
     {"(", 0}, {")",0}, {"+",0}, {"-",0},

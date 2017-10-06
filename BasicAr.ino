@@ -7,9 +7,18 @@
 
 #include "xts_arch.h"
 
+
+#ifdef FS_SUPPORT
+// BEWARE : THIS IS NOT SDFAT_LIB
+#include <SD.h>
+#include <SPI.h>
+
+File curFile;
+#endif
+
+
 extern bool STORAGE_OK;
 bool BUZZER_MUTE = false;
-
 
 
 #ifdef BUT_TEENSY
@@ -79,11 +88,13 @@ boolean isWriting = false; // lock read when write
 void setup() {
 
     BUZZER_MUTE = true;
+    inputString.reserve(200);
     
     setupHardware();
 
     keyboard.begin(DataPin, IRQpin);
     oled.ssd1306_init(SSD1306_SWITCHCAPVCC);
+
 
     reset();
     host_init(BUZZER_PIN);
@@ -121,7 +132,7 @@ void setup() {
         if ( !BUZZER_MUTE ) { host_startupTone(); }
     }
 
-    inputString.reserve(200);
+    
 }
 
 
@@ -177,6 +188,7 @@ void loop() {
         host_outputInt(ret);
         host_outputString("\n");
         host_outputProgMemString((char *)pgm_read_word(&(errorTable[ret])));
+        host_showBuffer();
     }
 }
 
