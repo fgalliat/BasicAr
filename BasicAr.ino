@@ -10,20 +10,6 @@
 
 // Teensy's doesn't supports FS (SD, SDFat) & PROGMEM routines
 
-#ifdef FS_SUPPORT
-    // // BEWARE : THIS IS NOT SDFAT_LIB
-    // #include <SD.h>
-    // #include <SPI.h>
-    // File curFile;
-
-    // for teensy 3.6
-    // > https://github.com/greiman/SdFat-beta
-    #include "SdFat.h"
-    SdFatSdio sd;
-    // SdFile file;
-    // SdFile dirFile;
-#endif
-
 
 extern bool STORAGE_OK;
 bool BUZZER_MUTE = false;
@@ -100,99 +86,18 @@ char lineDirty[SCREEN_HEIGHT];
 
 
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-//#define AUDIO_BUFF_SIZE (5*1024)
 unsigned char audiobuff[AUDIO_BUFF_SIZE];
-// void cleanAudioBuff() { for(int i=0; i < AUDIO_BUFF_SIZE; i++) { audiobuff[i]=0x00; } } 
-
-// //void playTuneFromStorage(const char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bool btnStop = false) {
-// void playTuneFromStorage(char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bool btnStop = false) {
-
-//   if ( !STORAGE_OK ) {
-//     host_outputString("ERR : Storage not ready\n");
-//     return;
-//   }
-
-//   cleanAudioBuff();
-
-  
-  
-//   #ifndef FS_SUPPORT
-//     host_outputString("ERR : NO Storage support\n");
-//   #else
-
-//   led3(true);
-
-//   SdFile curFile;
-
-//   if (! curFile.open("monkey.t5k", O_READ) ) {
-//   //  host_outputString( "ERR : Opening : " );
-//   //  host_outputString( (char*)tuneStreamName );
-//   //  host_outputString( "\n" );
-//    led1(true);
-//    return;        
-//   }
-
-//   curFile.close();
-
-//    led2(true);
-//    #endif
-// }
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
 void setup() {
-
-    #ifdef FS_SUPPORT
-         //if (!SD.begin(BUILTIN_SDCARD)) { // Teensy3.6 initialization
-         if (!sd.begin()) { // Teensy3.6 initialization
-            led3(true);   delay(500);
-            led3(false);  delay(500);
-            led3(true);   delay(500);
-            led3(false);  delay(500);
-           return;
-         }
-       led1(true);   delay(500);
-       led1(false);  delay(500);
-       STORAGE_OK = true;
-
-    // while (!Serial) {
-    //     SysCall::yield();
-    //   }
-    //   Serial.println("Type any character to start");
-    //   while (!Serial.available()) {
-    //     SysCall::yield();
-    //   }
-    //   if (!sd.begin()) {
-    //     sd.initErrorHalt("sd.begin() failed");
-    //   }
-    //   if (!dirFile.open("/", O_READ)) {
-    //     sd.errorHalt("dirFile.open failed");
-    //   }
-    //   while (file.openNext(&dirFile, O_READ)) {
-    //     if (!file.isSubDir() && !file.isHidden()) {
-    //       file.printFileSize(&Serial);
-    //       Serial.write(' ');
-    //       file.printModifyDateTime(&Serial);
-    //       Serial.write(' ');
-    //       file.printName(&Serial);
-    //       if (file.isDir()) {
-    //         // Indicate a directory.
-    //         Serial.write('/');
-    //       }
-    //       Serial.println();
-    //     }
-    //     file.close();
-    //   }
-    //   Serial.println("Done!");
-
-
-    #endif // FS_SUPPORT
 
     BUZZER_MUTE = true;
     inputString.reserve(200);
     
     setupHardware();
 
+    
     keyboard.begin(DataPin, IRQpin);
     oled.ssd1306_init(SSD1306_SWITCHCAPVCC);
 

@@ -8,22 +8,21 @@
 #include "xts_arch.h"
 
 #ifdef FS_SUPPORT
-// // BEWARE : THIS IS NOT SDFAT_LIB
+// // BEWARE : THIS IS REGULAR Arduino SD LIB
 // #include <SD.h>
 // #include <SPI.h>
 // File curFile;
 
-// for teensy 3.6
-// > https://github.com/greiman/SdFat-beta
-#include "SdFat.h"
-//SdFatSdio sd;
 
-extern SdFatSdio sd;
-
-SdFile file;
-SdFile dirFile;
-
-  // char SDentryName[13];
+  #ifdef USE_SDFAT_LIB
+  // for teensy 3.6
+  // > https://github.com/greiman/SdFat-beta
+    #include "SdFat.h"
+    SdFatSdio sd;
+    SdFile file;
+    SdFile dirFile;
+    char SDentryName[13];
+  #endif
 
 #endif
 
@@ -46,29 +45,29 @@ SdFile dirFile;
 bool STORAGE_OK = false;
 
 
-// #ifdef FS_SUPPORT
+#ifdef FS_SUPPORT
 
-//  void setupSD() {
-//   //  #ifdef USE_SDFAT_LIB
-//   //    if (!SD.begin()) {
-//   //  #else
-//      if (!SD.begin(BUILTIN_SDCARD)) { // Teensy3.6 initialization
-//   //  #endif
-//         led3(true);   delay(500);
-//         led3(false);  delay(500);
-//         led3(true);   delay(500);
-//         led3(false);  delay(500);
-//        return;
-//      }
-//    led1(true);   delay(500);
-//    led1(false);  delay(500);
+ void setupSD() {
+   #ifdef USE_SDFAT_LIB
+     if (!sd.begin()) {
+   #else
+     if (!SD.begin(BUILTIN_SDCARD)) { // Teensy3.6 initialization
+   #endif
+        led3(true);   delay(500);
+        led3(false);  delay(500);
+        led3(true);   delay(500);
+        led3(false);  delay(500);
+       return;
+     }
+   led1(true);   delay(500);
+   led1(false);  delay(500);
  
-//   //  #ifdef USE_SDFAT_LIB
-//   //    SD.chvol();
-//   //  #endif
-//    STORAGE_OK = true;
-//  }
-// #endif // FS_SUPPORT
+   #ifdef USE_SDFAT_LIB
+     sd.chvol();
+   #endif
+   STORAGE_OK = true;
+ }
+#endif // FS_SUPPORT
 
 // ====== GPIO initialization ======
 
@@ -91,7 +90,7 @@ void setupGPIO() {
 void setupHardware() {
  setupGPIO();
  #ifdef FS_SUPPORT
-   //setupSD();
+   setupSD();
  #endif
 
  #ifdef BUT_TEENSY
@@ -408,43 +407,43 @@ void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
 // =
 // ==============================================
 
- #ifndef FS_SUPPORT_____
+ #ifndef FS_SUPPORT
   void lsStorage() {
     host_outputString("ERR : NO Storage support\n");
   }
  #else
   extern int curY;
-  // bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter);
+  bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter);
 
-  bool _lsStorage2(File dir, int numTabs, bool recurse, char* filter) {
-    while(true) {
+  // bool _lsStorage2(File dir, int numTabs, bool recurse, char* filter) {
+  //   while(true) {
       
-      File entry =  dir.openNextFile();
-      if (! entry) {
-        // no more files
-        //Serial.println("**nomorefiles**");
-        break;
-      }
-      for (uint8_t i=0; i<numTabs; i++) {
-        //Serial.print('\t');
-        host_outputString(" ");
-      }
-      //Serial.print(entry.name());
-      host_outputString("entry name");
-      if (entry.isDirectory()) {
-        //Serial.println("/");
-        host_outputString("/\n");
-        //printDirectory(entry, numTabs+1);
-      } else {
-        // files have sizes, directories do not
-        // Serial.print("\t\t");
-        // Serial.println(entry.size(), DEC);
-        host_outputString("*\n");
-      }
-      entry.close();
-    }
-    host_showBuffer();
-  }
+  //     File entry =  dir.openNextFile();
+  //     if (! entry) {
+  //       // no more files
+  //       //Serial.println("**nomorefiles**");
+  //       break;
+  //     }
+  //     for (uint8_t i=0; i<numTabs; i++) {
+  //       //Serial.print('\t');
+  //       host_outputString(" ");
+  //     }
+  //     //Serial.print(entry.name());
+  //     host_outputString("entry name");
+  //     if (entry.isDirectory()) {
+  //       //Serial.println("/");
+  //       host_outputString("/\n");
+  //       //printDirectory(entry, numTabs+1);
+  //     } else {
+  //       // files have sizes, directories do not
+  //       // Serial.print("\t\t");
+  //       // Serial.println(entry.size(), DEC);
+  //       host_outputString("*\n");
+  //     }
+  //     entry.close();
+  //   }
+  //   host_showBuffer();
+  // }
 
 
 
@@ -459,19 +458,19 @@ void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
       return;
     }
 
-    // if (!dirFile.open("/", O_READ)) {
-    //   host_outputString("ERR : opening SD root failed\n");
-    //   return;
-    // }
+    if (!dirFile.open("/", O_READ)) {
+      host_outputString("ERR : opening SD root failed\n");
+      return;
+    }
 
-root = SD.open("/");
+//root = SD.open("/");
 
-    //_lsStorage(dirFile, 0, recurse, filter);
-    _lsStorage2(root, 0, recurse, filter);
+    _lsStorage(dirFile, 0, recurse, filter);
+    //_lsStorage2(root, 0, recurse, filter);
 
-root.close();
+// root.close();
 
-    // dirFile.close();
+    dirFile.close();
   }
 
 
@@ -479,51 +478,51 @@ root.close();
   #define SCREEN_HEIGHT       8
  #endif
 
-// bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter) {
-//     SdFile file;
+bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter) {
+    SdFile file;
 
-//     int cpt = 0;
-//     while (file.openNext(&dirFile, O_READ)) {
-//       if (!file.isSubDir() && !file.isHidden() ) {
-//         // //file.printFileSize(&Serial);
-//         // //file.printModifyDateTime(&Serial);
-//         // //file.printName(&Serial);
+    int cpt = 0;
+    while (file.openNext(&dirFile, O_READ)) {
+      if (!file.isSubDir() && !file.isHidden() ) {
+        // //file.printFileSize(&Serial);
+        // //file.printModifyDateTime(&Serial);
+        // //file.printName(&Serial);
 
-//         memset(SDentryName, 0x00, 13);
-//         file.getName( SDentryName, 13 );
+        memset(SDentryName, 0x00, 13);
+        file.getName( SDentryName, 13 );
 
-//         host_outputInt( (cpt+1) );
-//         host_outputString("\t");
+        host_outputInt( (cpt+1) );
+        host_outputString("\t");
 
-//         host_outputString(SDentryName);
+        host_outputString(SDentryName);
 
-//         if ( file.isDir() ) {
-//           // Indicate a directory.
-//           host_outputString("/");
-//         }
-//         host_outputString("\n");
+        if ( file.isDir() ) {
+          // Indicate a directory.
+          host_outputString("/");
+        }
+        host_outputString("\n");
 
-// // TMP - DIRTY ----- begin
-// if ( curY % SCREEN_HEIGHT == SCREEN_HEIGHT-1 ) {
-//   host_showBuffer();
-// }
-// // TMP - DIRTY ----- end
+// TMP - DIRTY ----- begin
+if ( curY % SCREEN_HEIGHT == SCREEN_HEIGHT-1 ) {
+  host_showBuffer();
+}
+// TMP - DIRTY ----- end
 
-//         cpt++;
+        cpt++;
 
-//       }
-//       file.close();
-//     }
+      }
+      file.close();
+    }
 
-//     host_outputString("nb files : ");
-//     host_outputInt( cpt );
-//     host_outputString("\n");
+    host_outputString("nb files : ");
+    host_outputInt( cpt );
+    host_outputString("\n");
 
     
-// host_showBuffer();
+host_showBuffer();
 
-//     return true;
-//   }
+    return true;
+  }
 
  #endif // FS_SUPPORT
 

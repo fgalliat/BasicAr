@@ -12,7 +12,6 @@
   #define BUT_TEENSY 1
 
   #define FS_SUPPORT 1
-    #define FS_SUPPORT_AVOIDS_CONST 1
     #define USE_SDFAT_LIB 1
 
     #define AUDIO_BUFF_SIZE (5*1024)

@@ -1,6 +1,18 @@
 git clone git@github.com:fgalliat/BasicAr.git
 
 
+les Teensy ne supportent pas bien le PROGMEM et une grande consomation memoire
+il est impossible de faire cohabiter les PROGMEM pgm_read... et l'utilisation de SD.h ou SdFat.h
+du moins avec mon code de compatibilité
+
+1) remettre un marqueur vierge et des fonctions vides pour l'acces aux datas (pour pouvoir les refaire marcher avec un Arduino)
+2) remettre le code du reset de la MCU pour le teensy
+3) separer les FS_SUPPORT en mode SDFAT ou non
+
+================================================================
+
+
+
 host_showBuffer() dans host.cpp
 
 
