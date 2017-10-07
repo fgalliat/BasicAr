@@ -527,3 +527,27 @@ host_showBuffer();
  #endif // FS_SUPPORT
 
 
+
+int MCU_freeRam() {
+  // THIS IMPL : just return the space used by the sketch
+  // we have to substract varMem & prgmMmem
+
+//extern int __heap_start, *__brkval; 
+extern int *__brkval; 
+int v; 
+//int fr = (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
+int fr = (int) &v - ((int) __brkval); 
+//   Serial.print("Free ram: ");
+//   Serial.println(fr);
+return fr;
+}
+
+
+void MCU_reset() {
+  // _restart_Teensyduino_();
+  SCB_AIRCR = 0x05FA0004; // software reset
+      // void(*resetFunc)(void) = 0;
+      // resetFunc();
+      // for(;;) {}
+}
+
