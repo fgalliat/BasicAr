@@ -16,6 +16,9 @@ DONE
         PLAYT53 & PLAYT5K 
           \__ auto add file extension if not provided => DONE
 
+  BYE command that reset MCU (arch dependant) (as SimpleCmd)
+
+
 TODO HARDWARE
   SSD1306 full support (w/ gfx)
   KBD USB
@@ -29,11 +32,6 @@ TODO
   exisiting PIN FCT to look
   DRAW FCT (SSD1306 I2C) (Pictures requires STORAGE)
   Serial Vs Screen+Kbd I/O => console mode
-
-  BYE command that reset MCU (arch dependant)
-    see MCU_reset & MCU_freeRam in xtase_hardw.cpp
-    add TEENSY compile condition
-    add Reboot messsage (in case that it doesn't works)
   
   BTNs functions
   SCREEN procedures + draw pictures (neeed storage acess)
@@ -79,6 +77,8 @@ ADDED >> ' for REM
          FS_SUPPORT for Teensy3.6
          Better teensy IRQ managment
          DIR/FILES (in progress)
+         PLAYT5K & PLAYT53 to play audio files
+         BYE to reset the MCU
 
 
 

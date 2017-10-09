@@ -59,7 +59,7 @@ int xts_locate() {
 
 // == File System
 
-// beware : SimpleCmd
+// ========= BEWARE : SimpleCmd =============================
 void xts_fs_dir() {
   //getNextToken(); ==> NO (SimpleCmd : spe case)
 
@@ -69,6 +69,12 @@ void xts_fs_dir() {
   }
 
   //return 0; ==> NO (SimpleCmd)
+}
+
+void xts_mcu_reset() {
+  if ( executeMode ) {
+    MCU_reset();
+  }
 }
 
 // =========================================================
@@ -97,9 +103,9 @@ int __xts_playSpeakerTune(int format) {
   // }
 
   if (executeMode) {
-    host_outputString("I will play : ");
-    host_outputString( tuneName );
-    host_outputString("\n");
+    // host_outputString("I will play : ");
+    // host_outputString( tuneName );
+    // host_outputString("\n");
     //playTuneFromStorage( (const char*)tuneName, format, btnBreakMusic );
     playTuneFromStorage( tuneName, format, btnBreakMusic );
   }

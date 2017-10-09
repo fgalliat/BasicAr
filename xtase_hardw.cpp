@@ -566,7 +566,11 @@ return fr;
 
 void MCU_reset() {
   // _restart_Teensyduino_();
-  SCB_AIRCR = 0x05FA0004; // software reset
+  host_outputString("\nRebooting\n");
+  host_showBuffer();
+  #ifdef BUT_TEENSY
+    SCB_AIRCR = 0x05FA0004; // software reset
+  #endif
       // void(*resetFunc)(void) = 0;
       // resetFunc();
       // for(;;) {}

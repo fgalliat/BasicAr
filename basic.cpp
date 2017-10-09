@@ -233,6 +233,8 @@ const TokenTableEntry tokenTable[]  = {
     {"PLAY",1|TKN_ARG1_TYPE_STR}, 
     {"PLAYT5K",1|TKN_ARG1_TYPE_STR}, 
     {"PLAYT53",1|TKN_ARG1_TYPE_STR}, 
+
+    {"BYE",TKN_FMT_POST}, 
 };
 
 
@@ -1929,6 +1931,9 @@ int parseSimpleCmd() {
 // // #endif
                 break;
 
+            case TOKEN_BYE:
+                xts_mcu_reset();
+                break;
         }
     }
     return 0;
@@ -1997,6 +2002,8 @@ int parseStmts()
         case TOKEN_RETURN:
         case TOKEN_CLS:
         case TOKEN_DIR:
+
+        case TOKEN_BYE:
             ret = parseSimpleCmd();
             break;
             

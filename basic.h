@@ -115,7 +115,9 @@
 #define TOKEN_PLAYT5K        74
 #define TOKEN_PLAYT53        75
 
-#define TOKEN_LASTONE TOKEN_PLAYT53
+#define TOKEN_BYE            76 // reset the MCU
+
+#define TOKEN_LASTONE TOKEN_BYE
 
 
 #define FIRST_IDENT_TOKEN 23

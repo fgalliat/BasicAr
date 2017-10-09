@@ -26,6 +26,8 @@ void playTuneFromStorage(char* tuneName, int format, bool btnStop);
 
 void lsStorage();
 
+void MCU_reset();
+
 // TODO : impl. it =================
  void lcd_println(char* text);
  bool checkbreak();
