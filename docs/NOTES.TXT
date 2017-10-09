@@ -6,15 +6,26 @@ il est impossible de faire cohabiter les PROGMEM pgm_read... et l'utilisation de
 du moins avec mon code de compatibilité
 
 1) remettre un marqueur vierge et des fonctions vides pour l'acces aux datas (pour pouvoir les refaire marcher avec un Arduino)
-2) remettre le code du reset de la MCU pour le teensy
+2) remettre le code du reset de la MCU pour le teensy (in progress)
 3) separer les FS_SUPPORT en mode SDFAT ou non
 
 ================================================================
 DONE
   STORAGE (SDCARD SPI)
   PLAYT5K & PLAYT53 routines (need storage)
+        PLAYT53 & PLAYT5K 
+          \__ auto add file extension if not provided => DONE
+
+TODO HARDWARE
+  SSD1306 full support (w/ gfx)
+  KBD USB
+  BT Serial (HC06 slave only)
 
 TODO
+  ADD filter for FILES ex. "*.BAS"
+
+  LOAD/SAVE
+
   exisiting PIN FCT to look
   DRAW FCT (SSD1306 I2C) (Pictures requires STORAGE)
   Serial Vs Screen+Kbd I/O => console mode
@@ -40,8 +51,7 @@ NEW COMMANDS
   SCLS     [ ]
 ______________________________________________________________
 IN PROGRESS 
-        PLAYT53 & PLAYT5K (have storage acess -> seems to not find files ????)
-          \__ auto add file extension if not provided
+
 ______________________________________________________________
 
 

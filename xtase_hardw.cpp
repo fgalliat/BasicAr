@@ -238,6 +238,28 @@ void playTuneFromStorage(char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bo
 
   led3(true);
 
+  int tlen = strlen(tuneStreamName);
+  if ( tlen < 1 ) {
+    host_outputString("ERR : NO file provided\n");
+    led3(false);
+    return;
+  }
+
+  char lastCh = tuneStreamName[ tlen-1 ];
+  if ( lastCh >= 'a' && lastCh <= 'z' ) { lastCh = lastCh - 'a' + 'A'; }
+  tuneStreamName[ tlen-1 ] = lastCh;
+
+  char ftuneStreamName[8+1+3];
+  strcpy(ftuneStreamName, tuneStreamName);
+
+  if ( !(( lastCh == 'K' || lastCh == '3') && (tlen >= 2 && tuneStreamName[ tlen-2 ] == '5') ) ) {
+    if ( format == AUDIO_FORMAT_T5K ) {
+      strcat(ftuneStreamName, ".T5K");
+    } else {
+      strcat(ftuneStreamName, ".T53");
+    }
+  }
+
   // regular SD lib
   // curFile = SD.open("monkey.t5k", FILE_READ);
   // if (!curFile) {
@@ -247,8 +269,7 @@ void playTuneFromStorage(char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bo
 
   // sdfat lib
   SdFile file;
-  //if (! file.open("monkey.t5k", O_READ) ) {
-  if (! file.open( tuneStreamName , O_READ) ) {
+  if (! file.open( ftuneStreamName , O_READ) ) {
     led1(true);
     return;        
   }
