@@ -339,7 +339,7 @@ void __playTune(unsigned char* tuneStream, bool btnStop = false) {
 
   //printfln("nbN:%d title:'%s' tmp:%d", nbNotes, (const char*)songname, tempoPercent);
   
-  host_outputString("   -= Playing =-");
+  host_outputString("   -= Playing =-\n");
   host_outputString( songname );
   host_outputString("\n");
   host_showBuffer();
@@ -347,7 +347,7 @@ void __playTune(unsigned char* tuneStream, bool btnStop = false) {
   #if ((defined SCREEN_SUPPORT) && (SCREEN_SUPPORT > 0))
     //lcd_cls();
     //           12345678901234567890
-    lcd_println("   -= Playing =-");
+    lcd_println("   -= Playing =-\n");
     lcd_println("-=%s=-", (const char*)songname);
   #endif
 
