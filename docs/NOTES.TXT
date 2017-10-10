@@ -17,6 +17,8 @@ DONE
           \__ auto add file extension if not provided => DONE
 
   BYE command that reset MCU (arch dependant) (as SimpleCmd)
+  anyBtn()
+  ? BTN( 1 ) ==> {0;1} (to get pressed btn)
 
 
 TODO HARDWARE
@@ -33,11 +35,10 @@ TODO
   DRAW FCT (SSD1306 I2C) (Pictures requires STORAGE)
   Serial Vs Screen+Kbd I/O => console mode
   
-  BTNs functions
   SCREEN procedures + draw pictures (neeed storage acess)
   DIR to ARRAY
   checkbreak()
-  anyBtn()
+  
 
 NEW COMMANDS
   1234568
@@ -92,8 +93,9 @@ ADDED >> ' for REM
          FS_SUPPORT for Teensy3.6
          Better teensy IRQ managment
          DIR/FILES (in progress)
-         PLAYT5K & PLAYT53 to play audio files
-         BYE to reset the MCU
+         PLAYT5K & PLAYT53 : to play audio files
+         BYE : to reset the MCU
+         BTN(x) : function get button state
 
 
 

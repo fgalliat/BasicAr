@@ -117,7 +117,9 @@
 
 #define TOKEN_BYE            76 // reset the MCU
 
-#define TOKEN_LASTONE TOKEN_BYE
+#define TOKEN_BTN            77 // read btn state
+
+#define TOKEN_LASTONE TOKEN_BTN
 
 
 #define FIRST_IDENT_TOKEN 23

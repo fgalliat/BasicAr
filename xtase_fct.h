@@ -123,6 +123,16 @@ int xts_playT53() {
 }
 
 
+// == Btns
+
+// 1-based
+int xts_buttonRead(int btnNum) {
+  if ( btnNum == 1 ) { return btn1() ? 1 : 0; }
+  else if ( btnNum == 2 ) { return btn2() ? 1 : 0; }
+  else if ( btnNum == 3 ) { return btn3() ? 1 : 0; }
+
+  return 0;
+}
 
 // == Led
 int xts_led() {

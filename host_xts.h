@@ -10,6 +10,12 @@ void led2(bool state);
 void led3(bool state);
 void activityLed(bool state);
 
+bool btn1();
+bool btn2();
+bool btn3();
+bool anyBtn();
+
+
 #define AUDIO_FORMAT_T5K 0
 #define AUDIO_FORMAT_T53 1
 
@@ -31,7 +37,7 @@ void MCU_reset();
 // TODO : impl. it =================
  void lcd_println(char* text);
  bool checkbreak();
- bool anyBtn();
+ 
 // =================================
 
 

@@ -228,13 +228,16 @@ const TokenTableEntry tokenTable[]  = {
     // ------ Xtase routines -----------
     {"MEM",0}, {"?",TKN_FMT_POST}, {"'",TKN_FMT_POST}, 
     {"LOCATE",2}, 
-    {"LED",2}, 
+    {"LED",2}, // to switch on/off a led
     {"TONE",2}, {"MUTE", 0},
     {"PLAY",1|TKN_ARG1_TYPE_STR}, 
     {"PLAYT5K",1|TKN_ARG1_TYPE_STR}, 
     {"PLAYT53",1|TKN_ARG1_TYPE_STR}, 
 
     {"BYE",TKN_FMT_POST}, 
+
+    {"BTN",1}, // to read btn state
+
 };
 
 
@@ -1257,6 +1260,14 @@ int parseFnCallExpr() {
             tmp = (int)stackPopNum();
             if (!stackPushNum(host_analogRead(tmp))) return ERROR_OUT_OF_MEMORY;
             break;
+
+// ============ Xtase ===========
+        case TOKEN_BTN:
+            tmp = (int)stackPopNum();
+            if (!stackPushNum(xts_buttonRead(tmp))) return ERROR_OUT_OF_MEMORY;
+            break;
+// ==============================
+
         default:
             return ERROR_UNEXPECTED_TOKEN;
         }
@@ -1402,6 +1413,8 @@ int parsePrimary() {
     case TOKEN_MID: 
     case TOKEN_PINREAD:
     case TOKEN_ANALOGRD:
+
+    case TOKEN_BTN:
         return parseFnCallExpr();
 
     // ------ Xtase token ---------
