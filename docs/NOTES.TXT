@@ -6,7 +6,7 @@ il est impossible de faire cohabiter les PROGMEM pgm_read... et l'utilisation de
 du moins avec mon code de compatibilité
 
 1) remettre un marqueur vierge et des fonctions vides pour l'acces aux datas (pour pouvoir les refaire marcher avec un Arduino)
-2) remettre le code du reset de la MCU pour le teensy (in progress)
+2) remettre le code du reset de la MCU pour le teensy (in progress) (DONE)
 3) separer les FS_SUPPORT en mode SDFAT ou non
 
 ================================================================
@@ -18,13 +18,15 @@ DONE
 
   BYE command that reset MCU (arch dependant) (as SimpleCmd)
   anyBtn()
-  ? BTN( 1 ) ==> {0;1} (to get pressed btn)
+  ? BTN( 1 ) ==> {0;1} (to get pressed btn) 
+     \=> could use ? BTN(0) to get 0,1,2,4 => MASK of 3btns @ same time .... (TODO)
 
 
 TODO HARDWARE
-  SSD1306 full support (w/ gfx)
+  SSD1306 OLED full support (w/ gfx)
   KBD USB
   BT Serial (HC06 slave only)
+  VGA Serial Monitor (& RPI0W HDMI Monitor)
 
 TODO
   ADD filter for FILES ex. "*.BAS"
