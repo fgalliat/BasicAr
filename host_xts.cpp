@@ -77,6 +77,10 @@ void setupGPIO() {
  if ( LED1_PIN > -1 ) { pinMode(LED1_PIN, OUTPUT); digitalWrite(LED1_PIN, LOW); }
  if ( LED2_PIN > -1 ) { pinMode(LED2_PIN, OUTPUT); digitalWrite(LED2_PIN, LOW); }
  if ( LED3_PIN > -1 ) { pinMode(LED3_PIN, OUTPUT); digitalWrite(LED3_PIN, LOW); }
+
+ if ( BTN1_PIN > -1 ) { pinMode(BTN1_PIN, INPUT_PULLUP); }
+ if ( BTN2_PIN > -1 ) { pinMode(BTN2_PIN, INPUT_PULLUP); }
+ if ( BTN3_PIN > -1 ) { pinMode(BTN3_PIN, INPUT_PULLUP); }
 }
 
 // ====== HARD initialization ======
@@ -99,6 +103,27 @@ void setupHardware() {
  #endif
 }
 
+ // ========= Btns Sub System =======
+ // as btns are plugged as INPUT_PULLUP
+ // logic is inverted
+ bool _btn(int pin) {
+  if ( pin > -1 ) { return digitalRead(pin) == LOW; }
+  return false;
+ }
+
+ bool btn1() {
+  return _btn( BTN1_PIN );
+ }
+
+ bool btn2() {
+  return _btn( BTN2_PIN );
+ }
+
+ bool btn3() {
+  return _btn( BTN3_PIN );
+ }
+
+bool anyBtn() { return btn1() || btn2() || btn3(); }
 
 
  // ========= Led Sub System ========
@@ -205,7 +230,7 @@ extern boolean isWriting;
 
 void lcd_println(char* text) { isWriting = true; Serial.print("LCD:"); Serial.println(text); isWriting = false; }
 bool checkbreak() { return false; }
-bool anyBtn() { return false; }
+
 // ============ Tmp Compatibility Code =============== 
 
 
@@ -314,9 +339,10 @@ void __playTune(unsigned char* tuneStream, bool btnStop = false) {
 
   //printfln("nbN:%d title:'%s' tmp:%d", nbNotes, (const char*)songname, tempoPercent);
   
-  host_outputString("PLAYING :");
+  host_outputString("   -= Playing =-");
   host_outputString( songname );
   host_outputString("\n");
+  host_showBuffer();
 
   #if ((defined SCREEN_SUPPORT) && (SCREEN_SUPPORT > 0))
     //lcd_cls();
@@ -382,6 +408,10 @@ void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
   short tempoPercent = (*tuneStream++ << 8) | (*tuneStream++);
 
   //printfln("nbN:%d title:'%s' tmp:%d", nbNotes, (const char*)songname, tempoPercent);
+  host_outputString("   -= Playing =-");
+  host_outputString( songname );
+  host_outputString("\n");
+  host_showBuffer();
   
   #if ((defined SCREEN_SUPPORT) && (SCREEN_SUPPORT > 0))
     //lcd_cls();

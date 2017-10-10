@@ -49,6 +49,21 @@ NEW COMMANDS
   SCLS     [ ]
 ______________________________________________________________
 IN PROGRESS 
+  pseudo file I/O
+
+  Serial In     | Serial Out
+  KeyUSB        | OLED screen (TEXT + GFX) (8 x 21)
+                | Serial VGA Monitor (TEXT) (50 * 90-100)
+  BT Serial In  | BT Serial Out
+  RPI In        | RPI Out (TEXT + GFX)
+  --------------+--------------------------
+  ESP8266 In    | ESP8266 Out
+
+
+  On Plug Prompt -> "Plug Serial, Type Ctrl-C or press button"
+                           \             \          \____ BT
+                            \             \__ KeyUSB + { OLED, VGA Monitor }
+                             \__ Serial
 
 ______________________________________________________________
 

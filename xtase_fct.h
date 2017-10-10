@@ -87,7 +87,7 @@ int __xts_playSpeakerTune(int format) {
         return _ERROR_EXPR_EXPECTED_STR;
   
   char* tuneName = stackPopStr();
-  bool btnBreakMusic = false;
+  bool btnBreakMusic = true;
 
   // TODO : get the boolean breakButtons ...
 
