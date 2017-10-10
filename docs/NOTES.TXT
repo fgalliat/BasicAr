@@ -18,8 +18,8 @@ DONE
 
   BYE command that reset MCU (arch dependant) (as SimpleCmd)
   anyBtn()
-  ? BTN( 1 ) ==> {0;1} (to get pressed btn) 
-     \=> could use ? BTN(0) to get 0,1,2,4 => MASK of 3btns @ same time .... (TODO)
+  ? BTN( 1 ) ==> {0;1} (to get pressed state of btn#1) 
+     \=> BTN(0) to get 0,1,2,4 => MASK of 3btns @ same time
 
 
 TODO HARDWARE

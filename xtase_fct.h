@@ -125,9 +125,10 @@ int xts_playT53() {
 
 // == Btns
 
-// 1-based
+// 1-based // 0 for read whole mask in 1 time
 int xts_buttonRead(int btnNum) {
-  if ( btnNum == 1 ) { return btn1() ? 1 : 0; }
+  if ( btnNum == 0 ) { return (btn1() ? 1 : 0)+(btn2() ? 2 : 0)+(btn3() ? 4 : 0); }
+  else if ( btnNum == 1 ) { return btn1() ? 1 : 0; }
   else if ( btnNum == 2 ) { return btn2() ? 1 : 0; }
   else if ( btnNum == 3 ) { return btn3() ? 1 : 0; }
 
