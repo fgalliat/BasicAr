@@ -34,6 +34,10 @@ void lsStorage();
 
 void MCU_reset();
 
+void _noInterrupts();
+void _interrupts();
+
+
 // TODO : impl. it =================
  void lcd_println(char* text);
  bool checkbreak();

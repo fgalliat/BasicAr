@@ -155,6 +155,20 @@ void setupHardware() {
  #endif
 }
 
+#ifdef BUT_TEENSY
+  void _noInterrupts() {
+    myTimer.end();
+  }
+
+  void _interrupts() {
+    myTimer.begin(_ISR_emul, 150000); // 150ms
+    myTimer.priority( 20 ); // 0 maximum priority
+  }
+#endif
+
+
+
+
  // ========= Btns Sub System =======
  // as btns are plugged as INPUT_PULLUP
  // logic is inverted

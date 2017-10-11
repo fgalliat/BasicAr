@@ -71,6 +71,11 @@ const char bytesFreeStr[] PROGMEM = "bytes free";
 
 void initTimer() {
 
+// #ifdef BUT_TEENSY
+//   #include <avr/io.h>
+//   #include <avr/interrupt.h>
+// #endif
+
 #ifdef BUT_TEENSY
 
  // see : https://www.pjrc.com/teensy/td_timing_IntervalTimer.html
@@ -116,7 +121,7 @@ extern void xts_serialEvent();
 
         // test if inited !!!!!! 
         // setupLCD is called before interrupt init ..
-        //display.display();
+        // display.display();
 
     }
 #endif
@@ -129,6 +134,7 @@ void host_init(int buzzerPin) {
 
     if (buzPin)
         pinMode(buzPin, OUTPUT);
+
     initTimer();
 }
 
@@ -252,6 +258,9 @@ interrupts();
     // Xtase
     //display.clearDisplay();
 
+    noInterrupts();
+    _noInterrupts();
+
     for (int y=0; y<SCREEN_HEIGHT; y++) {
         if (lineDirty[y] || (inputMode && y==curY)) {
             //display.setCursor(0,y);
@@ -281,6 +290,10 @@ interrupts();
 
     // Xtase
     display.display(); // to place in an interrupt
+
+    interrupts();
+    _interrupts();
+
 #endif
 }
 
@@ -480,16 +493,14 @@ char host_getKey() {
 }
 
 bool host_ESCPressed() {
-    // while (keyboard.available()) {
-    //     // read the next key
-    //     inkeyChar = keyboard.read();
-    //     if (inkeyChar == PS2_ESC || inkeyChar == '!')
-    //         return true;
-    // }
-    // return false;
-
-    
-    host_sleep(50);
+    while (keyboard.available()) {
+        // read the next key
+        inkeyChar = keyboard.read();
+        if (inkeyChar == PS2_ESC || inkeyChar == '!')
+            return true;
+    }
+    //return false;
+    //host_sleep(50);
     
     return anyBtn();
 }

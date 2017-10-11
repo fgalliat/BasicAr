@@ -967,12 +967,6 @@ int nextToken()
             //char* curScanedTk = (char *)pgm_read_word(&tokenTable[i].token);
             char* curScanedTk = (char *)tokenTable[i].token;
 
-            // host_outputInt( i );
-            // host_outputString( ":" );
-            // host_outputString( curScanedTk );
-            // host_outputString( ":" );
-            // host_outputString( identStr );
-
             if (strcasecmp(identStr, curScanedTk ) == 0) {
 
                 // host_outputString( "*" );
@@ -2051,9 +2045,14 @@ int parseStmts()
         default: 
             ret = ERROR_UNEXPECTED_CMD;
         }
+        
         // if error, or the execution line has been changed, exit here
-        if (ret || breakCurrentLine || jumpLineNumber || jumpStmtNumber)
+        if (ret || breakCurrentLine || jumpLineNumber || jumpStmtNumber) {
+            Serial.print("jump "); Serial.println( jumpLineNumber );
+            delay(190); // each GOTO ....
             break;
+        }
+
         // it should either be the end of the line now, and (generally) a command seperator
         // before the next command
         if (curToken != TOKEN_EOL) {

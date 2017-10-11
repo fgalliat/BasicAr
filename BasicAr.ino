@@ -171,6 +171,11 @@ void loop() {
 
         // otherwise tokenize
         ret = tokenize((unsigned char*)input, tokenBuf, TOKEN_BUF_SIZE);
+
+        // moa
+        host_showBuffer();
+        //delay(50);
+
     }
     else {
         host_loadProgram();
