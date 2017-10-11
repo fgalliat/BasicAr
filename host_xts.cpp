@@ -149,7 +149,7 @@ void setupHardware() {
    //Timer1.initialize(350000); // 350ms 
    //Timer1.attachInterrupt( _ISR_emul );
 
-   myTimer.begin(_ISR_emul, 250000);
+   myTimer.begin(_ISR_emul, 150000); // 150ms
    myTimer.priority( 20 ); // 0 maximum priority
    
  #endif

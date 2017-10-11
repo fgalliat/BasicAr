@@ -116,7 +116,7 @@ extern void xts_serialEvent();
 
         // test if inited !!!!!! 
         // setupLCD is called before interrupt init ..
-        display.display();
+        //display.display();
 
     }
 #endif
@@ -280,7 +280,7 @@ interrupts();
     }
 
     // Xtase
-    // display.display(); // to place in an interrupt
+    display.display(); // to place in an interrupt
 #endif
 }
 
