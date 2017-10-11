@@ -13,8 +13,8 @@
 
 // =========/ Serial Event /==============
 extern String inputString;
-extern boolean stringComplete;
-extern boolean isWriting;
+extern volatile boolean stringComplete;
+extern volatile boolean isWriting;
 // =========/ Serial Event /==============
 
   class PS2Keyboard {

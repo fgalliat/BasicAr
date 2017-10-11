@@ -97,9 +97,12 @@ _("ready");
 
 						serialPort.writeByte( (byte)ch );
 						System.out.print( (char)ch );
-						Zzz(100);
+						Zzz(50);
 
-						if ( ch == '\r' || ch == '\n' ) { Zzz(500); dump(); }
+						if ( ch == '\r' || ch == '\n' ) { 
+							Zzz(300); 
+							//dump(); 
+						}
 
 					}
 					Zzz(600);

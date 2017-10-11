@@ -85,14 +85,58 @@ void setupGPIO() {
 
 // ====== HARD initialization ======
 
+#ifdef BUILTIN_LCD
+ // Teensy3.6 XtsuBasic hardware config
+
+#include <SPI.h>
+#include <i2c_t3.h>
+#include <Adafruit_GFX.h>
+#include "screen_Adafruit_SSD1306.h"
+//default is 4 that is an I2C pin on t3.6
+#define OLED_RESET 6
+Adafruit_SSD1306 display(OLED_RESET);
+
+#if (SSD1306_LCDHEIGHT != 64)
+ #error("Height incorrect, please fix Adafruit_SSD1306.h!");
+#endif
+
+void setupLCD() {
+  Wire2.begin(I2C_MASTER, 0x00, I2C_PINS_3_4, I2C_PULLUP_EXT, 400000);
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.setTextSize(1);
+  
+  // tmp try
+  display.setTextColor(WHITE);
+  //display.setTextColor(INVERSE);
+  // tmp try
+
+  // avoid firware LOGO display
+  display.clearDisplay();
+
+  display.setCursor(0,0);
+  display.println( "LCD Ready" );
+
+  display.display();
+}
+
+#endif
+
+
 #ifdef BUT_TEENSY
   #include <TimerOne.h>
   // code in host.cpp
   extern void _ISR_emul();
 #endif
 
+
 void setupHardware() {
  setupGPIO();
+
+ #ifdef BUILTIN_LCD
+   setupLCD();
+ #endif
+
+
  #ifdef FS_SUPPORT
    setupSD();
  #endif

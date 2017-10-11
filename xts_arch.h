@@ -16,6 +16,8 @@
 
     #define AUDIO_BUFF_SIZE (5*1024)
 
+  #define BUILTIN_LCD
+
   // ==  GPIO ==
   #define BUZZER_PIN 2
   // finally : White / Blue / Green

@@ -161,12 +161,22 @@ void host_startupTone() {
     }    
 }
 
+#ifdef BUILTIN_LCD
+ #include "screen_Adafruit_SSD1306.h"
+ extern Adafruit_SSD1306 display;
+#endif
+
 void host_cls() {
     isWriting = true;
     memset(screenBuffer, 32, SCREEN_WIDTH*SCREEN_HEIGHT);
     memset(lineDirty, 1, SCREEN_HEIGHT);
     curX = 0;
     curY = 0;
+
+    #ifdef BUILTIN_LCD
+      display.clearDisplay();
+    #endif
+
     isWriting = false;
 }
 
@@ -178,17 +188,20 @@ void host_moveCursor(int x, int y) {
     if (y>=SCREEN_HEIGHT) y = SCREEN_HEIGHT-1;
     curX = x;
     curY = y; 
+
+    #ifdef BUILTIN_LCD
+      display.setCursor(x*6,y*8);
+    #endif
     isWriting = false;
 }
-
-
 
 void host_showBuffer() {
 
 // en plus de la lecture de ligne ....
 if ( !LOCAL_ECHO ) { isWriting = false; return; }
 
-#ifdef BUT_TEENSY
+//#ifdef BUT_TEENSY
+#ifndef BUILTIN_LCD
 
 noInterrupts();
 
@@ -225,20 +238,40 @@ isWriting = true;
 interrupts();
 
 #else    
-    
+    // Xtase
+    //display.clearDisplay();
+
     for (int y=0; y<SCREEN_HEIGHT; y++) {
         if (lineDirty[y] || (inputMode && y==curY)) {
-            oled.setCursor(0,y);
+            //display.setCursor(0,y);
+            display.setCursor(0,y*8);
+
+            display.setTextColor( BLACK );
+            display.drawFastHLine( 0, (y+0)*8, 128, (y+0)*8 );
+            display.drawFastHLine( 0, (y+1)*8, 128, (y+1)*8 );
+            display.drawFastHLine( 0, (y+2)*8, 128, (y+2)*8 );
+            display.drawFastHLine( 0, (y+3)*8, 128, (y+3)*8 );
+            display.drawFastHLine( 0, (y+4)*8, 128, (y+4)*8 );
+            display.drawFastHLine( 0, (y+5)*8, 128, (y+5)*8 );
+            display.drawFastHLine( 0, (y+6)*8, 128, (y+6)*8 );
+            display.drawFastHLine( 0, (y+7)*8, 128, (y+7)*8 );
+            display.setTextColor( WHITE );
+
+
+
             for (int x=0; x<SCREEN_WIDTH; x++) {
                 char c = screenBuffer[y*SCREEN_WIDTH+x];
                 if (c<32) c = ' ';
                 //if (x==curX && y==curY && inputMode && flash) c = 127;
                 if (x==curX && y==curY && inputMode && _flash) c = 127;
-                oled.print(c);
+                display.print(c);
             }
             lineDirty[y] = 0;
         }
     }
+
+    // Xtase
+    display.display(); // to place in an interrupt
 #endif
 }
 
@@ -248,6 +281,10 @@ void scrollBuffer() {
     memset(screenBuffer + SCREEN_WIDTH*(SCREEN_HEIGHT-1), 32, SCREEN_WIDTH);
     memset(lineDirty, 1, SCREEN_HEIGHT);
     curY--;
+
+    #ifdef BUILTIN_LCD
+        display.clearDisplay();
+    #endif
     isWriting = false;
 }
 

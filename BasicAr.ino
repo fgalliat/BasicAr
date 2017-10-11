@@ -74,14 +74,12 @@ char autorun = 0;
 
 // =========/ Serial Event /==============
 String inputString = "";         // a String to hold incoming data
-boolean stringComplete = false;  // whether the string is complete
-boolean isWriting = false; // lock read when write
+volatile boolean stringComplete = false;  // whether the string is complete
+volatile boolean isWriting = false; // lock read when write
 // =========/ Serial Event /==============
 
 char screenBuffer[SCREEN_WIDTH*SCREEN_HEIGHT];
 char lineDirty[SCREEN_HEIGHT];
-
-
 // ============================================
 
 
