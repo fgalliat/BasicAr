@@ -69,6 +69,9 @@
 // -------- Xtase refacto -------------
 char executeMode;
 int curToken;
+
+extern bool LOCAL_ECHO;
+
 #include "xtase_fct.h"
 // ------------------------------------
 
@@ -238,6 +241,9 @@ const TokenTableEntry tokenTable[]  = {
 
     {"BTN",1}, // to read btn state
 
+    {"ECHO",TKN_FMT_POST}, // to (un)lock local echo
+
+    {"DELAY",TKN_FMT_POST}, // to sleep MCU
 };
 
 
@@ -2030,6 +2036,10 @@ int parseStmts()
         case TOKEN_LED:    ret = xts_led(); break;
         case TOKEN_LOCATE: ret = xts_locate(); break;
 
+        case TOKEN_ECHO: ret = xts_echo(); break;
+
+        case TOKEN_DELAY: ret = xts_delay(); break;
+
         case TOKEN_PLAY: ret = xts_play(); break;
         case TOKEN_PLAYT5K: ret = xts_playT5K(); break;
         case TOKEN_PLAYT53: ret = xts_playT53(); break;
@@ -2156,6 +2166,12 @@ int processInput(unsigned char *tokenBuf) {
                 ret = ERROR_BREAK_PRESSED; 
                 break; 
             }
+
+            // ====== PRGM RUNNING LOOP ======
+            #ifdef BUT_TEENSY
+                // Hight Speed MCUs
+                //host_sleep(600);
+            #endif
         }
     }
     return ret;

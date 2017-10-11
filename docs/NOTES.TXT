@@ -12,23 +12,50 @@ du moins avec mon code de compatibilité
 ================================================================
 DONE
   STORAGE (SDCARD SPI)
+  
   PLAYT5K & PLAYT53 routines (need storage)
         PLAYT53 & PLAYT5K 
           \__ auto add file extension if not provided => DONE
 
   BYE command that reset MCU (arch dependant) (as SimpleCmd)
+  
   anyBtn()
+
   ? BTN( 1 ) ==> {0;1} (to get pressed state of btn#1) 
      \=> BTN(0) to get 0,1,2,4 => MASK of 3btns @ same time
 
+  lock local echo when sending prgm via serial !!!!
+
+TODO
+ find why need :
+ 10 ? "coucou" : goto 20
+ 20 goto 10 
+ ?????
+
+10 ? "coucou"
+20 A=1
+30 LED A,1 : LED A-1,0
+40 IF BTN(0) <> 0 THEN GOTO 1000
+50 A=A+1 : IF A > 3 THEN A = 0
+60 GOTO 30
+1000 ? "Bye"
+
+
 
 TODO HARDWARE
+  Look @ XtsuBasic Hardware port mapping
   SSD1306 OLED full support (w/ gfx)
   KBD USB
   BT Serial (HC06 slave only)
   VGA Serial Monitor (& RPI0W HDMI Monitor)
 
 TODO
+  DELAY( 500 ) => sleep 500ms => host_sleep(x)
+
+  Continuous displaying programs
+   10 ? "coucou"
+   20 GOTO 10
+
   ADD filter for FILES ex. "*.BAS"
 
   LOAD/SAVE

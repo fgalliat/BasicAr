@@ -9,7 +9,8 @@
 
 #include "host_xts.h"
 
-
+// // Console echo
+// static bool LOCAL_ECHO = true;
 
 
 #define SCREEN_WIDTH        21

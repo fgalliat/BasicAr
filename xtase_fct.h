@@ -7,6 +7,9 @@
 #include "basic.h"
 //#include "host.h"
 
+#include <Arduino.h>
+
+
 extern int sysVARSTART, sysPROGEND;
 extern int stackPushNum(float val);
 extern char *stackPopStr(); 
@@ -122,9 +125,37 @@ int xts_playT53() {
   return __xts_playSpeakerTune(AUDIO_FORMAT_T53);
 }
 
+// == Console
+
+int xts_echo() {
+  getNextToken();
+  int val = expectNumber();
+  if (val) return val;	// error
+  uint16_t echoValue = (uint16_t)stackPopNum();
+
+  if (executeMode) {
+    LOCAL_ECHO = ( echoValue != 0 );
+  }
+}
+
+// == Clock
+int xts_delay() {
+  getNextToken();
+  int val = expectNumber();
+  if (val) return val;	// error
+  uint16_t delayValue = (uint16_t)stackPopNum();
+
+  if (executeMode) {
+    noInterrupts();
+    host_sleep(delayValue);
+    interrupts();
+  }
+}
+
 
 // == Btns
 
+// BEWARE : Simple Function
 // 1-based // 0 for read whole mask in 1 time
 int xts_buttonRead(int btnNum) {
   if ( btnNum == 0 ) { return (btn1() ? 1 : 0)+(btn2() ? 2 : 0)+(btn3() ? 4 : 0); }

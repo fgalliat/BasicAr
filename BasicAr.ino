@@ -199,6 +199,7 @@ void loop() {
         host_outputString((char *)errorTable[ret]);
         host_showBuffer();
     }
+
 }
 
 // ___________________________________________________________

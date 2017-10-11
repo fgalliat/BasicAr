@@ -13,6 +13,9 @@
 #include <float.h>
 #include <limits.h>
 
+bool LOCAL_ECHO = true;
+
+
 #include <Arduino.h>
 #ifdef BUT_TEENSY
   #include "xts_teensy.h"
@@ -180,10 +183,15 @@ void host_moveCursor(int x, int y) {
 
 
 
-
 void host_showBuffer() {
 
+// en plus de la lecture de ligne ....
+if ( !LOCAL_ECHO ) { isWriting = false; return; }
+
 #ifdef BUT_TEENSY
+
+noInterrupts();
+
 isWriting = true;
     static char line[SCREEN_WIDTH+1];
     boolean dirty = false;
@@ -194,9 +202,9 @@ isWriting = true;
       }
     }
 
-    if ( !dirty ) { isWriting = false; return; }
+    if ( !dirty ) { isWriting = false; interrupts(); return; }
     
-    Serial.print( "\n\n\n\n\n\n" );
+    Serial.print( "\n\n----------\n" );
     Serial.flush();
     for (int y=0; y<SCREEN_HEIGHT; y++) {
         for (int x=0; x<SCREEN_WIDTH; x++) {
@@ -213,6 +221,9 @@ isWriting = true;
         //}
     }
     isWriting = false;
+
+interrupts();
+
 #else    
     
     for (int y=0; y<SCREEN_HEIGHT; y++) {
@@ -348,6 +359,11 @@ void host_newLine() {
         scrollBuffer();
     memset(screenBuffer + SCREEN_WIDTH*(curY), 32, SCREEN_WIDTH);
     lineDirty[curY] = 1;
+
+// ==== moa =
+//host_showBuffer();
+// ==========
+
     isWriting = false;
 }
 
@@ -396,29 +412,15 @@ char *host_readLine() {
             }
             redraw = 1;
         }
-        if (redraw)
-            host_showBuffer();
+        if (redraw) {
+            if (LOCAL_ECHO) { host_showBuffer(); }
+        }
     }
     screenBuffer[pos] = 0;
     inputMode = 0;
     // remove the cursor
     lineDirty[curY] = 1;
-    host_showBuffer();
-
-    // int tmpLen = strlen( &screenBuffer[startPos] );
-    // char* tmpStr = (char*)malloc( tmpLen+1 );
-    // memcpy(tmpStr, &screenBuffer[startPos] ,tmpLen);
-    // tmpStr[ tmpLen ] = 0x00;
-    // host_outputString( "\n>>inputline/" );
-    // host_outputString( tmpStr );
-    // host_outputString( "/<<" );
-    // host_outputInt( tmpLen );
-    // host_outputString( "/<<" );
-    // host_outputInt( tmpLen > 0 ? tmpStr[ tmpLen-1 ] : -1 );
-    // host_outputString( "/<<" );
-    // host_outputInt( tmpLen > 1 ? tmpStr[ tmpLen-2 ] : -1 );
-    // host_outputString( "<\n" );
-    // host_showBuffer();
+    if (LOCAL_ECHO) { host_showBuffer(); }
 
     return &screenBuffer[startPos];
 }

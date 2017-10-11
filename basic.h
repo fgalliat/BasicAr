@@ -119,7 +119,11 @@
 
 #define TOKEN_BTN            77 // read btn state
 
-#define TOKEN_LASTONE TOKEN_BTN
+#define TOKEN_ECHO           78 // (un)lock local echo
+
+#define TOKEN_DELAY          79 // make MCU sleep x ms
+
+#define TOKEN_LASTONE TOKEN_DELAY
 
 
 #define FIRST_IDENT_TOKEN 23
@@ -163,7 +167,7 @@
 #define MAX_NUMBER_LEN	10
 
 //#define MEMORY_SIZE	1024
-#define MEMORY_SIZE	2048
+#define MEMORY_SIZE	8192
 
 extern unsigned char mem[];
 extern int sysPROGEND;
