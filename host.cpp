@@ -43,6 +43,10 @@ extern PS2Keyboard keyboard;
 
 extern bool BUZZER_MUTE;
 
+#ifdef BUILTIN_LCD
+ #include "screen_Adafruit_SSD1306.h"
+ extern Adafruit_SSD1306 display;
+#endif
 
 
 int timer1_counter;
@@ -66,23 +70,25 @@ char buzPin = 0;
 const char bytesFreeStr[] PROGMEM = "bytes free";
 
 void initTimer() {
-    noInterrupts();           // disable all interrupts
 
 #ifdef BUT_TEENSY
 
  // see : https://www.pjrc.com/teensy/td_timing_IntervalTimer.html
 
 #else
+    noInterrupts();           // disable all interrupts
+    
     TCCR1A = 0;
     TCCR1B = 0;
     timer1_counter = 34286;   // preload timer 65536-16MHz/256/2Hz
     TCNT1 = timer1_counter;   // preload timer
     TCCR1B |= (1 << CS12);    // 256 prescaler 
     TIMSK1 |= (1 << TOIE1);   // enable timer overflow interrupt
-
-#endif
     
     interrupts();             // enable all interrupts
+#endif
+    
+
 }
 
 // MOA - TO LOOK
@@ -108,6 +114,9 @@ extern void xts_serialEvent();
         _flash = !_flash;
         redraw = 1;
 
+        // test if inited !!!!!! 
+        // setupLCD is called before interrupt init ..
+        display.display();
 
     }
 #endif
@@ -115,7 +124,9 @@ extern void xts_serialEvent();
 
 void host_init(int buzzerPin) {
     buzPin = buzzerPin;
-    oled.clear();
+    
+    //oled.clear();
+
     if (buzPin)
         pinMode(buzPin, OUTPUT);
     initTimer();
@@ -161,10 +172,10 @@ void host_startupTone() {
     }    
 }
 
-#ifdef BUILTIN_LCD
- #include "screen_Adafruit_SSD1306.h"
- extern Adafruit_SSD1306 display;
-#endif
+// #ifdef BUILTIN_LCD
+//  #include "screen_Adafruit_SSD1306.h"
+//  extern Adafruit_SSD1306 display;
+// #endif
 
 void host_cls() {
     isWriting = true;
@@ -257,8 +268,6 @@ interrupts();
             display.drawFastHLine( 0, (y+7)*8, 128, (y+7)*8 );
             display.setTextColor( WHITE );
 
-
-
             for (int x=0; x<SCREEN_WIDTH; x++) {
                 char c = screenBuffer[y*SCREEN_WIDTH+x];
                 if (c<32) c = ' ';
@@ -271,7 +280,7 @@ interrupts();
     }
 
     // Xtase
-    display.display(); // to place in an interrupt
+    // display.display(); // to place in an interrupt
 #endif
 }
 
@@ -471,13 +480,18 @@ char host_getKey() {
 }
 
 bool host_ESCPressed() {
-    while (keyboard.available()) {
-        // read the next key
-        inkeyChar = keyboard.read();
-        if (inkeyChar == PS2_ESC)
-            return true;
-    }
-    return false;
+    // while (keyboard.available()) {
+    //     // read the next key
+    //     inkeyChar = keyboard.read();
+    //     if (inkeyChar == PS2_ESC || inkeyChar == '!')
+    //         return true;
+    // }
+    // return false;
+
+    
+    host_sleep(50);
+    
+    return anyBtn();
 }
 
 void host_outputFreeMem(unsigned int val)

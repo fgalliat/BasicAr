@@ -123,7 +123,10 @@ void setupLCD() {
 
 
 #ifdef BUT_TEENSY
-  #include <TimerOne.h>
+  //#include <TimerOne.h> // for Teensy 2 & 2++
+
+  IntervalTimer myTimer;
+
   // code in host.cpp
   extern void _ISR_emul();
 #endif
@@ -142,8 +145,13 @@ void setupHardware() {
  #endif
 
  #ifdef BUT_TEENSY
-   Timer1.initialize(350000); // 350ms 
-   Timer1.attachInterrupt( _ISR_emul );
+   //for Teensy 2 & 2++
+   //Timer1.initialize(350000); // 350ms 
+   //Timer1.attachInterrupt( _ISR_emul );
+
+   myTimer.begin(_ISR_emul, 250000);
+   myTimer.priority( 20 ); // 0 maximum priority
+   
  #endif
 }
 

@@ -26,27 +26,18 @@ extern volatile boolean isWriting;
 
             // "Retour Chariot" + 115200bps
             Serial.begin(115200);
-            while( !Serial ) { delay(200); } // beware with that !!!
+            //while( !Serial ) { delay(200); } // beware with that !!!
+
             this->lastTime = millis();
           }
           
           int available() { 
             // BEWARE W/ FULL DUPLEX -> use events
             // delay(5);
-            // return Serial.available(); 
+            return Serial.available(); 
 
-            // if (stringComplete) {
-            //     return inputString.length();
-            // }
-            return inputString.length();
+            //return inputString.length();
 
-            // while( isWriting ) {
-            //     delay(5);
-            //     Serial.flush();
-            // }
-            // Serial.flush();
-
-            // return isWriting ? 0 : Serial.available();
           }
   
           int read() { 
@@ -55,42 +46,33 @@ extern volatile boolean isWriting;
             //   delay(5);
             //   return tmpCh;
 
-            // if (stringComplete) {
-            //     // beware w/ under flow !!!!
-            //     char ch = inputString.charAt(0);
-            //     inputString.remove(0,1);
-            //     return ch;
+            // if ( inputString.length() > 0 ) {
+            //   char ch = inputString.charAt(0);
+            //   inputString.remove(0,1);
+            //   return ch;
             // }
-            if ( inputString.length() > 0 ) {
-              char ch = inputString.charAt(0);
-              inputString.remove(0,1);
-              return ch;
-            }
-            return -1;
-
-            // // return -1;
-            // Serial.flush();
-            // return isWriting ? 0 : Serial.read();
+            // return -1;
+            return Serial.read();
           }
   
   };
   
-  static void gen_clearscreen() {
-      //clear();
-      isWriting = true;
-      Serial.println("\r\n\r\n\r\n\r\n\r\n\r\n");
-      isWriting = false;
-  }
+  // static void gen_clearscreen() {
+  //     //clear();
+  //     isWriting = true;
+  //     Serial.println("\r\n\r\n\r\n\r\n\r\n\r\n");
+  //     isWriting = false;
+  // }
   
-  static void printAt(int x, int y, char* str) {
-      //mvprintw(y, x, str);
-      //refresh();
-      isWriting = true;
-      Serial.print( str );
-      isWriting = false;
-  }
+  // static void printAt(int x, int y, char* str) {
+  //     //mvprintw(y, x, str);
+  //     //refresh();
+  //     isWriting = true;
+  //     Serial.print( str );
+  //     isWriting = false;
+  // }
   
-  #define SSD1306_SWITCHCAPVCC 1
+  #define SSD1306_SWITCHCAPVCC 0x2
   class SSD1306ASCII {
       int x = 0;
       int y = 0; int lastY = 0;
@@ -101,45 +83,47 @@ extern volatile boolean isWriting;
           
           void ssd1306_init(int mode) {};
   
-          void print(char ch) { 
-              this->chs[0] = ch;
-              /*
-              if ( ch == 13 ) {
-                  return;
-              }
+          // void print(char ch) { 
+          //     this->chs[0] = ch;
+          //     /*
+          //     if ( ch == 13 ) {
+          //         return;
+          //     }
   
-              if ( ch == 10 ) {
-                  this->y++; this->x=0;
-                  return;
-              }
+          //     if ( ch == 10 ) {
+          //         this->y++; this->x=0;
+          //         return;
+          //     }
   
-              printAt(this->x, this->y, this->chs);
-              this->x++;
-              */
-              isWriting = true;
-              Serial.write( ch );
-              isWriting = false;
-          };
+          //     printAt(this->x, this->y, this->chs);
+          //     this->x++;
+          //     */
+          //     isWriting = true;
+          //     Serial.write( ch );
+          //     isWriting = false;
+          // };
   
-          void setCursor(int x, int y) { 
-            isWriting = true;
-            //this->x=x; this->y=y; 
-            if ( y == 0 ) { 
-              lastY = y;
-              //Serial.print("\r\n\r\n\r\n");
-              Serial.write('\n');
-            } else if ( y > lastY ) { 
-              lastY = y;
-              //Serial.print("\r\n");
-              Serial.write('\n');
-            }
-            isWriting = false;
-          };
+          // void setCursor(int x, int y) { 
+          //   isWriting = true;
+          //   //this->x=x; this->y=y; 
+          //   if ( y == 0 ) { 
+          //     lastY = y;
+          //     //Serial.print("\r\n\r\n\r\n");
+          //     Serial.write('\n');
+          //   } else if ( y > lastY ) { 
+          //     lastY = y;
+          //     //Serial.print("\r\n");
+          //     Serial.write('\n');
+          //   }
+          //   isWriting = false;
+          // };
   
-          void clear() { 
-              //gen_clearscreen();
-              this->setCursor(0,0);
-          };
+          // void clear() { 
+          //     //gen_clearscreen();
+          //     //this->setCursor(0,0);
+
+          //     display.clearDisplay();
+          // };
   };
   
 //   class EEPROMClass {

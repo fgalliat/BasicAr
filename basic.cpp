@@ -1598,6 +1598,8 @@ int parse_GOTO() {
         if (startLine <= 0)
             return ERROR_BAD_LINE_NUM;
         jumpLineNumber = startLine;
+
+        //host_sleep(100); // Cf fast MCU
     }
     return 0;
 }

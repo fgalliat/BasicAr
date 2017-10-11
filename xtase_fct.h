@@ -146,9 +146,9 @@ int xts_delay() {
   uint16_t delayValue = (uint16_t)stackPopNum();
 
   if (executeMode) {
-    noInterrupts();
+    //noInterrupts();
     host_sleep(delayValue);
-    interrupts();
+    //interrupts();
   }
 }
 

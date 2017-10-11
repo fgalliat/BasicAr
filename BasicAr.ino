@@ -208,21 +208,24 @@ void loop() {
   delay response. Multiple bytes of data may be available.
 */
 void xts_serialEvent() {
-    //while ( isWriting ) { delay(5); Serial.print('X'); }
-    Serial.flush();
+    // //while ( isWriting ) { delay(5); Serial.print('X'); }
+    // Serial.flush();
 
 
-    while (Serial.available()) {
-      // get the new byte:
-      char inChar = (char)Serial.read();
-      // add it to the inputString:
-      inputString += inChar;
-      // if the incoming character is a newline, set a flag so the main loop can
-      // do something about it:
-      if (inChar == '\n'|| inChar == '\r' ) {
-        stringComplete = true;
-      }
-    }
+    // while (Serial.available()) {
+    //   // get the new byte:
+    //   char inChar = (char)Serial.read();
+
+    //   if ( inChar == '\n' ) { continue; }
+
+    //   // add it to the inputString:
+    //   inputString += inChar;
+    //   // if the incoming character is a newline, set a flag so the main loop can
+    //   // do something about it:
+    //   if (inChar == '\n'|| inChar == '\r' ) {
+    //     stringComplete = true;
+    //   }
+    // }
   }
 
 
