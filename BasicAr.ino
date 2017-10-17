@@ -150,7 +150,14 @@ void loop() {
         // get a line from the user
         char *input = host_readLine();
         // special editor commands
-        if (input[0] == '?' && input[1] == 0) {
+
+        // 10 PRINT "Hello"      :: works
+        // 10 PRINT "Hello toto" :: fails
+        // 10 PRINT "12345678"   :: fails
+        // 10 PRINT "12345"      :: works
+
+        //if (input[0] == '?' && input[1] == 0) {
+        if (input[0] == '*' && input[1] == 0) { // this is not the problem
             host_outputFreeMem(sysVARSTART - sysPROGEND);
             host_showBuffer();
             return;
@@ -177,7 +184,10 @@ void loop() {
         }
         //host_outputProgMemString((char *)pgm_read_word(&(errorTable[ret])));
         host_outputString((char *)errorTable[ret]);
+
+        //host_showBuffer();
     }
+    //host_showBuffer();
 }
 
 
