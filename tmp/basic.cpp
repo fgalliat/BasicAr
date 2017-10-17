@@ -1,6 +1,9 @@
 /* ---------------------------------------------------------------------------
  * Basic Interpreter
- * Robin Edwards 2014
+ *
+ * Modified by Xtase - fgalliat @Sept 2017
+ *
+ * Original Code by : Robin Edwards 2014
  * ---------------------------------------------------------------------------
  * This BASIC is modelled on Sinclair BASIC for the ZX81 and ZX Spectrum. It
  * should be capable of running most of the examples in the manual for both
@@ -51,15 +54,121 @@
 #include <float.h>
 #include <limits.h>
 
+#include "xts_arch.h"
+#ifdef BUT_TEENSY
+  #include "xts_teensy.h"
+#else
+  #include <Arduino.h>
+#endif
+
 #include "basic.h"
 #include "host.h"
 
-//#include <avr/pgmspace.h>
+
+
+// -------- Xtase refacto -------------
+char executeMode;
+int curToken;
+
+extern bool LOCAL_ECHO;
+
+#include "xtase_fct.h"
+// ------------------------------------
+
+// #ifdef FS_SUPPORT_AVOIDS_CONST
+//  //#define const
+// #endif
+
 
 int sysPROGEND;
 int sysSTACKSTART, sysSTACKEND;
 int sysVARSTART, sysVAREND;
 int sysGOSUBSTART, sysGOSUBEND;
+
+// const char string_0[] PROGMEM = "OK";
+// const char string_1[] PROGMEM = "Bad number";
+// const char string_2[] PROGMEM = "Line too long";
+// const char string_3[] PROGMEM = "Unexpected input";
+// const char string_4[] PROGMEM = "Unterminated string";
+// const char string_5[] PROGMEM = "Missing bracket";
+// const char string_6[] PROGMEM = "Error in expr";
+// const char string_7[] PROGMEM = "Numeric expr expected";
+// const char string_8[] PROGMEM = "String expr expected";
+// const char string_9[] PROGMEM = "Line number too big";
+// const char string_10[] PROGMEM = "Out of memory";
+// const char string_11[] PROGMEM = "Div by zero";
+// const char string_12[] PROGMEM = "Variable not found";
+// const char string_13[] PROGMEM = "Bad command";
+// const char string_14[] PROGMEM = "Bad line number";
+// const char string_15[] PROGMEM = "Break pressed";
+// const char string_16[] PROGMEM = "NEXT without FOR";
+// const char string_17[] PROGMEM = "STOP statement";
+// const char string_18[] PROGMEM = "Missing THEN in IF";
+// const char string_19[] PROGMEM = "RETURN without GOSUB";
+// const char string_20[] PROGMEM = "Wrong array dims";
+// const char string_21[] PROGMEM = "Bad array index";
+// const char string_22[] PROGMEM = "Bad string index";
+// const char string_23[] PROGMEM = "Error in VAL input";
+// const char string_24[] PROGMEM = "Bad parameter";
+
+// //PROGMEM const char *errorTable[] = {
+// const char* const errorTable[] PROGMEM = {
+//     string_0, string_1, string_2, string_3,
+//     string_4, string_5, string_6, string_7,
+//     string_8, string_9, string_10, string_11,
+//     string_12, string_13, string_14, string_15,
+//     string_16, string_17, string_18, string_19,
+//     string_20, string_21, string_22, string_23,
+//     string_24
+// };
+
+// // Token flags
+// // bits 1+2 number of arguments
+// #define TKN_ARGS_NUM_MASK	0x03
+// // bit 3 return type (set if string)
+// #define TKN_RET_TYPE_STR	0x04
+// // bits 4-6 argument type (set if string)
+// #define TKN_ARG1_TYPE_STR	0x08
+// #define TKN_ARG2_TYPE_STR	0x10
+// #define TKN_ARG3_TYPE_STR	0x20
+
+// #define TKN_ARG_MASK		0x38
+// #define TKN_ARG_SHIFT		3
+// // bits 7,8 formatting
+// #define TKN_FMT_POST		0x40
+// #define TKN_FMT_PRE		0x80
+
+
+//PROGMEM const TokenTableEntry tokenTable[] = {
+// const TokenTableEntry tokenTable[] PROGMEM = {
+//     {0, 0}, {0, 0}, {0, 0}, {0, 0},
+//     {0, 0}, {0, 0}, {0, 0}, {0, 0},
+//     {"(", 0}, {")",0}, {"+",0}, {"-",0},
+//     {"*",0}, {"/",0}, {"=",0}, {">",0},
+//     {"<",0}, {"<>",0}, {">=",0}, {"<=",0},
+//     {":",TKN_FMT_POST}, {";",0}, {",",0}, {"AND",TKN_FMT_PRE|TKN_FMT_POST},
+//     {"OR",TKN_FMT_PRE|TKN_FMT_POST}, {"NOT",TKN_FMT_POST}, {"PRINT",TKN_FMT_POST}, {"LET",TKN_FMT_POST},
+//     {"LIST",TKN_FMT_POST}, {"RUN",TKN_FMT_POST}, {"GOTO",TKN_FMT_POST}, {"REM",TKN_FMT_POST},
+//     {"STOP",TKN_FMT_POST}, {"INPUT",TKN_FMT_POST},  {"CONT",TKN_FMT_POST}, {"IF",TKN_FMT_POST},
+//     {"THEN",TKN_FMT_PRE|TKN_FMT_POST}, {"LEN",1|TKN_ARG1_TYPE_STR}, {"VAL",1|TKN_ARG1_TYPE_STR}, {"RND",0},
+//     {"INT",1}, {"STR$", 1|TKN_RET_TYPE_STR}, {"FOR",TKN_FMT_POST}, {"TO",TKN_FMT_PRE|TKN_FMT_POST},
+//     {"STEP",TKN_FMT_PRE|TKN_FMT_POST}, {"NEXT", TKN_FMT_POST}, {"MOD",TKN_FMT_PRE|TKN_FMT_POST}, {"NEW",TKN_FMT_POST},
+//     {"GOSUB",TKN_FMT_POST}, {"RETURN",TKN_FMT_POST}, {"DIM", TKN_FMT_POST}, {"LEFT$",2|TKN_ARG1_TYPE_STR|TKN_RET_TYPE_STR},
+//     {"RIGHT$",2|TKN_ARG1_TYPE_STR|TKN_RET_TYPE_STR}, {"MID$",3|TKN_ARG1_TYPE_STR|TKN_RET_TYPE_STR}, {"CLS",TKN_FMT_POST}, 
+//     {"PAUSE",TKN_FMT_POST},
+//     {"POSITION", TKN_FMT_POST}, {"PIN",TKN_FMT_POST}, {"PINMODE", TKN_FMT_POST}, {"INKEY$", 0},
+//     {"SAVE", TKN_FMT_POST}, {"LOAD", TKN_FMT_POST}, {"PINREAD",1}, {"ANALOGRD",1},
+//     {"DIR", TKN_FMT_POST}, 
+//     {"DELETE", TKN_FMT_POST},
+//     // ------ Xtase routines -----------
+//     {"MEM",0}, {"?",TKN_FMT_POST}, {"'",TKN_FMT_POST}, 
+//     {"LOCATE",2}, 
+//     {"LED",2}, 
+//     {"TONE",2}, {"MUTE", 0},
+//     {"PLAY",1|TKN_ARG1_TYPE_STR}, 
+//     {"PLAYT5K",1|TKN_ARG1_TYPE_STR}, 
+//     {"PLAYT53",1|TKN_ARG1_TYPE_STR}, 
+// };
 
 const char string_0[]  = "OK";
 const char string_1[]  = "Bad number";
@@ -88,6 +197,7 @@ const char string_23[]  = "Error in VAL input";
 const char string_24[]  = "Bad parameter";
 
 // const char *errorTable[] = {
+//const char* const errorTable[]  = {
 const char* errorTable[]  = {
     string_0, string_1, string_2, string_3,
     string_4, string_5, string_6, string_7,
@@ -98,25 +208,9 @@ const char* errorTable[]  = {
     string_24
 };
 
-// Token flags
-// bits 1+2 number of arguments
-#define TKN_ARGS_NUM_MASK	0x03
-// bit 3 return type (set if string)
-#define TKN_RET_TYPE_STR	0x04
-// bits 4-6 argument type (set if string)
-#define TKN_ARG1_TYPE_STR	0x08
-#define TKN_ARG2_TYPE_STR	0x10
-#define TKN_ARG3_TYPE_STR	0x20
 
-#define TKN_ARG_MASK		0x38
-#define TKN_ARG_SHIFT		3
-// bits 7,8 formatting
-#define TKN_FMT_POST		0x40
-#define TKN_FMT_PRE		0x80
-
-
- //const TokenTableEntry tokenTable[] = {
-TokenTableEntry tokenTable[] = {
+//const TokenTableEntry tokenTable[]  = {
+TokenTableEntry tokenTable[]  = {
     {0, 0}, {0, 0}, {0, 0}, {0, 0},
     {0, 0}, {0, 0}, {0, 0}, {0, 0},
     {"(", 0}, {")",0}, {"+",0}, {"-",0},
@@ -130,10 +224,28 @@ TokenTableEntry tokenTable[] = {
     {"INT",1}, {"STR$", 1|TKN_RET_TYPE_STR}, {"FOR",TKN_FMT_POST}, {"TO",TKN_FMT_PRE|TKN_FMT_POST},
     {"STEP",TKN_FMT_PRE|TKN_FMT_POST}, {"NEXT", TKN_FMT_POST}, {"MOD",TKN_FMT_PRE|TKN_FMT_POST}, {"NEW",TKN_FMT_POST},
     {"GOSUB",TKN_FMT_POST}, {"RETURN",TKN_FMT_POST}, {"DIM", TKN_FMT_POST}, {"LEFT$",2|TKN_ARG1_TYPE_STR|TKN_RET_TYPE_STR},
-    {"RIGHT$",2|TKN_ARG1_TYPE_STR|TKN_RET_TYPE_STR}, {"MID$",3|TKN_ARG1_TYPE_STR|TKN_RET_TYPE_STR}, {"CLS",TKN_FMT_POST}, {"PAUSE",TKN_FMT_POST},
-    {"POSITION", TKN_FMT_POST},  {"PIN",TKN_FMT_POST}, {"PINMODE", TKN_FMT_POST}, {"INKEY$", 0},
+    {"RIGHT$",2|TKN_ARG1_TYPE_STR|TKN_RET_TYPE_STR}, {"MID$",3|TKN_ARG1_TYPE_STR|TKN_RET_TYPE_STR}, {"CLS",TKN_FMT_POST}, 
+    {"PAUSE",TKN_FMT_POST},
+    {"POSITION", TKN_FMT_POST}, {"PIN",TKN_FMT_POST}, {"PINMODE", TKN_FMT_POST}, {"INKEY$", 0},
     {"SAVE", TKN_FMT_POST}, {"LOAD", TKN_FMT_POST}, {"PINREAD",1}, {"ANALOGRD",1},
-    {"DIR", TKN_FMT_POST}, {"DELETE", TKN_FMT_POST}
+    {"DIR", TKN_FMT_POST}, 
+    {"DELETE", TKN_FMT_POST},
+    // // ------ Xtase routines -----------
+    // {"MEM",0}, {"?",TKN_FMT_POST}, {"'",TKN_FMT_POST}, 
+    // {"LOCATE",2}, // Oups : there was a POSITION cmd ... 
+    // {"LED",2}, // to switch on/off a led
+    // {"TONE",2}, {"MUTE", 0},
+    // {"PLAY",1|TKN_ARG1_TYPE_STR}, 
+    // {"PLAYT5K",1|TKN_ARG1_TYPE_STR}, 
+    // {"PLAYT53",1|TKN_ARG1_TYPE_STR}, 
+
+    // {"BYE",TKN_FMT_POST}, 
+
+    // {"BTN",1}, // to read btn state
+
+    // {"ECHO",TKN_FMT_POST}, // to (un)lock local echo
+
+    // {"DELAY",TKN_FMT_POST}, // to sleep MCU
 };
 
 
@@ -181,13 +293,14 @@ void printTokens(unsigned char *p) {
 
             if (fmt & TKN_FMT_PRE)
                 host_outputChar(' ');
-
-            //host_outputString((char *)pgm_read_word(&tokenTable[*p].token));
+            
+            // host_outputString((char *)pgm_read_word(&tokenTable[*p].token));
             host_outputString((char *)tokenTable[*p].token);
 
             if (fmt & TKN_FMT_POST)
                 host_outputChar(' ');
-            if (*p==TOKEN_REM)
+            //if ( *p==TOKEN_REM )
+            if ( *p==TOKEN_REM || *p==TOKEN_REM_EM )
                 modeREM = 1;
             p++;
         }
@@ -263,7 +376,7 @@ int doProgLine(uint16_t lineNumber, unsigned char* tokenPtr, int tokensLength)
 // contains either floats or null-terminated strings with the length on the end
 
 int stackPushNum(float val) {
-    if (sysSTACKEND + sizeof(float) > sysVARSTART)
+    if (sysSTACKEND + (signed int)sizeof(float) > sysVARSTART)
         return 0;	// out of memory
     unsigned char *p = &mem[sysSTACKEND];
     *(float *)p = val;
@@ -523,7 +636,7 @@ int createArray(char *name, int isString) {
     bytesNeeded += nameLen + 1;	// name
     bytesNeeded += 2;		// num dims
     int numElements = 1;
-    int i = 0;
+    // int i = 0;
     int numDims = (int)stackPopNum();
     // keep the current stack position, since we'll need to pop these values again
     int oldSTACKEND = sysSTACKEND;	
@@ -772,15 +885,30 @@ static int tokenOutLeft;
 // nextToken returns -1 for end of input, 0 for success, +ve number = error code
 int nextToken()
 {
+    // Xtase ...
+    // int cursorStart = &( *tokenIn ) - &( tokenIn[0] );
+    //Serial.print("cursor : ");Serial.println(cursor);
+
     // Skip any whitespace.
     while (isspace(*tokenIn))
         tokenIn++;
+
+
+    // Xtase ...
+    // int cursorCur = &( *tokenIn ) - &( tokenIn[0] );
+    //Serial.print("cursor : ");Serial.print(cursorCur);Serial.print("  to ");Serial.println(strlen( (const char*) tokenIn));
+
     // check for end of line
-    if (*tokenIn == 0) {
+    if (*tokenIn == 0 /* || *tokenIn == '\r' || *tokenIn == '\n'*/ ) {
         *tokenOut++ = TOKEN_EOL;
         tokenOutLeft--;
+
+        Serial.println( "0x02 I found EOL !!!!" );
+
+        //if ( tokenOutLeft < 0 ) { tokenOutLeft = 0; } // Xtase
         return -1;
     }
+
     // Number: [0-9.]+
     // TODO - handle 1e4 etc
     if (isdigit(*tokenIn) || *tokenIn == '.') {   // Number: [0-9.]+
@@ -818,8 +946,15 @@ int nextToken()
         }
         return 0;
     }
+    
     // identifier: [a-zA-Z][a-zA-Z0-9]*[$]
-    if (isalpha(*tokenIn)) {
+    // if (isalpha(*tokenIn) ) {
+
+    // Xtase
+    // or '?' for PRINT // "'" for REM
+    //if (isalpha(*tokenIn) || (*tokenIn)=='?' || (*tokenIn)=='\'' ) {
+    if (isalpha(*tokenIn) ) {
+
         char identStr[MAX_IDENT_LEN+1];
         int identLen = 0;
         identStr[identLen++] = *tokenIn++; // copy first char
@@ -829,17 +964,35 @@ int nextToken()
             tokenIn++;
         }
         identStr[identLen] = 0;
+
+        // int tmpLen = identLen;
+        // char* tmpStr = (char*)malloc( tmpLen+1 );
+        // memcpy(tmpStr, identStr ,tmpLen);
+        // tmpStr[ tmpLen ] = 0x00;
+
+        // avoid value from beeing displayed !!!!!!!
+        // host_outputString( "\n=================\n" );
+        // host_outputString( tmpStr );
+        // host_outputString( "\n=================\n" );
+        // host_showBuffer();
+
+
         // check to see if this is a keyword
         for (int i = FIRST_IDENT_TOKEN; i <= LAST_IDENT_TOKEN; i++) {
-            
-            //if (strcasecmp(identStr, (char *)pgm_read_word(&tokenTable[i].token)) == 0) {
-            if (strcasecmp(identStr, (char *)tokenTable[i].token) == 0) {
-            
+
+            //char* curScanedTk = (char *)pgm_read_word(&tokenTable[i].token);
+            char* curScanedTk = (char *)tokenTable[i].token;
+
+            if (strcasecmp(identStr, curScanedTk ) == 0) {
+
+                // host_outputString( "*" );
+
                 if (tokenOutLeft <= 1) return ERROR_LEXER_TOO_LONG;
                 tokenOutLeft--;
                 *tokenOut++ = i;
                 // special case for REM
-                if (i == TOKEN_REM) {
+                //if (i == TOKEN_REM) {
+                if (i == TOKEN_REM || i == TOKEN_REM_EM) {
                     *tokenOut++ = TOKEN_STRING;
                     // skip whitespace
                     while (isspace(*tokenIn))
@@ -852,6 +1005,8 @@ int nextToken()
                 }
                 return 0;
             }
+
+            // host_outputString( "\n" );
         }
         // no matching keyword - this must be an identifier
         // $ is only allowed at the end
@@ -861,6 +1016,7 @@ int nextToken()
         tokenOutLeft -= 1+identLen;
         *tokenOut++ = TOKEN_IDENT;
         strcpy((char*)tokenOut, identStr);
+        // 0x80 -> 128(dec)
         tokenOut[identLen-1] |= 0x80;
         tokenOut += identLen;
         return 0;
@@ -886,15 +1042,14 @@ int nextToken()
         tokenOutLeft--;
         return 0;
     }
+
     // handle non-alpha tokens e.g. =
     for (int i=LAST_NON_ALPHA_TOKEN; i>=FIRST_NON_ALPHA_TOKEN; i--) {
         // do this "backwards" so we match >= correctly, not as > then =
-
-        //int len = strlen((char *)pgm_read_word(&tokenTable[i].token));
+        // int len = strlen((char *)pgm_read_word(&tokenTable[i].token));
+        // if (strncmp((char *)pgm_read_word(&tokenTable[i].token), (char*)tokenIn, len) == 0) {
         int len = strlen((char *)tokenTable[i].token);
-
         if (strncmp((char *)tokenTable[i].token, (char*)tokenIn, len) == 0) {
-        //if (strncmp((char *)pgm_read_word(&tokenTable[i].token), (char*)tokenIn, len) == 0) {
             if (tokenOutLeft <= 1) return ERROR_LEXER_TOO_LONG;
             *tokenOut++ = i;
             tokenOutLeft--;
@@ -907,14 +1062,32 @@ int nextToken()
 
 int tokenize(unsigned char *input, unsigned char *output, int outputSize)
 {
+
+delay(50);
+
     tokenIn = input;
     tokenOut = output;
     tokenOutLeft = outputSize;
     int ret;
     while (1) {
         ret = nextToken();
+
+//MCU_freeRam();
+Serial.print(ret);
+
+if ( ret == -1 ) {
+    Serial.println("got EOL !");
+    //ret = 0;
+    delay( 50 );
+}
+
+//        if (ret != 0) break;
         if (ret) break;
+
     }
+
+led3( ret > 0 );
+
     return (ret > 0) ? ret : 0;
 }
 
@@ -922,7 +1095,9 @@ int tokenize(unsigned char *input, unsigned char *output, int outputSize)
  * PARSER / INTERPRETER
  * **************************************************************************/
 
-static char executeMode;	// 0 = syntax check only, 1 = execute
+// Xtase : declared upper
+//static char executeMode;	// 0 = syntax check only, 1 = execute
+
 uint16_t lineNumber, stmtNumber;
 // stmt number is 0 for the first statement, then increases after each command seperator (:)
 // Note that IF a=1 THEN PRINT "x": print "y" is considered to be only 2 statements
@@ -931,15 +1106,21 @@ static uint16_t stopLineNumber, stopStmtNumber;
 static char breakCurrentLine;
 
 static unsigned char *tokenBuffer, *prevToken;
-static int curToken;
+//static int curToken;
 static char identVal[MAX_IDENT_LEN+1];
 static char isStrIdent;
 static float numVal;
 static char *strVal;
-static long numIntVal;
+//static long numIntVal;
 
 int getNextToken()
 {
+
+// ======= MOA stmt loop iteration ====
+// delay(10);
+// ====================================
+Serial.print("getNextToken:");
+
     prevToken = tokenBuffer;
     curToken = *tokenBuffer++;
     if (curToken == TOKEN_IDENT) {
@@ -949,20 +1130,32 @@ int getNextToken()
         identVal[i] = (*tokenBuffer++)-0x80;
         isStrIdent = (identVal[i++] == '$');
         identVal[i++] = '\0';
+
+        Serial.print( identVal );
+
     }
     else if (curToken == TOKEN_NUMBER) {
         numVal = *(float*)tokenBuffer;
         tokenBuffer += sizeof(float);
+
+        Serial.print(numVal);
     }
     else if (curToken == TOKEN_INTEGER) {
         // these are really just for line numbers
         numVal = (float)(*(long*)tokenBuffer);
         tokenBuffer += sizeof(long);
+
+        Serial.print(numVal);
     }
     else if (curToken == TOKEN_STRING) {
         strVal = (char*)tokenBuffer;
         tokenBuffer += 1 + strlen(strVal);
+
+        Serial.print(strVal);
     }
+
+    Serial.print("\r\n");
+
     return curToken;
 }
 
@@ -1120,6 +1313,14 @@ int parseFnCallExpr() {
             tmp = (int)stackPopNum();
             if (!stackPushNum(host_analogRead(tmp))) return ERROR_OUT_OF_MEMORY;
             break;
+
+// ============ Xtase ===========
+        // case TOKEN_BTN:
+        //     tmp = (int)stackPopNum();
+        //     if (!stackPushNum(xts_buttonRead(tmp))) return ERROR_OUT_OF_MEMORY;
+        //     break;
+// ==============================
+
         default:
             return ERROR_UNEXPECTED_TOKEN;
         }
@@ -1265,7 +1466,14 @@ int parsePrimary() {
     case TOKEN_MID: 
     case TOKEN_PINREAD:
     case TOKEN_ANALOGRD:
+
+    // case TOKEN_BTN:
         return parseFnCallExpr();
+
+    // ------ Xtase token ---------
+    // case TOKEN_MEM:	
+    //     return getMemFree();
+    // ----------------------------
 
     default:
         return ERROR_UNEXPECTED_TOKEN;
@@ -1437,6 +1645,8 @@ int parse_GOTO() {
         if (startLine <= 0)
             return ERROR_BAD_LINE_NUM;
         jumpLineNumber = startLine;
+
+        //host_sleep(100); // Cf fast MCU
     }
     return 0;
 }
@@ -1497,8 +1707,10 @@ int parse_PRINT() {
         }
     }
     if (executeMode) {
-        if (newLine)
+        if (newLine) {
             host_newLine();
+        }
+
         host_showBuffer();
     }
     return 0;
@@ -1781,11 +1993,17 @@ int parseSimpleCmd() {
                 host_cls();
                 host_showBuffer();
                 break;
+
             case TOKEN_DIR:
-#if EXTERNAL_EEPROM
-                host_directoryExtEEPROM();
-#endif
+                xts_fs_dir();
+// // #if EXTERNAL_EEPROM
+// //                 host_directoryExtEEPROM();
+// // #endif
                 break;
+
+            // case TOKEN_BYE:
+            //     xts_mcu_reset();
+            //     break;
         }
     }
     return 0;
@@ -1815,60 +2033,109 @@ int parseStmts()
     jumpStmtNumber = 0;
 
     while (ret == 0) {
-        if (curToken == TOKEN_EOL)
+        if (curToken == TOKEN_EOL) {
             break;
-        if (executeMode)
-            sysSTACKEND = sysSTACKSTART = sysPROGEND;	// clear calculator stack
-        int needCmdSep = 1;
-        switch (curToken) {
-        case TOKEN_PRINT: ret = parse_PRINT(); break;
-        case TOKEN_LET: getNextToken(); ret = parseAssignment(false); break;
-        case TOKEN_IDENT: ret = parseAssignment(false); break;
-        case TOKEN_INPUT: getNextToken(); ret = parseAssignment(true); break;
-        case TOKEN_LIST: ret = parse_LIST(); break;
-        case TOKEN_RUN: ret = parse_RUN(); break;
-        case TOKEN_GOTO: ret = parse_GOTO(); break;
-        case TOKEN_REM: getNextToken(); getNextToken(); break;
-        case TOKEN_IF: ret = parse_IF(); needCmdSep = 0; break;
-        case TOKEN_FOR: ret = parse_FOR(); break;
-        case TOKEN_NEXT: ret = parse_NEXT(); break;
-        case TOKEN_GOSUB: ret = parse_GOSUB(); break;
-        case TOKEN_DIM: ret = parse_DIM(); break;
-        case TOKEN_PAUSE: ret = parse_PAUSE(); break;
-        
-        case TOKEN_LOAD:
-        case TOKEN_SAVE:
-        case TOKEN_DELETE:
-            ret = parseLoadSaveCmd();
-            break;
-        
-        case TOKEN_POSITION:
-        case TOKEN_PIN:
-        case TOKEN_PINMODE:
-            ret = parseTwoIntCmd(); 
-            break;
-            
-        case TOKEN_NEW:
-        case TOKEN_STOP:
-        case TOKEN_CONT:
-        case TOKEN_RETURN:
-        case TOKEN_CLS:
-        case TOKEN_DIR:
-            ret = parseSimpleCmd();
-            break;
-            
-        default: 
-            ret = ERROR_UNEXPECTED_CMD;
         }
+
+        Serial.print("tk_parse "); Serial.println( curToken );
+
+        if (executeMode) {
+            sysSTACKEND = sysSTACKSTART = sysPROGEND;	// clear calculator stack
+        }
+
+        int needCmdSep = 1;
+
+        switch (curToken) {
+            case TOKEN_PRINT: ret = parse_PRINT(); break;
+            case TOKEN_LET: getNextToken(); ret = parseAssignment(false); break;
+            case TOKEN_IDENT: ret = parseAssignment(false); break;
+            case TOKEN_INPUT: getNextToken(); ret = parseAssignment(true); break;
+            case TOKEN_LIST: ret = parse_LIST(); break;
+            case TOKEN_RUN: ret = parse_RUN(); break;
+            case TOKEN_GOTO: ret = parse_GOTO(); break;
+            case TOKEN_REM: getNextToken(); getNextToken(); break;
+            case TOKEN_IF: ret = parse_IF(); needCmdSep = 0; break;
+            case TOKEN_FOR: ret = parse_FOR(); break;
+            case TOKEN_NEXT: ret = parse_NEXT(); break;
+            case TOKEN_GOSUB: ret = parse_GOSUB(); break;
+            case TOKEN_DIM: ret = parse_DIM(); break;
+            case TOKEN_PAUSE: ret = parse_PAUSE(); break;
+            
+            case TOKEN_LOAD:
+            case TOKEN_SAVE:
+            case TOKEN_DELETE:
+                ret = parseLoadSaveCmd();
+                break;
+            
+            case TOKEN_POSITION:
+            case TOKEN_PIN:
+            case TOKEN_PINMODE:
+                ret = parseTwoIntCmd(); 
+                break;
+                
+            case TOKEN_NEW:
+            case TOKEN_STOP:
+            case TOKEN_CONT:
+            case TOKEN_RETURN:
+            case TOKEN_CLS:
+            case TOKEN_DIR:
+
+            // case TOKEN_BYE:
+                ret = parseSimpleCmd();
+                break;
+                
+            // ======== Xtase cmds =============
+            // case TOKEN_PRINT_QM: ret = parse_PRINT(); break;
+            // case TOKEN_REM_EM: getNextToken(); getNextToken(); break;
+
+            // case TOKEN_TONE: ret = xts_tone(); break;
+            // case TOKEN_MUTE: ret = xts_mute(); break;
+            
+            // case TOKEN_LED:    ret = xts_led(); break;
+            // case TOKEN_LOCATE: ret = xts_locate(); break;
+
+            // case TOKEN_ECHO: ret = xts_echo(); break;
+
+            // case TOKEN_DELAY: ret = xts_delay(); break;
+
+            // case TOKEN_PLAY: ret = xts_play(); break;
+            // case TOKEN_PLAYT5K: ret = xts_playT5K(); break;
+            // case TOKEN_PLAYT53: ret = xts_playT53(); break;
+
+            // // ======== Xtase cmds =============
+
+            default: {
+                Serial.print("Oups unexepected "); Serial.println( curToken );
+                ret = ERROR_UNEXPECTED_CMD;
+
+                // Xtase...
+                break;
+            }
+        }
+        
         // if error, or the execution line has been changed, exit here
-        if (ret || breakCurrentLine || jumpLineNumber || jumpStmtNumber)
+        if (ret || breakCurrentLine || jumpLineNumber || jumpStmtNumber) {
+            //Serial.print("jump "); Serial.println( jumpLineNumber );
+            //delay(190); // each GOTO ....
+
+            // ======= MOA stmt loop iteration ====
+            //delay(50);
+            // ====================================
+
             break;
+        }
+
         // it should either be the end of the line now, and (generally) a command seperator
         // before the next command
         if (curToken != TOKEN_EOL) {
             if (needCmdSep) {
                 if (curToken != TOKEN_CMD_SEP) ret = ERROR_UNEXPECTED_CMD;
                 else {
+
+                    // ======= MOA stmt loop iteration ====
+                    // delay(50);
+                    // ====================================
+
                     getNextToken();
                     // don't allow a trailing :
                     if (curToken == TOKEN_EOL) ret = ERROR_UNEXPECTED_CMD;
@@ -1883,6 +2150,8 @@ int parseStmts()
     }
     return ret;
 }
+
+bool oddTk = false;
 
 int processInput(unsigned char *tokenBuf) {
     // first token can be TOKEN_INTEGER for line number - stored as a float in numVal
@@ -1918,31 +2187,53 @@ int processInput(unsigned char *tokenBuf) {
         tokenBuffer = tokenBuf;
         executeMode = 1;
         lineNumber = 0;	// buffer
-        unsigned char *p;
 
+        unsigned char *p;
+        //int p_PC = 0;
+
+// Xtase try ...
+//getNextToken();
         while (1) {
+            Serial.print("z.curToken ");Serial.println( (*tokenBuffer) );
+
+// // Xtase try ...
+// if ( (*tokenBuffer) >= FIRST_IDENT_TOKEN && (*tokenBuffer) <= LAST_IDENT_TOKEN ) {
+//     getNextToken();
+// } else {
+//     getNextToken();
+// }
+
+
             getNextToken();
+            Serial.print("a.nxtToken ");Serial.println( (*tokenBuffer) );
 
             stmtNumber = 0;
             // skip any statements? (e.g. for/next)
             if (targetStmtNumber) {
+                Serial.print("a.stmt to parse ? ");Serial.println( (*tokenBuffer) );
                 executeMode = 0; 
                 parseStmts(); 
                 executeMode = 1;
                 targetStmtNumber = 0;
+                Serial.print("a.stmt parsed :");Serial.println( (*tokenBuffer) );
             }
             // now execute
+            Serial.print("c.now execute ");Serial.println( (*tokenBuffer) );
             ret = parseStmts();
+            Serial.print("c.executed ? ");Serial.println( (*tokenBuffer) );
+            
             if (ret != ERROR_NONE)
                 break;
 
             // are we processing the input buffer?
-            if (!lineNumber && !jumpLineNumber && !jumpStmtNumber)
+            if (!lineNumber && !jumpLineNumber && !jumpStmtNumber) {
                 break;	// if no control flow jumps, then just exit
+            }
 
             // are we RETURNing to the input buffer?
-            if (lineNumber && !jumpLineNumber && jumpStmtNumber)
+            if (lineNumber && !jumpLineNumber && jumpStmtNumber) {
                 lineNumber = 0;
+            }
 
             if (!lineNumber && !jumpLineNumber && jumpStmtNumber) {
                 // we're executing the buffer, and need to jump stmt (e.g. for/next)
@@ -1953,30 +2244,69 @@ int processInput(unsigned char *tokenBuf) {
                 if (jumpLineNumber || jumpStmtNumber) {
                     // line/statement number was changed e.g. goto
                     p = findProgLine(jumpLineNumber);
+
+                    Serial.print("-LINE CHANGED-:");
+                    Serial.println(jumpLineNumber);
+
                 }
                 else {
                     // line number didn't change, so just move one to the next one
+                    //Serial.println("-NEXT LINE-");
                     p+= *(uint16_t *)p;
+                    // Serial.print("-NEXT OK :"); Serial.println( p );
+                    //Serial.println("-NEXT OK :");
                 }
                 // end of program?
-                if (p == &mem[sysPROGEND])
+                if (p == &mem[sysPROGEND]) {
+                    Serial.println("-EOP-");
                     break;	// end of program
+                } else {
+                    // Serial.print( "p is : "); 
+                    // Serial.print( (*p) ); 
+                    // Serial.print( " EOP is : "); 
+                    // Serial.print( mem[sysPROGEND] ); 
+                    // Serial.print( " EOP is @ : "); 
+                    // Serial.print( sysPROGEND ); 
+                    // Serial.print( " PC is @ : "); 
+                    // Serial.println( (int)(p - ( &mem[0] )) ); 
+                }
 
+                Serial.println("-LINE REQ :");
                 lineNumber = *(uint16_t*)(p+2);
+                Serial.print("-LINE FOUND :");Serial.println(lineNumber);
+                
                 tokenBuffer = p+4;
+                // tokenBuffer = p+3; // Xtase try
+
+                Serial.print("-TK REQ :"); Serial.println( (*tokenBuffer) );
                 // if the target for a jump is missing (e.g. line deleted) and we're on the next line
                 // reset the stmt number to 0
-                if (jumpLineNumber && jumpStmtNumber && lineNumber > jumpLineNumber)
+                if (jumpLineNumber && jumpStmtNumber && lineNumber > jumpLineNumber) {
+                    Serial.print("RESETED OR MISSING "); Serial.println( jumpLineNumber );
                     jumpStmtNumber = 0;
+                }
             }
-            if (jumpStmtNumber)
+            if (jumpStmtNumber) {
                 targetStmtNumber = jumpStmtNumber;
+
+                Serial.print("JMP "); Serial.println( targetStmtNumber );
+            }
 
             if (host_ESCPressed())
             { 
+                Serial.println( "!BREAK!" );
                 ret = ERROR_BREAK_PRESSED; 
                 break; 
             }
+
+            // ====== PRGM RUNNING LOOP ======
+            // #ifdef BUT_TEENSY
+            //     // Hight Speed MCUs
+            //     host_sleep(260);
+
+            //     oddTk = !oddTk;
+            //     led1( oddTk );
+            // #endif
         }
     }
     return ret;

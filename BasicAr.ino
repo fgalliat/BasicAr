@@ -141,10 +141,51 @@ void setup() {
     //autorun = 1;
 }
 
-
-
+// $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 void loop() {
+    int ret = ERROR_NONE;
+
+    if (!autorun) {
+        // get a line from the user
+        char *input = host_readLine();
+        // special editor commands
+        if (input[0] == '?' && input[1] == 0) {
+            host_outputFreeMem(sysVARSTART - sysPROGEND);
+            host_showBuffer();
+            return;
+        }
+        // otherwise tokenize
+        ret = tokenize((unsigned char*)input, tokenBuf, TOKEN_BUF_SIZE);
+    }
+    else {
+        host_loadProgram();
+        tokenBuf[0] = TOKEN_RUN;
+        tokenBuf[1] = 0;
+        autorun = 0;
+    }
+    // execute the token buffer
+    if (ret == ERROR_NONE) {
+        host_newLine();
+        ret = processInput(tokenBuf);
+    }
+    if (ret != ERROR_NONE) {
+        host_newLine();
+        if (lineNumber !=0) {
+            host_outputInt(lineNumber);
+            host_outputChar('-');
+        }
+        //host_outputProgMemString((char *)pgm_read_word(&(errorTable[ret])));
+        host_outputString((char *)errorTable[ret]);
+    }
+}
+
+
+
+// $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+void loop2() {
     int ret = ERROR_NONE;
 
     if (!autorun) {
@@ -159,15 +200,16 @@ void loop() {
             host_showBuffer();
             return;
         } else if (input[0] == '!' && input[1] == 0) {
-            input = (char*)"10 ? \"Coucou\"";
+            //input = (char*)"10 ? \"Coucou\"";
+            input = (char*)"10 PRINT \"Coucou\"";
             ret = tokenize((unsigned char*)input, tokenBuf, TOKEN_BUF_SIZE); ret = processInput(tokenBuf);
             if ( ret > 0 ) { host_outputString((char *)errorTable[ret]); host_showBuffer(); }
             ret = ERROR_NONE;
             
-            input = (char*)"20 FOR I=1 TO 5 : ? \"coucou\";I : NEXT I";
-            ret = tokenize((unsigned char*)input, tokenBuf, TOKEN_BUF_SIZE); ret = processInput(tokenBuf);
-            if ( ret > 0 ) { host_outputString((char *)errorTable[ret]); host_showBuffer(); }
-            ret = ERROR_NONE;
+            // input = (char*)"20 FOR I=1 TO 5 : ? \"coucou\";I : NEXT I";
+            // ret = tokenize((unsigned char*)input, tokenBuf, TOKEN_BUF_SIZE); ret = processInput(tokenBuf);
+            // if ( ret > 0 ) { host_outputString((char *)errorTable[ret]); host_showBuffer(); }
+            // ret = ERROR_NONE;
             
             input = (char*)"30 GOTO 10";
             ret = tokenize((unsigned char*)input, tokenBuf, TOKEN_BUF_SIZE); ret = processInput(tokenBuf);
@@ -223,9 +265,9 @@ void loop() {
             host_outputChar('-');
         }
 
-        host_outputString("RET = ");
+        host_outputString( "RET = " );
         host_outputInt(ret);
-        host_outputString("\n");
+        host_outputString( "\n" );
         //host_outputProgMemString((char *)pgm_read_word(&(errorTable[ret])));
         host_outputString((char *)errorTable[ret]);
         host_showBuffer();

@@ -33,8 +33,11 @@ void host_startupTone();
 void host_cls();
 void host_showBuffer();
 void host_moveCursor(int x, int y);
+
 void host_outputString(char *str);
+void host_outputString(const char *str);
 void host_outputProgMemString(const char *str);
+
 void host_outputChar(char c);
 void host_outputFloat(float f);
 char *host_floatToStr(float f, char *buf);
@@ -46,7 +49,7 @@ bool host_ESCPressed();
 void host_outputFreeMem(unsigned int val);
 void host_saveProgram(bool autoexec);
 void host_loadProgram();
-
+ 
 #ifdef EXTERNAL_EEPROM
   #include <I2cMaster.h>
   void writeExtEEPROM(unsigned int address, byte data);

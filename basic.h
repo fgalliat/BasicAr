@@ -10,9 +10,9 @@
 
 #include <stdint.h>
 
-#ifdef FS_SUPPORT_AVOIDS_CONST
-  //#define const
-#endif
+// #ifdef FS_SUPPORT_AVOIDS_CONST
+//   //#define const
+// #endif
 
 
 // ===============================
@@ -195,15 +195,18 @@ typedef struct {
 ForNextData;
 
 typedef struct {
-    char *token;
+    const char *token;
     uint8_t format;
 } 
 TokenTableEntry;
 
 //extern const char *errorTable[];
-extern const char* const errorTable[];
+// extern const char* const errorTable[];
+// extern const TokenTableEntry tokenTable[];
 
-extern const TokenTableEntry tokenTable[];
+extern const char* errorTable[];
+extern TokenTableEntry tokenTable[];
+
 
 
 void reset();

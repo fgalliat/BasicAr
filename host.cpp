@@ -320,6 +320,12 @@ void scrollBuffer() {
     isWriting = false;
 }
 
+void host_outputString(char *str);
+
+void host_outputString(const char *str) {
+    host_outputString((char*)str);
+}
+
 void host_outputString(char *str) {
     isWriting = true;
     int pos = curY*SCREEN_WIDTH+curX;
