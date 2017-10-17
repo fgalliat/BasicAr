@@ -9,6 +9,16 @@ du moins avec mon code de compatibilité
 2) remettre le code du reset de la MCU pour le teensy (in progress) (DONE)
 3) separer les FS_SUPPORT en mode SDFAT ou non
 
+
+LOCATE , LED, .. could goes into : parseTwoIntCmd()
+
+================================================================
+
+basic.cpp :: processInput()
+  DBUG all return(s) 
+
+
+
 ================================================================
 DONE
   STORAGE (SDCARD SPI)

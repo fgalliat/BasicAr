@@ -136,6 +136,8 @@ int xts_echo() {
   if (executeMode) {
     LOCAL_ECHO = ( echoValue != 0 );
   }
+
+  return 0;
 }
 
 // == Clock
@@ -150,6 +152,8 @@ int xts_delay() {
     host_sleep(delayValue);
     //interrupts();
   }
+  
+  return 0;
 }
 
 

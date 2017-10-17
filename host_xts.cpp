@@ -149,20 +149,21 @@ void setupHardware() {
    //Timer1.initialize(350000); // 350ms 
    //Timer1.attachInterrupt( _ISR_emul );
 
-   myTimer.begin(_ISR_emul, 150000); // 150ms
-   myTimer.priority( 20 ); // 0 maximum priority
+
+  //  myTimer.begin(_ISR_emul, 150000); // 150ms
+  //  myTimer.priority( 20 ); // 0 maximum priority
    
  #endif
 }
 
 #ifdef BUT_TEENSY
   void _noInterrupts() {
-    myTimer.end();
+  //   myTimer.end();
   }
 
   void _interrupts() {
-    myTimer.begin(_ISR_emul, 150000); // 150ms
-    myTimer.priority( 20 ); // 0 maximum priority
+    // myTimer.begin(_ISR_emul, 150000); // 150ms
+    // myTimer.priority( 20 ); // 0 maximum priority
   }
 #endif
 
@@ -654,8 +655,8 @@ extern int *__brkval;
 int v; 
 //int fr = (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 int fr = (int) &v - ((int) __brkval); 
-//   Serial.print("Free ram: ");
-//   Serial.println(fr);
+   Serial.print("Free ram: ");
+   Serial.println(fr);
 return fr;
 }
 
@@ -672,3 +673,16 @@ void MCU_reset() {
       // for(;;) {}
 }
 
+
+
+extern unsigned char mem[];
+extern int sysPROGEND;
+
+// il faudrait que le contenu soit tokenized pour que cela fonctionne
+const char* TEST_PRGM = "10 ? \"Coucou\"\r20 GOTO 10\r";
+void xts_loadTestProgram() {
+  // skip the autorun byte
+  sysPROGEND = strlen(TEST_PRGM);
+  for (int i=0; i<sysPROGEND; i++)
+      mem[i] = TEST_PRGM[i];
+}

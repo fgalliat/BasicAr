@@ -73,8 +73,8 @@ const char welcomeStr[]  = "Arduino BASIC";
 char autorun = 0;
 
 // =========/ Serial Event /==============
-String inputString = "";         // a String to hold incoming data
-volatile boolean stringComplete = false;  // whether the string is complete
+// String inputString = "";         // a String to hold incoming data
+// volatile boolean stringComplete = false;  // whether the string is complete
 volatile boolean isWriting = false; // lock read when write
 // =========/ Serial Event /==============
 
@@ -91,7 +91,7 @@ unsigned char audiobuff[AUDIO_BUFF_SIZE];
 void setup() {
 
     BUZZER_MUTE = true;
-    inputString.reserve(200);
+    // inputString.reserve(200);
     
     setupHardware();
 
@@ -138,7 +138,7 @@ void setup() {
         if ( !BUZZER_MUTE ) { host_startupTone(); }
     }
 
-    
+    //autorun = 1;
 }
 
 
@@ -146,15 +146,6 @@ void setup() {
 
 void loop() {
     int ret = ERROR_NONE;
-
-// // print the string when a newline arrives:
-// if (stringComplete) {
-//     Serial.println("Ya typed : ");
-//     Serial.println(inputString);
-//     // clear the string:
-//     inputString = "";
-//     stringComplete = false;
-//   }
 
     if (!autorun) {
         // get a line from the user
@@ -167,19 +158,53 @@ void loop() {
             host_outputFreeMem(sysVARSTART - sysPROGEND);
             host_showBuffer();
             return;
+        } else if (input[0] == '!' && input[1] == 0) {
+            input = (char*)"10 ? \"Coucou\"";
+            ret = tokenize((unsigned char*)input, tokenBuf, TOKEN_BUF_SIZE); ret = processInput(tokenBuf);
+            if ( ret > 0 ) { host_outputString((char *)errorTable[ret]); host_showBuffer(); }
+            ret = ERROR_NONE;
+            
+            input = (char*)"20 FOR I=1 TO 5 : ? \"coucou\";I : NEXT I";
+            ret = tokenize((unsigned char*)input, tokenBuf, TOKEN_BUF_SIZE); ret = processInput(tokenBuf);
+            if ( ret > 0 ) { host_outputString((char *)errorTable[ret]); host_showBuffer(); }
+            ret = ERROR_NONE;
+            
+            input = (char*)"30 GOTO 10";
+            ret = tokenize((unsigned char*)input, tokenBuf, TOKEN_BUF_SIZE); ret = processInput(tokenBuf);
+            if ( ret > 0 ) { host_outputString((char *)errorTable[ret]); host_showBuffer(); }
+            ret = ERROR_NONE;
+            
+            input = (char*)"LIST";
+            ret = tokenize((unsigned char*)input, tokenBuf, TOKEN_BUF_SIZE); ret = processInput(tokenBuf);
+            if ( ret > 0 ) { host_outputString((char *)errorTable[ret]); host_showBuffer(); }
+            ret = ERROR_NONE;
+            
         }
+        
+        
+        // if (input[0] == '!' && input[1] == 0) {
+        //     xts_loadTestProgram();
+        //     tokenBuf[0] = TOKEN_LIST;
+        //     tokenBuf[1] = 0;
+        //     autorun = 0;
+        // } else {
 
-        // otherwise tokenize
-        ret = tokenize((unsigned char*)input, tokenBuf, TOKEN_BUF_SIZE);
+            // otherwise tokenize
+            ret = tokenize((unsigned char*)input, tokenBuf, TOKEN_BUF_SIZE);
 
-        // moa
-        host_showBuffer();
-        //delay(50);
 
+            led2( ret > 0 );
+
+            // moa
+            host_showBuffer();
+            //delay(50);
+        //}
     }
     else {
         host_loadProgram();
         tokenBuf[0] = TOKEN_RUN;
+        // xts_loadTestProgram();
+        // tokenBuf[0] = TOKEN_LIST;
         tokenBuf[1] = 0;
         autorun = 0;
     }
@@ -187,6 +212,9 @@ void loop() {
     if (ret == ERROR_NONE) {
         host_newLine();
         ret = processInput(tokenBuf);
+
+        led3( ret > 0 );
+
     }
     if (ret != ERROR_NONE) {
         host_newLine();

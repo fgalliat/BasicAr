@@ -67,7 +67,8 @@ char inputMode = 0;
 char inkeyChar = 0;
 char buzPin = 0;
 
-const char bytesFreeStr[] PROGMEM = "bytes free";
+//const char bytesFreeStr[] PROGMEM = "bytes free";
+const char bytesFreeStr[] = "bytes free";
 
 void initTimer() {
 
@@ -108,9 +109,17 @@ void initTimer() {
 #else
 
 extern void xts_serialEvent();
+bool firstTime = true;
 
     void _ISR_emul() // called from desktop_devices.h
     {
+
+        if ( firstTime ) {
+            firstTime = false;
+        } else {
+            return;
+        }
+
         xts_serialEvent();
         
 
@@ -192,6 +201,7 @@ void host_cls() {
 
     #ifdef BUILTIN_LCD
       display.clearDisplay();
+      display.display();
     #endif
 
     isWriting = false;
@@ -329,6 +339,7 @@ void host_outputString(char *str) {
     }
     curX = pos % SCREEN_WIDTH;
     curY = pos / SCREEN_WIDTH;
+
     isWriting = false;
 }
 
@@ -493,12 +504,12 @@ char host_getKey() {
 }
 
 bool host_ESCPressed() {
-    while (keyboard.available()) {
-        // read the next key
-        inkeyChar = keyboard.read();
-        if (inkeyChar == PS2_ESC || inkeyChar == '!')
-            return true;
-    }
+    // while (keyboard.available()) {
+    //     // read the next key
+    //     inkeyChar = keyboard.read();
+    //     if (inkeyChar == PS2_ESC || inkeyChar == '!')
+    //         return true;
+    // }
     //return false;
     //host_sleep(50);
     

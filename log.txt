@@ -1,0 +1,96 @@
+0000x02 I found EOL !!!!
+-1got EOL !
+getNextToken:10.00
+getNextToken:
+tk_parse 67
+getNextToken:Coucou
+getNextToken:
+0000000000000000x02 I found EOL !!!!
+-1got EOL !
+getNextToken:20.00
+getNextToken:
+tk_parse 42
+getNextToken:I
+getNextToken:
+getNextToken:1.00
+getNextToken:
+getNextToken:5.00
+getNextToken:
+getNextToken:
+tk_parse 67
+getNextToken:coucou
+getNextToken:
+getNextToken:I
+getNextToken:
+getNextToken:
+tk_parse 45
+getNextToken:I
+getNextToken:
+0000x02 I found EOL !!!!
+-1got EOL !
+getNextToken:30.00
+getNextToken:
+tk_parse 30
+getNextToken:10.00
+getNextToken:
+00x02 I found EOL !!!!
+-1got EOL !
+getNextToken:
+tk_parse 28
+getNextToken:
+z.curToken 28
+getNextToken:
+a.nxtToken 0
+c.now execute 0
+tk_parse 28
+getNextToken:
+c.executed ? 0
+00x02 I found EOL !!!!
+-1got EOL !
+getNextToken:
+tk_parse 28
+getNextToken:
+z.curToken 28
+getNextToken:
+a.nxtToken 0
+c.now execute 0
+tk_parse 28
+getNextToken:
+c.executed ? 0
+00x02 I found EOL !!!!
+-1got EOL !
+----------------------------------------------
+getNextToken:
+tk_parse 29
+getNextToken:
+z.curToken 29
+getNextToken:
+a.nxtToken 0
+c.now execute 0
+tk_parse 29
+getNextToken:
+c.executed ? 0
+-LINE CHANGED-:1
+-LINE REQ :
+-LINE FOUND :10
+-TK REQ :67
+z.curToken 67
+getNextToken:
+a.nxtToken 4
+c.now execute 4
+tk_parse 67
+getNextToken:Coucou
+getNextToken:
+c.executed ? 37
+-LINE REQ :
+-LINE FOUND :20
+-TK REQ :42
+z.curToken 42
+getNextToken:
+a.nxtToken 1
+c.now execute 1
+tk_parse 42
+getNextToken:I
+getNextToken:
+getNextToken:1.00
+getNextToken:

@@ -12,8 +12,8 @@
   #define PS2_ESC 27
 
 // =========/ Serial Event /==============
-extern String inputString;
-extern volatile boolean stringComplete;
+// extern String inputString;
+// extern volatile boolean stringComplete;
 extern volatile boolean isWriting;
 // =========/ Serial Event /==============
 
@@ -41,10 +41,10 @@ extern volatile boolean isWriting;
           }
   
           int read() { 
-            //   int tmpCh = Serial.read();
-            //   if ( tmpCh == 10 || tmpCh==13 ) { tmpCh = PS2_ENTER; }
-            //   delay(5);
-            //   return tmpCh;
+              int tmpCh = Serial.read();
+              if ( tmpCh == 10 || tmpCh==13 ) { tmpCh = PS2_ENTER; }
+              delay(5);
+              return tmpCh;
 
             // if ( inputString.length() > 0 ) {
             //   char ch = inputString.charAt(0);
@@ -52,7 +52,7 @@ extern volatile boolean isWriting;
             //   return ch;
             // }
             // return -1;
-            return Serial.read();
+            // return Serial.read();
           }
   
   };

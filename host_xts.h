@@ -33,6 +33,7 @@ void playTuneFromStorage(char* tuneName, int format, bool btnStop);
 void lsStorage();
 
 void MCU_reset();
+int MCU_freeRam();
 
 void _noInterrupts();
 void _interrupts();
@@ -44,4 +45,4 @@ void _interrupts();
  
 // =================================
 
-
+void xts_loadTestProgram();
