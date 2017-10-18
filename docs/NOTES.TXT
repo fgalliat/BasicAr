@@ -21,7 +21,7 @@ TODO
 
   VGA Serial Monitor drivers (on spe SerialX) (start to impl. fileIO descr)
    L console command --> args to add to manage # cases
-
+   L when change output console -> recompute SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_MEM[]
  
   LOAD PRGM from SDCard <Source Code> LATER from SDCard <Tokens>
    L after that : impl. SAVE as ASCII or TOKENS

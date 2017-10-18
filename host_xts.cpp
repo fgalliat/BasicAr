@@ -127,6 +127,7 @@ void setupLCD() {
 #ifdef BOARD_VGA
 void setupVGASerial() {
   setup_vgat();
+  vgat_startScreen();
 }
 #endif
 
