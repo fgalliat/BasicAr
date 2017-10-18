@@ -27,6 +27,15 @@ but num var manips doesn't !!!!! --> look @ float2mem routine calls --> seems OK
     num[]          are ??? \__ TODO : TEST
     str[]          are ??? /
 
+make a mem2float(unsigned char* cur, unsigned char* src) function
+  {  int addr = &(cur[0]) - &(src[0]);  } where cur can be 'p' & src 'mem'
+
+
+en fait ce sont tout les FOR qui ne passent plus (pour la meme raison...)
+  FOR I=1 TO 5 : PRINT "coucou";I : NEXT I
+
+
+
 
 __________________
 10 DIM a$(5)         

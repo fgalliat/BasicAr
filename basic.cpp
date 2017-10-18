@@ -590,11 +590,18 @@ int storeForNextVariable(char *name, float start, float step, float end, uint16_
     *p++ = VAR_TYPE_FORNEXT;
     strcpy((char*)p, name); 
     p += nameLen + 1;
-    *(float *)p = start; 
+
+    //*(float *)p = start; 
+    float2mem(p, mem, start);
+
     p += sizeof(float);
-    *(float *)p = step; 
+    //*(float *)p = step; 
+    float2mem(p, mem, step);
+
     p += sizeof(float);
-    *(float *)p = end; 
+    //*(float *)p = end; 
+    float2mem(p, mem, end);
+
     p += sizeof(float);
     *(uint16_t *)p = lineNum; 
     p += sizeof(uint16_t);
