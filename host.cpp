@@ -23,6 +23,10 @@ bool LOCAL_ECHO = true;
 
 #include "xts_arch.h"
 
+#include "xts_io.h"
+int OUTPUT_DEVICE;
+
+
  #include "desktop_devices.h"
  #include <EEPROM.h>
 extern SSD1306ASCII oled;
@@ -46,6 +50,10 @@ extern bool BUZZER_MUTE;
 #ifdef BUILTIN_LCD
  #include "dev_screen_Adafruit_SSD1306.h"
  extern Adafruit_SSD1306 display;
+#endif
+
+#ifdef BOARD_VGA
+  #include "dev_screen_VGATEXT.h"
 #endif
 
 
@@ -195,9 +203,21 @@ void host_cls() {
     curY = 0;
 
     #ifdef BUILTIN_LCD
-      display.clearDisplay();
-      display.display();
+        if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
+            display.clearDisplay();
+            display.display();
+        } else 
     #endif
+
+    #ifdef BOARD_VGA
+        if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
+            vgat_cls();
+        } else 
+    #endif
+
+      if ( OUTPUT_DEVICE == OUT_DEV_SERIAL ) {
+          Serial.print("\n\n\n\n------------\n\n\n");
+      }
 
     isWriting = false;
 }
@@ -212,7 +232,9 @@ void host_moveCursor(int x, int y) {
     curY = y; 
 
     #ifdef BUILTIN_LCD
-      display.setCursor(x*6,y*8);
+        if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
+            display.setCursor(x*6,y*8);
+        }
     #endif
     isWriting = false;
 }
@@ -260,44 +282,50 @@ isWriting = true;
 interrupts();
 
 #else    
-    // Xtase
-    //display.clearDisplay();
 
-    noInterrupts();
-    _noInterrupts();
+    // noInterrupts();
+    // _noInterrupts();
 
-    for (int y=0; y<SCREEN_HEIGHT; y++) {
-        if (lineDirty[y] || (inputMode && y==curY)) {
-            //display.setCursor(0,y);
-            display.setCursor(0,y*8);
+    // BEWARE W/ COMPILLER CONDITION !!!!!!
 
-            display.setTextColor( BLACK );
-            display.drawFastHLine( 0, (y+0)*8, 128, (y+0)*8 );
-            display.drawFastHLine( 0, (y+1)*8, 128, (y+1)*8 );
-            display.drawFastHLine( 0, (y+2)*8, 128, (y+2)*8 );
-            display.drawFastHLine( 0, (y+3)*8, 128, (y+3)*8 );
-            display.drawFastHLine( 0, (y+4)*8, 128, (y+4)*8 );
-            display.drawFastHLine( 0, (y+5)*8, 128, (y+5)*8 );
-            display.drawFastHLine( 0, (y+6)*8, 128, (y+6)*8 );
-            display.drawFastHLine( 0, (y+7)*8, 128, (y+7)*8 );
-            display.setTextColor( WHITE );
+    if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
+        for (int y=0; y<SCREEN_HEIGHT; y++) {
+            if (lineDirty[y] || (inputMode && y==curY)) {
+                //display.setCursor(0,y);
+                display.setCursor(0,y*8);
 
-            for (int x=0; x<SCREEN_WIDTH; x++) {
-                char c = screenBuffer[y*SCREEN_WIDTH+x];
-                if (c<32) c = ' ';
-                //if (x==curX && y==curY && inputMode && flash) c = 127;
-                if (x==curX && y==curY && inputMode && _flash) c = 127;
-                display.print(c);
+                display.setTextColor( BLACK );
+                display.drawFastHLine( 0, (y+0)*8, 128, (y+0)*8 );
+                display.drawFastHLine( 0, (y+1)*8, 128, (y+1)*8 );
+                display.drawFastHLine( 0, (y+2)*8, 128, (y+2)*8 );
+                display.drawFastHLine( 0, (y+3)*8, 128, (y+3)*8 );
+                display.drawFastHLine( 0, (y+4)*8, 128, (y+4)*8 );
+                display.drawFastHLine( 0, (y+5)*8, 128, (y+5)*8 );
+                display.drawFastHLine( 0, (y+6)*8, 128, (y+6)*8 );
+                display.drawFastHLine( 0, (y+7)*8, 128, (y+7)*8 );
+                display.setTextColor( WHITE );
+
+                for (int x=0; x<SCREEN_WIDTH; x++) {
+                    char c = screenBuffer[y*SCREEN_WIDTH+x];
+                    if (c<32) c = ' ';
+                    //if (x==curX && y==curY && inputMode && flash) c = 127;
+                    if (x==curX && y==curY && inputMode && _flash) c = 127;
+                    display.print(c);
+                }
+                lineDirty[y] = 0;
             }
-            lineDirty[y] = 0;
         }
+
+        // Xtase
+        display.display(); // to place in an interrupt
+    } else if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
+        Serial.println("Show buffer on VGA TEXT Serial");
+    } else if ( OUTPUT_DEVICE == OUT_DEV_SERIAL ) {
+        Serial.println("Show buffer on regular Serial");
     }
 
-    // Xtase
-    display.display(); // to place in an interrupt
-
-    interrupts();
-    _interrupts();
+    // interrupts();
+    // _interrupts();
 
 #endif
 }

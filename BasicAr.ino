@@ -12,6 +12,9 @@
 extern bool STORAGE_OK;
 bool BUZZER_MUTE = false;
 
+#include "xts_io.h"
+extern int OUTPUT_DEVICE;
+
 
 #ifdef BUT_TEENSY
     #include "desktop_devices.h"
@@ -62,6 +65,10 @@ SSD1306ASCII oled(OLED_DATA, OLED_CLK, OLED_DC, OLED_RST, OLED_CS);
 // BASIC
 unsigned char mem[MEMORY_SIZE];
 
+// $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+unsigned char audiobuff[AUDIO_BUFF_SIZE];
+// $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
 // NB OF TOKEN PER LINES
 #define TOKEN_BUF_SIZE    64
 unsigned char tokenBuf[TOKEN_BUF_SIZE];
@@ -80,9 +87,7 @@ char lineDirty[SCREEN_HEIGHT];
 // ============================================
 
 
-// $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-unsigned char audiobuff[AUDIO_BUFF_SIZE];
-// $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 
 
 
 void setup() {
@@ -95,6 +100,12 @@ void setup() {
     
     keyboard.begin(DataPin, IRQpin);
     oled.ssd1306_init(SSD1306_SWITCHCAPVCC);
+
+    OUTPUT_DEVICE = OUT_DEV_SERIAL;
+    #ifdef BUILTIN_LCD
+      OUTPUT_DEVICE = OUT_DEV_LCD_MINI;
+    #endif
+
 
     reset();
     host_init(BUZZER_PIN);
@@ -134,7 +145,6 @@ void setup() {
         if ( !BUZZER_MUTE ) { host_startupTone(); }
     }
 
-    //autorun = 1;
 }
 
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -227,6 +237,7 @@ void loop() {
         host_outputString( "RET = " );
         host_outputInt(ret);
         host_outputString( "\n" );
+
         //host_outputProgMemString((char *)pgm_read_word(&(errorTable[ret])));
         host_outputString((char *)errorTable[ret]);
         host_showBuffer();

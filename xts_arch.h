@@ -14,7 +14,8 @@
 
   // Xts-uBasic Board Hardware Layout
   #ifdef XTSUBASIC_LAYOUT
-    #define BUILTIN_LCD
+    #define BUILTIN_LCD 1
+    #define BOARD_VGA 1
   #endif
 
   #define FS_SUPPORT 1

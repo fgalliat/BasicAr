@@ -29,6 +29,9 @@
 
 #include "host_xts.h"
 
+#ifdef BOARD_VGA
+  #include "dev_screen_VGATEXT.h"
+#endif
 
 
 
@@ -121,6 +124,12 @@ void setupLCD() {
 
 #endif
 
+#ifdef BOARD_VGA
+void setupVGASerial() {
+  setup_vgat();
+}
+#endif
+
 
 #ifdef BUT_TEENSY
   //#include <TimerOne.h> // for Teensy 2 & 2++
@@ -139,6 +148,9 @@ void setupHardware() {
    setupLCD();
  #endif
 
+ #ifdef BOARD_VGA
+   setupVGASerial();
+ #endif
 
  #ifdef FS_SUPPORT
    setupSD();

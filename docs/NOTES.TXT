@@ -21,6 +21,11 @@ TODO
 
   VGA Serial Monitor drivers (on spe SerialX) (start to impl. fileIO descr)
 
+  LOAD PRGM from SDCard <Source Code> LATER from SDCard <Tokens>
+   L after that : impl. SAVE as ASCII or TOKENS
+
+  FILES as DIR alias + filter ex. "*.BAS"
+
   RETRY LIGHT4.BAS
 
 ================================================================
