@@ -11,7 +11,7 @@
 //     return (unsigned char)t;
 //   }
 
-  bool isBEndian = -1;
+  int isBEndian = -1;
 
   bool isBigEndian(){
     if ( isBEndian > -1 ) { return isBEndian == 1; } 
@@ -28,16 +28,23 @@
   float getFloatFromBytes(unsigned char* memSeg, int address) {
     char bytes[sizeof(float)];
 
-    if(isBigEndian){
+    // DBUG_NOLN( "Parsing float from MEM : " );
+
+    if( isBigEndian() ){
        for(int i=0;i<sizeof(float);i++) {
           bytes[sizeof(float)-i] = memSeg[address+i];
+        //   DBUG_NOLN( (int)memSeg[address+i] );
+        //   DBUG_NOLN( " " );
         }
     }
     else{
        for(int i=0;i<sizeof(float);i++) {
           bytes[i] = memSeg[address+i];
+        //   DBUG_NOLN( (int)memSeg[address+i] );
+        //   DBUG_NOLN( " " );
         }
     }
+    // DBUG_NOLN( "\n" );
     float result;
     memcpy(&result, bytes, sizeof(float));
     return result;

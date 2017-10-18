@@ -220,10 +220,10 @@ void loop() {
             if ( ret > 0 ) { host_outputString((char *)errorTable[ret]); host_showBuffer(); }
             ret = ERROR_NONE;
             
-            // input = (char*)"20 FOR I=1 TO 5 : ? \"coucou\";I : NEXT I";
-            // ret = tokenize((unsigned char*)input, tokenBuf, TOKEN_BUF_SIZE); ret = processInput(tokenBuf);
-            // if ( ret > 0 ) { host_outputString((char *)errorTable[ret]); host_showBuffer(); }
-            // ret = ERROR_NONE;
+            input = (char*)"20 FOR I=1 TO 5 : PRINT \"coucou\";I : NEXT I";
+            ret = tokenize((unsigned char*)input, tokenBuf, TOKEN_BUF_SIZE); ret = processInput(tokenBuf);
+            if ( ret > 0 ) { host_outputString((char *)errorTable[ret]); host_showBuffer(); }
+            ret = ERROR_NONE;
             
             input = (char*)"30 GOTO 10";
             ret = tokenize((unsigned char*)input, tokenBuf, TOKEN_BUF_SIZE); ret = processInput(tokenBuf);

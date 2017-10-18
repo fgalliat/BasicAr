@@ -272,7 +272,8 @@ int stackPushNum(float val) {
         return 0;	// out of memory
     unsigned char *p = &mem[sysSTACKEND];
     
-    // original code ...
+    // orginal code : can cause deadlocks
+    // ... Teensy 32b don't like that
     //*(float *)p = val;
     copyFloatToBytes(mem, sysSTACKEND, val);
 
@@ -281,21 +282,22 @@ int stackPushNum(float val) {
     return 1;
 }
 float stackPopNum() {
-    DBUG("Ent.stackPopNum->", sysSTACKEND);
+    // DBUG("Ent.stackPopNum->", sysSTACKEND);
     sysSTACKEND -= sizeof(float);
-    DBUG("stackPopNum->", sysSTACKEND);
+    // DBUG("stackPopNum->", sysSTACKEND);
     unsigned char *p = &mem[sysSTACKEND];
-    DBUG("stackPopNum A->",(int)mem[sysSTACKEND+0]);
-    DBUG("stackPopNum B->",(int)mem[sysSTACKEND+1]);
-    DBUG("stackPopNum C->",(int)mem[sysSTACKEND+2]);
-    DBUG("stackPopNum D->",(int)mem[sysSTACKEND+3]);
+    // DBUG("stackPopNum A->",(int)mem[sysSTACKEND+0]);
+    // DBUG("stackPopNum B->",(int)mem[sysSTACKEND+1]);
+    // DBUG("stackPopNum C->",(int)mem[sysSTACKEND+2]);
+    // DBUG("stackPopNum D->",(int)mem[sysSTACKEND+3]);
 
 
     // orginal code : can cause deadlocks
+    // ... Teensy 32b don't like that
     //float result = *(float *)p;
     float result = getFloatFromBytes( mem, sysSTACKEND ); // Xtase replacement
 
-    DBUG("Ex.stackPopNum", (int)result);
+    // DBUG("Ex.stackPopNum", (int)result);
     return result;
 }
 int stackPushStr(char *str) {
@@ -435,11 +437,19 @@ unsigned char *findVariable(char *searchName, int searchMask) {
         int type = *(p+2);
         if (type & searchMask) {
             unsigned char *name = p+3;
+
+            DBUG_NOLN("Var scan : >");
+            DBUG_NOLN((char*)name);
+            DBUG("<");
+
             if (strcasecmp((char*)name, searchName) == 0)
                 return p;
         }
         p+= *(uint16_t *)p;
     }
+
+    DBUG("Var not found : ");
+    DBUG(searchName);
     return NULL;
 }
 
@@ -456,9 +466,14 @@ void deleteVariableAt(unsigned char *pos) {
 // todo - consistently return errors rather than 1 or 0?
 
 int storeNumVariable(char *name, float val) {
+
+    DBUG("registering num var");
+    DBUG( name );
+
     // these can be modified in place
     int nameLen = strlen(name);
     unsigned char *p = findVariable(name, VAR_TYPE_NUM|VAR_TYPE_FORNEXT);
+
     if (p != NULL)
     {	// replace the old value
         // (could either be VAR_TYPE_NUM or VAR_TYPE_FORNEXT)
@@ -472,9 +487,14 @@ int storeNumVariable(char *name, float val) {
         bytesNeeded += nameLen + 1;	// name
         bytesNeeded += sizeof(float);	// val
 
-        if (sysVARSTART - bytesNeeded < sysSTACKEND)
+        DBUG("bytes req. : ", bytesNeeded);
+
+        if (sysVARSTART - bytesNeeded < sysSTACKEND) {
+            DBUG("new int var : MEM OVERFLOW");
             return 0;	// out of memory
+        }
         sysVARSTART -= bytesNeeded;
+        DBUG("bytes va start : ", sysVARSTART);
 
         unsigned char *p = &mem[sysVARSTART];
         *(uint16_t *)p = bytesNeeded; 
@@ -483,7 +503,17 @@ int storeNumVariable(char *name, float val) {
         strcpy((char*)p, name); 
         p += nameLen + 1;
         *(float *)p = val;
+
+        DBUG("registered num var");
+        DBUG( name );
+        for(int i=0; i < bytesNeeded; i++) {
+            DBUG_NOLN( mem[sysVARSTART+i] ); DBUG_NOLN( " " );
+        }
+
     }
+
+    DBUG_NOLN( "\n" );
+
     return 1;
 }
 
@@ -1471,29 +1501,27 @@ int parse_RUN() {
 }
 
 int parse_GOTO() {
-
-
-DBUG("Entering GOTO");
+// DBUG("Entering GOTO");
 
     getNextToken();
-DBUG("GT. 1");
+// DBUG("GT. 1");
     int val = expectNumber();
-DBUG("GT. 2->", val);
+// DBUG("GT. 2->", val);
     if (val) return val;	// error
-DBUG("GT. 3->", val);
+// DBUG("GT. 3->", val);
     if (executeMode) {
-DBUG("GT. 4->", val);
+// DBUG("GT. 4->", val);
         uint16_t startLine = (uint16_t)stackPopNum();
-DBUG("GT. 5->", startLine);
+// DBUG("GT. 5->", startLine);
 
         if (startLine <= 0) {
-DBUG("Exiting GOTO : BAD LN");
+// DBUG("Exiting GOTO : BAD LN");
             return ERROR_BAD_LINE_NUM;
         }
         jumpLineNumber = startLine;
     }
 
-DBUG("Exiting GOTO ->",jumpLineNumber);
+// DBUG("Exiting GOTO ->",jumpLineNumber);
 
     return 0;
 }
@@ -1600,8 +1628,16 @@ int parseAssignment(bool inputStmt) {
     char ident[MAX_IDENT_LEN+1];
     int val;
     if (curToken != TOKEN_IDENT) return ERROR_UNEXPECTED_TOKEN;
-    if (executeMode)
+
+// DBUG_NOLN("assign : "); DBUG(identVal);
+
+//    if (executeMode)
         strcpy(ident, identVal);
+
+
+// DBUG_NOLN("copied name : "); DBUG(ident);
+        
+
     int isStringIdentifier = isStrIdent;
     int isArray = 0;
     getNextToken();	// eat ident
@@ -1644,7 +1680,15 @@ int parseAssignment(bool inputStmt) {
                 if (val) return val;
             }
             else {
-                if (!storeNumVariable(ident, stackPopNum())) return ERROR_OUT_OF_MEMORY;
+
+                // DBUG_NOLN("feeding var : "); DBUG(ident);
+                // // else : value isn't trmit
+                // char* id2 = (char*)malloc( strlen(ident) );
+                // strcpy(id2, ident);
+                // if (!storeNumVariable( id2, stackPopNum())) return ERROR_OUT_OF_MEMORY;
+                // free(id2);
+
+                if (!storeNumVariable( ident, stackPopNum())) return ERROR_OUT_OF_MEMORY;
             }
         }
     }
@@ -1875,19 +1919,19 @@ int parseStmts()
     jumpLineNumber = 0;
     jumpStmtNumber = 0;
 
-    if (executeMode) { DBUG("Begin of Statement"); }
+    // if (executeMode) { DBUG("Begin of Statement"); }
 
     while (ret == 0) {
 
-        if (executeMode) { 
-            DBUG("token:", curToken); 
-            if ( curToken >= FIRST_IDENT_TOKEN && curToken <= LAST_IDENT_TOKEN ) {
-                DBUG( tokenTable[ curToken ].token );
-            }
-        }
+        // if (executeMode) { 
+        //     // DBUG("token:", curToken); 
+        //     if ( curToken >= FIRST_IDENT_TOKEN && curToken <= LAST_IDENT_TOKEN ) {
+        //         DBUG( tokenTable[ curToken ].token );
+        //     }
+        // }
 
         if (curToken == TOKEN_EOL) {
-            if (executeMode) { DBUG("EOL:quit"); }
+            // if (executeMode) { DBUG("EOL:quit"); }
             break;
         }
         
@@ -1938,13 +1982,13 @@ int parseStmts()
                 ret = ERROR_UNEXPECTED_CMD;
         }
 
-        if (executeMode) { DBUG("ret.1:", ret); }
+        // if (executeMode) { DBUG("ret.1:", ret); }
 
         // if error, or the execution line has been changed, exit here
         if (ret || breakCurrentLine || jumpLineNumber || jumpStmtNumber)
             break;
 
-        if (executeMode) { DBUG("ret.2:", ret); }
+        // if (executeMode) { DBUG("ret.2:", ret); }
 
         // it should either be the end of the line now, and (generally) a command seperator
         // before the next command
@@ -1961,14 +2005,14 @@ int parseStmts()
         // increase the statement number
         stmtNumber++;
 
-        if (executeMode) { DBUG("stmt.1:", stmtNumber); }
+        // if (executeMode) { DBUG("stmt.1:", stmtNumber); }
 
         // if we're just scanning to find a target statement, check
         if (stmtNumber == targetStmtNumber)
             break;
     }
 
-    if (executeMode) { DBUG("End of Statement");    DBUG(ret); }
+    // if (executeMode) { DBUG("End of Statement");    DBUG(ret); }
 
     return ret;
 }

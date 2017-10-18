@@ -54,3 +54,6 @@ void DBUG(char* v);
 void DBUG(const char* v);
 void DBUG(const char* v, int v2);
 
+void DBUG_NOLN(char* v);
+void DBUG_NOLN(const char* v);
+void DBUG_NOLN(int v);
