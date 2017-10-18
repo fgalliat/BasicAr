@@ -319,34 +319,39 @@ interrupts();
         // Xtase
         display.display(); // to place in an interrupt
     } else if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
-        isWriting = true;
-        static char line[SCREEN_WIDTH+1];
-        bool dirty = false;
-        for (int y=0; y<SCREEN_HEIGHT; y++) {
-          if ( lineDirty[y] != 0 ) {
-            dirty = true;
-            break;
-          }
-        }
-    
-        if ( !dirty ) { isWriting = false; return; }
-        Serial.print( "\n\n----------\n" );
-        Serial.flush();
-        for (int y=0; y<SCREEN_HEIGHT; y++) {
-            for (int x=0; x<SCREEN_WIDTH; x++) {
-              char c = screenBuffer[y*SCREEN_WIDTH+x];
-              if (c<32) c = ' ';
-              line[x] = c;
+
+        #ifdef BOARD_VGA
+
+            isWriting = true;
+            static char line[SCREEN_WIDTH+1];
+            bool dirty = false;
+            for (int y=0; y<SCREEN_HEIGHT; y++) {
+                if ( lineDirty[y] != 0 ) {
+                    dirty = true;
+                    break;
+                }
             }
-            line[SCREEN_WIDTH] = 0x00;
-            Serial.println( line );
-            Serial.flush();
-            
-            //if (lineDirty[y] || (inputMode && y==curY)) {
-              lineDirty[y] = 0;
-            //}
-        }
-        isWriting = false;
+        
+            if ( !dirty ) { isWriting = false; return; }
+
+            vgat_cls();
+            for (int y=0; y<SCREEN_HEIGHT; y++) {
+                for (int x=0; x<SCREEN_WIDTH; x++) {
+                char c = screenBuffer[y*SCREEN_WIDTH+x];
+                if (c<32) c = ' ';
+                line[x] = c;
+                }
+                line[SCREEN_WIDTH] = 0x00;
+
+                vgat_print( line );
+                
+                //if (lineDirty[y] || (inputMode && y==curY)) {
+                lineDirty[y] = 0;
+                //}
+            }
+            isWriting = false;
+
+        #endif
 
         Serial.println("Show buffer on VGA TEXT Serial");
 

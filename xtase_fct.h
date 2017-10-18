@@ -248,7 +248,10 @@ int xts_console() {
   // TODO : add & parse parameters to select devices
 
   // @ this time : ONLY switch to VGAText
-  OUTPUT_DEVICE = OUT_DEV_VGA_SERIAL;
+  if ( executeMode ) {
+    if (OUTPUT_DEVICE != OUT_DEV_VGA_SERIAL) { OUTPUT_DEVICE = OUT_DEV_VGA_SERIAL; }
+    else { OUTPUT_DEVICE = OUT_DEV_LCD_MINI; }
+  }
 
   return 0;
 }
