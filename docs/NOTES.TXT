@@ -14,9 +14,14 @@ LOCATE , LED, .. could goes into : parseTwoIntCmd()
 
 ================================================================
 
-basic.cpp :: processInput()
-  DBUG all return(s) 
+basic.cpp :: stackPushNum() & stackPopNum()
+             -> was using direct pointers translation to float
+             -> replaced by my impl. that also test BigEndian ... >>> WORKS
 
+10 print "123456"
+20 GOTO 10
+
+15 PRINT INT( RND * 10 )
 
 
 ================================================================

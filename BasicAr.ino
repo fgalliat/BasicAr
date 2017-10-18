@@ -143,7 +143,7 @@ void setup() {
 
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-void loop() {
+void __loop() {
     int ret = ERROR_NONE;
 
     if (!autorun) {
@@ -155,6 +155,8 @@ void loop() {
         // 10 PRINT "Hello toto" :: fails
         // 10 PRINT "12345678"   :: fails
         // 10 PRINT "12345"      :: works
+        // 10 PRINT "1234"       :: fails
+        // 10 PRINT "123456789"  :: works
 
         //if (input[0] == '?' && input[1] == 0) {
         if (input[0] == '*' && input[1] == 0) { // this is not the problem
@@ -195,7 +197,7 @@ void loop() {
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-void loop2() {
+void loop() {
     int ret = ERROR_NONE;
 
     if (!autorun) {
@@ -211,7 +213,9 @@ void loop2() {
             return;
         } else if (input[0] == '!' && input[1] == 0) {
             //input = (char*)"10 ? \"Coucou\"";
-            input = (char*)"10 PRINT \"Coucou\"";
+            // input = (char*)"10 PRINT \"12345\"";  // 12345  works
+            input = (char*)"10 PRINT \"123456\""; // 123456 fails
+
             ret = tokenize((unsigned char*)input, tokenBuf, TOKEN_BUF_SIZE); ret = processInput(tokenBuf);
             if ( ret > 0 ) { host_outputString((char *)errorTable[ret]); host_showBuffer(); }
             ret = ERROR_NONE;

@@ -686,3 +686,14 @@ void xts_loadTestProgram() {
   for (int i=0; i<sysPROGEND; i++)
       mem[i] = TEST_PRGM[i];
 }
+
+
+// =================================
+
+
+
+void DBUG(int v) { Serial.println(v); }
+void DBUG(float v) { Serial.println(v); }
+void DBUG(char* v) { Serial.println(v); }
+void DBUG(const char* v) { Serial.println(v); }
+void DBUG(const char* v, int v2) { Serial.print(v); Serial.println(v2); }

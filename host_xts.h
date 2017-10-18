@@ -46,3 +46,11 @@ void _interrupts();
 // =================================
 
 void xts_loadTestProgram();
+
+
+void DBUG(int v);
+void DBUG(float v);
+void DBUG(char* v);
+void DBUG(const char* v);
+void DBUG(const char* v, int v2);
+

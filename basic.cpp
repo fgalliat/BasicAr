@@ -56,6 +56,11 @@
 
 //#include <avr/pgmspace.h>
 
+// Xtase
+#include "mem_utils.h"
+
+
+
 int sysPROGEND;
 int sysSTACKSTART, sysSTACKEND;
 int sysVARSTART, sysVAREND;
@@ -266,14 +271,32 @@ int stackPushNum(float val) {
     if (sysSTACKEND + sizeof(float) > sysVARSTART)
         return 0;	// out of memory
     unsigned char *p = &mem[sysSTACKEND];
-    *(float *)p = val;
+    
+    // original code ...
+    //*(float *)p = val;
+    copyFloatToBytes(mem, sysSTACKEND, val);
+
+
     sysSTACKEND += sizeof(float);
     return 1;
 }
 float stackPopNum() {
+    DBUG("Ent.stackPopNum->", sysSTACKEND);
     sysSTACKEND -= sizeof(float);
+    DBUG("stackPopNum->", sysSTACKEND);
     unsigned char *p = &mem[sysSTACKEND];
-    return *(float *)p;
+    DBUG("stackPopNum A->",(int)mem[sysSTACKEND+0]);
+    DBUG("stackPopNum B->",(int)mem[sysSTACKEND+1]);
+    DBUG("stackPopNum C->",(int)mem[sysSTACKEND+2]);
+    DBUG("stackPopNum D->",(int)mem[sysSTACKEND+3]);
+
+
+    // orginal code : can cause deadlocks
+    //float result = *(float *)p;
+    float result = getFloatFromBytes( mem, sysSTACKEND ); // Xtase replacement
+
+    DBUG("Ex.stackPopNum", (int)result);
+    return result;
 }
 int stackPushStr(char *str) {
     int len = 1 + strlen(str);
@@ -293,9 +316,28 @@ char *stackGetStr() {
     return (char *)(p-len-2);
 }
 char *stackPopStr() {
+    // host_outputString("____popStr enter");
+    // host_outputInt(sysSTACKEND);
+    // host_outputChar('\n');
+
+    if ( sysSTACKEND < 0 ) {
+        host_outputString("0X0A ALARM.1 !!!");
+        host_showBuffer();
+    }
+
     unsigned char *p = &mem[sysSTACKEND];
     int len = *(uint16_t *)(p-2);
     sysSTACKEND -= (len+2);
+
+    if ( sysSTACKEND < 0 ) {
+        host_outputString("0X0A ALARM.2 !!!");
+        host_showBuffer();
+    }
+
+    // host_outputString("____popStr quit");
+    // host_outputInt(sysSTACKEND);
+    // host_outputChar('\n');
+
     return (char *)&mem[sysSTACKEND];
 }
 
@@ -1429,15 +1471,30 @@ int parse_RUN() {
 }
 
 int parse_GOTO() {
+
+
+DBUG("Entering GOTO");
+
     getNextToken();
+DBUG("GT. 1");
     int val = expectNumber();
+DBUG("GT. 2->", val);
     if (val) return val;	// error
+DBUG("GT. 3->", val);
     if (executeMode) {
+DBUG("GT. 4->", val);
         uint16_t startLine = (uint16_t)stackPopNum();
-        if (startLine <= 0)
+DBUG("GT. 5->", startLine);
+
+        if (startLine <= 0) {
+DBUG("Exiting GOTO : BAD LN");
             return ERROR_BAD_LINE_NUM;
+        }
         jumpLineNumber = startLine;
     }
+
+DBUG("Exiting GOTO ->",jumpLineNumber);
+
     return 0;
 }
 
@@ -1501,6 +1558,10 @@ int parse_PRINT() {
             host_newLine();
         host_showBuffer();
     }
+
+    //host_outputString("END print"); host_newLine(); host_showBuffer();
+
+
     return 0;
 }
 
@@ -1814,55 +1875,77 @@ int parseStmts()
     jumpLineNumber = 0;
     jumpStmtNumber = 0;
 
+    if (executeMode) { DBUG("Begin of Statement"); }
+
     while (ret == 0) {
-        if (curToken == TOKEN_EOL)
-            break;
-        if (executeMode)
-            sysSTACKEND = sysSTACKSTART = sysPROGEND;	// clear calculator stack
-        int needCmdSep = 1;
-        switch (curToken) {
-        case TOKEN_PRINT: ret = parse_PRINT(); break;
-        case TOKEN_LET: getNextToken(); ret = parseAssignment(false); break;
-        case TOKEN_IDENT: ret = parseAssignment(false); break;
-        case TOKEN_INPUT: getNextToken(); ret = parseAssignment(true); break;
-        case TOKEN_LIST: ret = parse_LIST(); break;
-        case TOKEN_RUN: ret = parse_RUN(); break;
-        case TOKEN_GOTO: ret = parse_GOTO(); break;
-        case TOKEN_REM: getNextToken(); getNextToken(); break;
-        case TOKEN_IF: ret = parse_IF(); needCmdSep = 0; break;
-        case TOKEN_FOR: ret = parse_FOR(); break;
-        case TOKEN_NEXT: ret = parse_NEXT(); break;
-        case TOKEN_GOSUB: ret = parse_GOSUB(); break;
-        case TOKEN_DIM: ret = parse_DIM(); break;
-        case TOKEN_PAUSE: ret = parse_PAUSE(); break;
-        
-        case TOKEN_LOAD:
-        case TOKEN_SAVE:
-        case TOKEN_DELETE:
-            ret = parseLoadSaveCmd();
-            break;
-        
-        case TOKEN_POSITION:
-        case TOKEN_PIN:
-        case TOKEN_PINMODE:
-            ret = parseTwoIntCmd(); 
-            break;
-            
-        case TOKEN_NEW:
-        case TOKEN_STOP:
-        case TOKEN_CONT:
-        case TOKEN_RETURN:
-        case TOKEN_CLS:
-        case TOKEN_DIR:
-            ret = parseSimpleCmd();
-            break;
-            
-        default: 
-            ret = ERROR_UNEXPECTED_CMD;
+
+        if (executeMode) { 
+            DBUG("token:", curToken); 
+            if ( curToken >= FIRST_IDENT_TOKEN && curToken <= LAST_IDENT_TOKEN ) {
+                DBUG( tokenTable[ curToken ].token );
+            }
         }
+
+        if (curToken == TOKEN_EOL) {
+            if (executeMode) { DBUG("EOL:quit"); }
+            break;
+        }
+        
+        if (executeMode) {
+            sysSTACKEND = sysSTACKSTART = sysPROGEND;	// clear calculator stack
+        }
+    
+        int needCmdSep = 1;
+
+        switch (curToken) {
+            case TOKEN_PRINT: ret = parse_PRINT(); break;
+            case TOKEN_LET: getNextToken(); ret = parseAssignment(false); break;
+            case TOKEN_IDENT: ret = parseAssignment(false); break;
+            case TOKEN_INPUT: getNextToken(); ret = parseAssignment(true); break;
+            case TOKEN_LIST: ret = parse_LIST(); break;
+            case TOKEN_RUN: ret = parse_RUN(); break;
+            case TOKEN_GOTO: ret = parse_GOTO(); break;
+            case TOKEN_REM: getNextToken(); getNextToken(); break;
+            case TOKEN_IF: ret = parse_IF(); needCmdSep = 0; break;
+            case TOKEN_FOR: ret = parse_FOR(); break;
+            case TOKEN_NEXT: ret = parse_NEXT(); break;
+            case TOKEN_GOSUB: ret = parse_GOSUB(); break;
+            case TOKEN_DIM: ret = parse_DIM(); break;
+            case TOKEN_PAUSE: ret = parse_PAUSE(); break;
+            
+            case TOKEN_LOAD:
+            case TOKEN_SAVE:
+            case TOKEN_DELETE:
+                ret = parseLoadSaveCmd();
+                break;
+            
+            case TOKEN_POSITION:
+            case TOKEN_PIN:
+            case TOKEN_PINMODE:
+                ret = parseTwoIntCmd(); 
+                break;
+                
+            case TOKEN_NEW:
+            case TOKEN_STOP:
+            case TOKEN_CONT:
+            case TOKEN_RETURN:
+            case TOKEN_CLS:
+            case TOKEN_DIR:
+                ret = parseSimpleCmd();
+                break;
+                
+            default: 
+                ret = ERROR_UNEXPECTED_CMD;
+        }
+
+        if (executeMode) { DBUG("ret.1:", ret); }
+
         // if error, or the execution line has been changed, exit here
         if (ret || breakCurrentLine || jumpLineNumber || jumpStmtNumber)
             break;
+
+        if (executeMode) { DBUG("ret.2:", ret); }
+
         // it should either be the end of the line now, and (generally) a command seperator
         // before the next command
         if (curToken != TOKEN_EOL) {
@@ -1877,10 +1960,16 @@ int parseStmts()
         }
         // increase the statement number
         stmtNumber++;
+
+        if (executeMode) { DBUG("stmt.1:", stmtNumber); }
+
         // if we're just scanning to find a target statement, check
         if (stmtNumber == targetStmtNumber)
             break;
     }
+
+    if (executeMode) { DBUG("End of Statement");    DBUG(ret); }
+
     return ret;
 }
 
