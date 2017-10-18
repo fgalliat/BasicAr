@@ -21,8 +21,23 @@ basic.cpp :: stackPushNum() & stackPopNum()
 10 print "123456"
 20 GOTO 10 -------------> works
 
-but num var manips doesn't !!!!! --> look @ float2mem routine calls
+but num var manips doesn't !!!!! --> look @ float2mem routine calls --> seems OK now
     str            are OK
+
+    num[]          are ??? \__ TODO : TEST
+    str[]          are ??? /
+
+
+__________________
+10 DIM a$(5)         
+20 FOR i=1 TO 5      
+30 a$(i)="Hello "+STR$(i)                 
+40 PRINT a$(i)       
+50 NEXT i   
+
+that NO MORE works !!!
+__________________
+
 
 15 PRINT INT( RND * 10 )
 
@@ -42,13 +57,17 @@ DONE
   ? BTN( 1 ) ==> {0;1} (to get pressed state of btn#1) 
      \=> BTN(0) to get 0,1,2,4 => MASK of 3btns @ same time
 
+  DELAY( 500 ) => sleep 500ms => host_sleep(x)
+
+  Continuous displaying programs
+   10 ? "coucou"
+   20 GOTO 10
+
+
+
   lock local echo when sending prgm via serial !!!!
 
-TODO
- find why need :
- 10 ? "coucou" : goto 20
- 20 goto 10 
- ?????
+
 
 10 ? "coucou"
 20 A=1
@@ -68,11 +87,6 @@ TODO HARDWARE
   VGA Serial Monitor (& RPI0W HDMI Monitor)
 
 TODO
-  DELAY( 500 ) => sleep 500ms => host_sleep(x)
-
-  Continuous displaying programs
-   10 ? "coucou"
-   20 GOTO 10
 
   ADD filter for FILES ex. "*.BAS"
 
@@ -118,14 +132,6 @@ ______________________________________________________________
 
 host_showBuffer() dans host.cpp
 
-
-10 DIM a$(5)         
-20 FOR i=1 TO 5      
-30 a$(i)="Hello "+STR$(i)                 
-40 PRINT a$(i)       
-50 NEXT i   
-
-that works !!!
 
 ______________________________________________________________
 

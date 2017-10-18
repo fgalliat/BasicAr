@@ -8,8 +8,7 @@
 50 ' A=A+1 : IF A > 3 THEN A = 0
 55 A = A+1
 57 IF A > 3 THEN A = 0
-58 ' why need goto ..
-59 ' DELAY 300 : GOTO 60
+59 DELAY 300
 60 GOTO 30
 70 PRINT "Bye"
 
