@@ -18,14 +18,11 @@ basic.cpp :: stackPushNum() & stackPopNum()
              -> was using direct pointers translation to float
              -> replaced by my impl. that also test BigEndian ... >>> WORKS
 
-10 print "123456"
-20 GOTO 10 -------------> works
-
 but num var manips doesn't !!!!! --> look @ float2mem routine calls --> seems OK now
     str            are OK
 
-    num[]          are ??? \__ TODO : TEST
-    str[]          are ??? /
+    num[]          are OK
+    str[]          are OK 
 
 make a mem2float(unsigned char* cur, unsigned char* src) function
   {  int addr = &(cur[0]) - &(src[0]);  } where cur can be 'p' & src 'mem'
@@ -33,22 +30,15 @@ make a mem2float(unsigned char* cur, unsigned char* src) function
 
 en fait ce sont tout les FOR qui ne passent plus (pour la meme raison...)
   FOR I=1 TO 5 : PRINT "coucou";I : NEXT I
-
-
-
-
-__________________
-10 DIM a$(5)         
-20 FOR i=1 TO 5      
-30 a$(i)="Hello "+STR$(i)                 
-40 PRINT a$(i)       
-50 NEXT i   
-
-that NO MORE works !!!
-__________________
+ ==> FIXED
 
 
 15 PRINT INT( RND * 10 )
+
+DIM a(5)
+FOR I=1 TO 5 : a(i) = rnd : NEXT I
+FOR I=1 TO 5 : ? i;" ";a(i) : NEXT I
+
 
 
 ================================================================
@@ -72,19 +62,7 @@ DONE
    10 ? "coucou"
    20 GOTO 10
 
-
-
   lock local echo when sending prgm via serial !!!!
-
-
-
-10 ? "coucou"
-20 A=1
-30 LED A,1 : LED A-1,0
-40 IF BTN(0) <> 0 THEN GOTO 1000
-50 A=A+1 : IF A > 3 THEN A = 0
-60 GOTO 30
-1000 ? "Bye"
 
 
 
@@ -102,7 +80,8 @@ TODO
   LOAD/SAVE
 
   exisiting PIN FCT to look
-  DRAW FCT (SSD1306 I2C) (Pictures requires STORAGE)
+  DRAW FCT (SSD1306 I2C) (+Pictures requires STORAGE)
+  Picture ( bitmap 128x64 = 8KB => /8 (1bpp) => 1KB )  
   Serial Vs Screen+Kbd I/O => console mode
   
   SCREEN procedures + draw pictures (neeed storage acess)
