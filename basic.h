@@ -33,7 +33,8 @@
 #define TKN_FMT_PRE		0x80
 // ===============================
 
-
+// Xtase Extended Commands Set
+#define XTS_EXT_CMDSET 1
 
 
 #define TOKEN_EOL		0
@@ -100,35 +101,38 @@
 #define TOKEN_ANALOGRD          63
 #define TOKEN_DIR               64
 #define TOKEN_DELETE            65
+
 // ----------- Xtase Tokens -------
-// #define TOKEN_MEM            66
-// #define TOKEN_PRINT_QM       67
-// #define TOKEN_REM_EM         68
+#ifdef XTS_EXT_CMDSET
+    #define TOKEN_MEM            66
+    #define TOKEN_PRINT_QM       67
+    #define TOKEN_REM_EM         68
 
-// #define TOKEN_LOCATE         69
-// #define TOKEN_LED            70 // 0x46
+    #define TOKEN_LOCATE         69
+    #define TOKEN_LED            70 // 0x46
 
-// #define TOKEN_TONE           71
-// #define TOKEN_MUTE           72
+    #define TOKEN_TONE           71
+    #define TOKEN_MUTE           72
 
-// #define TOKEN_PLAY           73
-// #define TOKEN_PLAYT5K        74
-// #define TOKEN_PLAYT53        75
+    #define TOKEN_PLAY           73
+    #define TOKEN_PLAYT5K        74
+    #define TOKEN_PLAYT53        75
 
-// #define TOKEN_BYE            76 // reset the MCU
+    #define TOKEN_BYE            76 // reset the MCU
 
-// #define TOKEN_BTN            77 // read btn state
+    #define TOKEN_BTN            77 // read btn state
 
-// #define TOKEN_ECHO           78 // (un)lock local echo
+    #define TOKEN_ECHO           78 // (un)lock local echo
 
-// #define TOKEN_DELAY          79 // make MCU sleep x ms
+    #define TOKEN_DELAY          79 // make MCU sleep x ms
 
-// #define TOKEN_LASTONE TOKEN_DELAY
-
-#define TOKEN_PRINT_QM       TOKEN_PRINT
-#define TOKEN_REM_EM         TOKEN_REM
-
-#define TOKEN_LASTONE TOKEN_DELETE
+    #define TOKEN_LASTONE TOKEN_DELAY
+#else
+    // non extended command set
+    #define TOKEN_PRINT_QM       TOKEN_PRINT
+    #define TOKEN_REM_EM         TOKEN_REM
+    #define TOKEN_LASTONE TOKEN_DELETE
+#endif
 
 
 #define FIRST_IDENT_TOKEN 23

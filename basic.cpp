@@ -1,6 +1,9 @@
 /* ---------------------------------------------------------------------------
  * Basic Interpreter
- * Robin Edwards 2014
+ *
+ * Modified by : Xtase - fgalliat @Sept2017
+ * 
+ * Original code : Robin Edwards 2014
  * ---------------------------------------------------------------------------
  * This BASIC is modelled on Sinclair BASIC for the ZX81 and ZX Spectrum. It
  * should be capable of running most of the examples in the manual for both
@@ -51,6 +54,13 @@
 #include <float.h>
 #include <limits.h>
 
+#include "xts_arch.h"
+#ifdef BUT_TEENSY
+  #include "xts_teensy.h"
+#else
+  #include <Arduino.h>
+#endif
+
 #include "basic.h"
 #include "host.h"
 
@@ -59,6 +69,12 @@
 // Xtase
 #include "mem_utils.h"
 
+// -------- Xtase refacto -------------
+char executeMode;
+int curToken;
+extern bool LOCAL_ECHO;
+#include "xtase_fct.h"
+// ------------------------------------
 
 
 int sysPROGEND;
@@ -103,21 +119,21 @@ const char* errorTable[]  = {
     string_24
 };
 
-// Token flags
-// bits 1+2 number of arguments
-#define TKN_ARGS_NUM_MASK	0x03
-// bit 3 return type (set if string)
-#define TKN_RET_TYPE_STR	0x04
-// bits 4-6 argument type (set if string)
-#define TKN_ARG1_TYPE_STR	0x08
-#define TKN_ARG2_TYPE_STR	0x10
-#define TKN_ARG3_TYPE_STR	0x20
+// // Token flags
+// // bits 1+2 number of arguments
+// #define TKN_ARGS_NUM_MASK	0x03
+// // bit 3 return type (set if string)
+// #define TKN_RET_TYPE_STR	0x04
+// // bits 4-6 argument type (set if string)
+// #define TKN_ARG1_TYPE_STR	0x08
+// #define TKN_ARG2_TYPE_STR	0x10
+// #define TKN_ARG3_TYPE_STR	0x20
 
-#define TKN_ARG_MASK		0x38
-#define TKN_ARG_SHIFT		3
-// bits 7,8 formatting
-#define TKN_FMT_POST		0x40
-#define TKN_FMT_PRE		0x80
+// #define TKN_ARG_MASK		0x38
+// #define TKN_ARG_SHIFT		3
+// // bits 7,8 formatting
+// #define TKN_FMT_POST		0x40
+// #define TKN_FMT_PRE		0x80
 
 
  //const TokenTableEntry tokenTable[] = {
@@ -138,7 +154,24 @@ TokenTableEntry tokenTable[] = {
     {"RIGHT$",2|TKN_ARG1_TYPE_STR|TKN_RET_TYPE_STR}, {"MID$",3|TKN_ARG1_TYPE_STR|TKN_RET_TYPE_STR}, {"CLS",TKN_FMT_POST}, {"PAUSE",TKN_FMT_POST},
     {"POSITION", TKN_FMT_POST},  {"PIN",TKN_FMT_POST}, {"PINMODE", TKN_FMT_POST}, {"INKEY$", 0},
     {"SAVE", TKN_FMT_POST}, {"LOAD", TKN_FMT_POST}, {"PINREAD",1}, {"ANALOGRD",1},
-    {"DIR", TKN_FMT_POST}, {"DELETE", TKN_FMT_POST}
+    {"DIR", TKN_FMT_POST}, {"DELETE", TKN_FMT_POST},
+
+    // ------ Xtase routines -----------
+    {"MEM",0}, {"?",TKN_FMT_POST}, {"'",TKN_FMT_POST},
+    {"LOCATE",2}, // Oups : there was a POSITION cmd ...
+    {"LED",2}, // to switch on/off a led
+    {"TONE",2}, {"MUTE", 0},
+    {"PLAY",1|TKN_ARG1_TYPE_STR},
+    {"PLAYT5K",1|TKN_ARG1_TYPE_STR},
+    {"PLAYT53",1|TKN_ARG1_TYPE_STR},
+
+    {"BYE",TKN_FMT_POST},
+
+    {"BTN",1}, // to read btn state
+
+    {"ECHO",TKN_FMT_POST}, // to (un)lock local echo
+
+    {"DELAY",TKN_FMT_POST}, // to sleep MCU
 };
 
 
@@ -192,7 +225,7 @@ void printTokens(unsigned char *p) {
 
             if (fmt & TKN_FMT_POST)
                 host_outputChar(' ');
-            if (*p==TOKEN_REM)
+            if (*p==TOKEN_REM || *p==TOKEN_REM_EM)
                 modeREM = 1;
             p++;
         }
@@ -438,9 +471,9 @@ unsigned char *findVariable(char *searchName, int searchMask) {
         if (type & searchMask) {
             unsigned char *name = p+3;
 
-            DBUG_NOLN("Var scan : >");
-            DBUG_NOLN((char*)name);
-            DBUG("<");
+            // DBUG_NOLN("Var scan : >");
+            // DBUG_NOLN((char*)name);
+            // DBUG("<");
 
             if (strcasecmp((char*)name, searchName) == 0)
                 return p;
@@ -448,8 +481,8 @@ unsigned char *findVariable(char *searchName, int searchMask) {
         p+= *(uint16_t *)p;
     }
 
-    DBUG("Var not found : ");
-    DBUG(searchName);
+    // DBUG("Var not found : ");
+    // DBUG(searchName);
     return NULL;
 }
 
@@ -467,8 +500,8 @@ void deleteVariableAt(unsigned char *pos) {
 
 int storeNumVariable(char *name, float val) {
 
-    DBUG("registering num var");
-    DBUG( name );
+    // DBUG("registering num var");
+    // DBUG( name );
 
     // these can be modified in place
     int nameLen = strlen(name);
@@ -487,14 +520,14 @@ int storeNumVariable(char *name, float val) {
         bytesNeeded += nameLen + 1;	// name
         bytesNeeded += sizeof(float);	// val
 
-        DBUG("bytes req. : ", bytesNeeded);
+        // DBUG("bytes req. : ", bytesNeeded);
 
         if (sysVARSTART - bytesNeeded < sysSTACKEND) {
             DBUG("new int var : MEM OVERFLOW");
             return 0;	// out of memory
         }
         sysVARSTART -= bytesNeeded;
-        DBUG("bytes va start : ", sysVARSTART);
+        // DBUG("bytes va start : ", sysVARSTART);
 
         unsigned char *p = &mem[sysVARSTART];
         *(uint16_t *)p = bytesNeeded; 
@@ -504,15 +537,15 @@ int storeNumVariable(char *name, float val) {
         p += nameLen + 1;
         *(float *)p = val;
 
-        DBUG("registered num var");
-        DBUG( name );
-        for(int i=0; i < bytesNeeded; i++) {
-            DBUG_NOLN( mem[sysVARSTART+i] ); DBUG_NOLN( " " );
-        }
+        // DBUG("registered num var");
+        // DBUG( name );
+        // for(int i=0; i < bytesNeeded; i++) {
+        //     DBUG_NOLN( mem[sysVARSTART+i] ); DBUG_NOLN( " " );
+        // }
 
     }
 
-    DBUG_NOLN( "\n" );
+    // DBUG_NOLN( "\n" );
 
     return 1;
 }
@@ -891,7 +924,8 @@ int nextToken()
         return 0;
     }
     // identifier: [a-zA-Z][a-zA-Z0-9]*[$]
-    if (isalpha(*tokenIn)) {
+    // [?] -> PRINT // ['] -> REM
+    if (isalpha(*tokenIn) || (*tokenIn) == '?' || (*tokenIn) == '\'' ) {
         char identStr[MAX_IDENT_LEN+1];
         int identLen = 0;
         identStr[identLen++] = *tokenIn++; // copy first char
@@ -911,7 +945,7 @@ int nextToken()
                 tokenOutLeft--;
                 *tokenOut++ = i;
                 // special case for REM
-                if (i == TOKEN_REM) {
+                if (i == TOKEN_REM || i == TOKEN_REM_EM ) {
                     *tokenOut++ = TOKEN_STRING;
                     // skip whitespace
                     while (isspace(*tokenIn))
@@ -933,7 +967,10 @@ int nextToken()
         tokenOutLeft -= 1+identLen;
         *tokenOut++ = TOKEN_IDENT;
         strcpy((char*)tokenOut, identStr);
+
+        // 0x80 -> end of token = 128(10)
         tokenOut[identLen-1] |= 0x80;
+
         tokenOut += identLen;
         return 0;
     }
@@ -994,7 +1031,7 @@ int tokenize(unsigned char *input, unsigned char *output, int outputSize)
  * PARSER / INTERPRETER
  * **************************************************************************/
 
-static char executeMode;	// 0 = syntax check only, 1 = execute
+//static char executeMode;	// 0 = syntax check only, 1 = execute
 uint16_t lineNumber, stmtNumber;
 // stmt number is 0 for the first statement, then increases after each command seperator (:)
 // Note that IF a=1 THEN PRINT "x": print "y" is considered to be only 2 statements
@@ -1003,7 +1040,7 @@ static uint16_t stopLineNumber, stopStmtNumber;
 static char breakCurrentLine;
 
 static unsigned char *tokenBuffer, *prevToken;
-static int curToken;
+//static int curToken;
 static char identVal[MAX_IDENT_LEN+1];
 static char isStrIdent;
 static float numVal;
@@ -1192,6 +1229,14 @@ int parseFnCallExpr() {
             tmp = (int)stackPopNum();
             if (!stackPushNum(host_analogRead(tmp))) return ERROR_OUT_OF_MEMORY;
             break;
+
+// ============ Xtase ===========
+        case TOKEN_BTN:
+            tmp = (int)stackPopNum();
+            if (!stackPushNum(xts_buttonRead(tmp))) return ERROR_OUT_OF_MEMORY;
+            break;
+// ==============================
+
         default:
             return ERROR_UNEXPECTED_TOKEN;
         }
@@ -1337,7 +1382,15 @@ int parsePrimary() {
     case TOKEN_MID: 
     case TOKEN_PINREAD:
     case TOKEN_ANALOGRD:
+
+    case TOKEN_BTN: // Xtase code
+
         return parseFnCallExpr();
+
+    // ------ Xtase token ---------
+    case TOKEN_MEM:
+        return getMemFree();
+    // ----------------------------
 
     default:
         return ERROR_UNEXPECTED_TOKEN;
@@ -1887,9 +1940,14 @@ int parseSimpleCmd() {
                 host_showBuffer();
                 break;
             case TOKEN_DIR:
+                xts_fs_dir();
 #if EXTERNAL_EEPROM
                 host_directoryExtEEPROM();
 #endif
+                break;
+
+            case TOKEN_BYE:
+                xts_mcu_reset();
                 break;
         }
     }
@@ -1975,9 +2033,34 @@ int parseStmts()
             case TOKEN_RETURN:
             case TOKEN_CLS:
             case TOKEN_DIR:
+
+            case TOKEN_BYE: // Xtase code
+
                 ret = parseSimpleCmd();
                 break;
                 
+            // ======== Xtase cmds =============
+            case TOKEN_PRINT_QM: ret = parse_PRINT(); break;
+            case TOKEN_REM_EM: getNextToken(); getNextToken(); break;
+
+            case TOKEN_TONE: ret = xts_tone(); break;
+            case TOKEN_MUTE: ret = xts_mute(); break;
+
+            case TOKEN_LED:    ret = xts_led(); break;
+            case TOKEN_LOCATE: ret = xts_locate(); break;
+
+            case TOKEN_ECHO: ret = xts_echo(); break;
+
+            case TOKEN_DELAY: ret = xts_delay(); break;
+
+            case TOKEN_PLAY: ret = xts_play(); break;
+
+            case TOKEN_PLAYT5K: ret = xts_playT5K(); break;
+            case TOKEN_PLAYT53: ret = xts_playT53(); break;
+
+            // ======== Xtase cmds ============= 
+
+
             default: 
                 ret = ERROR_UNEXPECTED_CMD;
         }
