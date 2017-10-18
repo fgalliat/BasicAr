@@ -172,6 +172,8 @@ TokenTableEntry tokenTable[] = {
     {"ECHO",TKN_FMT_POST}, // to (un)lock local echo
 
     {"DELAY",TKN_FMT_POST}, // to sleep MCU
+
+    {"CONSOLE", 0}, // change current I/O console ==> TODO : add args to select devices
 };
 
 
@@ -2080,6 +2082,8 @@ int parseStmts()
 
             case TOKEN_PLAYT5K: ret = xts_playT5K(); break;
             case TOKEN_PLAYT53: ret = xts_playT53(); break;
+
+            case TOKEN_CONSOLE: ret = xts_console(); break;
 
             // ======== Xtase cmds ============= 
 

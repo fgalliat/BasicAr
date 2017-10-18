@@ -126,7 +126,9 @@
 
     #define TOKEN_DELAY          79 // make MCU sleep x ms
 
-    #define TOKEN_LASTONE TOKEN_DELAY
+    #define TOKEN_CONSOLE        80 // select I/O console
+
+    #define TOKEN_LASTONE TOKEN_CONSOLE
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT

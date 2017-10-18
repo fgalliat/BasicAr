@@ -9,6 +9,8 @@
 
 #include <Arduino.h>
 
+#import "xts_io.h"
+extern int OUTPUT_DEVICE;
 
 extern int sysVARSTART, sysPROGEND;
 extern int stackPushNum(float val);
@@ -238,7 +240,18 @@ int xts_tone() {
   return 0;    
 }
 
+// I/O Console
 
+int xts_console() {
+  getNextToken();
+
+  // TODO : add & parse parameters to select devices
+
+  // @ this time : ONLY switch to VGAText
+  OUTPUT_DEVICE = OUT_DEV_VGA_SERIAL;
+
+  return 0;
+}
 
 
 // ===================================================================
