@@ -44,7 +44,7 @@ extern PS2Keyboard keyboard;
 extern bool BUZZER_MUTE;
 
 #ifdef BUILTIN_LCD
- #include "screen_Adafruit_SSD1306.h"
+ #include "dev_screen_Adafruit_SSD1306.h"
  extern Adafruit_SSD1306 display;
 #endif
 
@@ -186,11 +186,6 @@ void host_startupTone() {
         delay(100);
     }    
 }
-
-// #ifdef BUILTIN_LCD
-//  #include "screen_Adafruit_SSD1306.h"
-//  extern Adafruit_SSD1306 display;
-// #endif
 
 void host_cls() {
     isWriting = true;

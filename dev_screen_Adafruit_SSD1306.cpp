@@ -40,7 +40,7 @@ All text above, and the splash screen below must be included in any redistributi
 
 #include <SPI.h>
 #include "Adafruit_GFX.h"
-#include "screen_Adafruit_SSD1306.h"
+#include "dev_screen_Adafruit_SSD1306.h"
 
 // the memory buffer for the LCD
 

@@ -12,32 +12,38 @@ du moins avec mon code de compatibilité
 
 LOCATE , LED, .. could goes into : parseTwoIntCmd()
 
+=================================================================
+
+TODO
+  > regression tests (manually @ this time....)
+
+  > self(hardware) tests (stored in ~PROGMEM~) !!!!!!
+
+  VGA Serial Monitor drivers (on spe SerialX) (start to impl. fileIO descr)
+
+  RETRY LIGHT4.BAS
+
 ================================================================
 
 basic.cpp :: stackPushNum() & stackPopNum()
              -> was using direct pointers translation to float
-             -> replaced by my impl. that also test BigEndian ... >>> WORKS
-
-but num var manips doesn't !!!!! --> look @ float2mem routine calls --> seems OK now
-    str            are OK
-
-    num[]          are OK
-    str[]          are OK 
+             -> replaced by my impl. that also test BigEndian ... >>> WORKS 
 
 make a mem2float(unsigned char* cur, unsigned char* src) function
   {  int addr = &(cur[0]) - &(src[0]);  } where cur can be 'p' & src 'mem'
-
+ ===> DONE
 
 en fait ce sont tout les FOR qui ne passent plus (pour la meme raison...)
-  FOR I=1 TO 5 : PRINT "coucou";I : NEXT I
+  FOR I=1 TO 5 : PRINT "coucou";I : NEXT I ==> WORKS
  ==> FIXED
 
 
-15 PRINT INT( RND * 10 )
+15 PRINT INT( RND * 10 ) ==> WORKS
 
 DIM a(5)
 FOR I=1 TO 5 : a(i) = rnd : NEXT I
 FOR I=1 TO 5 : ? i;" ";a(i) : NEXT I
+==> WORKS
 
 
 

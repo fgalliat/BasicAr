@@ -91,7 +91,7 @@ void setupGPIO() {
 #include <SPI.h>
 #include <i2c_t3.h>
 #include <Adafruit_GFX.h>
-#include "screen_Adafruit_SSD1306.h"
+#include "dev_screen_Adafruit_SSD1306.h"
 //default is 4 that is an I2C pin on t3.6
 #define OLED_RESET 6
 Adafruit_SSD1306 display(OLED_RESET);

@@ -1,15 +1,13 @@
 /*******************
-* Xtase - fgalliat : fgalliat@gmail.com
+* Xtase - fgalliat : fgalliat@gmail.com @Sept2017
+* redesigned for XtsuBasic board
+*
 * Based on robin edwards work - (https://github.com/robinhedwards/ArduinoBASIC)
+*
 *******************/
-//#define REAL_ARDUINO 1
-//#define ALL_DEVICES 1
-
-#include "xts_arch.h"
-
 
 // Teensy's doesn't supports FS (SD, SDFat) & PROGMEM routines
-
+#include "xts_arch.h"
 
 extern bool STORAGE_OK;
 bool BUZZER_MUTE = false;
@@ -45,6 +43,7 @@ bool BUZZER_MUTE = false;
 #endif
 
 // Keyboard
+// NB Keyboard needs a seperate ground from the OLED
 const int DataPin = 8;
 const int IRQpin =  3;
 PS2Keyboard keyboard;
@@ -57,8 +56,6 @@ PS2Keyboard keyboard;
 #define OLED_RST 13
 SSD1306ASCII oled(OLED_DATA, OLED_CLK, OLED_DC, OLED_RST, OLED_CS);
 
-// NB Keyboard needs a seperate ground from the OLED
-
 // // buzzer pin, 0 = disabled/not present
 // #define BUZZER_PIN    5
 
@@ -69,7 +66,7 @@ unsigned char mem[MEMORY_SIZE];
 #define TOKEN_BUF_SIZE    64
 unsigned char tokenBuf[TOKEN_BUF_SIZE];
 
-const char welcomeStr[]  = "Arduino BASIC";
+const char welcomeStr[]  = "Arduino BASIC (Xts)";
 char autorun = 0;
 
 // =========/ Serial Event /==============
@@ -98,7 +95,6 @@ void setup() {
     
     keyboard.begin(DataPin, IRQpin);
     oled.ssd1306_init(SSD1306_SWITCHCAPVCC);
-
 
     reset();
     host_init(BUZZER_PIN);
@@ -142,58 +138,6 @@ void setup() {
 }
 
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-
-void __loop() {
-    int ret = ERROR_NONE;
-
-    if (!autorun) {
-        // get a line from the user
-        char *input = host_readLine();
-        // special editor commands
-
-        // 10 PRINT "Hello"      :: works
-        // 10 PRINT "Hello toto" :: fails
-        // 10 PRINT "12345678"   :: fails
-        // 10 PRINT "12345"      :: works
-        // 10 PRINT "1234"       :: fails
-        // 10 PRINT "123456789"  :: works
-
-        //if (input[0] == '?' && input[1] == 0) {
-        if (input[0] == '*' && input[1] == 0) { // this is not the problem
-            host_outputFreeMem(sysVARSTART - sysPROGEND);
-            host_showBuffer();
-            return;
-        }
-        // otherwise tokenize
-        ret = tokenize((unsigned char*)input, tokenBuf, TOKEN_BUF_SIZE);
-    }
-    else {
-        host_loadProgram();
-        tokenBuf[0] = TOKEN_RUN;
-        tokenBuf[1] = 0;
-        autorun = 0;
-    }
-    // execute the token buffer
-    if (ret == ERROR_NONE) {
-        host_newLine();
-        ret = processInput(tokenBuf);
-    }
-    if (ret != ERROR_NONE) {
-        host_newLine();
-        if (lineNumber !=0) {
-            host_outputInt(lineNumber);
-            host_outputChar('-');
-        }
-        //host_outputProgMemString((char *)pgm_read_word(&(errorTable[ret])));
-        host_outputString((char *)errorTable[ret]);
-
-        //host_showBuffer();
-    }
-    //host_showBuffer();
-}
-
-
-
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
