@@ -28,7 +28,12 @@
   float getFloatFromBytes(unsigned char* memSeg, int address) {
     char bytes[sizeof(float)];
 
-    // DBUG_NOLN( "Parsing float from MEM : " );
+    if ( address > MEMORY_SIZE || address < 0 ) {
+        DBUG_NOLN( "(EE) Tried to parse float from MEM:", address );
+        return -1.0;
+    }
+
+    DBUG_NOLN( "Parsing float from MEM : ", address );
 
     if( isBigEndian() ){
        for(int i=0;i<sizeof(float);i++) {
@@ -44,13 +49,17 @@
         //   DBUG_NOLN( " " );
         }
     }
-    // DBUG_NOLN( "\n" );
+    DBUG_NOLN( " -end\n" );
     float result;
     memcpy(&result, bytes, sizeof(float));
+    DBUG_NOLN( "FINISHED\n" );
     return result;
  }
 
  void copyFloatToBytes(unsigned char* memSeg, int address, float f) {
+
+    DBUG_NOLN("copyFloatToBytes "); DBUG( address );
+
     int float_tlen = sizeof(float);
     char data[float_tlen];
     memcpy(data, &f, sizeof f);    // send data
@@ -64,4 +73,6 @@
             memSeg[ address+i ] = data[i];
         }
     }
+
+    DBUG_NOLN("copyFloatToBytes "); DBUG( "END" );
  }

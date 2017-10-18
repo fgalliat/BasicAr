@@ -700,5 +700,6 @@ void DBUG(const char* v, int v2) { Serial.print(v); Serial.println(v2); }
 
 void DBUG_NOLN(char* v) { Serial.print(v); }
 void DBUG_NOLN(const char* v) { Serial.print(v); }
+void DBUG_NOLN(const char* v, int v2) { Serial.print(v); Serial.print(v2); }
 void DBUG_NOLN(int v) { Serial.print(v); }
 

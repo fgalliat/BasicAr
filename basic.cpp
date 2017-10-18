@@ -507,12 +507,20 @@ int storeNumVariable(char *name, float val) {
     int nameLen = strlen(name);
     unsigned char *p = findVariable(name, VAR_TYPE_NUM|VAR_TYPE_FORNEXT);
 
+    int addr = &(p[0]) - &(mem[0]);
+
     if (p != NULL)
     {	// replace the old value
         // (could either be VAR_TYPE_NUM or VAR_TYPE_FORNEXT)
         p += 3;	// len + type;
         p += nameLen + 1;
-        *(float *)p = val;
+        
+        addr += 3 + nameLen + 1;
+
+        // Xtase mod
+        // *(float *)p = val;
+        copyFloatToBytes( mem, addr, val );
+
     }
     else
     {	// allocate a new variable
@@ -529,13 +537,17 @@ int storeNumVariable(char *name, float val) {
         sysVARSTART -= bytesNeeded;
         // DBUG("bytes va start : ", sysVARSTART);
 
+        int addr = sysVARSTART;
         unsigned char *p = &mem[sysVARSTART];
         *(uint16_t *)p = bytesNeeded; 
-        p += 2;
-        *p++ = VAR_TYPE_NUM;
+        p += 2; addr+=2;
+        *p++ = VAR_TYPE_NUM; addr++;
         strcpy((char*)p, name); 
-        p += nameLen + 1;
-        *(float *)p = val;
+        p += nameLen + 1; addr += nameLen + 1;
+
+        // Xtase mod
+        //*(float *)p = val;
+        copyFloatToBytes( mem, addr, val );
 
         // DBUG("registered num var");
         // DBUG( name );
@@ -798,7 +810,11 @@ float lookupNumVariable(char *name) {
         return FLT_MAX;
     }
     p += 3 + strlen(name) + 1;
-    return *(float *)p;
+
+    // Xtase mod
+    int addr = &(p[0]) - &(mem[0]);
+    return getFloatFromBytes( mem, addr );
+    //return *(float *)p;
 }
 
 char *lookupStrVariable(char *name) {
