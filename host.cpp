@@ -347,15 +347,17 @@ interrupts();
         
             if ( !dirty ) { isWriting = false; return; }
 
-            //vgat_cls();
-            vgat_locate(0,0);
             for (int y=0; y<SCREEN_HEIGHT; y++) {
                 if ( SCREEN_LOCKER ) { return; }
+
+                if ( lineDirty[y] == 0 ) { continue; }
+
                 vgat_locate(0,y);
                 for (int x=0; x<SCREEN_WIDTH; x++) {
                   char c = screenBuffer[y*SCREEN_WIDTH+x];
                   if (c<32) c = ' ';
                   line[x] = c;
+                  if ( x > lineDirty[y] ) { line[x] = 0x00; break; }
                 }
                 line[SCREEN_WIDTH] = 0x00;
 
@@ -367,9 +369,9 @@ interrupts();
             }
             isWriting = false;
 
+        #else
+            Serial.println("Show buffer on VGA TEXT Serial");
         #endif
-
-        Serial.println("Show buffer on VGA TEXT Serial");
 
     } else if ( OUTPUT_DEVICE == OUT_DEV_SERIAL ) {
         isWriting = true;
@@ -416,11 +418,25 @@ void scrollBuffer() {
     isWriting = true;
     memcpy(screenBuffer, screenBuffer + SCREEN_WIDTH, SCREEN_WIDTH*(SCREEN_HEIGHT-1));
     memset(screenBuffer + SCREEN_WIDTH*(SCREEN_HEIGHT-1), 32, SCREEN_WIDTH);
-    memset(lineDirty, 1, SCREEN_HEIGHT);
+
+    //Optim try
+    //memset(lineDirty, 1, SCREEN_HEIGHT);
+    for(int i=0; i < SCREEN_HEIGHT-1; i++) {
+        lineDirty[i] = lineDirty[i+1];
+    }
+    lineDirty[SCREEN_HEIGHT-1] = 1;
+
     curY--;
 
     #ifdef BUILTIN_LCD
-        display.clearDisplay();
+        if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
+            display.clearDisplay();
+        }
+    #endif
+    #ifdef BUILTIN_LCD
+        if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
+            //vgat_cls();
+        }
     #endif
     isWriting = false;
 }
@@ -437,12 +453,21 @@ void host_outputString(char *str) {
     int pos = curY*SCREEN_WIDTH+curX;
     char ch;
     while (*str) {
-        lineDirty[pos / SCREEN_WIDTH] = 1;
+        // Optim try
+        //lineDirty[pos / SCREEN_WIDTH] = 1;
+        lineDirty[pos / SCREEN_WIDTH]++;
+
         ch = *str++;
         screenBuffer[pos++] = ch;
 
         // moa
-        if ( ch == '\n' ) { pos = (( pos/SCREEN_WIDTH )+1)*SCREEN_WIDTH; }
+        if ( ch == '\n' ) { 
+            // Optim try
+            int tmpY = pos / SCREEN_WIDTH;
+            if (pos % SCREEN_WIDTH > lineDirty[tmpY] ) { lineDirty[tmpY] = pos%SCREEN_WIDTH; }
+
+            pos = (( pos/SCREEN_WIDTH )+1)*SCREEN_WIDTH; 
+        }
 
         if (pos >= SCREEN_WIDTH*SCREEN_HEIGHT) {
             scrollBuffer();
@@ -451,6 +476,9 @@ void host_outputString(char *str) {
     }
     curX = pos % SCREEN_WIDTH;
     curY = pos / SCREEN_WIDTH;
+
+    // Optim try
+    if (curX > lineDirty[curY] ) { lineDirty[curY] = curX; }
 
     isWriting = false;
 }
@@ -469,7 +497,7 @@ void host_outputChar(char c) {
     if ( SCREEN_LOCKER ) { return; }
     isWriting = true;
     int pos = curY*SCREEN_WIDTH+curX;
-    lineDirty[pos / SCREEN_WIDTH] = 1;
+    //lineDirty[pos / SCREEN_WIDTH] = 1;
     screenBuffer[pos++] = c;
     if (pos >= SCREEN_WIDTH*SCREEN_HEIGHT) {
         scrollBuffer();
@@ -477,6 +505,10 @@ void host_outputChar(char c) {
     }
     curX = pos % SCREEN_WIDTH;
     curY = pos / SCREEN_WIDTH;
+
+    // Optim try
+    if ( curX > lineDirty[curY] ) { lineDirty[curY] = curX; }
+
     isWriting = false;
 }
 
@@ -542,7 +574,9 @@ void host_newLine() {
     if (curY == SCREEN_HEIGHT)
         scrollBuffer();
     memset(screenBuffer + SCREEN_WIDTH*(curY), 32, SCREEN_WIDTH);
-    lineDirty[curY] = 1;
+    
+    // Optim try
+    //lineDirty[curY] = 1;
 
 // ==== moa =
 //host_showBuffer();
@@ -565,7 +599,9 @@ char *host_readLine() {
         while (keyboard.available()) {
             host_click();
             // read the next key
-            lineDirty[pos / SCREEN_WIDTH] = 1;
+            // Optim try
+            //lineDirty[pos / SCREEN_WIDTH] = 1;
+            lineDirty[pos / SCREEN_WIDTH]++;
             
             char c = keyboard.read();
             if (c>=32 && c<=126) {
@@ -602,8 +638,10 @@ char *host_readLine() {
     }
     screenBuffer[pos] = 0;
     inputMode = 0;
+    
     // remove the cursor
-    lineDirty[curY] = 1;
+    //lineDirty[curY] = 1;
+
     if (LOCAL_ECHO) { host_showBuffer(); }
 
     return &screenBuffer[startPos];

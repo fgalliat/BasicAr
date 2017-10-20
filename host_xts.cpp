@@ -639,7 +639,8 @@ bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter) {
         host_outputString("\n");
 
 // TMP - DIRTY ----- begin
-if ( curY % SCREEN_HEIGHT == SCREEN_HEIGHT-1 ) {
+//if ( curY % SCREEN_HEIGHT == SCREEN_HEIGHT-1 ) {
+if ( cpt % SCREEN_HEIGHT == SCREEN_HEIGHT-1 ) {
   host_showBuffer();
 }
 // TMP - DIRTY ----- end
