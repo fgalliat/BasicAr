@@ -23,6 +23,9 @@ TODO
    L console command --> args to add to manage # cases
    L when change output console -> recompute SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_MEM[]
  
+  DUMP -> disp mem content (hex or raw)
+
+
   LOAD PRGM from SDCard <Source Code> LATER from SDCard <Tokens>
    L after that : impl. SAVE as ASCII or TOKENS
 

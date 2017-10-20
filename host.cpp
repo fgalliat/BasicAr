@@ -26,6 +26,15 @@ bool LOCAL_ECHO = true;
 #include "xts_io.h"
 int OUTPUT_DEVICE;
 
+extern int SCREEN_WIDTH;
+extern int SCREEN_HEIGHT;
+extern char* line; // one TTY line
+// char screenBuffer[SCREEN_WIDTH*SCREEN_HEIGHT];
+// char lineDirty[SCREEN_HEIGHT];
+extern char* screenBuffer;
+extern char* lineDirty;
+extern bool SCREEN_LOCKER;
+
 
  #include "desktop_devices.h"
  #include <EEPROM.h>
@@ -59,11 +68,6 @@ extern bool BUZZER_MUTE;
 
 int timer1_counter;
 
-// char screenBuffer[SCREEN_WIDTH*SCREEN_HEIGHT];
-// char lineDirty[SCREEN_HEIGHT];
-
-extern char screenBuffer[];
-extern char lineDirty[];
 
 int curX = 0, curY = 0;
 
@@ -196,6 +200,7 @@ void host_startupTone() {
 }
 
 void host_cls() {
+    if ( SCREEN_LOCKER ) { return; }
     isWriting = true;
     memset(screenBuffer, 32, SCREEN_WIDTH*SCREEN_HEIGHT);
     memset(lineDirty, 1, SCREEN_HEIGHT);
@@ -236,13 +241,19 @@ void host_moveCursor(int x, int y) {
             display.setCursor(x*6,y*8);
         }
     #endif
+    #ifdef BOARD_VGA
+        if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
+            vgat_locate(x,y);
+        }
+    #endif
     isWriting = false;
 }
 
 void host_showBuffer() {
+  if ( SCREEN_LOCKER ) { return; }
 
-// en plus de la lecture de ligne ....
-if ( !LOCAL_ECHO ) { isWriting = false; return; }
+  // en plus de la lecture de ligne ....
+  if ( !LOCAL_ECHO ) { isWriting = false; return; }
 
 //#ifdef BUT_TEENSY
 #ifndef BUILTIN_LCD
@@ -290,6 +301,8 @@ interrupts();
 
     if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
         for (int y=0; y<SCREEN_HEIGHT; y++) {
+            if ( SCREEN_LOCKER ) { return; }
+
             if (lineDirty[y] || (inputMode && y==curY)) {
                 //display.setCursor(0,y);
                 display.setCursor(0,y*8);
@@ -323,9 +336,9 @@ interrupts();
         #ifdef BOARD_VGA
 
             isWriting = true;
-            static char line[SCREEN_WIDTH+1];
             bool dirty = false;
             for (int y=0; y<SCREEN_HEIGHT; y++) {
+                if ( SCREEN_LOCKER ) { return; }
                 if ( lineDirty[y] != 0 ) {
                     dirty = true;
                     break;
@@ -334,12 +347,15 @@ interrupts();
         
             if ( !dirty ) { isWriting = false; return; }
 
-            vgat_cls();
+            //vgat_cls();
+            vgat_locate(0,0);
             for (int y=0; y<SCREEN_HEIGHT; y++) {
+                if ( SCREEN_LOCKER ) { return; }
+                vgat_locate(0,y);
                 for (int x=0; x<SCREEN_WIDTH; x++) {
-                char c = screenBuffer[y*SCREEN_WIDTH+x];
-                if (c<32) c = ' ';
-                line[x] = c;
+                  char c = screenBuffer[y*SCREEN_WIDTH+x];
+                  if (c<32) c = ' ';
+                  line[x] = c;
                 }
                 line[SCREEN_WIDTH] = 0x00;
 
@@ -357,9 +373,9 @@ interrupts();
 
     } else if ( OUTPUT_DEVICE == OUT_DEV_SERIAL ) {
         isWriting = true;
-        static char line[SCREEN_WIDTH+1];
         bool dirty = false;
         for (int y=0; y<SCREEN_HEIGHT; y++) {
+          if ( SCREEN_LOCKER ) { return; }
           if ( lineDirty[y] != 0 ) {
             dirty = true;
             break;
@@ -370,6 +386,7 @@ interrupts();
         Serial.print( "\n\n----------\n" );
         Serial.flush();
         for (int y=0; y<SCREEN_HEIGHT; y++) {
+            if ( SCREEN_LOCKER ) { return; }
             for (int x=0; x<SCREEN_WIDTH; x++) {
               char c = screenBuffer[y*SCREEN_WIDTH+x];
               if (c<32) c = ' ';
@@ -395,6 +412,7 @@ interrupts();
 }
 
 void scrollBuffer() {
+    if ( SCREEN_LOCKER ) { return; }
     isWriting = true;
     memcpy(screenBuffer, screenBuffer + SCREEN_WIDTH, SCREEN_WIDTH*(SCREEN_HEIGHT-1));
     memset(screenBuffer + SCREEN_WIDTH*(SCREEN_HEIGHT-1), 32, SCREEN_WIDTH);
@@ -414,6 +432,7 @@ void host_outputString(const char *str) {
 }
 
 void host_outputString(char *str) {
+    if ( SCREEN_LOCKER ) { return; }
     isWriting = true;
     int pos = curY*SCREEN_WIDTH+curX;
     char ch;
@@ -447,6 +466,7 @@ void host_outputString(char *str) {
 // }
 
 void host_outputChar(char c) {
+    if ( SCREEN_LOCKER ) { return; }
     isWriting = true;
     int pos = curY*SCREEN_WIDTH+curX;
     lineDirty[pos / SCREEN_WIDTH] = 1;
@@ -515,6 +535,7 @@ void host_outputFloat(float f) {
 }
 
 void host_newLine() {
+    if ( SCREEN_LOCKER ) { return; }
     isWriting = true;
     curX = 0;
     curY++;

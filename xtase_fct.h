@@ -9,7 +9,7 @@
 
 #include <Arduino.h>
 
-#import "xts_io.h"
+#include "xts_io.h"
 extern int OUTPUT_DEVICE;
 
 extern int sysVARSTART, sysPROGEND;
@@ -242,6 +242,8 @@ int xts_tone() {
 
 // I/O Console
 
+extern void setScreenSize(int cols, int rows);
+
 int xts_console() {
   getNextToken();
 
@@ -249,8 +251,15 @@ int xts_console() {
 
   // @ this time : ONLY switch to VGAText
   if ( executeMode ) {
-    if (OUTPUT_DEVICE != OUT_DEV_VGA_SERIAL) { OUTPUT_DEVICE = OUT_DEV_VGA_SERIAL; }
-    else { OUTPUT_DEVICE = OUT_DEV_LCD_MINI; }
+    if (OUTPUT_DEVICE != OUT_DEV_VGA_SERIAL) { 
+      OUTPUT_DEVICE = OUT_DEV_VGA_SERIAL; 
+      setScreenSize(VGA_TEXT_WIDTH, VGA_TEXT_HEIGHT);
+    }
+    else { 
+      OUTPUT_DEVICE = OUT_DEV_LCD_MINI; 
+      setScreenSize(LCD_TEXT_WIDTH, LCD_TEXT_HEIGHT);
+    }
+
   }
 
   return 0;

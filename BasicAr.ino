@@ -12,6 +12,10 @@
 extern bool STORAGE_OK;
 bool BUZZER_MUTE = false;
 
+// NOT CONSTANT : Cf Output device
+int SCREEN_WIDTH        = 21;
+int SCREEN_HEIGHT       = 8;
+
 #include "xts_io.h"
 extern int OUTPUT_DEVICE;
 
@@ -82,8 +86,47 @@ char autorun = 0;
 volatile boolean isWriting = false; // lock read when write
 // =========/ Serial Event /==============
 
-char screenBuffer[SCREEN_WIDTH*SCREEN_HEIGHT];
-char lineDirty[SCREEN_HEIGHT];
+// WILL HAVE TO malloc(...)
+// char screenBuffer[ (const int)(SCREEN_WIDTH*SCREEN_HEIGHT) ];
+// char lineDirty[ (const int)(SCREEN_HEIGHT) ];
+
+char* screenBuffer = NULL;
+char* lineDirty = NULL;
+char* line = NULL;
+
+bool SCREEN_LOCKER = false;
+
+void reconfigureScreen() {
+    SCREEN_LOCKER = true;
+
+    if ( screenBuffer != NULL ) { free(screenBuffer); } 
+    if ( lineDirty != NULL ) { free(lineDirty); } 
+    if ( line != NULL ) { free(line); } 
+
+    screenBuffer = (char*)malloc( SCREEN_WIDTH*SCREEN_HEIGHT );
+    lineDirty    = (char*)malloc( SCREEN_HEIGHT );
+    line         = (char*)malloc( SCREEN_WIDTH+1 );
+
+    memset( screenBuffer, 0x20, SCREEN_WIDTH*SCREEN_HEIGHT ); // 0x20 -> space
+    memset( lineDirty, 0x00, SCREEN_HEIGHT );
+    memset( line, 0x00, SCREEN_WIDTH+1 );
+
+    SCREEN_LOCKER = false;
+
+    //host_showBuffer();
+}
+
+// in tty characters
+void setScreenSize(int cols, int rows) {
+//   led1(true);
+  SCREEN_LOCKER = true;
+
+  SCREEN_WIDTH = cols; 
+  SCREEN_HEIGHT = rows;
+  reconfigureScreen();
+//   led1(false);
+}
+
 // ============================================
 
 
@@ -95,20 +138,31 @@ void setup() {
     BUZZER_MUTE = true;
     // inputString.reserve(200);
     
+    SCREEN_LOCKER = true;
+    OUTPUT_DEVICE = OUT_DEV_SERIAL;
+    setScreenSize( SER_TEXT_WIDTH, SER_TEXT_HEIGHT );
+    SCREEN_LOCKER = false;
+
+    #ifdef BUILTIN_LCD
+        OUTPUT_DEVICE = OUT_DEV_LCD_MINI;
+        setScreenSize( LCD_TEXT_WIDTH, LCD_TEXT_HEIGHT );
+    #else
+        // OUTPUT_DEVICE = OUT_DEV_SERIAL;
+        // setScreenSize( SER_TEXT_WIDTH, SER_TEXT_HEIGHT );
+    #endif
+
     setupHardware();
 
     
     keyboard.begin(DataPin, IRQpin);
     oled.ssd1306_init(SSD1306_SWITCHCAPVCC);
 
-    OUTPUT_DEVICE = OUT_DEV_SERIAL;
-    #ifdef BUILTIN_LCD
-      OUTPUT_DEVICE = OUT_DEV_LCD_MINI;
-    #endif
-
-
     reset();
     host_init(BUZZER_PIN);
+
+    
+
+
     host_cls();
     //host_outputProgMemString(welcomeStr);
     host_outputString( (char*) welcomeStr);

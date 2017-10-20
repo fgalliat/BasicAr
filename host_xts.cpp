@@ -33,6 +33,7 @@
   #include "dev_screen_VGATEXT.h"
 #endif
 
+extern int SCREEN_HEIGHT;
 
 
  // external forward decl.
@@ -126,7 +127,8 @@ void setupLCD() {
 
 #ifdef BOARD_VGA
 void setupVGASerial() {
-  setup_vgat();
+  setup_vgat(false);
+  //vgat_reboot(false);
   vgat_startScreen();
 }
 #endif
@@ -608,9 +610,9 @@ void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
   }
 
 
- #ifndef SCREEN_HEIGHT
-  #define SCREEN_HEIGHT       8
- #endif
+//  #ifndef SCREEN_HEIGHT
+//   #define SCREEN_HEIGHT       8
+//  #endif
 
 bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter) {
     SdFile file;
