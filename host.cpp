@@ -430,7 +430,11 @@ void scrollBuffer() {
 
     #ifdef BUILTIN_LCD
         if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
-            //display.clearDisplay();
+            display.clearDisplay();
+            for(int i=0; i < SCREEN_HEIGHT; i++) {
+                lineDirty[i] = SCREEN_WIDTH;
+            }
+            host_showBuffer();// just a test
         }
     #endif
     #ifdef BUILTIN_LCD

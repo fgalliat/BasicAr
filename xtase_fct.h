@@ -268,7 +268,9 @@ int xts_console() {
 // ======= Load / Save .BAS files ======
 
 int xts_loadBas(char* optFilename=NULL) {
+  bool woFileMode = false;
   if ( optFilename == NULL ) {
+    woFileMode = true;
     // if a filename is provided => the whole token check has already been done
     getNextToken();
 
@@ -284,7 +286,7 @@ int xts_loadBas(char* optFilename=NULL) {
     loadAsciiBas( optFilename );
   }
 
-  return 0;
+  return woFileMode ? 0 : 1; // 1 for true when use in saleVloadCmd(..)
 }
 
 // ===================================================================
