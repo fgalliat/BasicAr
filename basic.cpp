@@ -1916,6 +1916,17 @@ int parseLoadSaveCmd() {
                 if (!host_removeExtEEPROM(fileName))
                     return ERROR_BAD_PARAMETER;
             }
+#else 
+            if (op == TOKEN_LOAD) {
+                char fileName[MAX_IDENT_LEN+1];
+                if (strlen(stackGetStr()) > MAX_IDENT_LEN)
+                    return ERROR_BAD_PARAMETER;
+                strcpy(fileName, stackPopStr());
+
+                reset();
+                if (! xts_loadBas( fileName ) )
+                    return ERROR_BAD_PARAMETER;
+            }
 #endif
         }
         else {

@@ -430,7 +430,7 @@ void scrollBuffer() {
 
     #ifdef BUILTIN_LCD
         if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
-            display.clearDisplay();
+            //display.clearDisplay();
         }
     #endif
     #ifdef BUILTIN_LCD

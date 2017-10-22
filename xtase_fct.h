@@ -265,6 +265,27 @@ int xts_console() {
   return 0;
 }
 
+// ======= Load / Save .BAS files ======
+
+int xts_loadBas(char* optFilename=NULL) {
+  if ( optFilename == NULL ) {
+    // if a filename is provided => the whole token check has already been done
+    getNextToken();
+
+    int val = parseExpression();
+    if (val & _ERROR_MASK) return val;
+    if (!_IS_TYPE_STR(val))
+        return _ERROR_EXPR_EXPECTED_STR;
+
+    optFilename = stackPopStr();
+  }
+
+  if ( executeMode ) {
+    loadAsciiBas( optFilename );
+  }
+
+  return 0;
+}
 
 // ===================================================================
 

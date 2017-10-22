@@ -20,18 +20,20 @@ TODO
   > self(hardware) tests (stored in ~PROGMEM~) !!!!!!
 
   VGA Serial Monitor drivers (on spe SerialX) (start to impl. fileIO descr)
-   L console command --> args to add to manage # cases
-   L when change output console -> recompute SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_MEM[]
+   L console command --> args to add to manage # cases => TO FINSIH
+   L when change output console -> recompute SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_MEM[] => DONE
  
-  DUMP -> disp mem content (hex or raw)
 
-
-  LOAD PRGM from SDCard <Source Code> LATER from SDCard <Tokens>
+  LOAD PRGM from SDCard <Source Code> => 
+   L LATER from SDCard <Tokens>
    L after that : impl. SAVE as ASCII or TOKENS
+
+
+  DUMP -> disp mem content (hex or raw)
 
   FILES as DIR alias + filter ex. "*.BAS"
 
-  RETRY LIGHT4.BAS
+  RETRY LIGHT4.BAS /!\ w/ RND # impl (no more integer value)
 
 ================================================================
 

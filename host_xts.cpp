@@ -664,6 +664,65 @@ host_showBuffer();
  #endif // FS_SUPPORT
 
 
+ // ==== Load source code (ascii) from SDCard ====
+ #ifndef FS_SUPPORT
+  void loadAsciiBas(char* filename) {
+    host_outputString("ERR : NO Storage support\n");
+    host_showBuffer();
+  }
+ #else
+  void loadAsciiBas(char* filename) {
+    if ( !STORAGE_OK ) {
+      host_outputString("ERR : Storage not ready\n");
+      host_showBuffer();
+      return;
+    }
+
+    // ==========> code to check <========
+    //host_outputString(filename); host_outputString("\n");
+    //host_showBuffer(); host_outputString("\n");
+    int flen = strlen(filename);
+    memset(SDentryName, 0x00, 13);
+    memcpy(SDentryName, filename, flen );
+    if ( flen < 4 || filename[ flen-3 ] != '.' ) {
+      strcat( SDentryName, ".BAS" );
+    }
+    //host_outputString(SDentryName); host_outputString("\n");
+    //host_showBuffer(); host_outputString("\n");
+    // ==========> code to check <========
+
+    // SFATLIB mode -> have to switch for regular SD lib
+    SdFile file;
+    if (! file.open( SDentryName , O_READ) ) {
+      led1(true);
+      host_outputString("ERR : File not ready\n");
+      host_showBuffer();
+      return;        
+    }
+
+    file.seekSet(0);
+
+    const int codeLineLen = 128;
+    static char codeLine[codeLineLen]; // !! if enought !! (BEWARE : LIGHT4.BAS)
+    int n;
+
+    while( ( n = file.fgets(codeLine, codeLineLen) ) > 0 ) {
+      // TODO : interpret line
+      host_outputString( codeLine );
+      if ( codeLine[n-1] != '\n' ) {
+        host_outputString( "\n" );
+      }
+      host_showBuffer();
+    }
+    host_outputString( "-EOF-\n" );
+    host_showBuffer();
+
+    file.close();
+  }
+ #endif
+
+
+
 
 int MCU_freeRam() {
   // THIS IMPL : just return the space used by the sketch

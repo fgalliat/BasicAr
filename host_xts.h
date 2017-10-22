@@ -47,6 +47,9 @@ void _interrupts();
 
 void xts_loadTestProgram();
 
+void loadAsciiBas(char* filename);
+
+// =================================
 
 void DBUG(int v);
 void DBUG(float v);
