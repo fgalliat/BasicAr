@@ -25,7 +25,8 @@ TODO
  
 
   LOAD PRGM from SDCard <Source Code> => \__ in progress (load already read "text" file from sd & display it)
-  SAVE PRGM to   SDCARD               => /
+  SAVE PRGM to   SDCARD               => /               (save         write            to sd)
+  DELETE                              => DONE (@ least for .BAS files...)
    L LATER from SDCard <Tokens>
    L after that : impl. SAVE as ASCII or TOKENS
 

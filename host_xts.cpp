@@ -762,6 +762,26 @@ void saveAsciiBas(char* filename) {
 
   file.close();
 }
+
+void deleteBasFile(char* filename) {
+  if ( !STORAGE_OK ) {
+    host_outputString("ERR : Storage not ready\n");
+    host_showBuffer();
+    return;
+  }
+
+  int flen = strlen(filename);
+  memset(SDentryName, 0x00, 13);
+  memcpy(SDentryName, filename, flen );
+  if ( flen < 4 || filename[ flen-3 ] != '.' ) {
+    strcat( SDentryName, ".BAS" );
+  }
+
+  // SFATLIB mode -> have to switch for regular SD lib
+  sd.remove( SDentryName );
+}
+
+
  #endif
 
 

@@ -311,6 +311,28 @@ int xts_saveBas(char* optFilename=NULL) {
   return woFileMode ? 0 : 1; // 1 for true when use in saleVloadCmd(..)
 }
 
+int xts_delBas(char* optFilename=NULL) {
+  bool woFileMode = false;
+  if ( optFilename == NULL ) {
+    woFileMode = true;
+    // if a filename is provided => the whole token check has already been done
+    getNextToken();
+
+    int val = parseExpression();
+    if (val & _ERROR_MASK) return val;
+    if (!_IS_TYPE_STR(val))
+        return _ERROR_EXPR_EXPECTED_STR;
+
+    optFilename = stackPopStr();
+  }
+
+  if ( executeMode ) {
+    deleteBasFile( optFilename );
+  }
+
+  return woFileMode ? 0 : 1; // 1 for true when use in saleVloadCmd(..)
+}
+
 // ===================================================================
 
 char charUpCase(char ch) {

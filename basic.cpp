@@ -1939,6 +1939,16 @@ int parseLoadSaveCmd() {
                     return ERROR_BAD_PARAMETER;
             }
 
+            else if (op == TOKEN_DELETE) {
+                char fileName[MAX_IDENT_LEN+1]; // BEWARE : LIMITED TO 8 CHARS !!!!!
+                if (strlen(stackGetStr()) > MAX_IDENT_LEN)
+                    return ERROR_BAD_PARAMETER;
+                strcpy(fileName, stackPopStr());
+
+                if (! xts_delBas( fileName ) )
+                    return ERROR_BAD_PARAMETER;
+            }
+
 #endif
         }
         else {
