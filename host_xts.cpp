@@ -664,61 +664,104 @@ host_showBuffer();
  #endif // FS_SUPPORT
 
 
- // ==== Load source code (ascii) from SDCard ====
+ // ==== Load/Save source code (ascii) from SDCard ====
+
  #ifndef FS_SUPPORT
   void loadAsciiBas(char* filename) {
     host_outputString("ERR : NO Storage support\n");
     host_showBuffer();
   }
- #else
-  void loadAsciiBas(char* filename) {
-    if ( !STORAGE_OK ) {
-      host_outputString("ERR : Storage not ready\n");
-      host_showBuffer();
-      return;
-    }
 
-    // ==========> code to check <========
-    //host_outputString(filename); host_outputString("\n");
-    //host_showBuffer(); host_outputString("\n");
-    int flen = strlen(filename);
-    memset(SDentryName, 0x00, 13);
-    memcpy(SDentryName, filename, flen );
-    if ( flen < 4 || filename[ flen-3 ] != '.' ) {
-      strcat( SDentryName, ".BAS" );
-    }
-    //host_outputString(SDentryName); host_outputString("\n");
-    //host_showBuffer(); host_outputString("\n");
-    // ==========> code to check <========
-
-    // SFATLIB mode -> have to switch for regular SD lib
-    SdFile file;
-    if (! file.open( SDentryName , O_READ) ) {
-      led1(true);
-      host_outputString("ERR : File not ready\n");
-      host_showBuffer();
-      return;        
-    }
-
-    file.seekSet(0);
-
-    const int codeLineLen = 128;
-    static char codeLine[codeLineLen]; // !! if enought !! (BEWARE : LIGHT4.BAS)
-    int n;
-
-    while( ( n = file.fgets(codeLine, codeLineLen) ) > 0 ) {
-      // TODO : interpret line
-      host_outputString( codeLine );
-      if ( codeLine[n-1] != '\n' ) {
-        host_outputString( "\n" );
-      }
-      host_showBuffer();
-    }
-    host_outputString( "-EOF-\n" );
+  void saveAsciiBas(char* filename) {
+    host_outputString("ERR : NO Storage support\n");
     host_showBuffer();
-
-    file.close();
   }
+
+ #else
+ void loadAsciiBas(char* filename) {
+  if ( !STORAGE_OK ) {
+    host_outputString("ERR : Storage not ready\n");
+    host_showBuffer();
+    return;
+  }
+
+  int flen = strlen(filename);
+  memset(SDentryName, 0x00, 13);
+  memcpy(SDentryName, filename, flen );
+  if ( flen < 4 || filename[ flen-3 ] != '.' ) {
+    strcat( SDentryName, ".BAS" );
+  }
+
+  // SFATLIB mode -> have to switch for regular SD lib
+  SdFile file;
+  if (! file.open( SDentryName , O_READ) ) {
+    led1(true);
+    host_outputString("ERR : File not ready\n");
+    host_showBuffer();
+    return;        
+  }
+
+  file.seekSet(0);
+
+  const int codeLineLen = 128;
+  static char codeLine[codeLineLen]; // !! if enought !! (BEWARE : LIGHT4.BAS)
+  int n;
+
+  while( ( n = file.fgets(codeLine, codeLineLen) ) > 0 ) {
+    // TODO : interpret line
+    host_outputString( codeLine );
+    if ( codeLine[n-1] != '\n' ) {
+      host_outputString( "\n" );
+    }
+    host_showBuffer();
+  }
+  host_outputString( "-EOF-\n" );
+  host_showBuffer();
+
+  file.close();
+}
+
+void saveAsciiBas(char* filename) {
+  if ( !STORAGE_OK ) {
+    host_outputString("ERR : Storage not ready\n");
+    host_showBuffer();
+    return;
+  }
+
+  int flen = strlen(filename);
+  memset(SDentryName, 0x00, 13);
+  memcpy(SDentryName, filename, flen );
+  if ( flen < 4 || filename[ flen-3 ] != '.' ) {
+    strcat( SDentryName, ".BAS" );
+  }
+
+  // SFATLIB mode -> have to switch for regular SD lib
+  sd.remove( SDentryName );
+  SdFile file;
+
+  if (! file.open( SDentryName , FILE_WRITE) ) {
+    led1(true);
+    host_outputString("ERR : File not ready\n");
+    host_showBuffer();
+    return;        
+  }
+
+  file.seekSet(0);
+
+  const int codeLineLen = 128;
+  static char codeLine[codeLineLen]; // !! if enought !! (BEWARE : LIGHT4.BAS)
+
+  file.print("coucou1"); file.print("\n");
+  file.print("coucou2"); file.print("\n");
+  file.print("coucou3"); file.print("\n");
+  file.print("coucou4"); file.print("\n");
+  file.flush();
+  
+  host_outputString( "-EOF-\n" );
+  host_showBuffer();
+
+  file.close();
+}
  #endif
 
 

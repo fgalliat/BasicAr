@@ -24,7 +24,8 @@ TODO
    L when change output console -> recompute SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_MEM[] => DONE
  
 
-  LOAD PRGM from SDCard <Source Code> => 
+  LOAD PRGM from SDCard <Source Code> => \__ in progress (load already read "text" file from sd & display it)
+  SAVE PRGM to   SDCARD               => /
    L LATER from SDCard <Tokens>
    L after that : impl. SAVE as ASCII or TOKENS
 

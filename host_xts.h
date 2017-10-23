@@ -48,6 +48,7 @@ void _interrupts();
 void xts_loadTestProgram();
 
 void loadAsciiBas(char* filename);
+void saveAsciiBas(char* filename);
 
 // =================================
 
