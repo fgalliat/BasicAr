@@ -49,13 +49,13 @@ extern int OUTPUT_DEVICE;
     TwiMaster rtc(true);
 #endif
 
-// Keyboard
+// Keyboard --- to remove !!!
 // NB Keyboard needs a seperate ground from the OLED
 const int DataPin = 8;
 const int IRQpin =  3;
 PS2Keyboard keyboard;
 
-// OLED
+// OLED --- to remove !!!
 #define OLED_DATA 9
 #define OLED_CLK 10
 #define OLED_DC 11
@@ -63,19 +63,16 @@ PS2Keyboard keyboard;
 #define OLED_RST 13
 SSD1306ASCII oled(OLED_DATA, OLED_CLK, OLED_DC, OLED_RST, OLED_CS);
 
-// // buzzer pin, 0 = disabled/not present
-// #define BUZZER_PIN    5
-
 // BASIC
 unsigned char mem[MEMORY_SIZE];
+unsigned char tokenBuf[TOKEN_BUF_SIZE];
+char codeLine[ASCII_CODELINE_SIZE]; // !! if enought !! (BEWARE : LIGHT4.BAS)
 
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 unsigned char audiobuff[AUDIO_BUFF_SIZE];
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-// NB OF TOKEN PER LINES
-//const int TOKEN_BUF_SIZE = 64;
-unsigned char tokenBuf[TOKEN_BUF_SIZE];
+
 
 const char welcomeStr[]  = "Arduino BASIC (Xts)";
 char autorun = 0;
@@ -153,7 +150,7 @@ void setup() {
 
     setupHardware();
 
-    
+    // TO REMOVE...
     keyboard.begin(DataPin, IRQpin);
     oled.ssd1306_init(SSD1306_SWITCHCAPVCC);
 
@@ -245,14 +242,6 @@ void loop() {
             ret = ERROR_NONE;
             
         }
-        
-        
-        // if (input[0] == '!' && input[1] == 0) {
-        //     xts_loadTestProgram();
-        //     tokenBuf[0] = TOKEN_LIST;
-        //     tokenBuf[1] = 0;
-        //     autorun = 0;
-        // } else {
 
             // otherwise tokenize
             ret = tokenize((unsigned char*)input, tokenBuf, TOKEN_BUF_SIZE);
@@ -263,7 +252,6 @@ void loop() {
             // moa
             host_showBuffer();
             //delay(50);
-        //}
     }
     else {
         host_loadProgram();

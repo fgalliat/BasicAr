@@ -7,12 +7,16 @@
 
 #include "xts_arch.h"
 
+
+#define BASIC_ASCII_FILE_EXT ".BAS"
+
 #ifdef FS_SUPPORT
 // // BEWARE : THIS IS REGULAR Arduino SD LIB
 // #include <SD.h>
 // #include <SPI.h>
 // File curFile;
 
+  char SDentryName[13];
 
   #ifdef USE_SDFAT_LIB
   // for teensy 3.6
@@ -21,8 +25,22 @@
     SdFatSdio sd;
     SdFile file;
     SdFile dirFile;
-    char SDentryName[13];
   #endif
+
+
+  // BEWARE : uses & modifies : SDentryName[]
+  // ex. autocomplete_fileExt(filename, ".BAS") => SDentryName[] contains full file-name
+  // assumes that ext is stricly 3 char long
+  char* autocomplete_fileExt(char* filename, const char* defFileExt) {
+    int flen = strlen(filename);
+    memset(SDentryName, 0x00, 8+1+3+1); // 13 char long
+    memcpy(SDentryName, filename, flen );
+    if ( flen < 4 || filename[ flen-3 ] != '.' ) {
+      strcat( SDentryName, defFileExt );
+    }
+    return SDentryName;
+  }
+
 
 #endif
 
@@ -30,6 +48,12 @@
 #include "host_xts.h"
 
 #include "basic.h"
+extern char codeLine[];
+void cleanCodeLine() {
+  memset(codeLine, 0x00, ASCII_CODELINE_SIZE);
+}
+
+
 
 #ifdef BOARD_VGA
   #include "dev_screen_VGATEXT.h"
@@ -689,12 +713,7 @@ host_showBuffer();
     return;
   }
 
-  int flen = strlen(filename);
-  memset(SDentryName, 0x00, 13);
-  memcpy(SDentryName, filename, flen );
-  if ( flen < 4 || filename[ flen-3 ] != '.' ) {
-    strcat( SDentryName, ".BAS" );
-  }
+  autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
 
   // SFATLIB mode -> have to switch for regular SD lib
   SdFile file;
@@ -707,11 +726,10 @@ host_showBuffer();
 
   file.seekSet(0);
 
-  const int codeLineLen = 128;
-  static char codeLine[codeLineLen]; // !! if enought !! (BEWARE : LIGHT4.BAS)
   int n;
 
-  while( ( n = file.fgets(codeLine, codeLineLen) ) > 0 ) {
+  cleanCodeLine();
+  while( ( n = file.fgets(codeLine, ASCII_CODELINE_SIZE) ) > 0 ) {
     // TODO : interpret line
     host_outputString( codeLine );
     if ( codeLine[n-1] != '\n' ) {
@@ -822,12 +840,7 @@ void saveAsciiBas(char* filename) {
     return;
   }
 
-  int flen = strlen(filename);
-  memset(SDentryName, 0x00, 13);
-  memcpy(SDentryName, filename, flen );
-  if ( flen < 4 || filename[ flen-3 ] != '.' ) {
-    strcat( SDentryName, ".BAS" );
-  }
+  autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
 
   // SFATLIB mode -> have to switch for regular SD lib
   sd.remove( SDentryName );
@@ -842,13 +855,10 @@ void saveAsciiBas(char* filename) {
 
   file.seekSet(0);
 
-  const int codeLineLen = 128;
-  static char codeLine[codeLineLen]; // !! if enought !! (BEWARE : LIGHT4.BAS)
-
-
   // file.print("coucou1"); file.print("\n");
   // file.flush();
 
+  cleanCodeLine();
   unsigned char *p = &mem[0];
   while (p < &mem[sysPROGEND]) {
       uint16_t lineNum = *(uint16_t*)(p+2);
@@ -858,7 +868,7 @@ void saveAsciiBas(char* filename) {
           //printTokens(p+4);
           _serializeTokens(p+4, codeLine);
           file.print(codeLine);
-          memset(codeLine, 0x00, codeLineLen);
+          cleanCodeLine();
 
           file.print("\n");
       p+= *(uint16_t *)p;
@@ -879,12 +889,7 @@ void deleteBasFile(char* filename) {
     return;
   }
 
-  int flen = strlen(filename);
-  memset(SDentryName, 0x00, 13);
-  memcpy(SDentryName, filename, flen );
-  if ( flen < 4 || filename[ flen-3 ] != '.' ) {
-    strcat( SDentryName, ".BAS" );
-  }
+  autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
 
   // SFATLIB mode -> have to switch for regular SD lib
   sd.remove( SDentryName );
