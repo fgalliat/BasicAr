@@ -23,6 +23,19 @@ bool LOCAL_ECHO = true;
 
 #include "xts_arch.h"
 
+#include "xts_io.h"
+int OUTPUT_DEVICE;
+
+extern int SCREEN_WIDTH;
+extern int SCREEN_HEIGHT;
+extern char* line; // one TTY line
+// char screenBuffer[SCREEN_WIDTH*SCREEN_HEIGHT];
+// char lineDirty[SCREEN_HEIGHT];
+extern char* screenBuffer;
+extern char* lineDirty;
+extern bool SCREEN_LOCKER;
+
+
  #include "desktop_devices.h"
  #include <EEPROM.h>
 extern SSD1306ASCII oled;
@@ -44,18 +57,17 @@ extern PS2Keyboard keyboard;
 extern bool BUZZER_MUTE;
 
 #ifdef BUILTIN_LCD
- #include "screen_Adafruit_SSD1306.h"
+ #include "dev_screen_Adafruit_SSD1306.h"
  extern Adafruit_SSD1306 display;
+#endif
+
+#ifdef BOARD_VGA
+  #include "dev_screen_VGATEXT.h"
 #endif
 
 
 int timer1_counter;
 
-// char screenBuffer[SCREEN_WIDTH*SCREEN_HEIGHT];
-// char lineDirty[SCREEN_HEIGHT];
-
-extern char screenBuffer[];
-extern char lineDirty[];
 
 int curX = 0, curY = 0;
 
@@ -187,12 +199,8 @@ void host_startupTone() {
     }    
 }
 
-// #ifdef BUILTIN_LCD
-//  #include "screen_Adafruit_SSD1306.h"
-//  extern Adafruit_SSD1306 display;
-// #endif
-
 void host_cls() {
+    if ( SCREEN_LOCKER ) { return; }
     isWriting = true;
     memset(screenBuffer, 32, SCREEN_WIDTH*SCREEN_HEIGHT);
     memset(lineDirty, 1, SCREEN_HEIGHT);
@@ -200,9 +208,21 @@ void host_cls() {
     curY = 0;
 
     #ifdef BUILTIN_LCD
-      display.clearDisplay();
-      display.display();
+        if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
+            display.clearDisplay();
+            display.display();
+        } else 
     #endif
+
+    #ifdef BOARD_VGA
+        if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
+            vgat_cls();
+        } else 
+    #endif
+
+      if ( OUTPUT_DEVICE == OUT_DEV_SERIAL ) {
+          Serial.print("\n\n\n\n------------\n\n\n");
+      }
 
     isWriting = false;
 }
@@ -217,15 +237,23 @@ void host_moveCursor(int x, int y) {
     curY = y; 
 
     #ifdef BUILTIN_LCD
-      display.setCursor(x*6,y*8);
+        if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
+            display.setCursor(x*6,y*8);
+        }
+    #endif
+    #ifdef BOARD_VGA
+        if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
+            vgat_locate(x,y);
+        }
     #endif
     isWriting = false;
 }
 
 void host_showBuffer() {
+  if ( SCREEN_LOCKER ) { return; }
 
-// en plus de la lecture de ligne ....
-if ( !LOCAL_ECHO ) { isWriting = false; return; }
+  // en plus de la lecture de ligne ....
+  if ( !LOCAL_ECHO ) { isWriting = false; return; }
 
 //#ifdef BUT_TEENSY
 #ifndef BUILTIN_LCD
@@ -265,57 +293,154 @@ isWriting = true;
 interrupts();
 
 #else    
-    // Xtase
-    //display.clearDisplay();
 
-    noInterrupts();
-    _noInterrupts();
+    // noInterrupts();
+    // _noInterrupts();
 
-    for (int y=0; y<SCREEN_HEIGHT; y++) {
-        if (lineDirty[y] || (inputMode && y==curY)) {
-            //display.setCursor(0,y);
-            display.setCursor(0,y*8);
+    // BEWARE W/ COMPILLER CONDITION !!!!!!
 
-            display.setTextColor( BLACK );
-            display.drawFastHLine( 0, (y+0)*8, 128, (y+0)*8 );
-            display.drawFastHLine( 0, (y+1)*8, 128, (y+1)*8 );
-            display.drawFastHLine( 0, (y+2)*8, 128, (y+2)*8 );
-            display.drawFastHLine( 0, (y+3)*8, 128, (y+3)*8 );
-            display.drawFastHLine( 0, (y+4)*8, 128, (y+4)*8 );
-            display.drawFastHLine( 0, (y+5)*8, 128, (y+5)*8 );
-            display.drawFastHLine( 0, (y+6)*8, 128, (y+6)*8 );
-            display.drawFastHLine( 0, (y+7)*8, 128, (y+7)*8 );
-            display.setTextColor( WHITE );
+    if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
+        for (int y=0; y<SCREEN_HEIGHT; y++) {
+            if ( SCREEN_LOCKER ) { return; }
 
-            for (int x=0; x<SCREEN_WIDTH; x++) {
-                char c = screenBuffer[y*SCREEN_WIDTH+x];
-                if (c<32) c = ' ';
-                //if (x==curX && y==curY && inputMode && flash) c = 127;
-                if (x==curX && y==curY && inputMode && _flash) c = 127;
-                display.print(c);
+            if (lineDirty[y] || (inputMode && y==curY)) {
+                //display.setCursor(0,y);
+                display.setCursor(0,y*8);
+
+                display.setTextColor( BLACK );
+                display.drawFastHLine( 0, (y+0)*8, 128, (y+0)*8 );
+                display.drawFastHLine( 0, (y+1)*8, 128, (y+1)*8 );
+                display.drawFastHLine( 0, (y+2)*8, 128, (y+2)*8 );
+                display.drawFastHLine( 0, (y+3)*8, 128, (y+3)*8 );
+                display.drawFastHLine( 0, (y+4)*8, 128, (y+4)*8 );
+                display.drawFastHLine( 0, (y+5)*8, 128, (y+5)*8 );
+                display.drawFastHLine( 0, (y+6)*8, 128, (y+6)*8 );
+                display.drawFastHLine( 0, (y+7)*8, 128, (y+7)*8 );
+                display.setTextColor( WHITE );
+
+                for (int x=0; x<SCREEN_WIDTH; x++) {
+                    char c = screenBuffer[y*SCREEN_WIDTH+x];
+                    if (c<32) c = ' ';
+                    //if (x==curX && y==curY && inputMode && flash) c = 127;
+                    if (x==curX && y==curY && inputMode && _flash) c = 127;
+                    display.print(c);
+                }
+                lineDirty[y] = 0;
             }
-            lineDirty[y] = 0;
         }
+
+        // Xtase
+        display.display(); // to place in an interrupt
+    } else if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
+
+        #ifdef BOARD_VGA
+
+            isWriting = true;
+            bool dirty = false;
+            for (int y=0; y<SCREEN_HEIGHT; y++) {
+                if ( SCREEN_LOCKER ) { return; }
+                if ( lineDirty[y] != 0 ) {
+                    dirty = true;
+                    break;
+                }
+            }
+        
+            if ( !dirty ) { isWriting = false; return; }
+
+            for (int y=0; y<SCREEN_HEIGHT; y++) {
+                if ( SCREEN_LOCKER ) { return; }
+
+                if ( lineDirty[y] == 0 ) { continue; }
+
+                vgat_locate(0,y);
+                for (int x=0; x<SCREEN_WIDTH; x++) {
+                  char c = screenBuffer[y*SCREEN_WIDTH+x];
+                  if (c<32) c = ' ';
+                  line[x] = c;
+                  if ( x > lineDirty[y] ) { line[x] = 0x00; break; }
+                }
+                line[SCREEN_WIDTH] = 0x00;
+
+                vgat_print( line );
+                
+                //if (lineDirty[y] || (inputMode && y==curY)) {
+                lineDirty[y] = 0;
+                //}
+            }
+            isWriting = false;
+
+        #else
+            Serial.println("Show buffer on VGA TEXT Serial");
+        #endif
+
+    } else if ( OUTPUT_DEVICE == OUT_DEV_SERIAL ) {
+        isWriting = true;
+        bool dirty = false;
+        for (int y=0; y<SCREEN_HEIGHT; y++) {
+          if ( SCREEN_LOCKER ) { return; }
+          if ( lineDirty[y] != 0 ) {
+            dirty = true;
+            break;
+          }
+        }
+    
+        if ( !dirty ) { isWriting = false; return; }
+        Serial.print( "\n\n----------\n" );
+        Serial.flush();
+        for (int y=0; y<SCREEN_HEIGHT; y++) {
+            if ( SCREEN_LOCKER ) { return; }
+            for (int x=0; x<SCREEN_WIDTH; x++) {
+              char c = screenBuffer[y*SCREEN_WIDTH+x];
+              if (c<32) c = ' ';
+              line[x] = c;
+            }
+            line[SCREEN_WIDTH] = 0x00;
+            Serial.println( line );
+            Serial.flush();
+            
+            //if (lineDirty[y] || (inputMode && y==curY)) {
+              lineDirty[y] = 0;
+            //}
+        }
+        isWriting = false;
+
+        Serial.println("Show buffer on regular Serial");
     }
 
-    // Xtase
-    display.display(); // to place in an interrupt
-
-    interrupts();
-    _interrupts();
+    // interrupts();
+    // _interrupts();
 
 #endif
 }
 
 void scrollBuffer() {
+    if ( SCREEN_LOCKER ) { return; }
     isWriting = true;
     memcpy(screenBuffer, screenBuffer + SCREEN_WIDTH, SCREEN_WIDTH*(SCREEN_HEIGHT-1));
     memset(screenBuffer + SCREEN_WIDTH*(SCREEN_HEIGHT-1), 32, SCREEN_WIDTH);
-    memset(lineDirty, 1, SCREEN_HEIGHT);
+
+    //Optim try
+    //memset(lineDirty, 1, SCREEN_HEIGHT);
+    for(int i=0; i < SCREEN_HEIGHT-1; i++) {
+        lineDirty[i] = lineDirty[i+1];
+    }
+    lineDirty[SCREEN_HEIGHT-1] = 1;
+
     curY--;
 
     #ifdef BUILTIN_LCD
-        display.clearDisplay();
+        if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
+            display.clearDisplay();
+            for(int i=0; i < SCREEN_HEIGHT; i++) {
+                lineDirty[i] = SCREEN_WIDTH;
+            }
+            host_showBuffer();// just a test
+        }
+    #endif
+    #ifdef BUILTIN_LCD
+        if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
+            //vgat_cls();
+        }
     #endif
     isWriting = false;
 }
@@ -327,16 +452,26 @@ void host_outputString(const char *str) {
 }
 
 void host_outputString(char *str) {
+    if ( SCREEN_LOCKER ) { return; }
     isWriting = true;
     int pos = curY*SCREEN_WIDTH+curX;
     char ch;
     while (*str) {
-        lineDirty[pos / SCREEN_WIDTH] = 1;
+        // Optim try
+        //lineDirty[pos / SCREEN_WIDTH] = 1;
+        lineDirty[pos / SCREEN_WIDTH]++;
+
         ch = *str++;
         screenBuffer[pos++] = ch;
 
         // moa
-        if ( ch == '\n' ) { pos = (( pos/SCREEN_WIDTH )+1)*SCREEN_WIDTH; }
+        if ( ch == '\n' ) { 
+            // Optim try
+            int tmpY = pos / SCREEN_WIDTH;
+            if (pos % SCREEN_WIDTH > lineDirty[tmpY] ) { lineDirty[tmpY] = pos%SCREEN_WIDTH; }
+
+            pos = (( pos/SCREEN_WIDTH )+1)*SCREEN_WIDTH; 
+        }
 
         if (pos >= SCREEN_WIDTH*SCREEN_HEIGHT) {
             scrollBuffer();
@@ -345,6 +480,9 @@ void host_outputString(char *str) {
     }
     curX = pos % SCREEN_WIDTH;
     curY = pos / SCREEN_WIDTH;
+
+    // Optim try
+    if (curX > lineDirty[curY] ) { lineDirty[curY] = curX; }
 
     isWriting = false;
 }
@@ -360,9 +498,10 @@ void host_outputString(char *str) {
 // }
 
 void host_outputChar(char c) {
+    if ( SCREEN_LOCKER ) { return; }
     isWriting = true;
     int pos = curY*SCREEN_WIDTH+curX;
-    lineDirty[pos / SCREEN_WIDTH] = 1;
+    //lineDirty[pos / SCREEN_WIDTH] = 1;
     screenBuffer[pos++] = c;
     if (pos >= SCREEN_WIDTH*SCREEN_HEIGHT) {
         scrollBuffer();
@@ -370,6 +509,10 @@ void host_outputChar(char c) {
     }
     curX = pos % SCREEN_WIDTH;
     curY = pos / SCREEN_WIDTH;
+
+    // Optim try
+    if ( curX > lineDirty[curY] ) { lineDirty[curY] = curX; }
+
     isWriting = false;
 }
 
@@ -428,13 +571,16 @@ void host_outputFloat(float f) {
 }
 
 void host_newLine() {
+    if ( SCREEN_LOCKER ) { return; }
     isWriting = true;
     curX = 0;
     curY++;
     if (curY == SCREEN_HEIGHT)
         scrollBuffer();
     memset(screenBuffer + SCREEN_WIDTH*(curY), 32, SCREEN_WIDTH);
-    lineDirty[curY] = 1;
+    
+    // Optim try
+    //lineDirty[curY] = 1;
 
 // ==== moa =
 //host_showBuffer();
@@ -457,7 +603,9 @@ char *host_readLine() {
         while (keyboard.available()) {
             host_click();
             // read the next key
-            lineDirty[pos / SCREEN_WIDTH] = 1;
+            // Optim try
+            //lineDirty[pos / SCREEN_WIDTH] = 1;
+            lineDirty[pos / SCREEN_WIDTH]++;
             
             char c = keyboard.read();
             if (c>=32 && c<=126) {
@@ -494,8 +642,10 @@ char *host_readLine() {
     }
     screenBuffer[pos] = 0;
     inputMode = 0;
+    
     // remove the cursor
-    lineDirty[curY] = 1;
+    //lineDirty[curY] = 1;
+
     if (LOCAL_ECHO) { host_showBuffer(); }
 
     return &screenBuffer[startPos];

@@ -9,6 +9,8 @@
 
 #include <Arduino.h>
 
+#include "xts_io.h"
+extern int OUTPUT_DEVICE;
 
 extern int sysVARSTART, sysPROGEND;
 extern int stackPushNum(float val);
@@ -238,8 +240,98 @@ int xts_tone() {
   return 0;    
 }
 
+// I/O Console
 
+extern void setScreenSize(int cols, int rows);
 
+int xts_console() {
+  getNextToken();
+
+  // TODO : add & parse parameters to select devices
+
+  // @ this time : ONLY switch to VGAText
+  if ( executeMode ) {
+    if (OUTPUT_DEVICE != OUT_DEV_VGA_SERIAL) { 
+      OUTPUT_DEVICE = OUT_DEV_VGA_SERIAL; 
+      setScreenSize(VGA_TEXT_WIDTH, VGA_TEXT_HEIGHT);
+    }
+    else { 
+      OUTPUT_DEVICE = OUT_DEV_LCD_MINI; 
+      setScreenSize(LCD_TEXT_WIDTH, LCD_TEXT_HEIGHT);
+    }
+
+  }
+
+  return 0;
+}
+
+// ======= Load / Save .BAS files ======
+
+int xts_loadBas(char* optFilename=NULL) {
+  bool woFileMode = false;
+  if ( optFilename == NULL ) {
+    woFileMode = true;
+    // if a filename is provided => the whole token check has already been done
+    getNextToken();
+
+    int val = parseExpression();
+    if (val & _ERROR_MASK) return val;
+    if (!_IS_TYPE_STR(val))
+        return _ERROR_EXPR_EXPECTED_STR;
+
+    optFilename = stackPopStr();
+  }
+
+  if ( executeMode ) {
+    loadAsciiBas( optFilename );
+  }
+
+  return woFileMode ? 0 : 1; // 1 for true when use in saleVloadCmd(..)
+}
+
+int xts_saveBas(char* optFilename=NULL) {
+  bool woFileMode = false;
+  if ( optFilename == NULL ) {
+    woFileMode = true;
+    // if a filename is provided => the whole token check has already been done
+    getNextToken();
+
+    int val = parseExpression();
+    if (val & _ERROR_MASK) return val;
+    if (!_IS_TYPE_STR(val))
+        return _ERROR_EXPR_EXPECTED_STR;
+
+    optFilename = stackPopStr();
+  }
+
+  if ( executeMode ) {
+    saveAsciiBas( optFilename );
+  }
+
+  return woFileMode ? 0 : 1; // 1 for true when use in saleVloadCmd(..)
+}
+
+int xts_delBas(char* optFilename=NULL) {
+  bool woFileMode = false;
+  if ( optFilename == NULL ) {
+    woFileMode = true;
+    // if a filename is provided => the whole token check has already been done
+    getNextToken();
+
+    int val = parseExpression();
+    if (val & _ERROR_MASK) return val;
+    if (!_IS_TYPE_STR(val))
+        return _ERROR_EXPR_EXPECTED_STR;
+
+    optFilename = stackPopStr();
+  }
+
+  if ( executeMode ) {
+    deleteBasFile( optFilename );
+  }
+
+  return woFileMode ? 0 : 1; // 1 for true when use in saleVloadCmd(..)
+}
 
 // ===================================================================
 

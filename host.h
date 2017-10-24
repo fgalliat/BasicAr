@@ -13,8 +13,8 @@
 // static bool LOCAL_ECHO = true;
 
 
-#define SCREEN_WIDTH        21
-#define SCREEN_HEIGHT       8
+// #define SCREEN_WIDTH        21
+// #define SCREEN_HEIGHT       8
 
 //  #define EXTERNAL_EEPROM         1
 #define EXTERNAL_EEPROM_ADDR    0x50    // I2C address (7 bits)

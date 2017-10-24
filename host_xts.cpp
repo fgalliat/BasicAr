@@ -7,12 +7,16 @@
 
 #include "xts_arch.h"
 
+
+#define BASIC_ASCII_FILE_EXT ".BAS"
+
 #ifdef FS_SUPPORT
 // // BEWARE : THIS IS REGULAR Arduino SD LIB
 // #include <SD.h>
 // #include <SPI.h>
 // File curFile;
 
+  char SDentryName[13];
 
   #ifdef USE_SDFAT_LIB
   // for teensy 3.6
@@ -21,15 +25,43 @@
     SdFatSdio sd;
     SdFile file;
     SdFile dirFile;
-    char SDentryName[13];
   #endif
+
+
+  // BEWARE : uses & modifies : SDentryName[]
+  // ex. autocomplete_fileExt(filename, ".BAS") => SDentryName[] contains full file-name
+  // assumes that ext is stricly 3 char long
+  char* autocomplete_fileExt(char* filename, const char* defFileExt) {
+    int flen = strlen(filename);
+    memset(SDentryName, 0x00, 8+1+3+1); // 13 char long
+    memcpy(SDentryName, filename, flen );
+    if ( flen < 4 || filename[ flen-3 ] != '.' ) {
+      strcat( SDentryName, defFileExt );
+    }
+    return SDentryName;
+  }
+
 
 #endif
 
 
 #include "host_xts.h"
 
+#include "basic.h"
+extern char codeLine[];
+void cleanCodeLine() {
+  memset(codeLine, 0x00, ASCII_CODELINE_SIZE);
+}
 
+
+
+#ifdef BOARD_VGA
+  #include "dev_screen_VGATEXT.h"
+#endif
+
+extern int SCREEN_HEIGHT;
+
+extern unsigned char tokenBuf[];
 
 
  // external forward decl.
@@ -91,7 +123,7 @@ void setupGPIO() {
 #include <SPI.h>
 #include <i2c_t3.h>
 #include <Adafruit_GFX.h>
-#include "screen_Adafruit_SSD1306.h"
+#include "dev_screen_Adafruit_SSD1306.h"
 //default is 4 that is an I2C pin on t3.6
 #define OLED_RESET 6
 Adafruit_SSD1306 display(OLED_RESET);
@@ -121,6 +153,14 @@ void setupLCD() {
 
 #endif
 
+#ifdef BOARD_VGA
+void setupVGASerial() {
+  setup_vgat(false);
+  //vgat_reboot(false);
+  vgat_startScreen();
+}
+#endif
+
 
 #ifdef BUT_TEENSY
   //#include <TimerOne.h> // for Teensy 2 & 2++
@@ -139,6 +179,9 @@ void setupHardware() {
    setupLCD();
  #endif
 
+ #ifdef BOARD_VGA
+   setupVGASerial();
+ #endif
 
  #ifdef FS_SUPPORT
    setupSD();
@@ -595,9 +638,9 @@ void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
   }
 
 
- #ifndef SCREEN_HEIGHT
-  #define SCREEN_HEIGHT       8
- #endif
+//  #ifndef SCREEN_HEIGHT
+//   #define SCREEN_HEIGHT       8
+//  #endif
 
 bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter) {
     SdFile file;
@@ -624,7 +667,8 @@ bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter) {
         host_outputString("\n");
 
 // TMP - DIRTY ----- begin
-if ( curY % SCREEN_HEIGHT == SCREEN_HEIGHT-1 ) {
+//if ( curY % SCREEN_HEIGHT == SCREEN_HEIGHT-1 ) {
+if ( cpt % SCREEN_HEIGHT == SCREEN_HEIGHT-1 ) {
   host_showBuffer();
 }
 // TMP - DIRTY ----- end
@@ -646,6 +690,214 @@ host_showBuffer();
   }
 
  #endif // FS_SUPPORT
+
+
+ // ==== Load/Save source code (ascii) from SDCard ====
+
+ #ifndef FS_SUPPORT
+  void loadAsciiBas(char* filename) {
+    host_outputString("ERR : NO Storage support\n");
+    host_showBuffer();
+  }
+
+  void saveAsciiBas(char* filename) {
+    host_outputString("ERR : NO Storage support\n");
+    host_showBuffer();
+  }
+
+ #else
+ void loadAsciiBas(char* filename) {
+  if ( !STORAGE_OK ) {
+    host_outputString("ERR : Storage not ready\n");
+    host_showBuffer();
+    return;
+  }
+
+  autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
+
+  // SFATLIB mode -> have to switch for regular SD lib
+  SdFile file;
+  if (! file.open( SDentryName , O_READ) ) {
+    led1(true);
+    host_outputString("ERR : File not ready\n");
+    host_showBuffer();
+    return;        
+  }
+
+  file.seekSet(0);
+
+  int n;
+
+  cleanCodeLine();
+  while( ( n = file.fgets(codeLine, ASCII_CODELINE_SIZE) ) > 0 ) {
+    // TODO : interpret line
+    host_outputString( codeLine );
+    if ( codeLine[n-1] != '\n' ) {
+      host_outputString( "\n" );
+    }
+    host_showBuffer();
+
+    int ret = tokenize((unsigned char*)codeLine, tokenBuf, TOKEN_BUF_SIZE); ret = processInput(tokenBuf);
+    if ( ret > 0 ) { host_outputString((char *)errorTable[ret]); host_showBuffer(); }
+    //ret = ERROR_NONE;
+
+  }
+  host_outputString( "-EOF-\n" );
+  host_showBuffer();
+
+  file.close();
+}
+
+
+void _serializeTokens(unsigned char *p, char* destLine) {
+  int modeREM = 0;
+  while (*p != TOKEN_EOL) {
+      if (*p == TOKEN_IDENT) {
+          p++;
+          while (*p < 0x80) {
+              //host_outputChar(*p++);
+              (*destLine++) = (*p++);
+          }
+          //host_outputChar((*p++)-0x80);
+          (*destLine++) = ((*p++)-0x80);
+      }
+      else if (*p == TOKEN_NUMBER) {
+          p++;
+          static char tmp[15];
+          //host_outputFloat(*(float*)p);
+          sprintf( tmp, "%f", *(float*)p ); 
+          strcat( destLine, tmp );
+          destLine+=strlen(tmp); // BEWARE !!!!+ optim 
+          p+=4;
+      }
+      else if (*p == TOKEN_INTEGER) {
+          p++;
+          // host_outputInt(*(long*)p);
+          static char tmp[15];
+          sprintf( tmp, "%d", *(long*)p ); 
+          strcat( destLine, tmp );
+          destLine+=strlen(tmp); // BEWARE !!!!+ optim 
+          p+=4;
+      }
+      else if (*p == TOKEN_STRING) {
+          p++;
+          if (modeREM) {
+              //host_outputString((char*)p);
+              (*destLine) = (*p);
+              p+=1 + strlen((char*)p);
+              destLine+=1 + strlen((char*)p);//BEWARE!!!!+ optim 
+          }
+          else {
+              //host_outputChar('\"');
+              (*destLine++) = ('\"');
+              while (*p) {
+                  if (*p == '\"') {
+                    //host_outputChar('\"');
+                    (*destLine++) = ('\"');
+                  }
+                  //host_outputChar(*p++);
+                  (*destLine++) = (*p++);
+              }
+              // host_outputChar('\"');
+              (*destLine++) = ('\"');
+              p++;
+          }
+      }
+      else {
+          //uint8_t fmt = pgm_read_byte_near(&tokenTable[*p].format);
+          uint8_t fmt = tokenTable[*p].format;
+
+          if (fmt & TKN_FMT_PRE) {
+              //host_outputChar(' ');
+              (*destLine++) = (' ');
+          }
+
+          //host_outputString((char *)pgm_read_word(&tokenTable[*p].token));
+          //host_outputString((char *)tokenTable[*p].token);
+          strcat(destLine, (char *)tokenTable[*p].token );
+          destLine += strlen( (char *)tokenTable[*p].token ); // BEWARE + optim !!!
+
+          if (fmt & TKN_FMT_POST) {
+              //host_outputChar(' ');
+              (*destLine++) = (' ');
+          }
+          if (*p==TOKEN_REM || *p==TOKEN_REM_EM) {
+              modeREM = 1;
+          }
+          p++;
+      }
+  }
+}
+
+
+
+
+
+void saveAsciiBas(char* filename) {
+  if ( !STORAGE_OK ) {
+    host_outputString("ERR : Storage not ready\n");
+    host_showBuffer();
+    return;
+  }
+
+  autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
+
+  // SFATLIB mode -> have to switch for regular SD lib
+  sd.remove( SDentryName );
+  SdFile file;
+
+  if (! file.open( SDentryName , FILE_WRITE) ) {
+    led1(true);
+    host_outputString("ERR : File not ready\n");
+    host_showBuffer();
+    return;        
+  }
+
+  file.seekSet(0);
+
+  // file.print("coucou1"); file.print("\n");
+  // file.flush();
+
+  cleanCodeLine();
+  unsigned char *p = &mem[0];
+  while (p < &mem[sysPROGEND]) {
+      uint16_t lineNum = *(uint16_t*)(p+2);
+          file.print(lineNum);
+          file.print(" ");
+
+          //printTokens(p+4);
+          _serializeTokens(p+4, codeLine);
+          file.print(codeLine);
+          cleanCodeLine();
+
+          file.print("\n");
+      p+= *(uint16_t *)p;
+  }
+  file.flush();
+
+  
+  host_outputString( "-EOF-\n" );
+  host_showBuffer();
+
+  file.close();
+}
+
+void deleteBasFile(char* filename) {
+  if ( !STORAGE_OK ) {
+    host_outputString("ERR : Storage not ready\n");
+    host_showBuffer();
+    return;
+  }
+
+  autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
+
+  // SFATLIB mode -> have to switch for regular SD lib
+  sd.remove( SDentryName );
+}
+
+
+ #endif
+
 
 
 

@@ -1,18 +1,23 @@
 /*******************
-* Xtase - fgalliat : fgalliat@gmail.com
+* Xtase - fgalliat : fgalliat@gmail.com @Sept2017
+* redesigned for XtsuBasic board
+*
 * Based on robin edwards work - (https://github.com/robinhedwards/ArduinoBASIC)
+*
 *******************/
-//#define REAL_ARDUINO 1
-//#define ALL_DEVICES 1
-
-#include "xts_arch.h"
-
 
 // Teensy's doesn't supports FS (SD, SDFat) & PROGMEM routines
-
+#include "xts_arch.h"
 
 extern bool STORAGE_OK;
 bool BUZZER_MUTE = false;
+
+// NOT CONSTANT : Cf Output device
+int SCREEN_WIDTH        = 21;
+int SCREEN_HEIGHT       = 8;
+
+#include "xts_io.h"
+extern int OUTPUT_DEVICE;
 
 
 #ifdef BUT_TEENSY
@@ -44,12 +49,13 @@ bool BUZZER_MUTE = false;
     TwiMaster rtc(true);
 #endif
 
-// Keyboard
+// Keyboard --- to remove !!!
+// NB Keyboard needs a seperate ground from the OLED
 const int DataPin = 8;
 const int IRQpin =  3;
 PS2Keyboard keyboard;
 
-// OLED
+// OLED --- to remove !!!
 #define OLED_DATA 9
 #define OLED_CLK 10
 #define OLED_DC 11
@@ -57,19 +63,18 @@ PS2Keyboard keyboard;
 #define OLED_RST 13
 SSD1306ASCII oled(OLED_DATA, OLED_CLK, OLED_DC, OLED_RST, OLED_CS);
 
-// NB Keyboard needs a seperate ground from the OLED
-
-// // buzzer pin, 0 = disabled/not present
-// #define BUZZER_PIN    5
-
 // BASIC
 unsigned char mem[MEMORY_SIZE];
-
-// NB OF TOKEN PER LINES
-#define TOKEN_BUF_SIZE    64
 unsigned char tokenBuf[TOKEN_BUF_SIZE];
+char codeLine[ASCII_CODELINE_SIZE]; // !! if enought !! (BEWARE : LIGHT4.BAS)
 
-const char welcomeStr[]  = "Arduino BASIC";
+// $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+unsigned char audiobuff[AUDIO_BUFF_SIZE];
+// $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+
+const char welcomeStr[]  = "Arduino BASIC (Xts)";
 char autorun = 0;
 
 // =========/ Serial Event /==============
@@ -78,14 +83,51 @@ char autorun = 0;
 volatile boolean isWriting = false; // lock read when write
 // =========/ Serial Event /==============
 
-char screenBuffer[SCREEN_WIDTH*SCREEN_HEIGHT];
-char lineDirty[SCREEN_HEIGHT];
+// WILL HAVE TO malloc(...)
+// char screenBuffer[ (const int)(SCREEN_WIDTH*SCREEN_HEIGHT) ];
+// char lineDirty[ (const int)(SCREEN_HEIGHT) ];
+
+char* screenBuffer = NULL;
+char* lineDirty = NULL;
+char* line = NULL;
+
+bool SCREEN_LOCKER = false;
+
+void reconfigureScreen() {
+    SCREEN_LOCKER = true;
+
+    if ( screenBuffer != NULL ) { free(screenBuffer); } 
+    if ( lineDirty != NULL ) { free(lineDirty); } 
+    if ( line != NULL ) { free(line); } 
+
+    screenBuffer = (char*)malloc( SCREEN_WIDTH*SCREEN_HEIGHT );
+    lineDirty    = (char*)malloc( SCREEN_HEIGHT );
+    line         = (char*)malloc( SCREEN_WIDTH+1 );
+
+    memset( screenBuffer, 0x20, SCREEN_WIDTH*SCREEN_HEIGHT ); // 0x20 -> space
+    memset( lineDirty, 0x00, SCREEN_HEIGHT );
+    memset( line, 0x00, SCREEN_WIDTH+1 );
+
+    SCREEN_LOCKER = false;
+
+    //host_showBuffer();
+}
+
+// in tty characters
+void setScreenSize(int cols, int rows) {
+//   led1(true);
+  SCREEN_LOCKER = true;
+
+  SCREEN_WIDTH = cols; 
+  SCREEN_HEIGHT = rows;
+  reconfigureScreen();
+//   led1(false);
+}
+
 // ============================================
 
 
-// $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-unsigned char audiobuff[AUDIO_BUFF_SIZE];
-// $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 
 
 
 void setup() {
@@ -93,15 +135,31 @@ void setup() {
     BUZZER_MUTE = true;
     // inputString.reserve(200);
     
+    SCREEN_LOCKER = true;
+    OUTPUT_DEVICE = OUT_DEV_SERIAL;
+    setScreenSize( SER_TEXT_WIDTH, SER_TEXT_HEIGHT );
+    SCREEN_LOCKER = false;
+
+    #ifdef BUILTIN_LCD
+        OUTPUT_DEVICE = OUT_DEV_LCD_MINI;
+        setScreenSize( LCD_TEXT_WIDTH, LCD_TEXT_HEIGHT );
+    #else
+        // OUTPUT_DEVICE = OUT_DEV_SERIAL;
+        // setScreenSize( SER_TEXT_WIDTH, SER_TEXT_HEIGHT );
+    #endif
+
     setupHardware();
 
-    
+    // TO REMOVE...
     keyboard.begin(DataPin, IRQpin);
     oled.ssd1306_init(SSD1306_SWITCHCAPVCC);
 
-
     reset();
     host_init(BUZZER_PIN);
+
+    
+
+
     host_cls();
     //host_outputProgMemString(welcomeStr);
     host_outputString( (char*) welcomeStr);
@@ -138,62 +196,9 @@ void setup() {
         if ( !BUZZER_MUTE ) { host_startupTone(); }
     }
 
-    //autorun = 1;
 }
 
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-
-void __loop() {
-    int ret = ERROR_NONE;
-
-    if (!autorun) {
-        // get a line from the user
-        char *input = host_readLine();
-        // special editor commands
-
-        // 10 PRINT "Hello"      :: works
-        // 10 PRINT "Hello toto" :: fails
-        // 10 PRINT "12345678"   :: fails
-        // 10 PRINT "12345"      :: works
-        // 10 PRINT "1234"       :: fails
-        // 10 PRINT "123456789"  :: works
-
-        //if (input[0] == '?' && input[1] == 0) {
-        if (input[0] == '*' && input[1] == 0) { // this is not the problem
-            host_outputFreeMem(sysVARSTART - sysPROGEND);
-            host_showBuffer();
-            return;
-        }
-        // otherwise tokenize
-        ret = tokenize((unsigned char*)input, tokenBuf, TOKEN_BUF_SIZE);
-    }
-    else {
-        host_loadProgram();
-        tokenBuf[0] = TOKEN_RUN;
-        tokenBuf[1] = 0;
-        autorun = 0;
-    }
-    // execute the token buffer
-    if (ret == ERROR_NONE) {
-        host_newLine();
-        ret = processInput(tokenBuf);
-    }
-    if (ret != ERROR_NONE) {
-        host_newLine();
-        if (lineNumber !=0) {
-            host_outputInt(lineNumber);
-            host_outputChar('-');
-        }
-        //host_outputProgMemString((char *)pgm_read_word(&(errorTable[ret])));
-        host_outputString((char *)errorTable[ret]);
-
-        //host_showBuffer();
-    }
-    //host_showBuffer();
-}
-
-
-
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
@@ -237,14 +242,6 @@ void loop() {
             ret = ERROR_NONE;
             
         }
-        
-        
-        // if (input[0] == '!' && input[1] == 0) {
-        //     xts_loadTestProgram();
-        //     tokenBuf[0] = TOKEN_LIST;
-        //     tokenBuf[1] = 0;
-        //     autorun = 0;
-        // } else {
 
             // otherwise tokenize
             ret = tokenize((unsigned char*)input, tokenBuf, TOKEN_BUF_SIZE);
@@ -255,7 +252,6 @@ void loop() {
             // moa
             host_showBuffer();
             //delay(50);
-        //}
     }
     else {
         host_loadProgram();
@@ -283,6 +279,7 @@ void loop() {
         host_outputString( "RET = " );
         host_outputInt(ret);
         host_outputString( "\n" );
+
         //host_outputProgMemString((char *)pgm_read_word(&(errorTable[ret])));
         host_outputString((char *)errorTable[ret]);
         host_showBuffer();

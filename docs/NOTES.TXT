@@ -12,38 +12,68 @@ du moins avec mon code de compatibilité
 
 LOCATE , LED, .. could goes into : parseTwoIntCmd()
 
+=================================================================
+
+TODO
+  > regression tests (manually @ this time....)
+
+  > self(hardware) tests (stored in ~PROGMEM~) !!!!!!
+
+  VGA Serial Monitor drivers (on spe SerialX) (start to impl. fileIO descr)
+   L console command --> args to add to manage # cases => TO FINSIH
+   L when change output console -> recompute SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_MEM[] => DONE
+   L beware w/ 1st Board boot
+ 
+  MAX_IDENT_LEN -> only 8 chars for filenames /!\ /!\
+_________
+  have to #define ASCII_CODELINE_SIZE for save,load,llist,lsave => DONE
+
+  LLIST to send (SDCard (if filename provided) or current(from mem[]) ) PRGM ascii src to Serial(w/o scrolling control)
+  LSAVE to recev. PRGM from Serial & save it to SDCard
+
+  factorise file-extension-completion code (for .T5K, .T53, .BPP, .BAS)
+                                                  |     |     |    \__ LOAD,SAVE,DELETE [v]
+                                                  |____/       \_ TODO
+                                                    \___ TODO
+
+  .BPP picture display
+_________
+
+  DUMP -> disp mem content (hex or raw)
+
+  FILES as DIR alias + filter ex. "*.BAS" ---> in ARRAY storing function
+
+  PICTURE (from SD) display
+
+  RETRY LIGHT4.BAS /!\ w/ RND # impl (no more integer value)
+
 ================================================================
 
 basic.cpp :: stackPushNum() & stackPopNum()
              -> was using direct pointers translation to float
-             -> replaced by my impl. that also test BigEndian ... >>> WORKS
-
-but num var manips doesn't !!!!! --> look @ float2mem routine calls --> seems OK now
-    str            are OK
-
-    num[]          are OK
-    str[]          are OK 
+             -> replaced by my impl. that also test BigEndian ... >>> WORKS 
 
 make a mem2float(unsigned char* cur, unsigned char* src) function
   {  int addr = &(cur[0]) - &(src[0]);  } where cur can be 'p' & src 'mem'
-
+ ===> DONE
 
 en fait ce sont tout les FOR qui ne passent plus (pour la meme raison...)
-  FOR I=1 TO 5 : PRINT "coucou";I : NEXT I
+  FOR I=1 TO 5 : PRINT "coucou";I : NEXT I ==> WORKS
  ==> FIXED
 
 
-15 PRINT INT( RND * 10 )
+15 PRINT INT( RND * 10 ) ==> WORKS
 
 DIM a(5)
 FOR I=1 TO 5 : a(i) = rnd : NEXT I
 FOR I=1 TO 5 : ? i;" ";a(i) : NEXT I
+==> WORKS
 
 
 
 ================================================================
 DONE
-  STORAGE (SDCARD SPI)
+  STORAGE (SDCARD SPI) + SAVE/LOAD/DELETE
   
   PLAYT5K & PLAYT53 routines (need storage)
         PLAYT53 & PLAYT5K 
@@ -62,22 +92,26 @@ DONE
    10 ? "coucou"
    20 GOTO 10
 
-  lock local echo when sending prgm via serial !!!!
+  ECHO locks local echo on current output decice (LCD,SER, ....) when sending prgm via serial !!!!
 
+  LOAD PRGM from SDCard <Source Code> => DONE : able to load ascii source from SDFile to cur PRGM (no NEW needed (cf reset()))
+  SAVE PRGM to   SDCARD               => DONE : able to save cur PRGM (ascii source) to SDFile
+  DELETE                              => DONE (@ least for .BAS files...)
+   L LATER from SDCard <Tokens>
+   L after that : impl. SAVE as ASCII(ok) or TOKENS(todo)
+   L MAX_IDENT_LEN -> only 8 chars for filenames /!\ /!\
 
 
 TODO HARDWARE
   Look @ XtsuBasic Hardware port mapping
-  SSD1306 OLED full support (w/ gfx)
-  KBD USB
-  BT Serial (HC06 slave only)
-  VGA Serial Monitor (& RPI0W HDMI Monitor)
+  SSD1306 OLED full support (w/ gfx)          [v]
+  KBD USB                                     [ ]
+  BT Serial (HC06 slave only)                 [ ]
+  VGA Serial Monitor (& RPI0W HDMI Monitor)   [v~]
 
 TODO
 
   ADD filter for FILES ex. "*.BAS"
-
-  LOAD/SAVE
 
   exisiting PIN FCT to look
   DRAW FCT (SSD1306 I2C) (+Pictures requires STORAGE)

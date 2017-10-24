@@ -10,13 +10,18 @@
 // Teensy 3.6
   #define ARCH_TYPE "Teensy 3.6"
   #define BUT_TEENSY 1
+  #define XTSUBASIC_LAYOUT 1
+
+  // Xts-uBasic Board Hardware Layout
+  #ifdef XTSUBASIC_LAYOUT
+    #define BUILTIN_LCD 1
+    #define BOARD_VGA 1
+  #endif
 
   #define FS_SUPPORT 1
     #define USE_SDFAT_LIB 1
 
     #define AUDIO_BUFF_SIZE (5*1024)
-
-  #define BUILTIN_LCD
 
   // ==  GPIO ==
   #define BUZZER_PIN 2

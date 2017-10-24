@@ -126,7 +126,9 @@
 
     #define TOKEN_DELAY          79 // make MCU sleep x ms
 
-    #define TOKEN_LASTONE TOKEN_DELAY
+    #define TOKEN_CONSOLE        80 // select I/O console
+
+    #define TOKEN_LASTONE TOKEN_CONSOLE
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT
@@ -175,8 +177,18 @@
 #define MAX_IDENT_LEN	8
 #define MAX_NUMBER_LEN	10
 
+// max token per line ???
+#define TOKEN_BUF_SIZE 64
+
+// _____________>> that in xts_arch.h ???
 #define MEMORY_SIZE	1024
 //#define MEMORY_SIZE	8192
+
+// max char per code lines (depends of ammount of RAM ??)
+#define ASCII_CODELINE_SIZE 128
+// ______________________________________
+
+
 
 extern unsigned char mem[];
 extern int sysPROGEND;

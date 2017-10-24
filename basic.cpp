@@ -172,6 +172,8 @@ TokenTableEntry tokenTable[] = {
     {"ECHO",TKN_FMT_POST}, // to (un)lock local echo
 
     {"DELAY",TKN_FMT_POST}, // to sleep MCU
+
+    {"CONSOLE", 0}, // change current I/O console ==> TODO : add args to select devices
 };
 
 
@@ -1914,14 +1916,55 @@ int parseLoadSaveCmd() {
                 if (!host_removeExtEEPROM(fileName))
                     return ERROR_BAD_PARAMETER;
             }
+#else 
+
+            if (op == TOKEN_LOAD) {
+                char fileName[MAX_IDENT_LEN+1]; // BEWARE : LIMITED TO 8 CHARS !!!!!
+                if (strlen(stackGetStr()) > MAX_IDENT_LEN)
+                    return ERROR_BAD_PARAMETER;
+                strcpy(fileName, stackPopStr());
+
+                reset();
+                if (! xts_loadBas( fileName ) )
+                    return ERROR_BAD_PARAMETER;
+            }
+
+            else if (op == TOKEN_SAVE) {
+                char fileName[MAX_IDENT_LEN+1]; // BEWARE : LIMITED TO 8 CHARS !!!!!
+                if (strlen(stackGetStr()) > MAX_IDENT_LEN)
+                    return ERROR_BAD_PARAMETER;
+                strcpy(fileName, stackPopStr());
+
+                if (! xts_saveBas( fileName ) )
+                    return ERROR_BAD_PARAMETER;
+            }
+
+            else if (op == TOKEN_DELETE) {
+                char fileName[MAX_IDENT_LEN+1]; // BEWARE : LIMITED TO 8 CHARS !!!!!
+                if (strlen(stackGetStr()) > MAX_IDENT_LEN)
+                    return ERROR_BAD_PARAMETER;
+                strcpy(fileName, stackPopStr());
+
+                if (! xts_delBas( fileName ) )
+                    return ERROR_BAD_PARAMETER;
+            }
+
 #endif
         }
         else {
             if (op == TOKEN_SAVE)
+#ifdef FS_SUPPORT
+  return ERROR_BAD_PARAMETER;
+#else
                 host_saveProgram(autoexec);
+#endif
             else if (op == TOKEN_LOAD) {
+#ifdef FS_SUPPORT
+  return ERROR_BAD_PARAMETER;
+#else
                 reset();
                 host_loadProgram();
+#endif
             }
             else
                 return ERROR_UNEXPECTED_CMD;
@@ -2080,6 +2123,8 @@ int parseStmts()
 
             case TOKEN_PLAYT5K: ret = xts_playT5K(); break;
             case TOKEN_PLAYT53: ret = xts_playT53(); break;
+
+            case TOKEN_CONSOLE: ret = xts_console(); break;
 
             // ======== Xtase cmds ============= 
 
