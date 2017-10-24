@@ -23,14 +23,7 @@ TODO
    L console command --> args to add to manage # cases => TO FINSIH
    L when change output console -> recompute SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_MEM[] => DONE
  
-
-  LOAD PRGM from SDCard <Source Code> => DONE : able to load ascii source from SDFile to cur PRGM (check if NEW needed (cf reset()))
-  SAVE PRGM to   SDCARD               => DONE : able to save cur PRGM (ascii source) to SDFile
-  DELETE                              => DONE (@ least for .BAS files...)
-   L LATER from SDCard <Tokens>
-   L after that : impl. SAVE as ASCII(ok) or TOKENS(todo)
-   L MAX_IDENT_LEN -> only 8 chars for filenames /!\ /!\
-
+  MAX_IDENT_LEN -> only 8 chars for filenames /!\ /!\
 
   DUMP -> disp mem content (hex or raw)
 
@@ -64,7 +57,7 @@ FOR I=1 TO 5 : ? i;" ";a(i) : NEXT I
 
 ================================================================
 DONE
-  STORAGE (SDCARD SPI)
+  STORAGE (SDCARD SPI) + SAVE/LOAD/DELETE
   
   PLAYT5K & PLAYT53 routines (need storage)
         PLAYT53 & PLAYT5K 
@@ -83,22 +76,26 @@ DONE
    10 ? "coucou"
    20 GOTO 10
 
-  lock local echo when sending prgm via serial !!!!
+  ECHO locks local echo on current output decice (LCD,SER, ....) when sending prgm via serial !!!!
 
+  LOAD PRGM from SDCard <Source Code> => DONE : able to load ascii source from SDFile to cur PRGM (no NEW needed (cf reset()))
+  SAVE PRGM to   SDCARD               => DONE : able to save cur PRGM (ascii source) to SDFile
+  DELETE                              => DONE (@ least for .BAS files...)
+   L LATER from SDCard <Tokens>
+   L after that : impl. SAVE as ASCII(ok) or TOKENS(todo)
+   L MAX_IDENT_LEN -> only 8 chars for filenames /!\ /!\
 
 
 TODO HARDWARE
   Look @ XtsuBasic Hardware port mapping
-  SSD1306 OLED full support (w/ gfx)
-  KBD USB
-  BT Serial (HC06 slave only)
-  VGA Serial Monitor (& RPI0W HDMI Monitor)
+  SSD1306 OLED full support (w/ gfx)          [v]
+  KBD USB                                     [ ]
+  BT Serial (HC06 slave only)                 [ ]
+  VGA Serial Monitor (& RPI0W HDMI Monitor)   [v~]
 
 TODO
 
   ADD filter for FILES ex. "*.BAS"
-
-  LOAD/SAVE
 
   exisiting PIN FCT to look
   DRAW FCT (SSD1306 I2C) (+Pictures requires STORAGE)
