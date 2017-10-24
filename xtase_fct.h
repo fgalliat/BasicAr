@@ -311,6 +311,29 @@ int xts_saveBas(char* optFilename=NULL) {
   return woFileMode ? 0 : 1; // 1 for true when use in saleVloadCmd(..)
 }
 
+int xts_llist() {
+  char* optFilename=NULL;
+
+  getNextToken();
+
+  if (curToken != TOKEN_EOL && curToken != TOKEN_CMD_SEP) {
+    int val = parseExpression();
+    // STRING 1st arg is optional
+    if (_IS_TYPE_STR(val)) {
+      optFilename = stackPopStr();
+    } else {
+      return ERROR_BAD_PARAMETER;
+    }
+  }
+
+  if ( executeMode ) {
+    llistAsciiBas( optFilename );
+  }
+
+  return 0;
+}
+
+
 int xts_delBas(char* optFilename=NULL) {
   bool woFileMode = false;
   if ( optFilename == NULL ) {

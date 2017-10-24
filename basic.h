@@ -128,7 +128,9 @@
 
     #define TOKEN_CONSOLE        80 // select I/O console
 
-    #define TOKEN_LASTONE TOKEN_CONSOLE
+    #define TOKEN_LLIST          81 // PRGM to Serial
+
+    #define TOKEN_LASTONE TOKEN_LLIST
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT

@@ -705,6 +705,18 @@ host_showBuffer();
     host_showBuffer();
   }
 
+  void llistAsciiBas(char* filename) {
+    if ( filename == NULL ) {
+      // TODO
+      host_outputString("TODO: dump PRGM to Serial\n");
+      host_showBuffer();
+      return;
+    }
+    host_outputString("ERR : NO Storage support\n");
+    host_showBuffer();
+  }
+
+
  #else
  void loadAsciiBas(char* filename) {
   if ( !STORAGE_OK ) {
@@ -881,6 +893,69 @@ void saveAsciiBas(char* filename) {
 
   file.close();
 }
+
+// ====== LLIST ==================
+#define outSerial Serial
+
+void llistAsciiBas(char* filename=NULL) {
+  if ( filename == NULL ) {
+    // just DUMP current PRGM to Serial
+    cleanCodeLine();
+    unsigned char *p = &mem[0];
+    while (p < &mem[sysPROGEND]) {
+        uint16_t lineNum = *(uint16_t*)(p+2);
+        outSerial.print(lineNum);
+        outSerial.print(" ");
+  
+        _serializeTokens(p+4, codeLine);
+        outSerial.print(codeLine);
+        cleanCodeLine();
+  
+        outSerial.print("\n");
+        p+= *(uint16_t *)p;
+    }
+    outSerial.print("-EOF-\n");
+    outSerial.flush();
+    return;
+  }
+
+  // ==== ELSE : DUMP PLAIN ASCII BASIC FILE TO SERIAL ====
+
+  if ( !STORAGE_OK ) {
+    host_outputString("ERR : Storage not ready\n");
+    host_showBuffer();
+    return;
+  }
+
+  autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
+
+  // SFATLIB mode -> have to switch for regular SD lib
+  SdFile file;
+  if (! file.open( SDentryName , O_READ) ) {
+    led1(true);
+    host_outputString("ERR : File not ready\n");
+    host_showBuffer();
+    return;        
+  }
+
+  file.seekSet(0);
+
+  int n;
+
+  cleanCodeLine();
+  while( ( n = file.fgets(codeLine, ASCII_CODELINE_SIZE) ) > 0 ) {
+    outSerial.print( codeLine );
+    if ( codeLine[n-1] != '\n' ) {
+      outSerial.print( "\n" );
+    }
+  }
+  outSerial.print( "-EOF-\n" );
+  outSerial.flush();
+
+  file.close();
+}
+
+
 
 void deleteBasFile(char* filename) {
   if ( !STORAGE_OK ) {

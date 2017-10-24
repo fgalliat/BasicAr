@@ -174,6 +174,8 @@ TokenTableEntry tokenTable[] = {
     {"DELAY",TKN_FMT_POST}, // to sleep MCU
 
     {"CONSOLE", 0}, // change current I/O console ==> TODO : add args to select devices
+
+    {"LLIST",TKN_FMT_POST}, // to dump current/fromSD PRGM to Serial console
 };
 
 
@@ -2125,6 +2127,8 @@ int parseStmts()
             case TOKEN_PLAYT53: ret = xts_playT53(); break;
 
             case TOKEN_CONSOLE: ret = xts_console(); break;
+
+            case TOKEN_LLIST: ret = xts_llist(); break;
 
             // ======== Xtase cmds ============= 
 

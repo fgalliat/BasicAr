@@ -27,11 +27,11 @@ TODO
   MAX_IDENT_LEN -> only 8 chars for filenames /!\ /!\
 _________
   have to #define ASCII_CODELINE_SIZE for save,load,llist,lsave => DONE
+  LLIST to send (SDCard (if filename provided) or current(from mem[]) ) PRGM ascii src to Serial(w/o scrolling control) => DONE
 
-  LLIST to send (SDCard (if filename provided) or current(from mem[]) ) PRGM ascii src to Serial(w/o scrolling control)
-  LSAVE to recev. PRGM from Serial & save it to SDCard
+  LSAVE to recev. PRGM from Serial & save it to SDCard (as LLIST) => TODO
 
-  factorise file-extension-completion code (for .T5K, .T53, .BPP, .BAS)
+  factorise file-extension-completion code (for .T5K, .T53, .BPP, .BAS) => TO COMPLETE
                                                   |     |     |    \__ LOAD,SAVE,DELETE [v]
                                                   |____/       \_ TODO
                                                     \___ TODO

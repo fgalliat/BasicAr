@@ -49,6 +49,7 @@ void xts_loadTestProgram();
 
 void loadAsciiBas(char* filename);
 void saveAsciiBas(char* filename);
+void llistAsciiBas(char* filename);
 void deleteBasFile(char* filename);
 
 // =================================
