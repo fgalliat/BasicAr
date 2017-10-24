@@ -29,6 +29,8 @@
 
 #include "host_xts.h"
 
+#include "basic.h"
+
 #ifdef BOARD_VGA
   #include "dev_screen_VGATEXT.h"
 #endif
@@ -721,6 +723,91 @@ host_showBuffer();
   file.close();
 }
 
+
+void _serializeTokens(unsigned char *p, char* destLine) {
+  int modeREM = 0;
+  while (*p != TOKEN_EOL) {
+      if (*p == TOKEN_IDENT) {
+          p++;
+          while (*p < 0x80) {
+              //host_outputChar(*p++);
+              (*destLine++) = (*p++);
+          }
+          //host_outputChar((*p++)-0x80);
+          (*destLine++) = ((*p++)-0x80);
+      }
+      else if (*p == TOKEN_NUMBER) {
+          p++;
+          static char tmp[15];
+          //host_outputFloat(*(float*)p);
+          sprintf( tmp, "%f", *(float*)p ); 
+          strcat( destLine, tmp );
+          destLine+=strlen(tmp); // BEWARE !!!!+ optim 
+          p+=4;
+      }
+      else if (*p == TOKEN_INTEGER) {
+          p++;
+          // host_outputInt(*(long*)p);
+          static char tmp[15];
+          sprintf( tmp, "%d", *(long*)p ); 
+          strcat( destLine, tmp );
+          destLine+=strlen(tmp); // BEWARE !!!!+ optim 
+          p+=4;
+      }
+      else if (*p == TOKEN_STRING) {
+          p++;
+          if (modeREM) {
+              //host_outputString((char*)p);
+              (*destLine) = (*p);
+              p+=1 + strlen((char*)p);
+              destLine+=1 + strlen((char*)p);//BEWARE!!!!+ optim 
+          }
+          else {
+              //host_outputChar('\"');
+              (*destLine++) = ('\"');
+              while (*p) {
+                  if (*p == '\"') {
+                    //host_outputChar('\"');
+                    (*destLine++) = ('\"');
+                  }
+                  //host_outputChar(*p++);
+                  (*destLine++) = (*p++);
+              }
+              // host_outputChar('\"');
+              (*destLine++) = ('\"');
+              p++;
+          }
+      }
+      else {
+          //uint8_t fmt = pgm_read_byte_near(&tokenTable[*p].format);
+          uint8_t fmt = tokenTable[*p].format;
+
+          if (fmt & TKN_FMT_PRE) {
+              //host_outputChar(' ');
+              (*destLine++) = (' ');
+          }
+
+          //host_outputString((char *)pgm_read_word(&tokenTable[*p].token));
+          //host_outputString((char *)tokenTable[*p].token);
+          strcat(destLine, (char *)tokenTable[*p].token );
+          destLine += strlen( (char *)tokenTable[*p].token ); // BEWARE + optim !!!
+
+          if (fmt & TKN_FMT_POST) {
+              //host_outputChar(' ');
+              (*destLine++) = (' ');
+          }
+          if (*p==TOKEN_REM || *p==TOKEN_REM_EM) {
+              modeREM = 1;
+          }
+          p++;
+      }
+  }
+}
+
+
+
+
+
 void saveAsciiBas(char* filename) {
   if ( !STORAGE_OK ) {
     host_outputString("ERR : Storage not ready\n");
@@ -751,11 +838,33 @@ void saveAsciiBas(char* filename) {
   const int codeLineLen = 128;
   static char codeLine[codeLineLen]; // !! if enought !! (BEWARE : LIGHT4.BAS)
 
-  file.print("coucou1"); file.print("\n");
-  file.print("coucou2"); file.print("\n");
-  file.print("coucou3"); file.print("\n");
-  file.print("coucou4"); file.print("\n");
+
+  // file.print("coucou1"); file.print("\n");
+  // file.print("coucou2"); file.print("\n");
+  // file.print("coucou3"); file.print("\n");
+  // file.print("coucou4"); file.print("\n");
+  // file.flush();
+
+
+  unsigned char *p = &mem[0];
+  while (p < &mem[sysPROGEND]) {
+      uint16_t lineNum = *(uint16_t*)(p+2);
+          //host_outputInt(lineNum);
+          file.print(lineNum);
+          //host_outputChar(' ');
+          file.print(" ");
+          //printTokens(p+4);
+
+          _serializeTokens(p+4, codeLine);
+          file.print(codeLine); file.print("\n");
+          memset(codeLine, 0x00, codeLineLen);
+
+          //host_newLine();
+          file.print("\n");
+      p+= *(uint16_t *)p;
+  }
   file.flush();
+
   
   host_outputString( "-EOF-\n" );
   host_showBuffer();

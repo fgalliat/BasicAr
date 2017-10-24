@@ -25,10 +25,11 @@ TODO
  
 
   LOAD PRGM from SDCard <Source Code> => \__ in progress (load already read "text" file from sd & display it)
-  SAVE PRGM to   SDCARD               => /               (save         write            to sd)
+  SAVE PRGM to   SDCARD               => DONE : able to save cur PRGM (ascii source) to SDFile
   DELETE                              => DONE (@ least for .BAS files...)
    L LATER from SDCard <Tokens>
    L after that : impl. SAVE as ASCII or TOKENS
+   L MAX_IDENT_LEN -> only 8 chars for filenames /!\ /!\
 
 
   DUMP -> disp mem content (hex or raw)
