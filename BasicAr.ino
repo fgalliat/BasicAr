@@ -74,7 +74,7 @@ unsigned char audiobuff[AUDIO_BUFF_SIZE];
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 // NB OF TOKEN PER LINES
-#define TOKEN_BUF_SIZE    64
+//const int TOKEN_BUF_SIZE = 64;
 unsigned char tokenBuf[TOKEN_BUF_SIZE];
 
 const char welcomeStr[]  = "Arduino BASIC (Xts)";

@@ -37,6 +37,8 @@
 
 extern int SCREEN_HEIGHT;
 
+extern unsigned char tokenBuf[];
+
 
  // external forward decl.
  char charUpCase(char ch);
@@ -716,6 +718,11 @@ host_showBuffer();
       host_outputString( "\n" );
     }
     host_showBuffer();
+
+    int ret = tokenize((unsigned char*)codeLine, tokenBuf, TOKEN_BUF_SIZE); ret = processInput(tokenBuf);
+    if ( ret > 0 ) { host_outputString((char *)errorTable[ret]); host_showBuffer(); }
+    //ret = ERROR_NONE;
+
   }
   host_outputString( "-EOF-\n" );
   host_showBuffer();
@@ -840,26 +847,19 @@ void saveAsciiBas(char* filename) {
 
 
   // file.print("coucou1"); file.print("\n");
-  // file.print("coucou2"); file.print("\n");
-  // file.print("coucou3"); file.print("\n");
-  // file.print("coucou4"); file.print("\n");
   // file.flush();
-
 
   unsigned char *p = &mem[0];
   while (p < &mem[sysPROGEND]) {
       uint16_t lineNum = *(uint16_t*)(p+2);
-          //host_outputInt(lineNum);
           file.print(lineNum);
-          //host_outputChar(' ');
           file.print(" ");
-          //printTokens(p+4);
 
+          //printTokens(p+4);
           _serializeTokens(p+4, codeLine);
-          file.print(codeLine); file.print("\n");
+          file.print(codeLine);
           memset(codeLine, 0x00, codeLineLen);
 
-          //host_newLine();
           file.print("\n");
       p+= *(uint16_t *)p;
   }

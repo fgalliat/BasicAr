@@ -177,6 +177,9 @@
 #define MAX_IDENT_LEN	8
 #define MAX_NUMBER_LEN	10
 
+// max token per line ???
+#define TOKEN_BUF_SIZE 64
+
 #define MEMORY_SIZE	1024
 //#define MEMORY_SIZE	8192
 

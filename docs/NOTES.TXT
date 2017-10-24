@@ -24,11 +24,11 @@ TODO
    L when change output console -> recompute SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_MEM[] => DONE
  
 
-  LOAD PRGM from SDCard <Source Code> => \__ in progress (load already read "text" file from sd & display it)
+  LOAD PRGM from SDCard <Source Code> => DONE : able to load ascii source from SDFile to cur PRGM (check if NEW needed (cf reset()))
   SAVE PRGM to   SDCARD               => DONE : able to save cur PRGM (ascii source) to SDFile
   DELETE                              => DONE (@ least for .BAS files...)
    L LATER from SDCard <Tokens>
-   L after that : impl. SAVE as ASCII or TOKENS
+   L after that : impl. SAVE as ASCII(ok) or TOKENS(todo)
    L MAX_IDENT_LEN -> only 8 chars for filenames /!\ /!\
 
 
