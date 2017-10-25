@@ -240,6 +240,32 @@ int xts_tone() {
   return 0;    
 }
 
+// ================================================
+// GFX
+
+int xts_dispBPP() {
+  getNextToken();
+
+  int val = parseExpression();
+  if (val & _ERROR_MASK) return val;
+  if (!_IS_TYPE_STR(val))
+      return _ERROR_EXPR_EXPECTED_STR;
+
+  char* pictStr = stackPopStr();
+
+  if ( executeMode ) {
+    if ( drawBPPfile( pictStr ) ) {
+      return 0;
+    } else {
+      return ERROR_UNEXPECTED_TOKEN;
+    }
+  }
+
+  return 0;
+}
+
+
+// ================================================
 // I/O Console
 
 extern void setScreenSize(int cols, int rows);

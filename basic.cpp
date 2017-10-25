@@ -176,6 +176,8 @@ TokenTableEntry tokenTable[] = {
     {"CONSOLE", 0}, // change current I/O console ==> TODO : add args to select devices
 
     {"LLIST",TKN_FMT_POST}, // to dump current/fromSD PRGM to Serial console
+
+    {"DRAWBPP",1|TKN_ARG1_TYPE_STR},
 };
 
 
@@ -359,19 +361,21 @@ char *stackPopStr() {
     // host_outputInt(sysSTACKEND);
     // host_outputChar('\n');
 
-    if ( sysSTACKEND < 0 ) {
-        host_outputString("0X0A ALARM.1 !!!");
-        host_showBuffer();
-    }
+    // Xtase DBUG
+    // if ( sysSTACKEND < 0 ) {
+    //     host_outputString("0X0A ALARM.1 !!!");
+    //     host_showBuffer();
+    // }
 
     unsigned char *p = &mem[sysSTACKEND];
     int len = *(uint16_t *)(p-2);
     sysSTACKEND -= (len+2);
 
-    if ( sysSTACKEND < 0 ) {
-        host_outputString("0X0A ALARM.2 !!!");
-        host_showBuffer();
-    }
+    // Xtase DBUG -- BEWARE w/ this !!!!!!
+    // if ( sysSTACKEND < 0 ) {
+    //     host_outputString("0X0A ALARM.2 !!!\n");
+    //     // host_showBuffer();
+    // }
 
     // host_outputString("____popStr quit");
     // host_outputInt(sysSTACKEND);
@@ -2129,6 +2133,8 @@ int parseStmts()
             case TOKEN_CONSOLE: ret = xts_console(); break;
 
             case TOKEN_LLIST: ret = xts_llist(); break;
+
+            case TOKEN_DRAWBPP: ret = xts_dispBPP(); break;
 
             // ======== Xtase cmds ============= 
 

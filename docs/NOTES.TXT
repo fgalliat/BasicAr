@@ -32,15 +32,18 @@ _________
 _________
   have to #define ASCII_CODELINE_SIZE for save,load,llist,lsave => DONE
   LLIST to send (SDCard (if filename provided) or current( from mem[]) ) PRGM ascii src to Serial(w/o scrolling control) => DONE
+
+  DRAWBPP "<file>" => 1KB .BPP picture file display 
+     ==> incubator/screen_ssd1306.h
 _________
   LSAVE to recev. ASCII PRGM from Serial & save it to SDCard (as LLIST) => TODO
 
   factorise file-extension-completion code (for .T5K, .T53, .BPP, .BAS) => TO COMPLETE
                                                   |     |     |    \__ LOAD,SAVE,DELETE [v]
-                                                  |____/       \_ TODO
+                                                  |____/       \_ DRAWBPP [v]
                                                     \___ TODO
 
-  .BPP picture display ==> incubator/screen_ssd1306.h
+
 
 
   SD2SR -> SDCard to Serial to dump any file (even bin files) (need more than 8 char filename)  \__ use Xon/Xoff
@@ -126,11 +129,10 @@ TODO
   ADD filter for FILES ex. "*.BAS"
 
   exisiting PIN FCT to look
-  DRAW FCT (SSD1306 I2C) (+Pictures requires STORAGE)
-  Picture ( bitmap 128x64 = 8KB => /8 (1bpp) => 1KB )  
+  DRAW FCT (SSD1306 I2C) (+Pictures requires STORAGE : done)
   Serial Vs Screen+Kbd I/O => console mode
   
-  SCREEN procedures + draw pictures (neeed storage acess)
+  SCREEN procedures + [draw pictures (neeed storage acess) : done]
   DIR to ARRAY
   checkbreak()
   
@@ -172,18 +174,23 @@ ______________________________________________________________
 ADDED >> ' for REM
          ? for PRINT
          MEM function to get free mem ammount ----------> <*> shortcut to display it
-         PLAY "ABC#"
-         TONE 100,2
+         
          LOCATE ROW,COL
-         LED [1..3], {0,1}
-         MUTE routine (toggle mute buzzer)
-         FS_SUPPORT for Teensy3.6
          Better teensy IRQ managment
+         FS_SUPPORT for Teensy3.6
          DIR/FILES (in progress)
-         PLAYT5K & PLAYT53 : to play audio files
-         BYE : to reset the MCU
-         BTN(x) : function get button state
 
+         MUTE (toggle mute buzzer)
+         TONE 100,2
+         PLAY "ABC#"
+         PLAYT5K & PLAYT53 : to play audio files
+         DRAWBPP : display a 1bpp picture to builtin screen
+         
+         BTN(x) : function get button state
+         LED [1..3], {0,1}
+         
+         ECHO {0;1}
+         BYE : to reset the MCU
 
 
 CURRENTLY :

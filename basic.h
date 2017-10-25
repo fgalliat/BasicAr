@@ -130,7 +130,9 @@
 
     #define TOKEN_LLIST          81 // PRGM to Serial
 
-    #define TOKEN_LASTONE TOKEN_LLIST
+    #define TOKEN_DRAWBPP        82 // draw a BPP picture on builtin LCD
+
+    #define TOKEN_LASTONE TOKEN_DRAWBPP
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT

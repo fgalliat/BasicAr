@@ -30,6 +30,10 @@ void playTuneFromStorage(char* tuneName, int format, bool btnStop);
 
 // ============================================
 
+bool drawBPPfile(char* filename);
+
+// ============================================
+
 void lsStorage();
 
 void MCU_reset();
