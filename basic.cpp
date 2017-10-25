@@ -1921,8 +1921,8 @@ int parseLoadSaveCmd() {
 #else 
 
             if (op == TOKEN_LOAD) {
-                char fileName[MAX_IDENT_LEN+1]; // BEWARE : LIMITED TO 8 CHARS !!!!!
-                if (strlen(stackGetStr()) > MAX_IDENT_LEN)
+                char fileName[MAX_FILENAME_LEN+1];
+                if (strlen(stackGetStr()) > MAX_FILENAME_LEN)
                     return ERROR_BAD_PARAMETER;
                 strcpy(fileName, stackPopStr());
 
@@ -1932,8 +1932,8 @@ int parseLoadSaveCmd() {
             }
 
             else if (op == TOKEN_SAVE) {
-                char fileName[MAX_IDENT_LEN+1]; // BEWARE : LIMITED TO 8 CHARS !!!!!
-                if (strlen(stackGetStr()) > MAX_IDENT_LEN)
+                char fileName[MAX_FILENAME_LEN+1];
+                if (strlen(stackGetStr()) > MAX_FILENAME_LEN)
                     return ERROR_BAD_PARAMETER;
                 strcpy(fileName, stackPopStr());
 
@@ -1942,8 +1942,8 @@ int parseLoadSaveCmd() {
             }
 
             else if (op == TOKEN_DELETE) {
-                char fileName[MAX_IDENT_LEN+1]; // BEWARE : LIMITED TO 8 CHARS !!!!!
-                if (strlen(stackGetStr()) > MAX_IDENT_LEN)
+                char fileName[MAX_FILENAME_LEN+1];
+                if (strlen(stackGetStr()) > MAX_FILENAME_LEN)
                     return ERROR_BAD_PARAMETER;
                 strcpy(fileName, stackPopStr());
 
