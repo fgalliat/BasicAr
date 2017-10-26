@@ -14,7 +14,7 @@ Xtase - fgalliat @2017
  9 RX Serial 2 HC06-BT <
 10 TX Serial 2 HC06-BT >
 
-31 RX Serial 4 ESPover328 <
+31 RX Serial 4 ESPover328 < optional board (aka WIFI)
 32 TX Serial 4 ESPover328 >
 ------------------------
 33 TX Serial 5
