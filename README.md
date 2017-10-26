@@ -57,5 +57,6 @@ BTN(x) : function get button state
 LED [1..3], {0,1}
          
 ECHO {0;1}
+DELAY x : wait x msec
 BYE : to reset the MCU
 ```

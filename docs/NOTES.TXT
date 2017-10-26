@@ -25,16 +25,7 @@ TODO
    L beware w/ 1st Board boot
 
 _________ 
-  MAX_IDENT_LEN -> only 8 chars for filenames /!\ /!\ ==> should be fixed now
-  have to #define a MAX_FILENAME_LEN 12 // 8+1+3 => DONE, now : have to use it
-  see basic.cpp :: int parseLoadSaveCmd() {...} ==> DONE => should be ok now
 
-_________
-  have to #define ASCII_CODELINE_SIZE for save,load,llist,lsave => DONE
-  LLIST to send (SDCard (if filename provided) or current( from mem[]) ) PRGM ascii src to Serial(w/o scrolling control) => DONE
-
-  DRAWBPP "<file>" => 1KB .BPP picture file display 
-     ==> incubator/screen_ssd1306.h
 _________
   LSAVE to recev. ASCII PRGM from Serial & save it to SDCard (as LLIST) => TODO
 
@@ -62,9 +53,6 @@ _________
     \__ Cf use charsMem or just println() (no LOCATE/POSITION, ...)
 
   DUMP -> disp mem content (hex or raw)
-
-
-  PICTURE (from SD) display
 
   RETRY LIGHT4.BAS /!\ w/ RND # impl (no more integer value)
 
@@ -120,7 +108,16 @@ DONE
   DELETE                              => DONE (@ least for .BAS files...)
    L LATER from SDCard <Tokens>
    L after that : impl. SAVE as ASCII(ok) or TOKENS(todo)
-   L MAX_IDENT_LEN -> only 8 chars for filenames /!\ /!\
+  MAX_IDENT_LEN -> only 8 chars for filenames /!\ /!\ ==> should be fixed now
+  have to #define a MAX_FILENAME_LEN 12 // 8+1+3 => DONE, now : have to use it
+  see basic.cpp :: int parseLoadSaveCmd() {...} ==> DONE => should be ok now
+
+_________
+  have to #define ASCII_CODELINE_SIZE for save,load,llist,lsave => DONE
+  LLIST to send (SDCard (if filename provided) or current( from mem[]) ) PRGM ascii src to Serial(w/o scrolling control) => DONE
+
+  DRAWBPP "<file>" => 1KB .BPP picture file display 
+     ==> incubator/screen_ssd1306.h
 
 
 TODO HARDWARE
@@ -198,6 +195,7 @@ ADDED >> ' for REM
          
          ECHO {0;1}
          BYE : to reset the MCU
+         DELAY x : wait x msec
 
 
 CURRENTLY :

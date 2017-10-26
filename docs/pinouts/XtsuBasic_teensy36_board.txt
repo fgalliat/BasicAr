@@ -5,7 +5,7 @@ Xtase - fgalliat @2017
 
  2 BUZZER
 
- 3 SCL \___ OLED 128x64 (aka BUILTIN_LCD)
+ 3 SCL \___ OLED 128x64 ssd1306 (aka BUILTIN_LCD)
  4 SDA /
 
  7 RX Serial 3 Keyboard HobbyTronic USBHOST v1 (5v onboard adapted)
