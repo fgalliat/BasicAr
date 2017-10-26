@@ -43,20 +43,26 @@ _________
                                                   |____/       \_ DRAWBPP [v]
                                                     \___ TODO
 
-
-
-
+  FILES as DIR alias + filter ex. "*.BAS" ---> in ARRAY storing function
+    ^
+    |---- try to make a full-featured file managment
+    v
   SD2SR -> SDCard to Serial to dump any file (even bin files) (need more than 8 char filename)  \__ use Xon/Xoff
   SR2SD -> Serial to SDCard to fetch any file (even bin files) (need more than 8 char filename) /   + header (fname + flen)
 
-  UPDATE README.md (w/ DONE & TODO cmd)
-
   BT Serial support (HC06 see if can change pin code)
+   \___ setPinCode
+        start / stop
+        use as aux/main Console
+
+  OPEN/CLOSE WRITE/READ for files ... (lookat X07 routines -> OUTCHAR, INPUT ...)
 _________
+
+  ~Serial (& BT) output => screen mode / stream mode
+    \__ Cf use charsMem or just println() (no LOCATE/POSITION, ...)
 
   DUMP -> disp mem content (hex or raw)
 
-  FILES as DIR alias + filter ex. "*.BAS" ---> in ARRAY storing function
 
   PICTURE (from SD) display
 
@@ -179,6 +185,7 @@ ADDED >> ' for REM
          Better teensy IRQ managment
          FS_SUPPORT for Teensy3.6
          DIR/FILES (in progress)
+         SAVE/LOAD/LLIST
 
          MUTE (toggle mute buzzer)
          TONE 100,2

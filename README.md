@@ -45,6 +45,7 @@ LOCATE ROW,COL
 Better teensy IRQ managment
 FS_SUPPORT for Teensy3.6
 DIR/FILES (in progress)
+SAVE/LOAD/LLIST
 
 MUTE (toggle mute buzzer)
 TONE 100,2
