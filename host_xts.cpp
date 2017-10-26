@@ -48,10 +48,29 @@
 #include "host_xts.h"
 
 #include "basic.h"
+
+extern int SCREEN_HEIGHT;
+extern unsigned char tokenBuf[];
+
 extern char codeLine[];
 void cleanCodeLine() {
   memset(codeLine, 0x00, ASCII_CODELINE_SIZE);
 }
+
+extern unsigned char audiobuff[];
+void cleanAudioBuff() { memset(audiobuff, 0x00, AUDIO_BUFF_SIZE); } 
+
+extern unsigned char picturebuff[];
+void cleanPictureBuff() { memset(picturebuff, 0x00, PICTURE_BUFF_SIZE); } 
+
+
+// ============ Tmp Compatibility Code ===============
+extern boolean isWriting;
+
+void lcd_println(char* text) { isWriting = true; Serial.print("LCD:"); Serial.println(text); isWriting = false; }
+bool checkbreak() { return false; }
+
+// ============ Tmp Compatibility Code =============== 
 
 
 
@@ -59,9 +78,6 @@ void cleanCodeLine() {
   #include "dev_screen_VGATEXT.h"
 #endif
 
-extern int SCREEN_HEIGHT;
-
-extern unsigned char tokenBuf[];
 
 
  // external forward decl.
@@ -338,25 +354,13 @@ void playTuneString(char* strTune) {
   }
 } // end of playTuneStreamSTring
 
-// ============ Tmp Compatibility Code ===============
-extern boolean isWriting;
-
-void lcd_println(char* text) { isWriting = true; Serial.print("LCD:"); Serial.println(text); isWriting = false; }
-bool checkbreak() { return false; }
-
-// ============ Tmp Compatibility Code =============== 
-
 
 // T5K Format
 void __playTune(unsigned char* tuneStream, bool btnStop);
 // T53
 void __playTuneT53(unsigned char* tuneStream, bool btnStop);
 
-// //#define AUDIO_BUFF_SIZE (5*1024)
-// #define AUDIO_BUFF_SIZE 256
-// unsigned char audiobuff[AUDIO_BUFF_SIZE];
-extern unsigned char audiobuff[];
-void cleanAudioBuff() { for(int i=0; i < AUDIO_BUFF_SIZE; i++) { audiobuff[i]=0x00; } } 
+
 
 //void playTuneFromStorage(const char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bool btnStop = false) {
 void playTuneFromStorage(char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bool btnStop = false) {
@@ -567,6 +571,59 @@ void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
 
 // ==============================================
 // =
+// = Graphical Ops.
+// =
+// ==============================================
+
+bool drawBPPfile(char* filename) {
+
+  #ifndef FS_SUPPORT
+    host_outputString("ERR : storage not supported\n");
+    return false;
+  #endif
+
+  if ( ! STORAGE_OK ) {
+    host_outputString("ERR : storage not ready\n");
+    return false;
+  }
+
+  if ( filename == NULL || strlen(filename) <= 0 ) { 
+    host_outputString("ERR : invalid file\n");
+    return false;
+  }
+
+  autocomplete_fileExt(filename, ".BPP");
+  
+  // SFATLIB mode -> have to switch for regular SD lib
+  SdFile file;
+  if (! file.open( SDentryName , FILE_READ) ) {
+    host_outputString("ERR : File not ready\n");
+    return false;        
+  }
+
+  file.seekSet(0);
+  int n;
+  if ( (n = file.read(&picturebuff, PICTURE_BUFF_SIZE)) != PICTURE_BUFF_SIZE ) {
+    host_outputString("ERR : File not valid\n");
+    host_outputInt( n );
+    host_outputString(" bytes read\n");
+    file.close();
+    return false;
+  }
+  file.close();
+
+  // do something w/ these bytes ...
+  display.clearDisplay();
+  display.drawBitmap(0, 0, picturebuff, 128, 64, 0x01);
+  display.display();
+
+  return true;
+}
+
+
+
+// ==============================================
+// =
 // = FileSystem Ops.
 // =
 // ==============================================
@@ -704,6 +761,18 @@ host_showBuffer();
     host_outputString("ERR : NO Storage support\n");
     host_showBuffer();
   }
+
+  void llistAsciiBas(char* filename) {
+    if ( filename == NULL ) {
+      // TODO
+      host_outputString("TODO: dump PRGM to Serial\n");
+      host_showBuffer();
+      return;
+    }
+    host_outputString("ERR : NO Storage support\n");
+    host_showBuffer();
+  }
+
 
  #else
  void loadAsciiBas(char* filename) {
@@ -882,6 +951,69 @@ void saveAsciiBas(char* filename) {
   file.close();
 }
 
+// ====== LLIST ==================
+#define outSerial Serial
+
+void llistAsciiBas(char* filename=NULL) {
+  if ( filename == NULL ) {
+    // just DUMP current PRGM to Serial
+    cleanCodeLine();
+    unsigned char *p = &mem[0];
+    while (p < &mem[sysPROGEND]) {
+        uint16_t lineNum = *(uint16_t*)(p+2);
+        outSerial.print(lineNum);
+        outSerial.print(" ");
+  
+        _serializeTokens(p+4, codeLine);
+        outSerial.print(codeLine);
+        cleanCodeLine();
+  
+        outSerial.print("\n");
+        p+= *(uint16_t *)p;
+    }
+    outSerial.print("-EOF-\n");
+    outSerial.flush();
+    return;
+  }
+
+  // ==== ELSE : DUMP PLAIN ASCII BASIC FILE TO SERIAL ====
+
+  if ( !STORAGE_OK ) {
+    host_outputString("ERR : Storage not ready\n");
+    host_showBuffer();
+    return;
+  }
+
+  autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
+
+  // SFATLIB mode -> have to switch for regular SD lib
+  SdFile file;
+  if (! file.open( SDentryName , O_READ) ) {
+    led1(true);
+    host_outputString("ERR : File not ready\n");
+    host_showBuffer();
+    return;        
+  }
+
+  file.seekSet(0);
+
+  int n;
+
+  cleanCodeLine();
+  while( ( n = file.fgets(codeLine, ASCII_CODELINE_SIZE) ) > 0 ) {
+    outSerial.print( codeLine );
+    if ( codeLine[n-1] != '\n' ) {
+      outSerial.print( "\n" );
+    }
+  }
+  outSerial.print( "-EOF-\n" );
+  outSerial.flush();
+
+  file.close();
+}
+
+
+
 void deleteBasFile(char* filename) {
   if ( !STORAGE_OK ) {
     host_outputString("ERR : Storage not ready\n");
@@ -937,9 +1069,9 @@ extern int sysPROGEND;
 const char* TEST_PRGM = "10 ? \"Coucou\"\r20 GOTO 10\r";
 void xts_loadTestProgram() {
   // skip the autorun byte
-  sysPROGEND = strlen(TEST_PRGM);
-  for (int i=0; i<sysPROGEND; i++)
-      mem[i] = TEST_PRGM[i];
+  // sysPROGEND = strlen(TEST_PRGM);
+  // for (int i=0; i<sysPROGEND; i++)
+  //     mem[i] = TEST_PRGM[i];
 }
 
 

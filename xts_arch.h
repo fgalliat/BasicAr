@@ -21,7 +21,10 @@
   #define FS_SUPPORT 1
     #define USE_SDFAT_LIB 1
 
-    #define AUDIO_BUFF_SIZE (5*1024)
+    // 5KB buffer
+    #define AUDIO_BUFF_SIZE (5*1024) 
+    // lcd(128*64) / 8(1bpp)
+    #define PICTURE_BUFF_SIZE (1*1024)
 
   // ==  GPIO ==
   #define BUZZER_PIN 2

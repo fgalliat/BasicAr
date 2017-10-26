@@ -23,25 +23,46 @@ TODO
    L console command --> args to add to manage # cases => TO FINSIH
    L when change output console -> recompute SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_MEM[] => DONE
    L beware w/ 1st Board boot
- 
-  MAX_IDENT_LEN -> only 8 chars for filenames /!\ /!\
+
+_________ 
+  MAX_IDENT_LEN -> only 8 chars for filenames /!\ /!\ ==> should be fixed now
+  have to #define a MAX_FILENAME_LEN 12 // 8+1+3 => DONE, now : have to use it
+  see basic.cpp :: int parseLoadSaveCmd() {...} ==> DONE => should be ok now
+
 _________
   have to #define ASCII_CODELINE_SIZE for save,load,llist,lsave => DONE
+  LLIST to send (SDCard (if filename provided) or current( from mem[]) ) PRGM ascii src to Serial(w/o scrolling control) => DONE
 
-  LLIST to send (SDCard (if filename provided) or current(from mem[]) ) PRGM ascii src to Serial(w/o scrolling control)
-  LSAVE to recev. PRGM from Serial & save it to SDCard
+  DRAWBPP "<file>" => 1KB .BPP picture file display 
+     ==> incubator/screen_ssd1306.h
+_________
+  LSAVE to recev. ASCII PRGM from Serial & save it to SDCard (as LLIST) => TODO
 
-  factorise file-extension-completion code (for .T5K, .T53, .BPP, .BAS)
+  factorise file-extension-completion code (for .T5K, .T53, .BPP, .BAS) => TO COMPLETE
                                                   |     |     |    \__ LOAD,SAVE,DELETE [v]
-                                                  |____/       \_ TODO
+                                                  |____/       \_ DRAWBPP [v]
                                                     \___ TODO
 
-  .BPP picture display
+  FILES as DIR alias + filter ex. "*.BAS" ---> in ARRAY storing function
+    ^
+    |---- try to make a full-featured file managment
+    v
+  SD2SR -> SDCard to Serial to dump any file (even bin files) (need more than 8 char filename)  \__ use Xon/Xoff
+  SR2SD -> Serial to SDCard to fetch any file (even bin files) (need more than 8 char filename) /   + header (fname + flen)
+
+  BT Serial support (HC06 see if can change pin code)
+   \___ setPinCode
+        start / stop
+        use as aux/main Console
+
+  OPEN/CLOSE WRITE/READ for files ... (lookat X07 routines -> OUTCHAR, INPUT ...)
 _________
+
+  ~Serial (& BT) output => screen mode / stream mode
+    \__ Cf use charsMem or just println() (no LOCATE/POSITION, ...)
 
   DUMP -> disp mem content (hex or raw)
 
-  FILES as DIR alias + filter ex. "*.BAS" ---> in ARRAY storing function
 
   PICTURE (from SD) display
 
@@ -114,11 +135,10 @@ TODO
   ADD filter for FILES ex. "*.BAS"
 
   exisiting PIN FCT to look
-  DRAW FCT (SSD1306 I2C) (+Pictures requires STORAGE)
-  Picture ( bitmap 128x64 = 8KB => /8 (1bpp) => 1KB )  
+  DRAW FCT (SSD1306 I2C) (+Pictures requires STORAGE : done)
   Serial Vs Screen+Kbd I/O => console mode
   
-  SCREEN procedures + draw pictures (neeed storage acess)
+  SCREEN procedures + [draw pictures (neeed storage acess) : done]
   DIR to ARRAY
   checkbreak()
   
@@ -160,18 +180,24 @@ ______________________________________________________________
 ADDED >> ' for REM
          ? for PRINT
          MEM function to get free mem ammount ----------> <*> shortcut to display it
-         PLAY "ABC#"
-         TONE 100,2
+         
          LOCATE ROW,COL
-         LED [1..3], {0,1}
-         MUTE routine (toggle mute buzzer)
-         FS_SUPPORT for Teensy3.6
          Better teensy IRQ managment
+         FS_SUPPORT for Teensy3.6
          DIR/FILES (in progress)
-         PLAYT5K & PLAYT53 : to play audio files
-         BYE : to reset the MCU
-         BTN(x) : function get button state
+         SAVE/LOAD/LLIST
 
+         MUTE (toggle mute buzzer)
+         TONE 100,2
+         PLAY "ABC#"
+         PLAYT5K & PLAYT53 : to play audio files
+         DRAWBPP : display a 1bpp picture to builtin screen
+         
+         BTN(x) : function get button state
+         LED [1..3], {0,1}
+         
+         ECHO {0;1}
+         BYE : to reset the MCU
 
 
 CURRENTLY :

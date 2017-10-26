@@ -30,6 +30,10 @@ void playTuneFromStorage(char* tuneName, int format, bool btnStop);
 
 // ============================================
 
+bool drawBPPfile(char* filename);
+
+// ============================================
+
 void lsStorage();
 
 void MCU_reset();
@@ -49,6 +53,7 @@ void xts_loadTestProgram();
 
 void loadAsciiBas(char* filename);
 void saveAsciiBas(char* filename);
+void llistAsciiBas(char* filename);
 void deleteBasFile(char* filename);
 
 // =================================

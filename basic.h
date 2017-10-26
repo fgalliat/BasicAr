@@ -128,7 +128,11 @@
 
     #define TOKEN_CONSOLE        80 // select I/O console
 
-    #define TOKEN_LASTONE TOKEN_CONSOLE
+    #define TOKEN_LLIST          81 // PRGM to Serial
+
+    #define TOKEN_DRAWBPP        82 // draw a BPP picture on builtin LCD
+
+    #define TOKEN_LASTONE TOKEN_DRAWBPP
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT
@@ -176,6 +180,9 @@
 
 #define MAX_IDENT_LEN	8
 #define MAX_NUMBER_LEN	10
+
+// 8+1+3 ex. 'TOTO'+'.'+'BAS'
+#define MAX_FILENAME_LEN	12
 
 // max token per line ???
 #define TOKEN_BUF_SIZE 64
