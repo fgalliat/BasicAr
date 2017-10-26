@@ -34,7 +34,7 @@ bool drawBPPfile(char* filename);
 
 // ============================================
 
-void lsStorage();
+void lsStorage(char* filter);
 
 void MCU_reset();
 int MCU_freeRam();

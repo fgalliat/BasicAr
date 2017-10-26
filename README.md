@@ -42,7 +42,8 @@ The hardware driver layout isn't finished & is provided as is (coded for the Xts
  LET,DIM,
  PIN, PINMODE,PINREAD,ANALOGRD
  SAVE,LOAD,NEW
- DIR,DELETE ---------------> TODO : FILES as DIR alias
+ DIR, ----------------------> ADDED extension filter ex "*.BAS" TODO : FILES as DIR alias
+ DELETE
 ```
 
 ### Extended command set :

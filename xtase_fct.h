@@ -64,17 +64,32 @@ int xts_locate() {
 
 // == File System
 
-// ========= BEWARE : SimpleCmd =============================
-void xts_fs_dir() {
-  //getNextToken(); ==> NO (SimpleCmd : spe case)
 
-  //host_outputString("IN XTS DIR !!!\n");
-  if ( executeMode ) {
-    lsStorage();
+// BEWARE : no more a "SimpleCmd"
+int xts_fs_dir() {
+  getNextToken(); //==> NO (SimpleCmd : spe case) => NO MORE
+
+  char* filter = NULL;
+
+  if (curToken != TOKEN_EOL && curToken != TOKEN_CMD_SEP) {
+    int val = parseExpression();
+    // STRING 1st arg is optional
+    if (_IS_TYPE_STR(val)) {
+      filter = stackPopStr();
+    } else {
+      return ERROR_BAD_PARAMETER;
+    }
   }
 
-  //return 0; ==> NO (SimpleCmd)
+
+  if ( executeMode ) {
+    lsStorage(filter);
+  }
+
+  return 0;
 }
+
+// ========= BEWARE : SimpleCmd =============================
 
 void xts_mcu_reset() {
   if ( executeMode ) {

@@ -2011,12 +2011,12 @@ int parseSimpleCmd() {
                 host_cls();
                 host_showBuffer();
                 break;
-            case TOKEN_DIR:
-                xts_fs_dir();
-#if EXTERNAL_EEPROM
-                host_directoryExtEEPROM();
-#endif
-                break;
+//             case TOKEN_DIR:
+//                 xts_fs_dir();
+// #if EXTERNAL_EEPROM
+//                 host_directoryExtEEPROM();
+// #endif
+//                 break;
 
             case TOKEN_BYE:
                 xts_mcu_reset();
@@ -2104,7 +2104,7 @@ int parseStmts()
             case TOKEN_CONT:
             case TOKEN_RETURN:
             case TOKEN_CLS:
-            case TOKEN_DIR:
+            //case TOKEN_DIR:
 
             case TOKEN_BYE: // Xtase code
 
@@ -2135,6 +2135,8 @@ int parseStmts()
             case TOKEN_LLIST: ret = xts_llist(); break;
 
             case TOKEN_DRAWBPP: ret = xts_dispBPP(); break;
+ 
+            case TOKEN_DIR: ret = xts_fs_dir(); break;
 
             // ======== Xtase cmds ============= 
 

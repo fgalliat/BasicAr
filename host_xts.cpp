@@ -86,6 +86,7 @@ bool checkbreak() { return false; }
 
  void host_outputString(char* str);
  int host_outputInt(long v);
+ void host_outputChar(char c);
  void host_showBuffer();
 
 // ===============================
@@ -629,7 +630,7 @@ bool drawBPPfile(char* filename) {
 // ==============================================
 
  #ifndef FS_SUPPORT
-  void lsStorage() {
+  void lsStorage(char* filter=NULL) {
     host_outputString("ERR : NO Storage support\n");
   }
  #else
@@ -668,9 +669,8 @@ bool drawBPPfile(char* filename) {
 
 
 
-  void lsStorage() {
+  void lsStorage(char* filter=NULL) {
     bool recurse = false;
-    char* filter = NULL;
 
     // SdFile dirFile;
 
@@ -711,6 +711,38 @@ bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter) {
 
         memset(SDentryName, 0x00, 13);
         file.getName( SDentryName, 13 );
+
+        if ( filter != NULL ) {
+          // TODO : optimize !!!!!
+          int strt = 0;
+          if ( filter[strt] == '*' ) { strt++; }
+          if ( filter[strt] == '.' ) { strt++; } // see 'else' case
+
+          int tlen = strlen(SDentryName);
+          int flen = strlen(filter);
+          if ( tlen > 4 ) {
+            if ( SDentryName[ tlen-1-3 ] == '.' ) {
+              bool valid = true;
+              for(int i=0; i < flen-strt; i++) {
+
+                //host_outputChar( SDentryName[ tlen-3+i ] ); host_outputChar(' ');host_outputChar(filter[strt+i]);host_outputChar('\n');
+
+                if ( charUpCase( SDentryName[ tlen-3+i ] ) != charUpCase(filter[strt+i]) ) {
+                  valid = false;
+                  break;
+                }
+              }
+              if ( !valid ) { file.close(); continue; }
+            } else {
+              file.close(); 
+              continue;
+            }
+          } else {
+            file.close(); 
+            continue;
+          }
+        }
+
 
         host_outputInt( (cpt+1) );
         host_outputString("\t");
