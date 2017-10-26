@@ -5,10 +5,21 @@ Basic for Arduino'ish MCUs (Xtase version)
 
 Originally designed for **Teensy serie** (3.2 & 3.6 tested)
 
-The hardware layout isn't finished & is provided as is (coded for XtsUBasic board -- https://hackaday.io/project/19223-xts-ubasic)
-![The XtsuBasic Computer boards](./docs/allBoards.jpg "The XtsuBasic Computer...")
+The hardware driver layout isn't finished & is provided as is (coded for the XtsUBasic board :><br/>
+ https://hackaday.io/project/19223-xts-ubasic<br/>
+ http://xtase.over-blog.com/2017/02/xts-ubasic-starting-mother-board/debuts-de-la-carte-mere.html)
+![The XtsuBasic Computer boards](./docs/allBoards.jpg "The Xts-uBasic Computer...")
 
-(The code is a bit dirty @ this time, I know)
+## Builtin hardware :
+ * Teensy 3.6 180MHz 256KB ram MCU
+ * Buzzer
+ * SSD1306 OLED 128x64 I2C Display
+ * HC-06 BT slave UART
+ * HobbyTronics USB Keyboard UART interface
+ * 3 LEDS
+ * 3 push buttons
+ * own-designed BUS to deal w/ peripheral cards
+
 
 ### Initial command set :
 ```
@@ -59,4 +70,6 @@ ECHO {0;1}        : enable/disable console output
 DELAY x           : wait x msec
 BYE               : to reset the MCU
 ```
+
+(The code is a bit dirty @ this time, I know)<br/>
 This work is still in progress ... (so see you @ anytime)
