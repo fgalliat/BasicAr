@@ -1,0 +1,34 @@
+Xts-uBasic Teensy 3.6 board pinout
+Xtase - fgalliat @2017
+
+ 0 GND
+
+ 2 BUZZER
+
+ 3 SCL \___ OLED 128x64 (aka BUILTIN_LCD)
+ 4 SDA /
+
+ 7 RX Serial 3 Keyboard HobbyTronic USBHOST v1 (5v onboard adapted)
+ 8 TX Serial 3 Serial VGA Monitor Driver board (aka VGA_TEXT)
+
+ 9 RX Serial 2 HC06-BT
+10 RX Serial 2 HC06-BT
+
+31 RX Serial 4 ESPover328
+32 TX Serial 4 ESPover328
+------------------------
+33 TX Serial 5
+34 RX Serial 5 |N.C| (P.S. uarts.png table is wrong on this port)
+
+19 SCL0 \_ Wire0 I2C (tmp : a 328P 3.3v w/ WIFI ? // LATER RTC(/!\5v) )
+18 SDA0 /
+
+13 LED#1 \
+39 LED#2  |- OK
+38 LED#3 /
+
+36 BTN3 \
+35 BTN2  |- OK
+34 BTN1 /
+
+25 MOTHERBOARD PRESENCE }- OK

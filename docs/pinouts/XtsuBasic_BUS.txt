@@ -1,0 +1,30 @@
+Xts-uBasic proriotary BUS specs
+Xtase - fgalliat @2017
+
+01 +5v (from teensy)                              [v]
+02 GND common                                     [v]
+03 +3.3v (from teensy)                            [v]
+
+04 ~ RTC SDA (I2C 5V must be regulated to 3.3v)   [v]
+05 ~ RTC SCL (Wire0)                              [v]
+
+06 < Main UART in (Serial)                        [v] (as it's a CDC clock is not bps fixed)
+07 > Main UART out                                [v]
+
+08 < Serial Keyboard Board (Serial3)              [v] - 9600bps
+09 > Serial VGATEXT Board                         [v]
+
+10 < Serial WIFI (ESP8266) (Serial4)              [v] - 19200bps
+11 > Serial WIFI (ESP8266) (pass through a 328P to filter packet) 
+
+XX < Serial X07/Alt        (SerialX - as wired to a 328P(5v) could be I2C ?)
+XX > Serial X07/Alt
+
+ <> I2C x?
+ <> SPI x?
+
+!! NON !! 32 | motherbard presence !! NON !!
+
+30 +3.3v from extern regulator                    [/]
+31 GND common                                     [/] TODO @ Teensy side ??
+32 +5v extern                                     [/]
