@@ -57,6 +57,7 @@ LOCATE <ROW>,<COL>
 FS_SUPPORT for Teensy3.6 w/ SDCard
 DIR/FILES (in progress)
 SAVE/LOAD/LLIST
+CHAIN "random"    : will load & run program "RANDOM.BAS"
 
 MUTE (toggle mute buzzer)
 BEEP 100,2        : 1-48 produces some notes, else direct freq. is used, tones for '2' * 50msec

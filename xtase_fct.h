@@ -23,6 +23,10 @@ extern float stackPopNum();
 extern int parseExpression();
 extern int parseStringExpr();
 
+extern unsigned char tokenBuf[TOKEN_BUF_SIZE];
+
+extern bool selfRun; // for CHAIN "<...>" cmd
+
 // from basic.cpp
 #define _ERROR_MASK						0x0FFF
 #define _ERROR_EXPR_EXPECTED_STR			8
@@ -339,7 +343,9 @@ int xts_loadBas(char* optFilename=NULL) {
     if (!_IS_TYPE_STR(val))
         return _ERROR_EXPR_EXPECTED_STR;
 
-    optFilename = stackPopStr();
+    if ( executeMode ) {
+      optFilename = stackPopStr();
+    }
   }
 
   if ( executeMode ) {
@@ -348,6 +354,28 @@ int xts_loadBas(char* optFilename=NULL) {
 
   return woFileMode ? 0 : 1; // 1 for true when use in saleVloadCmd(..)
 }
+
+// BEWARE : SaveLoadCmd !!!!!
+bool xts_chain(char* filename) {
+  bool tmpExec = executeMode;
+  if ( xts_loadBas(filename) == true ) {
+    if ( tmpExec ) {
+      // doRunPrg();
+      // unsigned char tkb[2];
+      // tkb[0] = TOKEN_RUN;
+      // tkb[1] = 0x00;
+      // int ret = processInput( tkb );
+      selfRun = true;
+      return true;
+    }
+  } else {
+    // TODO : better
+    return false;
+  }
+
+  return true;
+}
+
 
 int xts_saveBas(char* optFilename=NULL) {
   bool woFileMode = false;
@@ -361,7 +389,9 @@ int xts_saveBas(char* optFilename=NULL) {
     if (!_IS_TYPE_STR(val))
         return _ERROR_EXPR_EXPECTED_STR;
 
-    optFilename = stackPopStr();
+    if ( executeMode ) {
+      optFilename = stackPopStr();
+    }
   }
 
   if ( executeMode ) {

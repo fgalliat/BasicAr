@@ -829,24 +829,27 @@ host_showBuffer();
 
   int n;
 
+  //reset(); // aka NEW -- no more Cf saveLoadCmd() call
+
   cleanCodeLine();
   while( ( n = file.fgets(codeLine, ASCII_CODELINE_SIZE) ) > 0 ) {
-    // TODO : interpret line
-    host_outputString( codeLine );
-    if ( codeLine[n-1] != '\n' ) {
-      host_outputString( "\n" );
-    }
-    host_showBuffer();
+    // // show line
+    // host_outputString( codeLine );
+    // if ( codeLine[n-1] != '\n' ) {
+    //   host_outputString( "\n" );
+    // }
+    // host_showBuffer();
 
+    // interpret line
     int ret = tokenize((unsigned char*)codeLine, tokenBuf, TOKEN_BUF_SIZE); ret = processInput(tokenBuf);
     if ( ret > 0 ) { host_outputString((char *)errorTable[ret]); host_showBuffer(); }
     //ret = ERROR_NONE;
-
+    cleanCodeLine();
   }
+  file.close();
+
   host_outputString( "-EOF-\n" );
   host_showBuffer();
-
-  file.close();
 }
 
 

@@ -180,6 +180,8 @@ TokenTableEntry tokenTable[] = {
     {"DRAWBPP",1|TKN_ARG1_TYPE_STR},
 
     {"SECS", 0}, // returns nb of seconds since boot time
+
+    {"CHAIN",TKN_FMT_POST}, // to load then execute a program
 };
 
 
@@ -1579,6 +1581,18 @@ int expectNumber() {
     return 0;
 }
 
+
+// == Xtase ==
+void doRunPrg() {
+    uint16_t startLine = 1;
+    // clear variables
+    sysVARSTART = sysVAREND = sysGOSUBSTART = sysGOSUBEND = MEMORY_SIZE;
+    jumpLineNumber = startLine;
+    stopLineNumber = stopStmtNumber = 0;
+}
+// == Xtase ==
+
+
 int parse_RUN() {
     getNextToken();
     uint16_t startLine = 1;
@@ -1951,6 +1965,17 @@ int parseLoadSaveCmd() {
                     return ERROR_BAD_PARAMETER;
             }
 
+            else if (op == TOKEN_CHAIN) {
+                char fileName[MAX_FILENAME_LEN+1];
+                if (strlen(stackGetStr()) > MAX_FILENAME_LEN)
+                    return ERROR_BAD_PARAMETER;
+                strcpy(fileName, stackPopStr());
+
+                reset();
+                if (! xts_chain( fileName ) )
+                    return ERROR_BAD_PARAMETER;
+            }
+
             else if (op == TOKEN_SAVE) {
                 char fileName[MAX_FILENAME_LEN+1];
                 if (strlen(stackGetStr()) > MAX_FILENAME_LEN)
@@ -2104,6 +2129,7 @@ int parseStmts()
             case TOKEN_PAUSE: ret = parse_PAUSE(); break;
             
             case TOKEN_LOAD:
+            case TOKEN_CHAIN:
             case TOKEN_SAVE:
             case TOKEN_DELETE:
                 ret = parseLoadSaveCmd();

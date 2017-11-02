@@ -185,6 +185,7 @@ ADDED >> ' for REM
          FS_SUPPORT for Teensy3.6
          DIR/FILES (in progress)
          SAVE/LOAD/LLIST
+         CHAIN
 
          MUTE (toggle mute buzzer)
          BEEP 100,2

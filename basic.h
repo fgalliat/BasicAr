@@ -134,7 +134,9 @@
 
     #define TOKEN_SECS           83 // nb of seconds since boot
 
-    #define TOKEN_LASTONE TOKEN_SECS
+    #define TOKEN_CHAIN          84 // load then execute a program
+
+    #define TOKEN_LASTONE TOKEN_CHAIN
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT
@@ -235,6 +237,7 @@ extern TokenTableEntry tokenTable[];
 
 
 void reset();
+void doRunPrg();
 int tokenize(unsigned char *input, unsigned char *output, int outputSize);
 int processInput(unsigned char *tokenBuf);
 
