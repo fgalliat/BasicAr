@@ -54,6 +54,8 @@ extern int SCREEN_HEIGHT;
 extern unsigned char tokenBuf[];
 
 extern int OUTPUT_DEVICE;
+extern int GFX_DEVICE;
+extern int INPUT_DEVICE;
 
 extern char codeLine[];
 void cleanCodeLine() {
@@ -582,20 +584,20 @@ void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
 //#define BLACK 0
 
 void drawLine(int x1, int y1, int x2, int y2) {
-  if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
+  if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     display.drawLine(x1, y1, x2, y2, WHITE);
   }
 }
 
 void drawCircle(int x1, int y1, int radius) {
-  if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
+  if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     display.drawCircle(x1, y1, radius, WHITE);
   }
 }
 
 // 0: black else :white
 void drawPixel(int x1, int y1, int color) {
-  if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
+  if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     display.drawPixel(x1, y1, color);
   }
 }
@@ -640,9 +642,11 @@ bool drawBPPfile(char* filename) {
   file.close();
 
   // do something w/ these bytes ...
-  display.clearDisplay();
-  display.drawBitmap(0, 0, picturebuff, 128, 64, 0x01);
-  display.display();
+  if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
+    display.clearDisplay();
+    display.drawBitmap(0, 0, picturebuff, 128, 64, 0x01);
+    display.display();
+  }
 
   return true;
 }

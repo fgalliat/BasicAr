@@ -11,6 +11,8 @@
 
 #include "xts_io.h"
 extern int OUTPUT_DEVICE;
+extern int GFX_DEVICE;
+extern int INPUT_DEVICE;
 
 extern int sysVARSTART, sysPROGEND;
 extern int stackPushNum(float val);
@@ -409,10 +411,12 @@ int xts_console() {
   if ( executeMode ) {
     if (OUTPUT_DEVICE != OUT_DEV_VGA_SERIAL) { 
       OUTPUT_DEVICE = OUT_DEV_VGA_SERIAL; 
+      GFX_DEVICE = GFX_DEV_LCD_MINI;  // TMP : DRAWxxx routines to port to vgat
       setScreenSize(VGA_TEXT_WIDTH, VGA_TEXT_HEIGHT);
     }
     else { 
       OUTPUT_DEVICE = OUT_DEV_LCD_MINI; 
+      GFX_DEVICE = GFX_DEV_LCD_MINI;
       setScreenSize(LCD_TEXT_WIDTH, LCD_TEXT_HEIGHT);
     }
 

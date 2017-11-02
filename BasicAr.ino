@@ -18,6 +18,8 @@ int SCREEN_HEIGHT       = 8;
 
 #include "xts_io.h"
 extern int OUTPUT_DEVICE;
+extern int GFX_DEVICE;
+extern int INPUT_DEVICE;
 
 
 #ifdef BUT_TEENSY
@@ -140,11 +142,13 @@ void setup() {
     
     SCREEN_LOCKER = true;
     OUTPUT_DEVICE = OUT_DEV_SERIAL;
+    GFX_DEVICE = GFX_DEV_LCD_MINI; // TODO : serial text impl.
     setScreenSize( SER_TEXT_WIDTH, SER_TEXT_HEIGHT );
     SCREEN_LOCKER = false;
 
     #ifdef BUILTIN_LCD
         OUTPUT_DEVICE = OUT_DEV_LCD_MINI;
+        GFX_DEVICE = GFX_DEV_LCD_MINI;
         setScreenSize( LCD_TEXT_WIDTH, LCD_TEXT_HEIGHT );
     #else
         // OUTPUT_DEVICE = OUT_DEV_SERIAL;

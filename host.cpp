@@ -25,6 +25,9 @@ bool LOCAL_ECHO = true;
 
 #include "xts_io.h"
 int OUTPUT_DEVICE;
+int GFX_DEVICE;
+int INPUT_DEVICE;
+
 
 extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;

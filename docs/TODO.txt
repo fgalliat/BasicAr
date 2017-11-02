@@ -10,6 +10,15 @@ CHAIN "<prgm>"
 
 PSET / PRESET / LINE / CIRCLE --> DONE
 
+EXEC "WIFI","PARCEL"
+EXEC "VGAT"
+
+fileio descr. & use -OR- console to set current I/O devices
+                                                GFX --> BUILTIN_LCD / VGAT /... --> in progress (impl.: GCLS, GPRINT, GLOCATE)
+                                                SFX ????
+
+USB HOST KBD..
+
 
 OUT : out a char of ascii code
 INP : wait a single char \__ from current input

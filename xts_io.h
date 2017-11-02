@@ -6,6 +6,12 @@
 #ifndef __XTS_IO_H_
 #define __XTS_IO_H_ 1
 
+enum GFX_DEVICES {
+    GFX_DEV_SERIAL = 0,
+    GFX_DEV_LCD_MINI,
+    GFX_DEV_VGA_SERIAL
+};
+
 enum OUTPUT_DEVICES {
     OUT_DEV_SERIAL = 0,
     OUT_DEV_LCD_MINI,
@@ -17,7 +23,9 @@ enum INPUT_DEVICES {
     IN_DEV_USB_KBD
 };
 
-// to move away ?
+#define LCD_GFX_WIDTH 128
+#define LCD_GFX_HEIGHT 64
+
 #define LCD_TEXT_WIDTH 21
 #define LCD_TEXT_HEIGHT 8
 
