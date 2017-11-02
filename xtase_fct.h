@@ -402,25 +402,94 @@ int xts_dispBPP() {
 
 extern void setScreenSize(int cols, int rows);
 
+int _last_outDev = -1; // undefined
+int _last_inDev  = -1; // undefined
+int _last_gfxDev = -1; // undefined
+
+
 int xts_console() {
   getNextToken();
 
+  int nbArgs = 0;
+  int outDev = -1; // undefined
+  int inDev  = -1; // undefined
+  int gfxDev = -1; // undefined
+
   // TODO : add & parse parameters to select devices
-
-  // @ this time : ONLY switch to VGAText
-  if ( executeMode ) {
-    if (OUTPUT_DEVICE != OUT_DEV_VGA_SERIAL) { 
-      OUTPUT_DEVICE = OUT_DEV_VGA_SERIAL; 
-      GFX_DEVICE = GFX_DEV_LCD_MINI;  // TMP : DRAWxxx routines to port to vgat
-      setScreenSize(VGA_TEXT_WIDTH, VGA_TEXT_HEIGHT);
-    }
-    else { 
-      OUTPUT_DEVICE = OUT_DEV_LCD_MINI; 
-      GFX_DEVICE = GFX_DEV_LCD_MINI;
-      setScreenSize(LCD_TEXT_WIDTH, LCD_TEXT_HEIGHT);
-    }
-
+  int val = expectNumber();  // OUTPUT
+  if (val == 0){
+    nbArgs++;
+    getNextToken();
+    val = expectNumber();  // INPUT
+    if (val == 0){
+      nbArgs++;
+      getNextToken();
+      val = expectNumber();  // GFX
+      if (val == 0){
+        nbArgs++;
+      }
+    } 
   }
+
+  if ( executeMode ) {
+    if ( nbArgs == 3 ) {
+      gfxDev = (uint16_t)stackPopNum();
+      inDev  = (uint16_t)stackPopNum();
+      outDev = (uint16_t)stackPopNum();
+    } else if ( nbArgs == 2 ) {
+      gfxDev = _last_gfxDev;
+      inDev  = (uint16_t)stackPopNum();
+      outDev = (uint16_t)stackPopNum();
+    } else if ( nbArgs == 1 ) {
+      gfxDev = _last_gfxDev;
+      inDev  = _last_inDev;
+      outDev = (uint16_t)stackPopNum();
+    } else if ( nbArgs == 0 ) {
+      gfxDev = _last_gfxDev;
+      inDev  = _last_inDev;
+      outDev = -1;
+    }
+  }
+
+  if ( executeMode ) {
+
+    if ( outDev == -1 ) {
+      if (OUTPUT_DEVICE != OUT_DEV_VGA_SERIAL) { 
+        OUTPUT_DEVICE = OUT_DEV_VGA_SERIAL; 
+        outDev = OUTPUT_DEVICE;
+        GFX_DEVICE = GFX_DEV_LCD_MINI;  // TMP : DRAWxxx routines to port to vgat
+        gfxDev = GFX_DEVICE;
+        setScreenSize(VGA_TEXT_WIDTH, VGA_TEXT_HEIGHT);
+      }
+      else { 
+        OUTPUT_DEVICE = OUT_DEV_LCD_MINI; 
+        outDev = OUTPUT_DEVICE;
+        GFX_DEVICE = GFX_DEV_LCD_MINI;
+        gfxDev = GFX_DEVICE;
+        setScreenSize(LCD_TEXT_WIDTH, LCD_TEXT_HEIGHT);
+      }
+    }
+
+    host_outputString("OUT : ");
+    host_outputInt(outDev);
+    host_outputString(" IN : ");
+    host_outputInt(inDev);
+    host_outputString(" GFX : ");
+    host_outputInt(gfxDev);
+    host_outputString("\n");
+    host_showBuffer();
+
+    _last_outDev = outDev;
+    _last_inDev  = inDev;
+    _last_gfxDev = gfxDev;
+  }
+
+
+  // // @ this time : ONLY switch to VGAText
+  // if ( executeMode ) {
+  
+
+  // }
 
   return 0;
 }

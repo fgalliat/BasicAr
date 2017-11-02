@@ -14,7 +14,7 @@ EXEC "WIFI","PARCEL"
 EXEC "VGAT"
 
 fileio descr. & use -OR- console to set current I/O devices
-                                                GFX --> BUILTIN_LCD / VGAT /... --> in progress (impl.: GCLS, GPRINT, GLOCATE)
+            CONSOLE out,in,gfx - in progress    GFX --> BUILTIN_LCD / VGAT /... --> in progress (impl.: GCLS, GPRINT, GLOCATE)
                                                 SFX ????
 
 USB HOST KBD..
