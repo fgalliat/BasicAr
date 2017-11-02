@@ -178,6 +178,8 @@ TokenTableEntry tokenTable[] = {
     {"LLIST",TKN_FMT_POST}, // to dump current/fromSD PRGM to Serial console
 
     {"DRAWBPP",1|TKN_ARG1_TYPE_STR},
+
+    {"SECS", 0}, // returns nb of seconds since boot time
 };
 
 
@@ -1406,6 +1408,11 @@ int parsePrimary() {
         return parse_RND();
     case TOKEN_INKEY:
         return parse_INKEY();
+
+// -- XTase
+    case TOKEN_SECS:	
+        return fct_getSecs();
+// -- XTase
 
         // unary ops
     case TOKEN_MINUS:

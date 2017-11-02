@@ -132,7 +132,9 @@
 
     #define TOKEN_DRAWBPP        82 // draw a BPP picture on builtin LCD
 
-    #define TOKEN_LASTONE TOKEN_DRAWBPP
+    #define TOKEN_SECS           83 // nb of seconds since boot
+
+    #define TOKEN_LASTONE TOKEN_SECS
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT

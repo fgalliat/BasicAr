@@ -43,6 +43,15 @@ int getMemFree() {
     return _TYPE_NUMBER;	
 }
 
+// == Clock ==
+int fct_getSecs() {
+  getNextToken();
+  if (executeMode && !stackPushNum((float)(millis()/1000)))
+      return ERROR_OUT_OF_MEMORY;
+  return _TYPE_NUMBER;	
+}
+
+
 // == Screen 
 int xts_locate() {
   getNextToken();
