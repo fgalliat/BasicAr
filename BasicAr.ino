@@ -141,15 +141,11 @@ void setup() {
     // inputString.reserve(200);
     
     SCREEN_LOCKER = true;
-    OUTPUT_DEVICE = OUT_DEV_SERIAL;
-    GFX_DEVICE = GFX_DEV_LCD_MINI; // TODO : serial text impl.
-    setScreenSize( SER_TEXT_WIDTH, SER_TEXT_HEIGHT );
+    setConsoles(OUT_DEV_SERIAL, -1, -1);
     SCREEN_LOCKER = false;
 
     #ifdef BUILTIN_LCD
-        OUTPUT_DEVICE = OUT_DEV_LCD_MINI;
-        GFX_DEVICE = GFX_DEV_LCD_MINI;
-        setScreenSize( LCD_TEXT_WIDTH, LCD_TEXT_HEIGHT );
+        setConsoles(OUT_DEV_LCD_MINI, -1, -1);
     #else
         // OUTPUT_DEVICE = OUT_DEV_SERIAL;
         // setScreenSize( SER_TEXT_WIDTH, SER_TEXT_HEIGHT );

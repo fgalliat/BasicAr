@@ -72,7 +72,8 @@ PRESET x,y        : switch OFF a pixel
          
 BTN(x)            : function get button state
 LED [1..3], {0,1} : switch on/off a LED
-         
+
+CONSOLE <out>,<in>,<gfx> : set I/O + GFX main devices
 ECHO {0;1}        : enable/disable console output
 
 DELAY x           : wait x msec

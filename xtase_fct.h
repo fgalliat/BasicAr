@@ -420,15 +420,19 @@ int xts_console() {
   if (val == 0){
     nbArgs++;
     getNextToken();
-    val = expectNumber();  // INPUT
-    if (val == 0){
-      nbArgs++;
-      getNextToken();
-      val = expectNumber();  // GFX
+    if (curToken != TOKEN_EOL) {
+      val = expectNumber();  // INPUT
       if (val == 0){
         nbArgs++;
-      }
-    } 
+        getNextToken();
+        if (curToken != TOKEN_EOL) {
+          val = expectNumber();  // GFX
+          if (val == 0){
+            nbArgs++;
+          }
+        }
+      } 
+    }
   }
 
   if ( executeMode ) {
@@ -453,22 +457,7 @@ int xts_console() {
 
   if ( executeMode ) {
 
-    if ( outDev == -1 ) {
-      if (OUTPUT_DEVICE != OUT_DEV_VGA_SERIAL) { 
-        OUTPUT_DEVICE = OUT_DEV_VGA_SERIAL; 
-        outDev = OUTPUT_DEVICE;
-        GFX_DEVICE = GFX_DEV_LCD_MINI;  // TMP : DRAWxxx routines to port to vgat
-        gfxDev = GFX_DEVICE;
-        setScreenSize(VGA_TEXT_WIDTH, VGA_TEXT_HEIGHT);
-      }
-      else { 
-        OUTPUT_DEVICE = OUT_DEV_LCD_MINI; 
-        outDev = OUTPUT_DEVICE;
-        GFX_DEVICE = GFX_DEV_LCD_MINI;
-        gfxDev = GFX_DEVICE;
-        setScreenSize(LCD_TEXT_WIDTH, LCD_TEXT_HEIGHT);
-      }
-    }
+    gfxDev = setConsoles( outDev, inDev, gfxDev );
 
     host_outputString("OUT : ");
     host_outputInt(outDev);
@@ -483,13 +472,6 @@ int xts_console() {
     _last_inDev  = inDev;
     _last_gfxDev = gfxDev;
   }
-
-
-  // // @ this time : ONLY switch to VGAText
-  // if ( executeMode ) {
-  
-
-  // }
 
   return 0;
 }
