@@ -1,0 +1,29 @@
+BEEP Vs TONE : BEEP in /50ms TONE /Xms
+ \___ kept BEEP only @ this time
+
+
+SECS() : returns the nb of seconds since boot ( return milis() / 1000 )
+ \___ DONE
+
+CHAIN "<prgm>"
+ \___ DONE
+
+PSET / PRESET / LINE / CIRCLE --> DONE
+
+
+OUT : out a char of ascii code
+INP : wait a single char \__ from current input
+SNS : read a single char /
+
+
+
+CAT --> just display a plain file content (see LLIST)
+
+DUMPSTS   --> SD2SER SER2SD
+WRITE
+WRITETEXT
+
+ASC( STR$ ) : returns ascii code of 1st char of STR$
+
+ 
+

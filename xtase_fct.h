@@ -23,6 +23,10 @@ extern float stackPopNum();
 extern int parseExpression();
 extern int parseStringExpr();
 
+extern unsigned char tokenBuf[TOKEN_BUF_SIZE];
+
+extern bool selfRun; // for CHAIN "<...>" cmd
+
 // from basic.cpp
 #define _ERROR_MASK						0x0FFF
 #define _ERROR_EXPR_EXPECTED_STR			8
@@ -43,19 +47,29 @@ int getMemFree() {
     return _TYPE_NUMBER;	
 }
 
+// == Clock ==
+int fct_getSecs() {
+  getNextToken();
+  if (executeMode && !stackPushNum((float)(millis()/1000)))
+      return ERROR_OUT_OF_MEMORY;
+  return _TYPE_NUMBER;	
+}
+
+
 // == Screen 
 int xts_locate() {
   getNextToken();
-  int val = expectNumber();
+  int val = expectNumber();  // ROW
   if (val) return val;	// error
-  uint16_t row = (uint16_t)stackPopNum();
-
+  
   getNextToken();
-  val = expectNumber();
+  val = expectNumber();     // COL
   if (val) return val;	// error
-  uint16_t col = (uint16_t)stackPopNum();
-
+  
   if ( executeMode ) {
+    uint16_t col = (uint16_t)stackPopNum();
+    uint16_t row = (uint16_t)stackPopNum();
+
     host_moveCursor(col,row);
   }
 
@@ -64,17 +78,32 @@ int xts_locate() {
 
 // == File System
 
-// ========= BEWARE : SimpleCmd =============================
-void xts_fs_dir() {
-  //getNextToken(); ==> NO (SimpleCmd : spe case)
 
-  //host_outputString("IN XTS DIR !!!\n");
-  if ( executeMode ) {
-    lsStorage();
+// BEWARE : no more a "SimpleCmd"
+int xts_fs_dir() {
+  getNextToken(); //==> NO (SimpleCmd : spe case) => NO MORE
+
+  char* filter = NULL;
+
+  if (curToken != TOKEN_EOL && curToken != TOKEN_CMD_SEP) {
+    int val = parseExpression();
+    // STRING 1st arg is optional
+    if (_IS_TYPE_STR(val)) {
+      filter = stackPopStr();
+    } else {
+      return ERROR_BAD_PARAMETER;
+    }
   }
 
-  //return 0; ==> NO (SimpleCmd)
+
+  if ( executeMode ) {
+    lsStorage(filter);
+  }
+
+  return 0;
 }
+
+// ========= BEWARE : SimpleCmd =============================
 
 void xts_mcu_reset() {
   if ( executeMode ) {
@@ -133,9 +162,10 @@ int xts_echo() {
   getNextToken();
   int val = expectNumber();
   if (val) return val;	// error
-  uint16_t echoValue = (uint16_t)stackPopNum();
-
+  
   if (executeMode) {
+    uint16_t echoValue = (uint16_t)stackPopNum();
+
     LOCAL_ECHO = ( echoValue != 0 );
   }
 
@@ -147,9 +177,10 @@ int xts_delay() {
   getNextToken();
   int val = expectNumber();
   if (val) return val;	// error
-  uint16_t delayValue = (uint16_t)stackPopNum();
-
+  
   if (executeMode) {
+    uint16_t delayValue = (uint16_t)stackPopNum();
+
     //noInterrupts();
     host_sleep(delayValue);
     //interrupts();
@@ -177,14 +208,15 @@ int xts_led() {
   getNextToken();
   int val = expectNumber();
   if (val) return val;	// error
-  uint16_t ledID = (uint16_t)stackPopNum(); // 1 based
-
+  
   getNextToken();
   val = expectNumber();
   if (val) return val;	// error
-  uint16_t state = (uint16_t)stackPopNum(); // 1 or 0
-
+  
   if ( executeMode ) {
+    uint16_t state = (uint16_t)stackPopNum(); // 1 or 0
+    uint16_t ledID = (uint16_t)stackPopNum(); // 1 based
+
     led(ledID,state >= 1);
   }
 
@@ -223,16 +255,22 @@ int xts_play() {
 
 int xts_tone() {
     getNextToken();
+
     int freq = expectNumber();
     if (freq) return freq;	// error
-    uint16_t note_freq = (uint16_t)stackPopNum();
+    // uint16_t note_freq = (uint16_t)stackPopNum();
 
     getNextToken();
     int dur = expectNumber();
     if (dur) return dur;	// error
-    uint16_t duration = (uint16_t)stackPopNum();
+    // uint16_t duration = (uint16_t)stackPopNum();
 
     if ( executeMode ) {
+
+      // inexecute mode + inv. order
+      uint16_t duration = (uint16_t)stackPopNum();
+      uint16_t note_freq = (uint16_t)stackPopNum();
+
       if ( BUZZER_MUTE ) { return 0; }
       playNote(note_freq, duration);
     }
@@ -243,6 +281,98 @@ int xts_tone() {
 // ================================================
 // GFX
 
+int xts_dispLine() {
+  getNextToken();
+  int val = expectNumber();  // X1
+  if (val) return val;	// error
+  
+  getNextToken();
+  val = expectNumber();  // Y1
+  if (val) return val;	// error
+
+  getNextToken();
+  val = expectNumber();  // X2
+  if (val) return val;	// error
+
+  getNextToken();
+  val = expectNumber();  // Y2
+  if (val) return val;	// error
+
+  if (executeMode) {
+    uint16_t y2 = (uint16_t)stackPopNum();
+    uint16_t x2 = (uint16_t)stackPopNum();
+    uint16_t y1 = (uint16_t)stackPopNum();
+    uint16_t x1 = (uint16_t)stackPopNum();
+
+    drawLine(x1, y1, x2, y2);
+  }
+  
+return 0;
+}
+
+int xts_dispCircle() {
+  getNextToken();
+  int val = expectNumber();  // X1
+  if (val) return val;	// error
+  
+  getNextToken();
+  val = expectNumber();  // Y1
+  if (val) return val;	// error
+
+  getNextToken();
+  val = expectNumber();  // RADIUS
+  if (val) return val;	// error
+
+  if (executeMode) {
+    uint16_t radius = (uint16_t)stackPopNum();
+    uint16_t y1 = (uint16_t)stackPopNum();
+    uint16_t x1 = (uint16_t)stackPopNum();
+
+    drawCircle(x1, y1, radius);
+  }
+  
+return 0;
+}
+
+int xts_pset() {
+  getNextToken();
+  int val = expectNumber();  // X1
+  if (val) return val;	// error
+  
+  getNextToken();
+  val = expectNumber();  // Y1
+  if (val) return val;	// error
+
+  if (executeMode) {
+    uint16_t y1 = (uint16_t)stackPopNum();
+    uint16_t x1 = (uint16_t)stackPopNum();
+
+    drawPixel(x1, y1, 0x01);
+  }
+  
+return 0;
+}
+
+int xts_preset() {
+  getNextToken();
+  int val = expectNumber();  // X1
+  if (val) return val;	// error
+  
+  getNextToken();
+  val = expectNumber();  // Y1
+  if (val) return val;	// error
+
+  if (executeMode) {
+    uint16_t y1 = (uint16_t)stackPopNum();
+    uint16_t x1 = (uint16_t)stackPopNum();
+
+    drawPixel(x1, y1, 0x00);
+  }
+  
+return 0;
+}
+
+
 int xts_dispBPP() {
   getNextToken();
 
@@ -251,9 +381,9 @@ int xts_dispBPP() {
   if (!_IS_TYPE_STR(val))
       return _ERROR_EXPR_EXPECTED_STR;
 
-  char* pictStr = stackPopStr();
-
+      
   if ( executeMode ) {
+    char* pictStr = stackPopStr();
     if ( drawBPPfile( pictStr ) ) {
       return 0;
     } else {
@@ -305,7 +435,9 @@ int xts_loadBas(char* optFilename=NULL) {
     if (!_IS_TYPE_STR(val))
         return _ERROR_EXPR_EXPECTED_STR;
 
-    optFilename = stackPopStr();
+    if ( executeMode ) {
+      optFilename = stackPopStr();
+    }
   }
 
   if ( executeMode ) {
@@ -314,6 +446,28 @@ int xts_loadBas(char* optFilename=NULL) {
 
   return woFileMode ? 0 : 1; // 1 for true when use in saleVloadCmd(..)
 }
+
+// BEWARE : SaveLoadCmd !!!!!
+bool xts_chain(char* filename) {
+  bool tmpExec = executeMode;
+  if ( xts_loadBas(filename) == true ) {
+    if ( tmpExec ) {
+      // doRunPrg();
+      // unsigned char tkb[2];
+      // tkb[0] = TOKEN_RUN;
+      // tkb[1] = 0x00;
+      // int ret = processInput( tkb );
+      selfRun = true; // the only way that works : can't run inside run ...
+      return true;
+    }
+  } else {
+    // TODO : better
+    return false;
+  }
+
+  return true;
+}
+
 
 int xts_saveBas(char* optFilename=NULL) {
   bool woFileMode = false;
@@ -327,7 +481,9 @@ int xts_saveBas(char* optFilename=NULL) {
     if (!_IS_TYPE_STR(val))
         return _ERROR_EXPR_EXPECTED_STR;
 
-    optFilename = stackPopStr();
+    if ( executeMode ) {
+      optFilename = stackPopStr();
+    }
   }
 
   if ( executeMode ) {

@@ -79,7 +79,8 @@ FOR I=1 TO 5 : ? i;" ";a(i) : NEXT I
 ==> WORKS
 
 
-
+================================================================
+ZX81 is 32x24 chars // 64x48 pixels
 ================================================================
 DONE
   STORAGE (SDCARD SPI) + SAVE/LOAD/DELETE
@@ -112,12 +113,15 @@ DONE
   have to #define a MAX_FILENAME_LEN 12 // 8+1+3 => DONE, now : have to use it
   see basic.cpp :: int parseLoadSaveCmd() {...} ==> DONE => should be ok now
 
-_________
-  have to #define ASCII_CODELINE_SIZE for save,load,llist,lsave => DONE
+
+  #define ASCII_CODELINE_SIZE for save,load,llist,lsave => DONE
   LLIST to send (SDCard (if filename provided) or current( from mem[]) ) PRGM ascii src to Serial(w/o scrolling control) => DONE
 
   DRAWBPP "<file>" => 1KB .BPP picture file display 
-     ==> incubator/screen_ssd1306.h
+    DRAW FCTs (SSD1306 I2C) (+Pictures)
+
+  ADDED filter for DIR ex. "*.BAS"
+
 
 
 TODO HARDWARE
@@ -129,10 +133,7 @@ TODO HARDWARE
 
 TODO
 
-  ADD filter for FILES ex. "*.BAS"
-
   exisiting PIN FCT to look
-  DRAW FCT (SSD1306 I2C) (+Pictures requires STORAGE : done)
   Serial Vs Screen+Kbd I/O => console mode
   
   SCREEN procedures + [draw pictures (neeed storage acess) : done]
@@ -183,12 +184,15 @@ ADDED >> ' for REM
          FS_SUPPORT for Teensy3.6
          DIR/FILES (in progress)
          SAVE/LOAD/LLIST
+         CHAIN
 
          MUTE (toggle mute buzzer)
-         TONE 100,2
+         BEEP 100,2
          PLAY "ABC#"
          PLAYT5K & PLAYT53 : to play audio files
+
          DRAWBPP : display a 1bpp picture to builtin screen
+
          
          BTN(x) : function get button state
          LED [1..3], {0,1}

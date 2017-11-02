@@ -32,9 +32,14 @@ void playTuneFromStorage(char* tuneName, int format, bool btnStop);
 
 bool drawBPPfile(char* filename);
 
+void drawLine(int x1, int y1, int x2, int y2);
+void drawCircle(int x1, int y1, int radius);
+void drawPixel(int x1, int y1, int color); // 0: black else :white
+
+
 // ============================================
 
-void lsStorage();
+void lsStorage(char* filter);
 
 void MCU_reset();
 int MCU_freeRam();

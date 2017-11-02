@@ -76,7 +76,9 @@ unsigned char picturebuff[PICTURE_BUFF_SIZE];   // BPP file buffer
 
 
 const char welcomeStr[]  = "Arduino BASIC (Xts)";
+
 char autorun = 0;
+bool selfRun = false; // for CHAIN "<...>" cmd
 
 // =========/ Serial Event /==============
 // String inputString = "";         // a String to hold incoming data
@@ -262,12 +264,21 @@ void loop() {
         tokenBuf[1] = 0;
         autorun = 0;
     }
+
     // execute the token buffer
     if (ret == ERROR_NONE) {
         host_newLine();
         ret = processInput(tokenBuf);
 
         led3( ret > 0 );
+
+
+        if ( selfRun ) { // for CHAIN "<...>" cmd
+            tokenBuf[0] = TOKEN_RUN;
+            tokenBuf[1] = 0;
+            selfRun = false;
+            ret = processInput(tokenBuf);
+        }
 
     }
     if (ret != ERROR_NONE) {

@@ -1,0 +1,83 @@
+Initial XtsuBasic command set (deprecated documentation)
+
+
+ADDED support for STRING & INT arrays
+ADDED support for Bitmap files
+
+BackSpace [8] & Ctrl-C [3] now works from Serial term
+
+NEW       [v] reset PRGM & VARS
+
+BEEP      [v] duration * 50ms / 1..48 octave #2 to #5 / else frequency (49..4096)
+TONE      [v] play a tone on speaker
+NOTONE    [v] mute speaker
+PLAYT5K   [v] PLAYS a T5K tune
+PLAYT53   [v] PLAYS a T53 tune
+
+LED       [v] LED 1,1 turn on 1st led // LED 3,0 turn off 3rd
+
+RSEED     [v] does nothing ...
+DELAY     [v] wait for x milliseconds
+
+PRINT / ? [v] still have to distinguish ',' & ';'
+OUT       [v] print a char of ascii code , can be redirected to FILEIODesc
+CLS       [v] clear current screen (LCD_BUILTIN, later : VGA ....)
+LOCATE    [v] Set text cursor position (x,y)
+PSET      [v] set a pixel (since git:6266540)
+PRESET    [v] clear a pixel (since git:6266540)
+LINE      [v] draws a line (since git:6266540)
+CIRCLE    [v] draws a circle (since git:6266540)
+DRAWBMP   [v] draw a bitmap from storage
+
+INPUT     [v] INPUT content into a variable (NUM or STR) -> can use FILEIODesc to select stream
+INPUTSTR  [v] INPUT content into a variable (STR) -> can use FILEIODesc to select stream
+
+REM / '   [v] make a line comment
+
+FILES     [v] list storage content
+CAT       [v] read a specific file (w/o interpret it)
+
+DELETE    [v] erase a file from storage
+DUMPSTS   [v] dump serial to SD file  // DUMPSTS "" -> read until timeout
+WRITE     [ ]
+WRITETEXT [ ]
+
+LIST      [v] List content of PRGM memory [ need checkbreack() ]
+RUN       [v] Run content of PRGM memory [ need checkbreack() ]
+LOAD      [v] (does it starts by a 'NEW' statement ? // I think not // so lines could be merged)
+SAVE      [v] Save content of PRGM memory // slow impl. .... // auto-adds '.BAS' if needed
+CHAIN     [v] => NEW / LOAD / RUN a program
+
+FOR       [ ] FOR / TO / [STEP] / NEXT
+IF        [v] IF  THEN ...
+GOTO      [v] Jump directly to a line
+GOSUB     [v] Jump to line after saving current position
+RETURN    [v] return to current position after GOSUB
+
+END / STOP[v] STOPS execution of current program
+
+--------------------------
+
+RND(x)    [v] return int between 0 & x
+
+CHR$(x)   [v] return ASCII char from x
+STR$(x)   [v] return string representing number x
+ASC(x)    [v] return ASCII code of 1st char of 'x' string
+STRLEN()  [v] length of a String value
+LEN()     [v] length of a String value
+
+LEFT$()   [v] return left chars of a string
+RIGHT$()  [v] return right chars of a string
+MID$()    [v] return substring of a string
+INSTR()   [v] return first occurence of a substring in a string
+
+
+FREE()    [v] return ammount of free RAM in bytes (beware it's an int not a short)
+MEM()     [v] return ammount of free RAM in kilobytes (cause it's a short @this time)
+
+BTN()     [v] returns 0,1,2,4 => Cf pressed user btn(s)
+
+INP()     [v] wait for a char from input // can use FILEIO-Desc
+SNS()     [v] read for a char from input (0 if none) // can use FILEIO-Desc
+
+SECS()    [v] seconds since MCU booted

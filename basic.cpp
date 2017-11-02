@@ -160,7 +160,7 @@ TokenTableEntry tokenTable[] = {
     {"MEM",0}, {"?",TKN_FMT_POST}, {"'",TKN_FMT_POST},
     {"LOCATE",2}, // Oups : there was a POSITION cmd ...
     {"LED",2}, // to switch on/off a led
-    {"TONE",2}, {"MUTE", 0},
+    {"BEEP",2}, {"MUTE", 0},
     {"PLAY",1|TKN_ARG1_TYPE_STR},
     {"PLAYT5K",1|TKN_ARG1_TYPE_STR},
     {"PLAYT53",1|TKN_ARG1_TYPE_STR},
@@ -178,6 +178,15 @@ TokenTableEntry tokenTable[] = {
     {"LLIST",TKN_FMT_POST}, // to dump current/fromSD PRGM to Serial console
 
     {"DRAWBPP",1|TKN_ARG1_TYPE_STR},
+
+    {"SECS", 0}, // returns nb of seconds since boot time
+
+    {"CHAIN",TKN_FMT_POST}, // to load then execute a program
+
+    {"CIRCLE", 3},
+    {"LINE", 4},
+    {"PSET", 2},    // switch ON a pixel
+    {"PRESET", 2},  // switch OFF a pixel
 };
 
 
@@ -324,7 +333,15 @@ float stackPopNum() {
     // DBUG("Ent.stackPopNum->", sysSTACKEND);
     sysSTACKEND -= sizeof(float);
     // DBUG("stackPopNum->", sysSTACKEND);
-    unsigned char *p = &mem[sysSTACKEND];
+
+    if ( sysSTACKEND < 0 ) {
+        Serial.println("ALARM 0x03");
+        return 0.0f;
+    }
+
+
+    //unsigned char *p = &mem[sysSTACKEND];
+
     // DBUG("stackPopNum A->",(int)mem[sysSTACKEND+0]);
     // DBUG("stackPopNum B->",(int)mem[sysSTACKEND+1]);
     // DBUG("stackPopNum C->",(int)mem[sysSTACKEND+2]);
@@ -828,6 +845,7 @@ float lookupNumVariable(char *name) {
 
     // Xtase mod
     int addr = &(p[0]) - &(mem[0]);
+    
     return getFloatFromBytes( mem, addr );
     //return *(float *)p;
 }
@@ -1398,6 +1416,11 @@ int parsePrimary() {
     case TOKEN_INKEY:
         return parse_INKEY();
 
+// -- XTase
+    case TOKEN_SECS:	
+        return fct_getSecs();
+// -- XTase
+
         // unary ops
     case TOKEN_MINUS:
     case TOKEN_NOT:
@@ -1562,6 +1585,18 @@ int expectNumber() {
         return ERROR_EXPR_EXPECTED_NUM;
     return 0;
 }
+
+
+// == Xtase ==
+void doRunPrg() {
+    uint16_t startLine = 1;
+    // clear variables
+    sysVARSTART = sysVAREND = sysGOSUBSTART = sysGOSUBEND = MEMORY_SIZE;
+    jumpLineNumber = startLine;
+    stopLineNumber = stopStmtNumber = 0;
+}
+// == Xtase ==
+
 
 int parse_RUN() {
     getNextToken();
@@ -1935,6 +1970,17 @@ int parseLoadSaveCmd() {
                     return ERROR_BAD_PARAMETER;
             }
 
+            else if (op == TOKEN_CHAIN) {
+                char fileName[MAX_FILENAME_LEN+1];
+                if (strlen(stackGetStr()) > MAX_FILENAME_LEN)
+                    return ERROR_BAD_PARAMETER;
+                strcpy(fileName, stackPopStr());
+
+                reset();
+                if (! xts_chain( fileName ) )
+                    return ERROR_BAD_PARAMETER;
+            }
+
             else if (op == TOKEN_SAVE) {
                 char fileName[MAX_FILENAME_LEN+1];
                 if (strlen(stackGetStr()) > MAX_FILENAME_LEN)
@@ -2011,12 +2057,12 @@ int parseSimpleCmd() {
                 host_cls();
                 host_showBuffer();
                 break;
-            case TOKEN_DIR:
-                xts_fs_dir();
-#if EXTERNAL_EEPROM
-                host_directoryExtEEPROM();
-#endif
-                break;
+//             case TOKEN_DIR:
+//                 xts_fs_dir();
+// #if EXTERNAL_EEPROM
+//                 host_directoryExtEEPROM();
+// #endif
+//                 break;
 
             case TOKEN_BYE:
                 xts_mcu_reset();
@@ -2088,6 +2134,7 @@ int parseStmts()
             case TOKEN_PAUSE: ret = parse_PAUSE(); break;
             
             case TOKEN_LOAD:
+            case TOKEN_CHAIN:
             case TOKEN_SAVE:
             case TOKEN_DELETE:
                 ret = parseLoadSaveCmd();
@@ -2104,7 +2151,7 @@ int parseStmts()
             case TOKEN_CONT:
             case TOKEN_RETURN:
             case TOKEN_CLS:
-            case TOKEN_DIR:
+            //case TOKEN_DIR:
 
             case TOKEN_BYE: // Xtase code
 
@@ -2115,7 +2162,7 @@ int parseStmts()
             case TOKEN_PRINT_QM: ret = parse_PRINT(); break;
             case TOKEN_REM_EM: getNextToken(); getNextToken(); break;
 
-            case TOKEN_TONE: ret = xts_tone(); break;
+            case TOKEN_BEEP: ret = xts_tone(); break;
             case TOKEN_MUTE: ret = xts_mute(); break;
 
             case TOKEN_LED:    ret = xts_led(); break;
@@ -2135,6 +2182,12 @@ int parseStmts()
             case TOKEN_LLIST: ret = xts_llist(); break;
 
             case TOKEN_DRAWBPP: ret = xts_dispBPP(); break;
+            case TOKEN_CIRCLE : ret = xts_dispCircle(); break;
+            case TOKEN_LINE   : ret = xts_dispLine(); break;
+            case TOKEN_PSET   : ret = xts_pset(); break;
+            case TOKEN_PRESET : ret = xts_preset(); break;
+ 
+            case TOKEN_DIR: ret = xts_fs_dir(); break;
 
             // ======== Xtase cmds ============= 
 

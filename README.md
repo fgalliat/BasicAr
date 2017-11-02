@@ -42,7 +42,8 @@ The hardware driver layout isn't finished & is provided as is (coded for the Xts
  LET,DIM,
  PIN, PINMODE,PINREAD,ANALOGRD
  SAVE,LOAD,NEW
- DIR,DELETE ---------------> TODO : FILES as DIR alias
+ DIR, ----------------------> ADDED extension filter ex "*.BAS" TODO : FILES as DIR alias
+ DELETE
 ```
 
 ### Extended command set :
@@ -56,18 +57,27 @@ LOCATE <ROW>,<COL>
 FS_SUPPORT for Teensy3.6 w/ SDCard
 DIR/FILES (in progress)
 SAVE/LOAD/LLIST
+CHAIN "random"    : will load & run program "RANDOM.BAS"
 
 MUTE (toggle mute buzzer)
-TONE 100,2        : 0-48 produces some notes, else direct freq. is used, tones for '2' * 50msec
+BEEP 100,2        : 1-48 produces some notes, else direct freq. is used, tones for '2' * 50msec
 PLAY "ABC#"       : play some notes of OCTAVE_4
-PLAYT5K & PLAYT53 : to play audio files
-DRAWBPP           : display a 1bpp picture to builtin screen
+PLAYT5K & PLAYT53 : to play audio (beep) files
+
+DRAWBPP           : display a 1bpp (B/W) picture to builtin screen
+CIRCLE x,y,r      : draw a circle
+LINE   x,y,x2,y2  : draw a line
+PSET   x,y        : switch ON a pixel
+PRESET x,y        : switch OFF a pixel
          
 BTN(x)            : function get button state
 LED [1..3], {0,1} : switch on/off a LED
          
 ECHO {0;1}        : enable/disable console output
+
 DELAY x           : wait x msec
+SECS              : function that returns nb of seconds elapsed since boot
+
 BYE               : to reset the MCU
 ```
 

@@ -111,7 +111,7 @@
     #define TOKEN_LOCATE         69
     #define TOKEN_LED            70 // 0x46
 
-    #define TOKEN_TONE           71
+    #define TOKEN_BEEP           71
     #define TOKEN_MUTE           72
 
     #define TOKEN_PLAY           73
@@ -132,7 +132,16 @@
 
     #define TOKEN_DRAWBPP        82 // draw a BPP picture on builtin LCD
 
-    #define TOKEN_LASTONE TOKEN_DRAWBPP
+    #define TOKEN_SECS           83 // nb of seconds since boot
+
+    #define TOKEN_CHAIN          84 // load then execute a program
+
+    #define TOKEN_CIRCLE         85
+    #define TOKEN_LINE           86
+    #define TOKEN_PSET           87
+    #define TOKEN_PRESET         88
+
+    #define TOKEN_LASTONE TOKEN_PRESET
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT
@@ -233,6 +242,7 @@ extern TokenTableEntry tokenTable[];
 
 
 void reset();
+void doRunPrg();
 int tokenize(unsigned char *input, unsigned char *output, int outputSize);
 int processInput(unsigned char *tokenBuf);
 

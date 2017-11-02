@@ -6,6 +6,7 @@
 #include <Arduino.h>
 
 #include "xts_arch.h"
+#include "xts_io.h"
 
 
 #define BASIC_ASCII_FILE_EXT ".BAS"
@@ -52,6 +53,8 @@
 extern int SCREEN_HEIGHT;
 extern unsigned char tokenBuf[];
 
+extern int OUTPUT_DEVICE;
+
 extern char codeLine[];
 void cleanCodeLine() {
   memset(codeLine, 0x00, ASCII_CODELINE_SIZE);
@@ -86,6 +89,7 @@ bool checkbreak() { return false; }
 
  void host_outputString(char* str);
  int host_outputInt(long v);
+ void host_outputChar(char c);
  void host_showBuffer();
 
 // ===============================
@@ -574,6 +578,29 @@ void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
 // = Graphical Ops.
 // =
 // ==============================================
+//#define WHITE 1
+//#define BLACK 0
+
+void drawLine(int x1, int y1, int x2, int y2) {
+  if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
+    display.drawLine(x1, y1, x2, y2, WHITE);
+  }
+}
+
+void drawCircle(int x1, int y1, int radius) {
+  if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
+    display.drawCircle(x1, y1, radius, WHITE);
+  }
+}
+
+// 0: black else :white
+void drawPixel(int x1, int y1, int color) {
+  if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
+    display.drawPixel(x1, y1, color);
+  }
+}
+
+
 
 bool drawBPPfile(char* filename) {
 
@@ -629,7 +656,7 @@ bool drawBPPfile(char* filename) {
 // ==============================================
 
  #ifndef FS_SUPPORT
-  void lsStorage() {
+  void lsStorage(char* filter=NULL) {
     host_outputString("ERR : NO Storage support\n");
   }
  #else
@@ -668,9 +695,8 @@ bool drawBPPfile(char* filename) {
 
 
 
-  void lsStorage() {
+  void lsStorage(char* filter=NULL) {
     bool recurse = false;
-    char* filter = NULL;
 
     // SdFile dirFile;
 
@@ -711,6 +737,38 @@ bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter) {
 
         memset(SDentryName, 0x00, 13);
         file.getName( SDentryName, 13 );
+
+        if ( filter != NULL ) {
+          // TODO : optimize !!!!!
+          int strt = 0;
+          if ( filter[strt] == '*' ) { strt++; }
+          if ( filter[strt] == '.' ) { strt++; } // see 'else' case
+
+          int tlen = strlen(SDentryName);
+          int flen = strlen(filter);
+          if ( tlen > 4 ) {
+            if ( SDentryName[ tlen-1-3 ] == '.' ) {
+              bool valid = true;
+              for(int i=0; i < flen-strt; i++) {
+
+                //host_outputChar( SDentryName[ tlen-3+i ] ); host_outputChar(' ');host_outputChar(filter[strt+i]);host_outputChar('\n');
+
+                if ( charUpCase( SDentryName[ tlen-3+i ] ) != charUpCase(filter[strt+i]) ) {
+                  valid = false;
+                  break;
+                }
+              }
+              if ( !valid ) { file.close(); continue; }
+            } else {
+              file.close(); 
+              continue;
+            }
+          } else {
+            file.close(); 
+            continue;
+          }
+        }
+
 
         host_outputInt( (cpt+1) );
         host_outputString("\t");
@@ -797,24 +855,27 @@ host_showBuffer();
 
   int n;
 
+  //reset(); // aka NEW -- no more Cf saveLoadCmd() call
+
   cleanCodeLine();
   while( ( n = file.fgets(codeLine, ASCII_CODELINE_SIZE) ) > 0 ) {
-    // TODO : interpret line
-    host_outputString( codeLine );
-    if ( codeLine[n-1] != '\n' ) {
-      host_outputString( "\n" );
-    }
-    host_showBuffer();
+    // // show line
+    // host_outputString( codeLine );
+    // if ( codeLine[n-1] != '\n' ) {
+    //   host_outputString( "\n" );
+    // }
+    // host_showBuffer();
 
+    // interpret line
     int ret = tokenize((unsigned char*)codeLine, tokenBuf, TOKEN_BUF_SIZE); ret = processInput(tokenBuf);
     if ( ret > 0 ) { host_outputString((char *)errorTable[ret]); host_showBuffer(); }
     //ret = ERROR_NONE;
-
+    cleanCodeLine();
   }
+  file.close();
+
   host_outputString( "-EOF-\n" );
   host_showBuffer();
-
-  file.close();
 }
 
 
