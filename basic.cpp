@@ -160,7 +160,7 @@ TokenTableEntry tokenTable[] = {
     {"MEM",0}, {"?",TKN_FMT_POST}, {"'",TKN_FMT_POST},
     {"LOCATE",2}, // Oups : there was a POSITION cmd ...
     {"LED",2}, // to switch on/off a led
-    {"TONE",2}, {"MUTE", 0},
+    {"BEEP",2}, {"MUTE", 0},
     {"PLAY",1|TKN_ARG1_TYPE_STR},
     {"PLAYT5K",1|TKN_ARG1_TYPE_STR},
     {"PLAYT53",1|TKN_ARG1_TYPE_STR},
@@ -324,7 +324,15 @@ float stackPopNum() {
     // DBUG("Ent.stackPopNum->", sysSTACKEND);
     sysSTACKEND -= sizeof(float);
     // DBUG("stackPopNum->", sysSTACKEND);
-    unsigned char *p = &mem[sysSTACKEND];
+
+    if ( sysSTACKEND < 0 ) {
+        Serial.println("ALARM 0x03");
+        return 0.0f;
+    }
+
+
+    //unsigned char *p = &mem[sysSTACKEND];
+
     // DBUG("stackPopNum A->",(int)mem[sysSTACKEND+0]);
     // DBUG("stackPopNum B->",(int)mem[sysSTACKEND+1]);
     // DBUG("stackPopNum C->",(int)mem[sysSTACKEND+2]);
@@ -828,6 +836,7 @@ float lookupNumVariable(char *name) {
 
     // Xtase mod
     int addr = &(p[0]) - &(mem[0]);
+    
     return getFloatFromBytes( mem, addr );
     //return *(float *)p;
 }
@@ -2115,7 +2124,7 @@ int parseStmts()
             case TOKEN_PRINT_QM: ret = parse_PRINT(); break;
             case TOKEN_REM_EM: getNextToken(); getNextToken(); break;
 
-            case TOKEN_TONE: ret = xts_tone(); break;
+            case TOKEN_BEEP: ret = xts_tone(); break;
             case TOKEN_MUTE: ret = xts_mute(); break;
 
             case TOKEN_LED:    ret = xts_led(); break;

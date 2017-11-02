@@ -79,7 +79,8 @@ FOR I=1 TO 5 : ? i;" ";a(i) : NEXT I
 ==> WORKS
 
 
-
+================================================================
+ZX81 is 32x24 chars // 64x48 pixels
 ================================================================
 DONE
   STORAGE (SDCARD SPI) + SAVE/LOAD/DELETE
@@ -186,7 +187,7 @@ ADDED >> ' for REM
          SAVE/LOAD/LLIST
 
          MUTE (toggle mute buzzer)
-         TONE 100,2
+         BEEP 100,2
          PLAY "ABC#"
          PLAYT5K & PLAYT53 : to play audio files
          DRAWBPP : display a 1bpp picture to builtin screen

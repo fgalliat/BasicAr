@@ -46,16 +46,17 @@ int getMemFree() {
 // == Screen 
 int xts_locate() {
   getNextToken();
-  int val = expectNumber();
+  int val = expectNumber();  // ROW
   if (val) return val;	// error
-  uint16_t row = (uint16_t)stackPopNum();
-
+  
   getNextToken();
-  val = expectNumber();
+  val = expectNumber();     // COL
   if (val) return val;	// error
-  uint16_t col = (uint16_t)stackPopNum();
-
+  
   if ( executeMode ) {
+    uint16_t col = (uint16_t)stackPopNum();
+    uint16_t row = (uint16_t)stackPopNum();
+
     host_moveCursor(col,row);
   }
 
@@ -148,9 +149,10 @@ int xts_echo() {
   getNextToken();
   int val = expectNumber();
   if (val) return val;	// error
-  uint16_t echoValue = (uint16_t)stackPopNum();
-
+  
   if (executeMode) {
+    uint16_t echoValue = (uint16_t)stackPopNum();
+
     LOCAL_ECHO = ( echoValue != 0 );
   }
 
@@ -162,9 +164,10 @@ int xts_delay() {
   getNextToken();
   int val = expectNumber();
   if (val) return val;	// error
-  uint16_t delayValue = (uint16_t)stackPopNum();
-
+  
   if (executeMode) {
+    uint16_t delayValue = (uint16_t)stackPopNum();
+
     //noInterrupts();
     host_sleep(delayValue);
     //interrupts();
@@ -192,14 +195,15 @@ int xts_led() {
   getNextToken();
   int val = expectNumber();
   if (val) return val;	// error
-  uint16_t ledID = (uint16_t)stackPopNum(); // 1 based
-
+  
   getNextToken();
   val = expectNumber();
   if (val) return val;	// error
-  uint16_t state = (uint16_t)stackPopNum(); // 1 or 0
-
+  
   if ( executeMode ) {
+    uint16_t state = (uint16_t)stackPopNum(); // 1 or 0
+    uint16_t ledID = (uint16_t)stackPopNum(); // 1 based
+
     led(ledID,state >= 1);
   }
 
@@ -238,16 +242,22 @@ int xts_play() {
 
 int xts_tone() {
     getNextToken();
+
     int freq = expectNumber();
     if (freq) return freq;	// error
-    uint16_t note_freq = (uint16_t)stackPopNum();
+    // uint16_t note_freq = (uint16_t)stackPopNum();
 
     getNextToken();
     int dur = expectNumber();
     if (dur) return dur;	// error
-    uint16_t duration = (uint16_t)stackPopNum();
+    // uint16_t duration = (uint16_t)stackPopNum();
 
     if ( executeMode ) {
+
+      // inexecute mode + inv. order
+      uint16_t duration = (uint16_t)stackPopNum();
+      uint16_t note_freq = (uint16_t)stackPopNum();
+
       if ( BUZZER_MUTE ) { return 0; }
       playNote(note_freq, duration);
     }

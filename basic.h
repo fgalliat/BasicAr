@@ -111,7 +111,7 @@
     #define TOKEN_LOCATE         69
     #define TOKEN_LED            70 // 0x46
 
-    #define TOKEN_TONE           71
+    #define TOKEN_BEEP           71
     #define TOKEN_MUTE           72
 
     #define TOKEN_PLAY           73

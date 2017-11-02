@@ -59,7 +59,7 @@ DIR/FILES (in progress)
 SAVE/LOAD/LLIST
 
 MUTE (toggle mute buzzer)
-TONE 100,2        : 0-48 produces some notes, else direct freq. is used, tones for '2' * 50msec
+BEEP 100,2        : 0-48 produces some notes, else direct freq. is used, tones for '2' * 50msec
 PLAY "ABC#"       : play some notes of OCTAVE_4
 PLAYT5K & PLAYT53 : to play audio files
 DRAWBPP           : display a 1bpp picture to builtin screen

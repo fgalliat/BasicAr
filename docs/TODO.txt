@@ -1,0 +1,20 @@
+BEEP Vs TONE : BEEP in /50ms TONE /Xms
+OUT : out a char of ascii code
+PSET / PRESET / LINE / CIRCLE
+
+CAT --> just display a plain file content (see LLIST)
+
+DUMPSTS
+WRITE
+WRITETEXT
+
+CHAIN
+
+END / STOP
+
+ASC( STR$ ) : returns ascii code of 1st char of STR$
+
+INP : wait a single char \__ from current input
+SNS : read a single char / 
+
+SECS() : returns the nb of seconds since boot ( return milis() / 1000 )
