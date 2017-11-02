@@ -1290,8 +1290,8 @@ int parseFnCallExpr() {
             break;
 
         case TOKEN_STR_STRING:
+            tmp2 = (int)stackPopNum();  // inv. sorting
             tmp = (int)stackPopNum();
-            tmp2 = (int)stackPopNum();
             if (!stackPushStr(xts_str_string(tmp, tmp2))) return ERROR_OUT_OF_MEMORY;
             break;
 
