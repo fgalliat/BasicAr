@@ -187,6 +187,9 @@ TokenTableEntry tokenTable[] = {
     {"LINE", 4},
     {"PSET", 2},    // switch ON a pixel
     {"PRESET", 2},  // switch OFF a pixel
+
+    {"STRING$", 2|TKN_RET_TYPE_STR},  // repeat x times CHR$(y)
+    {"UPPER$", 1|TKN_ARG1_TYPE_STR|TKN_RET_TYPE_STR},   // returns upper str
 };
 
 
@@ -1201,7 +1204,8 @@ int parseFnCallExpr() {
     }
     // now all the arguments will be on the stack (last first)
     if (executeMode) {
-        int tmp;
+        int tmp, tmp2;
+
         switch (op) {
         case TOKEN_INT:
             stackPushNum((float)floor(stackPopNum()));
@@ -1284,6 +1288,17 @@ int parseFnCallExpr() {
             tmp = (int)stackPopNum();
             if (!stackPushNum(xts_buttonRead(tmp))) return ERROR_OUT_OF_MEMORY;
             break;
+
+        case TOKEN_STR_STRING:
+            tmp = (int)stackPopNum();
+            tmp2 = (int)stackPopNum();
+            if (!stackPushStr(xts_str_string(tmp, tmp2))) return ERROR_OUT_OF_MEMORY;
+            break;
+
+        case TOKEN_STR_UPPER:
+            if (!stackPushStr(xts_str_upper( stackPopStr() ))) return ERROR_OUT_OF_MEMORY;
+            break;
+
 // ==============================
 
         default:
@@ -1438,6 +1453,8 @@ int parsePrimary() {
     case TOKEN_ANALOGRD:
 
     case TOKEN_BTN: // Xtase code
+    case TOKEN_STR_STRING: // Xtase code
+    case TOKEN_STR_UPPER: // Xtase code
 
         return parseFnCallExpr();
 

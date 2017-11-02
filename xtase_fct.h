@@ -39,6 +39,8 @@ extern bool selfRun; // for CHAIN "<...>" cmd
 #define _IS_TYPE_NUM(x) ((x & _TYPE_MASK) == _TYPE_NUMBER)
 #define _IS_TYPE_STR(x) ((x & _TYPE_MASK) == _TYPE_STRING)
 
+char charUpCase(char ch);
+
 // ======================== BASIC FCTS ================================
 
 int getMemFree() {
@@ -602,7 +604,28 @@ int xts_delBas(char* optFilename=NULL) {
   return woFileMode ? 0 : 1; // 1 for true when use in saleVloadCmd(..)
 }
 
+// ===== Strings =====
+
+char* xts_str_string(int nbTimes, int chr) {
+  // BEWARE w/ that ?????
+  char* ret = (char*)malloc( nbTimes+1 );
+  memset( ret, chr, nbTimes );
+  ret[nbTimes] = 0x00;
+  return ret;
+}
+
+char* xts_str_upper(char* str) {
+  // BEWARE w/ that ?????
+  int len = strlen( str );
+  char* ret = (char*)malloc( len+1 );
+  for(int i=0; i < len; i++) { ret[i] = charUpCase(str[i]); }
+  ret[len] = 0x00;
+  return ret;
+}
+
+
 // ===================================================================
+
 
 char charUpCase(char ch) {
     if ( ch >= 'a' && ch <= 'z' ) {

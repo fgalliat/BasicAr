@@ -10,6 +10,11 @@ CHAIN "<prgm>"
 
 PSET / PRESET / LINE / CIRCLE --> DONE
 
+_____ for LIGHT5 ______
+STRING$(nb, asciiCode)
+UPPER$( str )
+_______________________
+
 EXEC "WIFI","PARCEL"
 EXEC "VGAT"
 
