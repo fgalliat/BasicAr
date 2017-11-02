@@ -586,12 +586,14 @@ void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
 void drawLine(int x1, int y1, int x2, int y2) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     display.drawLine(x1, y1, x2, y2, WHITE);
+    display.display();
   }
 }
 
 void drawCircle(int x1, int y1, int radius) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     display.drawCircle(x1, y1, radius, WHITE);
+    display.display();
   }
 }
 
@@ -599,6 +601,7 @@ void drawCircle(int x1, int y1, int radius) {
 void drawPixel(int x1, int y1, int color) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     display.drawPixel(x1, y1, color);
+    display.display(); // see if fast enought .... else use interrupts.
   }
 }
 

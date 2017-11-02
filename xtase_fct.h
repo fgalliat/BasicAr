@@ -408,6 +408,13 @@ int _last_gfxDev = -1; // undefined
 
 
 int xts_console() {
+
+  if ( _last_outDev == -1 && _last_inDev == -1 && _last_gfxDev == -1 ) {
+    _last_outDev = OUTPUT_DEVICE;
+    _last_inDev  = INPUT_DEVICE;
+    _last_gfxDev = GFX_DEVICE;
+  }
+
   getNextToken();
 
   int nbArgs = 0;
@@ -416,22 +423,24 @@ int xts_console() {
   int gfxDev = -1; // undefined
 
   // TODO : add & parse parameters to select devices
-  int val = expectNumber();  // OUTPUT
-  if (val == 0){
-    nbArgs++;
-    getNextToken();
-    if (curToken != TOKEN_EOL) {
-      val = expectNumber();  // INPUT
-      if (val == 0){
-        nbArgs++;
-        getNextToken();
-        if (curToken != TOKEN_EOL) {
-          val = expectNumber();  // GFX
-          if (val == 0){
-            nbArgs++;
+  if (curToken != TOKEN_EOL) {
+    int val = expectNumber();  // OUTPUT
+    if (val == 0){
+      nbArgs++;
+      getNextToken();
+      if (curToken != TOKEN_EOL) {
+        val = expectNumber();  // INPUT
+        if (val == 0){
+          nbArgs++;
+          getNextToken();
+          if (curToken != TOKEN_EOL) {
+            val = expectNumber();  // GFX
+            if (val == 0){
+              nbArgs++;
+            }
           }
-        }
-      } 
+        } 
+      }
     }
   }
 
