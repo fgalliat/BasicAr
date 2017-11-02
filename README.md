@@ -62,8 +62,13 @@ CHAIN "random"    : will load & run program "RANDOM.BAS"
 MUTE (toggle mute buzzer)
 BEEP 100,2        : 1-48 produces some notes, else direct freq. is used, tones for '2' * 50msec
 PLAY "ABC#"       : play some notes of OCTAVE_4
-PLAYT5K & PLAYT53 : to play audio files
-DRAWBPP           : display a 1bpp picture to builtin screen
+PLAYT5K & PLAYT53 : to play audio (beep) files
+
+DRAWBPP           : display a 1bpp (B/W) picture to builtin screen
+CIRCLE x,y,r      : draw a circle
+LINE   x,y,x2,y2  : draw a line
+PSET   x,y        : switch ON a pixel
+PRESET x,y        : switch OFF a pixel
          
 BTN(x)            : function get button state
 LED [1..3], {0,1} : switch on/off a LED

@@ -281,6 +281,98 @@ int xts_tone() {
 // ================================================
 // GFX
 
+int xts_dispLine() {
+  getNextToken();
+  int val = expectNumber();  // X1
+  if (val) return val;	// error
+  
+  getNextToken();
+  val = expectNumber();  // Y1
+  if (val) return val;	// error
+
+  getNextToken();
+  val = expectNumber();  // X2
+  if (val) return val;	// error
+
+  getNextToken();
+  val = expectNumber();  // Y2
+  if (val) return val;	// error
+
+  if (executeMode) {
+    uint16_t y2 = (uint16_t)stackPopNum();
+    uint16_t x2 = (uint16_t)stackPopNum();
+    uint16_t y1 = (uint16_t)stackPopNum();
+    uint16_t x1 = (uint16_t)stackPopNum();
+
+    drawLine(x1, y1, x2, y2);
+  }
+  
+return 0;
+}
+
+int xts_dispCircle() {
+  getNextToken();
+  int val = expectNumber();  // X1
+  if (val) return val;	// error
+  
+  getNextToken();
+  val = expectNumber();  // Y1
+  if (val) return val;	// error
+
+  getNextToken();
+  val = expectNumber();  // RADIUS
+  if (val) return val;	// error
+
+  if (executeMode) {
+    uint16_t radius = (uint16_t)stackPopNum();
+    uint16_t y1 = (uint16_t)stackPopNum();
+    uint16_t x1 = (uint16_t)stackPopNum();
+
+    drawCircle(x1, y1, radius);
+  }
+  
+return 0;
+}
+
+int xts_pset() {
+  getNextToken();
+  int val = expectNumber();  // X1
+  if (val) return val;	// error
+  
+  getNextToken();
+  val = expectNumber();  // Y1
+  if (val) return val;	// error
+
+  if (executeMode) {
+    uint16_t y1 = (uint16_t)stackPopNum();
+    uint16_t x1 = (uint16_t)stackPopNum();
+
+    drawPixel(x1, y1, 0x01);
+  }
+  
+return 0;
+}
+
+int xts_preset() {
+  getNextToken();
+  int val = expectNumber();  // X1
+  if (val) return val;	// error
+  
+  getNextToken();
+  val = expectNumber();  // Y1
+  if (val) return val;	// error
+
+  if (executeMode) {
+    uint16_t y1 = (uint16_t)stackPopNum();
+    uint16_t x1 = (uint16_t)stackPopNum();
+
+    drawPixel(x1, y1, 0x00);
+  }
+  
+return 0;
+}
+
+
 int xts_dispBPP() {
   getNextToken();
 
@@ -289,9 +381,9 @@ int xts_dispBPP() {
   if (!_IS_TYPE_STR(val))
       return _ERROR_EXPR_EXPECTED_STR;
 
-  char* pictStr = stackPopStr();
-
+      
   if ( executeMode ) {
+    char* pictStr = stackPopStr();
     if ( drawBPPfile( pictStr ) ) {
       return 0;
     } else {
@@ -365,7 +457,7 @@ bool xts_chain(char* filename) {
       // tkb[0] = TOKEN_RUN;
       // tkb[1] = 0x00;
       // int ret = processInput( tkb );
-      selfRun = true;
+      selfRun = true; // the only way that works : can't run inside run ...
       return true;
     }
   } else {

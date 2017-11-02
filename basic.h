@@ -136,7 +136,12 @@
 
     #define TOKEN_CHAIN          84 // load then execute a program
 
-    #define TOKEN_LASTONE TOKEN_CHAIN
+    #define TOKEN_CIRCLE         85
+    #define TOKEN_LINE           86
+    #define TOKEN_PSET           87
+    #define TOKEN_PRESET         88
+
+    #define TOKEN_LASTONE TOKEN_PRESET
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT

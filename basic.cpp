@@ -182,6 +182,11 @@ TokenTableEntry tokenTable[] = {
     {"SECS", 0}, // returns nb of seconds since boot time
 
     {"CHAIN",TKN_FMT_POST}, // to load then execute a program
+
+    {"CIRCLE", 3},
+    {"LINE", 4},
+    {"PSET", 2},    // switch ON a pixel
+    {"PRESET", 2},  // switch OFF a pixel
 };
 
 
@@ -2177,6 +2182,10 @@ int parseStmts()
             case TOKEN_LLIST: ret = xts_llist(); break;
 
             case TOKEN_DRAWBPP: ret = xts_dispBPP(); break;
+            case TOKEN_CIRCLE : ret = xts_dispCircle(); break;
+            case TOKEN_LINE   : ret = xts_dispLine(); break;
+            case TOKEN_PSET   : ret = xts_pset(); break;
+            case TOKEN_PRESET : ret = xts_preset(); break;
  
             case TOKEN_DIR: ret = xts_fs_dir(); break;
 

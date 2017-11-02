@@ -6,6 +6,7 @@
 #include <Arduino.h>
 
 #include "xts_arch.h"
+#include "xts_io.h"
 
 
 #define BASIC_ASCII_FILE_EXT ".BAS"
@@ -51,6 +52,8 @@
 
 extern int SCREEN_HEIGHT;
 extern unsigned char tokenBuf[];
+
+extern int OUTPUT_DEVICE;
 
 extern char codeLine[];
 void cleanCodeLine() {
@@ -575,6 +578,29 @@ void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
 // = Graphical Ops.
 // =
 // ==============================================
+//#define WHITE 1
+//#define BLACK 0
+
+void drawLine(int x1, int y1, int x2, int y2) {
+  if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
+    display.drawLine(x1, y1, x2, y2, WHITE);
+  }
+}
+
+void drawCircle(int x1, int y1, int radius) {
+  if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
+    display.drawCircle(x1, y1, radius, WHITE);
+  }
+}
+
+// 0: black else :white
+void drawPixel(int x1, int y1, int color) {
+  if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
+    display.drawPixel(x1, y1, color);
+  }
+}
+
+
 
 bool drawBPPfile(char* filename) {
 
