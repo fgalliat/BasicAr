@@ -197,8 +197,8 @@
 #define TOKEN_BUF_SIZE 64
 
 // _____________>> that in xts_arch.h ???
-#define MEMORY_SIZE	1024
-//#define MEMORY_SIZE	8192
+//#define MEMORY_SIZE	1024
+#define MEMORY_SIZE	8192
 
 // max char per code lines (depends of ammount of RAM ??)
 #define ASCII_CODELINE_SIZE 128
