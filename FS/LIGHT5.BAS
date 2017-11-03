@@ -23,7 +23,7 @@
 1800 PRINT "Nous sommes a l'etape ";ET;" sur les 60"
 1810 ' in GW : LOCATE row,col // X07 LOCATE col,row
 1900 PRINT "" : X$=STRING$(ET-1,95) : PRINT X$; "X" : LOCATE 60,2 : PRINT "_^_"
-1950 LOCATE 60,3 : PRINT "[@]"
+1950 LOCATE 60,3 : PRINT "[#]"
 2000 IF ET < 60   THEN GOTO 2600
 2100 ' ********* VICTOIRE DU JOUEUR ***************************************
 2200 CLS
@@ -31,7 +31,7 @@
 2350 PLAY "ACEGAAAA"
 2400 STOP
 2500 ' ********* BOUCLE DE COMBAT *****************************************
-2600 LOCATE 5,5 : PRINT "Force ===> ";F;"   Vie ===> ";V
+2600 LOCATE 5,5 : PRINT "Force ===> ";F;"   Vie ===> ";V;"  "
 2700 PRINT ""
 2750 ' Z =VAL (RIGHT$ (TIME$ , 2)) : RANDOMIZE (Z) -- equiv. RSEED
 2800 IF FL = 1 THEN GOTO 3300
@@ -95,8 +95,8 @@
 7400 PRINT ""
 7500 PRINT "Rien a signaler. Vous progressez sur la route a la recherche des allies  de l'ombre...."
 7650 Z= (RND * 100)
-7660 IF Z < 5 THEN PRINT "Vous avez trouve un elixir qui vous donne 2 point de FORCE" : F = F+1
-7670 IF Z > 93 THEN PRINT "Vous avez trouve une source qui vous donne 2 point de VIE ": V = V+1
+7660 IF Z < 5 THEN PRINT "Vous avez trouve un elixir qui vous donne 2 point de FORCE" : F = F+2
+7670 IF Z > 93 THEN PRINT "Vous avez trouve une source qui vous donne 2 point de VIE ": V = V+2
 7690 ? "Return pour suivre votre route ": INPUT R$
 7700 ET = ET + 2
 7800 GOTO 1700
