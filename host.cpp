@@ -569,7 +569,7 @@ char *host_floatToStr(float f, char *buf) {
 }
 
 void host_outputFloat(float f) {
-    char buf[16];
+    static char buf[16];
     host_outputString(host_floatToStr(f, buf));
 }
 

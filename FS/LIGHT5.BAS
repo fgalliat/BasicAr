@@ -23,14 +23,14 @@
 1700 CLS
 1800 PRINT "Nous sommes a l'etape ";ET;" sur les 60"
 1810 ' in GW : LOCATE row,col // X07 LOCATE col,row
-1900 PRINT "" : X$=STRING$(ET-1,95) : PRINT X$, "X" : LOCATE 60,2 : PRINT "_^_"
+1900 PRINT "" : X$=STRING$(ET-1,95) : PRINT X$; "X" : LOCATE 60,2 : PRINT "_^_"
 1950 LOCATE 60,3 : PRINT "[@]"
 2000 IF ET < 60   THEN GOTO 2600
 2100 ' ********* VICTOIRE DU JOUEUR ***************************************
 2200 CLS
 2300 PRINT "Vous avez acheve votre quete de la lumiere avec succes,BRAVO !!!"
 2350 PLAY "ACEGAAAA"
-2400 END
+2400 STOP
 2500 ' ********* BOUCLE DE COMBAT *****************************************
 2600 LOCATE 5,5 : PRINT "Force ===> ";F;"   Vie ===> ";V
 2700 PRINT ""
@@ -61,11 +61,11 @@
 4301 IF K > F / 1.2 THEN PRINT "Tres ";
 4401 IF K > F / 1.5 THEN PRINT "JOLI coup , Chevalier !!!!"
 4500 VV = VV - K : IF VV <= 0 THEN GOTO 5200
-4600 PRINT "" : PRINT "ATTENTION !!   Il riposte : ": K = RND (FF)+1 : PRINT "avec force ";K
+4600 PRINT "" : PRINT "ATTENTION !!   Il riposte : ": K = RND*FF+1 : PRINT "avec force ";K
 4650 PLAY "C"
 4700 IF RND * 100 > 49 THEN PRINT "        HAAA !!!! le coup a porte "
 4701 IF RND * 100 <= 49 THEN PRINT "OUF le coup est manque " : GOTO 7900
-4800 V = V - K : IF V <= 0 THEN 6000
+4800 V = V - K : IF V <= 0 THEN GOTO 6000
 4900 PRINT ""
 5000 GOTO 2600
 5100 ' ********** MORT DE L'ADVERSAIRE ************************************
@@ -81,12 +81,12 @@
 6100 PRINT "Ce coup vous a ete fatal. Vous etes mort !!!!!!"
 6200 PRINT "AMEN..  "
 6250 PLAY "GFEDCBA"
-6300 END
+6300 STOP
 6400 ' ********** LE JOUEUR FUIT ******************************************
 6500 LOCATE 5,15
 6550 PRINT "" : PRINT "Ca n'est pas tres courageux .....": PRINT "Mais c'est plus prudent !"
 6600 FL = 0
-6700 PRINT "" : ET = ET - (RND (7) )
+6700 PRINT "" : ET = ET - (RND * 7 )
 6800 IF ET < 1 THEN ET = 1
 6900 IF (RND * 5 ) <> 3 THEN GOTO 7690
 7000 PRINT "Vous vous revitalisez de 3 point de vie"
@@ -108,4 +108,4 @@
 8300 GOTO 7690
 9000 ' ******** FIN DU JEU ************************************************
 9100 ? "Au revoir"
-9200 END
+9200 STOP

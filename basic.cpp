@@ -158,7 +158,7 @@ TokenTableEntry tokenTable[] = {
 
     // ------ Xtase routines -----------
     {"MEM",0}, {"?",TKN_FMT_POST}, {"'",TKN_FMT_POST},
-    {"LOCATE",2}, // Oups : there was a POSITION cmd ...
+    {"LOCATE",2|TKN_FMT_POST}, // Oups : there was a POSITION cmd ...
     {"LED",2}, // to switch on/off a led
     {"BEEP",2}, {"MUTE", 0},
     {"PLAY",1|TKN_ARG1_TYPE_STR},
@@ -190,6 +190,7 @@ TokenTableEntry tokenTable[] = {
 
     {"STRING$", 2|TKN_RET_TYPE_STR},  // repeat x times CHR$(y)
     {"UPPER$", 1|TKN_ARG1_TYPE_STR|TKN_RET_TYPE_STR},   // returns upper str
+    {"SPACE$", 1|TKN_RET_TYPE_STR},  // repeat x times CHR$(32)
 };
 
 
@@ -254,6 +255,7 @@ void listProg(uint16_t first, uint16_t last) {
     unsigned char *p = &mem[0];
     while (p < &mem[sysPROGEND]) {
         uint16_t lineNum = *(uint16_t*)(p+2);
+        if ( (p >= &mem[sysPROGEND]) ) { host_outputString("OUT_OF_MEM.a\n"); break; }
         if ((!first || lineNum >= first) && (!last || lineNum <= last)) {
             host_outputInt(lineNum);
             host_outputChar(' ');
@@ -261,6 +263,7 @@ void listProg(uint16_t first, uint16_t last) {
             host_newLine();
         }
         p+= *(uint16_t *)p;
+        if ( (p >= &mem[sysPROGEND]) ) { host_outputString("OUT_OF_MEM.b\n"); break; }
     }
 }
 
@@ -751,7 +754,12 @@ int setNumArrayElem(char *name, float val) {
     if (ret) return ret;
     
     p += sizeof(float)*offset;
-    *(float *)p = val;
+
+    // Xtase mod
+    int addr = &(p[0]) - &(mem[0]);
+    copyFloatToBytes( mem, addr,val );
+    //*(float *)p = val;
+
     return ERROR_NONE;
 }
 
@@ -812,7 +820,10 @@ float lookupNumArrayElem(char *name, int *error) {
         return 0.0f;
     }
     p += sizeof(float)*offset;
-    return *(float *)p;
+    // Xtase mod
+    int addr = &(p[0]) - &(mem[0]);
+    return getFloatFromBytes( mem, addr );
+    // return *(float *)p;
 }
 
 char *lookupStrArrayElem(char *name, int *error) {
@@ -848,7 +859,6 @@ float lookupNumVariable(char *name) {
 
     // Xtase mod
     int addr = &(p[0]) - &(mem[0]);
-    
     return getFloatFromBytes( mem, addr );
     //return *(float *)p;
 }
@@ -1299,6 +1309,12 @@ int parseFnCallExpr() {
             if (!stackPushStr(xts_str_upper( stackPopStr() ))) return ERROR_OUT_OF_MEMORY;
             break;
 
+        case TOKEN_STR_SPACE:
+            tmp2 = (int)' ';
+            tmp = (int)stackPopNum();
+            if (!stackPushStr(xts_str_string(tmp, tmp2))) return ERROR_OUT_OF_MEMORY;
+            break;
+
 // ==============================
 
         default:
@@ -1455,6 +1471,7 @@ int parsePrimary() {
     case TOKEN_BTN: // Xtase code
     case TOKEN_STR_STRING: // Xtase code
     case TOKEN_STR_UPPER: // Xtase code
+    case TOKEN_STR_SPACE: // Xtase code
 
         return parseFnCallExpr();
 

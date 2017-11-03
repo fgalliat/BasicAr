@@ -143,8 +143,9 @@
 
     #define TOKEN_STR_STRING        89 // repeat x times CHAR$(y)
     #define TOKEN_STR_UPPER         90 // returns uppercase
+    #define TOKEN_STR_SPACE         91 // repeat x times ' '
     
-    #define TOKEN_LASTONE TOKEN_STR_UPPER
+    #define TOKEN_LASTONE TOKEN_STR_SPACE
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT
@@ -196,16 +197,17 @@
 // 8+1+3 ex. 'TOTO'+'.'+'BAS'
 #define MAX_FILENAME_LEN	12
 
-// max token per line ???
-//#define TOKEN_BUF_SIZE 64
-#define TOKEN_BUF_SIZE 128
-
 // _____________>> that in xts_arch.h ???
 //#define MEMORY_SIZE	1024
 #define MEMORY_SIZE	(16*1024)
 
 // max char per code lines (depends of ammount of RAM ??)
 #define ASCII_CODELINE_SIZE 128
+
+
+// max token per line ???
+//#define TOKEN_BUF_SIZE 64
+#define TOKEN_BUF_SIZE 128
 // ______________________________________
 
 

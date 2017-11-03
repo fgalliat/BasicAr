@@ -81,7 +81,7 @@ SECS              : function that returns nb of seconds elapsed since boot
 
 UPPER$(str)       : function that return UPPERCASE of str
 STRING$(nbTimes, chr) : function that returns repeating string of nbTimes * CHR$(chr)
-
+SPACE$(nbTimes)   : function that returns repeating string of nbTimes * CHR$(32)
 
 BYE               : to reset the MCU
 ```

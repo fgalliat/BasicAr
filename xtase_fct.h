@@ -71,8 +71,8 @@ int xts_locate() {
   if (val) return val;	// error
   
   if ( executeMode ) {
+    uint16_t row = (uint16_t)stackPopNum(); // inv order
     uint16_t col = (uint16_t)stackPopNum();
-    uint16_t row = (uint16_t)stackPopNum();
 
     host_moveCursor(col,row);
   }
@@ -93,7 +93,7 @@ int xts_fs_dir() {
     int val = parseExpression();
     // STRING 1st arg is optional
     if (_IS_TYPE_STR(val)) {
-      filter = stackPopStr();
+      filter = stackPopStr();     // TODO : check exec mode
     } else {
       return ERROR_BAD_PARAMETER;
     }
@@ -124,23 +124,13 @@ int __xts_playSpeakerTune(int format) {
     if (!_IS_TYPE_STR(val))
         return _ERROR_EXPR_EXPECTED_STR;
   
-  char* tuneName = stackPopStr();
-  bool btnBreakMusic = true;
-
+  
   // TODO : get the boolean breakButtons ...
 
-  // getNextToken();
-  // if (curToken != TOKEN_EOL && curToken != TOKEN_CMD_SEP) {
-  //   val = parseExpression();
-  //   if (val & _ERROR_MASK) return val;
-    
-  //     if (!_IS_TYPE_NUM(val))
-  //       return ERROR_EXPR_EXPECTED_NUM;
-      
-  //     btnBreakMusic = stackPopNum() > 0;
-  // }
 
   if (executeMode) {
+    char* tuneName = stackPopStr();
+    bool btnBreakMusic = true;
     // host_outputString("I will play : ");
     // host_outputString( tuneName );
     // host_outputString("\n");
@@ -238,6 +228,7 @@ int xts_mute() {
 }
 
 
+// PLAY "abc#"
 int xts_play() {
   getNextToken();
 
@@ -245,10 +236,9 @@ int xts_play() {
   if (val & _ERROR_MASK) return val;
   if (!_IS_TYPE_STR(val))
       return _ERROR_EXPR_EXPECTED_STR;
-
-  char* tuneStr = stackPopStr();
-
+      
   if ( executeMode ) {
+    char* tuneStr = stackPopStr();
     playTuneString( tuneStr );
   }
 
