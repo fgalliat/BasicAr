@@ -42,15 +42,14 @@
 3300 LOCATE 5,10 :PRINT M$(RE) ;"  d'une force : ";FF;"  et une vie de ";VV;"    "
 3400 LOCATE 8,12 :PRINT "                                            "
 3450 ' LOCATE 8,12 :INPUT "C = Combat ou F = Fuite : ",R$
-3451 LOCATE 8,12 : ? "C = Combat ou F = Fuite : " : INPUT R$
-3455 ' SPACE$(x) returns a string w/ x * ' ' [TODO]
+3451 LOCATE 8,12 : ? "C = Combat ou F = Fuite : "; : INPUT R$
 3475 FOR NB = 1 TO 8: PRINT SPACE$(80-1) : NEXT NB
 3480 R$ = UPPER$(R$)
 3500 IF R$ = "F" THEN GOTO 6500
 3550 IF R$ = "Q" THEN GOTO 9000
 3600 IF R$ <> "C" THEN GOTO 3300
 3700 LOCATE  14,10
-3800 PRINT "Le combat s'engage , il est terrible "
+3800 PRINT "Le combat s'engage, il est terrible "
 4000 LOCATE 1,15
 4050 PLAY "A"
 4100 PRINT "Vous frappez : ";:K = INT(RND*F +1): PRINT "Avec une force :";K
@@ -93,7 +92,7 @@
 7200 GOTO 7690
 7300 ' *********** FIN DE LA BOUCLE PRINCIPALE ****************************
 7400 PRINT ""
-7500 PRINT "Rien a signaler. Vous progressez sur la route a la recherche des allies  de l'ombre...."
+7500 PRINT "Rien a signaler. Vous progressez sur la route a la recherche des allies de l'ombre...."
 7650 Z= (RND * 100)
 7660 IF Z < 5 THEN PRINT "Vous avez trouve un elixir qui vous donne 2 point de FORCE" : F = F+2
 7670 IF Z > 93 THEN PRINT "Vous avez trouve une source qui vous donne 2 point de VIE ": V = V+2
