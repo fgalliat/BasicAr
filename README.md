@@ -72,11 +72,16 @@ PRESET x,y        : switch OFF a pixel
          
 BTN(x)            : function get button state
 LED [1..3], {0,1} : switch on/off a LED
-         
+
+CONSOLE <out>,<in>,<gfx> : set I/O + GFX main devices
 ECHO {0;1}        : enable/disable console output
 
 DELAY x           : wait x msec
 SECS              : function that returns nb of seconds elapsed since boot
+
+UPPER$(str)       : function that return UPPERCASE of str
+STRING$(nbTimes, chr) : function that returns repeating string of nbTimes * CHR$(chr)
+SPACE$(nbTimes)   : function that returns repeating string of nbTimes * CHR$(32)
 
 BYE               : to reset the MCU
 ```

@@ -25,6 +25,9 @@ bool LOCAL_ECHO = true;
 
 #include "xts_io.h"
 int OUTPUT_DEVICE;
+int GFX_DEVICE;
+int INPUT_DEVICE;
+
 
 extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
@@ -566,7 +569,7 @@ char *host_floatToStr(float f, char *buf) {
 }
 
 void host_outputFloat(float f) {
-    char buf[16];
+    static char buf[16];
     host_outputString(host_floatToStr(f, buf));
 }
 

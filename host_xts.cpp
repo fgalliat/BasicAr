@@ -54,6 +54,8 @@ extern int SCREEN_HEIGHT;
 extern unsigned char tokenBuf[];
 
 extern int OUTPUT_DEVICE;
+extern int GFX_DEVICE;
+extern int INPUT_DEVICE;
 
 extern char codeLine[];
 void cleanCodeLine() {
@@ -66,6 +68,7 @@ void cleanAudioBuff() { memset(audiobuff, 0x00, AUDIO_BUFF_SIZE); }
 extern unsigned char picturebuff[];
 void cleanPictureBuff() { memset(picturebuff, 0x00, PICTURE_BUFF_SIZE); } 
 
+extern int curToken;
 
 // ============ Tmp Compatibility Code ===============
 extern boolean isWriting;
@@ -582,21 +585,24 @@ void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
 //#define BLACK 0
 
 void drawLine(int x1, int y1, int x2, int y2) {
-  if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
+  if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     display.drawLine(x1, y1, x2, y2, WHITE);
+    display.display();
   }
 }
 
 void drawCircle(int x1, int y1, int radius) {
-  if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
+  if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     display.drawCircle(x1, y1, radius, WHITE);
+    display.display();
   }
 }
 
 // 0: black else :white
 void drawPixel(int x1, int y1, int color) {
-  if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
+  if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     display.drawPixel(x1, y1, color);
+    display.display(); // see if fast enought .... else use interrupts.
   }
 }
 
@@ -640,9 +646,11 @@ bool drawBPPfile(char* filename) {
   file.close();
 
   // do something w/ these bytes ...
-  display.clearDisplay();
-  display.drawBitmap(0, 0, picturebuff, 128, 64, 0x01);
-  display.display();
+  if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
+    display.clearDisplay();
+    display.drawBitmap(0, 0, picturebuff, 128, 64, 0x01);
+    display.display();
+  }
 
   return true;
 }
@@ -858,6 +866,7 @@ host_showBuffer();
   //reset(); // aka NEW -- no more Cf saveLoadCmd() call
 
   cleanCodeLine();
+  memset( tokenBuf, 0x00, TOKEN_BUF_SIZE );
   while( ( n = file.fgets(codeLine, ASCII_CODELINE_SIZE) ) > 0 ) {
     // // show line
     // host_outputString( codeLine );
@@ -867,10 +876,19 @@ host_showBuffer();
     // host_showBuffer();
 
     // interpret line
-    int ret = tokenize((unsigned char*)codeLine, tokenBuf, TOKEN_BUF_SIZE); ret = processInput(tokenBuf);
-    if ( ret > 0 ) { host_outputString((char *)errorTable[ret]); host_showBuffer(); }
+    int ret = tokenize((unsigned char*)codeLine, tokenBuf, TOKEN_BUF_SIZE); 
+    if (ret == 0) { ret = processInput(tokenBuf); }
+    if ( ret > 0 ) { 
+      //host_outputInt( curToken );
+      host_outputString((char *)codeLine);
+      host_outputString((char *)" ->");
+      host_outputString((char *)errorTable[ret]); 
+      host_outputString((char *)"\n");
+      host_showBuffer(); 
+    }
     //ret = ERROR_NONE;
     cleanCodeLine();
+    memset( tokenBuf, 0x00, TOKEN_BUF_SIZE );
   }
   file.close();
 

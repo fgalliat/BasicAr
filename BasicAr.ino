@@ -18,6 +18,8 @@ int SCREEN_HEIGHT       = 8;
 
 #include "xts_io.h"
 extern int OUTPUT_DEVICE;
+extern int GFX_DEVICE;
+extern int INPUT_DEVICE;
 
 
 #ifdef BUT_TEENSY
@@ -139,13 +141,11 @@ void setup() {
     // inputString.reserve(200);
     
     SCREEN_LOCKER = true;
-    OUTPUT_DEVICE = OUT_DEV_SERIAL;
-    setScreenSize( SER_TEXT_WIDTH, SER_TEXT_HEIGHT );
+    setConsoles(OUT_DEV_SERIAL, -1, -1);
     SCREEN_LOCKER = false;
 
     #ifdef BUILTIN_LCD
-        OUTPUT_DEVICE = OUT_DEV_LCD_MINI;
-        setScreenSize( LCD_TEXT_WIDTH, LCD_TEXT_HEIGHT );
+        setConsoles(OUT_DEV_LCD_MINI, -1, -1);
     #else
         // OUTPUT_DEVICE = OUT_DEV_SERIAL;
         // setScreenSize( SER_TEXT_WIDTH, SER_TEXT_HEIGHT );

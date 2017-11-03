@@ -11,6 +11,8 @@
 
 #include "xts_io.h"
 extern int OUTPUT_DEVICE;
+extern int GFX_DEVICE;
+extern int INPUT_DEVICE;
 
 extern int sysVARSTART, sysPROGEND;
 extern int stackPushNum(float val);
@@ -36,6 +38,8 @@ extern bool selfRun; // for CHAIN "<...>" cmd
 
 #define _IS_TYPE_NUM(x) ((x & _TYPE_MASK) == _TYPE_NUMBER)
 #define _IS_TYPE_STR(x) ((x & _TYPE_MASK) == _TYPE_STRING)
+
+char charUpCase(char ch);
 
 // ======================== BASIC FCTS ================================
 
@@ -67,8 +71,8 @@ int xts_locate() {
   if (val) return val;	// error
   
   if ( executeMode ) {
+    uint16_t row = (uint16_t)stackPopNum(); // inv order
     uint16_t col = (uint16_t)stackPopNum();
-    uint16_t row = (uint16_t)stackPopNum();
 
     host_moveCursor(col,row);
   }
@@ -89,7 +93,7 @@ int xts_fs_dir() {
     int val = parseExpression();
     // STRING 1st arg is optional
     if (_IS_TYPE_STR(val)) {
-      filter = stackPopStr();
+      filter = stackPopStr();     // TODO : check exec mode
     } else {
       return ERROR_BAD_PARAMETER;
     }
@@ -120,23 +124,13 @@ int __xts_playSpeakerTune(int format) {
     if (!_IS_TYPE_STR(val))
         return _ERROR_EXPR_EXPECTED_STR;
   
-  char* tuneName = stackPopStr();
-  bool btnBreakMusic = true;
-
+  
   // TODO : get the boolean breakButtons ...
 
-  // getNextToken();
-  // if (curToken != TOKEN_EOL && curToken != TOKEN_CMD_SEP) {
-  //   val = parseExpression();
-  //   if (val & _ERROR_MASK) return val;
-    
-  //     if (!_IS_TYPE_NUM(val))
-  //       return ERROR_EXPR_EXPECTED_NUM;
-      
-  //     btnBreakMusic = stackPopNum() > 0;
-  // }
 
   if (executeMode) {
+    char* tuneName = stackPopStr();
+    bool btnBreakMusic = true;
     // host_outputString("I will play : ");
     // host_outputString( tuneName );
     // host_outputString("\n");
@@ -234,6 +228,7 @@ int xts_mute() {
 }
 
 
+// PLAY "abc#"
 int xts_play() {
   getNextToken();
 
@@ -241,10 +236,9 @@ int xts_play() {
   if (val & _ERROR_MASK) return val;
   if (!_IS_TYPE_STR(val))
       return _ERROR_EXPR_EXPECTED_STR;
-
-  char* tuneStr = stackPopStr();
-
+      
   if ( executeMode ) {
+    char* tuneStr = stackPopStr();
     playTuneString( tuneStr );
   }
 
@@ -400,22 +394,84 @@ int xts_dispBPP() {
 
 extern void setScreenSize(int cols, int rows);
 
+int _last_outDev = -1; // undefined
+int _last_inDev  = -1; // undefined
+int _last_gfxDev = -1; // undefined
+
+
 int xts_console() {
+
+  if ( _last_outDev == -1 && _last_inDev == -1 && _last_gfxDev == -1 ) {
+    _last_outDev = OUTPUT_DEVICE;
+    _last_inDev  = INPUT_DEVICE;
+    _last_gfxDev = GFX_DEVICE;
+  }
+
   getNextToken();
 
+  int nbArgs = 0;
+  int outDev = -1; // undefined
+  int inDev  = -1; // undefined
+  int gfxDev = -1; // undefined
+
   // TODO : add & parse parameters to select devices
+  if (curToken != TOKEN_EOL) {
+    int val = expectNumber();  // OUTPUT
+    if (val == 0){
+      nbArgs++;
+      getNextToken();
+      if (curToken != TOKEN_EOL) {
+        val = expectNumber();  // INPUT
+        if (val == 0){
+          nbArgs++;
+          getNextToken();
+          if (curToken != TOKEN_EOL) {
+            val = expectNumber();  // GFX
+            if (val == 0){
+              nbArgs++;
+            }
+          }
+        } 
+      }
+    }
+  }
 
-  // @ this time : ONLY switch to VGAText
   if ( executeMode ) {
-    if (OUTPUT_DEVICE != OUT_DEV_VGA_SERIAL) { 
-      OUTPUT_DEVICE = OUT_DEV_VGA_SERIAL; 
-      setScreenSize(VGA_TEXT_WIDTH, VGA_TEXT_HEIGHT);
+    if ( nbArgs == 3 ) {
+      gfxDev = (uint16_t)stackPopNum();
+      inDev  = (uint16_t)stackPopNum();
+      outDev = (uint16_t)stackPopNum();
+    } else if ( nbArgs == 2 ) {
+      gfxDev = _last_gfxDev;
+      inDev  = (uint16_t)stackPopNum();
+      outDev = (uint16_t)stackPopNum();
+    } else if ( nbArgs == 1 ) {
+      gfxDev = _last_gfxDev;
+      inDev  = _last_inDev;
+      outDev = (uint16_t)stackPopNum();
+    } else if ( nbArgs == 0 ) {
+      gfxDev = _last_gfxDev;
+      inDev  = _last_inDev;
+      outDev = -1;
     }
-    else { 
-      OUTPUT_DEVICE = OUT_DEV_LCD_MINI; 
-      setScreenSize(LCD_TEXT_WIDTH, LCD_TEXT_HEIGHT);
-    }
+  }
 
+  if ( executeMode ) {
+
+    gfxDev = setConsoles( outDev, inDev, gfxDev );
+
+    host_outputString("OUT : ");
+    host_outputInt(outDev);
+    host_outputString(" IN : ");
+    host_outputInt(inDev);
+    host_outputString(" GFX : ");
+    host_outputInt(gfxDev);
+    host_outputString("\n");
+    host_showBuffer();
+
+    _last_outDev = outDev;
+    _last_inDev  = inDev;
+    _last_gfxDev = gfxDev;
   }
 
   return 0;
@@ -538,7 +594,28 @@ int xts_delBas(char* optFilename=NULL) {
   return woFileMode ? 0 : 1; // 1 for true when use in saleVloadCmd(..)
 }
 
+// ===== Strings =====
+
+char* xts_str_string(int nbTimes, int chr) {
+  // BEWARE w/ that ?????
+  char* ret = (char*)malloc( nbTimes+1 );
+  memset( ret, chr, nbTimes );
+  ret[nbTimes] = 0x00;
+  return ret;
+}
+
+char* xts_str_upper(char* str) {
+  // BEWARE w/ that ?????
+  int len = strlen( str );
+  char* ret = (char*)malloc( len+1 );
+  for(int i=0; i < len; i++) { ret[i] = charUpCase(str[i]); }
+  ret[len] = 0x00;
+  return ret;
+}
+
+
 // ===================================================================
+
 
 char charUpCase(char ch) {
     if ( ch >= 'a' && ch <= 'z' ) {
