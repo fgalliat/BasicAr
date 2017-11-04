@@ -21,6 +21,10 @@ EXEC "VGAT"
 
 EXEC "AUDIO","PLAY",10
 
+"SYSMENU.BAS" -> to SET mute, console, reset .... (customizable system menu)
+  \___ can be called by F1 when in editor mode
+
+
 fileio descr. & use -OR- console to set current I/O devices
             CONSOLE out,in,gfx - in progress    GFX --> BUILTIN_LCD / VGAT /... --> in progress (impl.: GCLS, GPRINT, GLOCATE)
                                                 SFX ????
