@@ -11,18 +11,15 @@ CHAIN "<prgm>"
 PSET / PRESET / LINE / CIRCLE --> DONE
 
 _____ for LIGHT5 ______
-STRING$(nb, asciiCode) \__ DONE
-UPPER$( str )          /
-SPACE$( nb ) ----> DONE
-
 END --> doesn't work ? -> use STOP
 
 system variables : "SCR_WIDTH" & "SCR_HEIGHT"
-3475
 _______________________
 
 EXEC "WIFI","PARCEL"
 EXEC "VGAT"
+
+EXEC "AUDIO","PLAY",10
 
 fileio descr. & use -OR- console to set current I/O devices
             CONSOLE out,in,gfx - in progress    GFX --> BUILTIN_LCD / VGAT /... --> in progress (impl.: GCLS, GPRINT, GLOCATE)
