@@ -57,17 +57,20 @@ static bool isAlt  = false;
 
 static struct KeyEvent ke;
 
-static void poll_kbd() {
+#define _DBUG false
+
+
+//static void poll_kbd() {
+static int read_kbd(bool *printable) {
 
 
   if ( kbd.available() > 0 ) {
     kbd.readBytes(seq, 1);
     int kc = (int)seq[0];
 
-    bool printable = false;
+    *printable = false;
 
     if ( kc == 27 ) {
-      Serial.print("* ");
 
       long t0 = millis();
       while( kbd.available() == 0 ) {
@@ -81,38 +84,65 @@ static void poll_kbd() {
         kc = (int)seq[0];
 
         // F1 to F10 + F11 to F12
-             if ( kc >= 59 && kc <= 68 ) { Serial.print("F"); Serial.print( (kc-59+1) ); Serial.print(" "); }
-        else if ( kc >= 87 && kc <= 88 ) { Serial.print("F"); Serial.print( (kc-87+11) ); Serial.print(" "); }
+             if ( kc >= 59 && kc <= 68 ) { kc = KBD_F1 + (kc-59+1)-1;  if (_DBUG) { Serial.print("F"); Serial.print( (kc-59+1) ); Serial.print(" "); } }
+        else if ( kc >= 87 && kc <= 88 ) { kc = KBD_F1 + (kc-97+11)-1; if (_DBUG) { Serial.print("F"); Serial.print( (kc-87+11) ); Serial.print(" "); } }
 
-        else if ( kc == 0 ) { Serial.print("Break "); }
+        else if ( kc == 0 ) { kc = KBD_BREAK; if (_DBUG) Serial.print("Break "); }
 
-        else if ( kc == 75 ) { Serial.print("Left "); }
-        else if ( kc == 77 ) { Serial.print("Right "); }
-        else if ( kc == 72 ) { Serial.print("Up "); }
-        else if ( kc == 80 ) { Serial.print("Down "); }
+        else if ( kc == 75 ) { kc = KBD_ARW_LEFT;  if (_DBUG) Serial.print("Left "); }
+        else if ( kc == 77 ) { kc = KBD_ARW_RIGHT; if (_DBUG) Serial.print("Right "); }
+        else if ( kc == 72 ) { kc = KBD_ARW_DOWN;  if (_DBUG) Serial.print("Up "); }
+        else if ( kc == 80 ) { kc = KBD_ARW_UP;    if (_DBUG) Serial.print("Down "); }
       } else {
-        Serial.print("Esc ");
+        if (_DBUG) Serial.print("Esc ");
+        kc = KBD_ESC;
       }
     } else if ( kc == 8 ) {
-      Serial.print("BckSp ");
+      if (_DBUG) Serial.print("BckSp ");
+      kc = KBD_BCKSP;
     } else if ( kc == 9 ) {
-      Serial.print("Tab ");
+      if (_DBUG) Serial.print("Tab ");
+      kc = KBD_TAB;
     } else if ( kc == 3 ) {
-      Serial.print("Ctrl-C ");
-    } else {
-      printable = true;
-    }
+      if (_DBUG) Serial.print("Ctrl-C ");
+      kc = KBD_CTRL_C;
+    } 
+    
+    if ( kc == 13 ) {
+      long t0 = millis();
+      while( kbd.available() == 0 ) {
+        if ( ( millis() - t0 ) > 70 ) { break; }
+        delay(5);
+      }
 
 
-    Serial.print("Key : ");
-    if ( !printable ) {
-      Serial.println(kc);
-    } else {
-      Serial.print(kc);
-      Serial.print(" [");
-      Serial.print((char)kc);
-      Serial.println("]");
+      if (kbd.available() > 0) {
+        kbd.readBytes(seq, 1);
+        kc = (int)seq[0];
+        // may be followed by a 0x0A
+      }
+
+      if (_DBUG) Serial.print( "Enter " );
+      *printable = true;
+      kc = KBD_ENTER;
     }
+    else {
+      *printable = true;
+    }
+
+    if ( _DBUG ) {
+      Serial.print("Key : ");
+      if ( !*printable ) {
+        Serial.println(kc);
+      } else {
+        Serial.print(kc);
+        Serial.print(" [");
+        Serial.print((char)kc);
+        Serial.println("]");
+      }
+    }
+
+    return kc;
 
 
 //     bool printable = false;
@@ -268,6 +298,8 @@ static void poll_kbd() {
 //     onKeyReceived( ke );
   }
 
+
+  return -1;
 }
 
 #endif
