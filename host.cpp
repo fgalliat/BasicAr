@@ -621,7 +621,8 @@ char *host_readLine() {
             // read the next key
             // Optim try
             //lineDirty[pos / SCREEN_WIDTH] = 1;
-            lineDirty[pos / SCREEN_WIDTH]++;
+            //lineDirty[pos / SCREEN_WIDTH]++;
+            lineDirty[pos / SCREEN_WIDTH] = pos % SCREEN_WIDTH; // Cf VGAT + Kbd display bug
             
             char c = (kc > -1) ? kc : keyboard.read();
             if (c>=32 && c<=126) {
