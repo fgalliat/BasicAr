@@ -29,8 +29,9 @@ fileio descr. & use -OR- console to set current I/O devices
             CONSOLE out,in,gfx - in progress    GFX --> BUILTIN_LCD / VGAT /... --> in progress (impl.: GCLS, GPRINT, GLOCATE)
                                                 SFX ????
 
-USB HOST KBD..
-
+USB HOST KBD.. >> DONE (todo : finish EscKeyRead + getKey)
+  '@' is '"'             => DONE
+  '#' is ??? [194]+[163] => DONE
 
 OUT : out a char of ascii code
 INP : wait a single char \__ from current input

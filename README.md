@@ -86,5 +86,8 @@ SPACE$(nbTimes)   : function that returns repeating string of nbTimes * CHR$(32)
 BYE               : to reset the MCU
 ```
 
+**Builtin USB Keyboard support** (via HobbyTronic board) is now nearly complete !
+
+
 (The code is a bit dirty @ this time, I know)<br/>
 This work is still in progress ... (so see you @ anytime)

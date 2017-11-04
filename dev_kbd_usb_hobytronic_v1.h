@@ -106,16 +106,12 @@ static int read_kbd(bool *printable) {
     } else if ( kc == 3 ) {
       if (_DBUG) Serial.print("Ctrl-C ");
       kc = KBD_CTRL_C;
-    } 
-    
-    if ( kc == 13 ) {
+    } else if ( kc == 13 ) {
       long t0 = millis();
       while( kbd.available() == 0 ) {
         if ( ( millis() - t0 ) > 70 ) { break; }
         delay(5);
       }
-
-
       if (kbd.available() > 0) {
         kbd.readBytes(seq, 1);
         kc = (int)seq[0];
@@ -126,6 +122,32 @@ static int read_kbd(bool *printable) {
       *printable = true;
       kc = KBD_ENTER;
     }
+    // ======== Spe case =============== 
+    else if ( kc == 194 ) {
+      long t0 = millis();
+      while( kbd.available() == 0 ) {
+        if ( ( millis() - t0 ) > 70 ) { break; }
+        delay(5);
+      }
+
+
+      if (kbd.available() > 0) {
+        kbd.readBytes(seq, 1);
+        kc = (int)seq[0];
+        if ( kc == 163 ) {
+          kc = (int)'#';
+          *printable = true;
+        }
+      }
+
+    } else if ( kc == '@' ) {
+      kc = (int)'"';
+      *printable = true;
+    } else if ( kc == '"' ) {
+      kc = (int)'@';
+      *printable = true;
+    } 
+    // ======== Spe case ===============
     else {
       *printable = true;
     }
