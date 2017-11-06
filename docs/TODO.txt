@@ -6,21 +6,24 @@ host_getKey() to finish
 
 
 SD2SER / SER2SD todo + later make as same for BT HC-06 (for wireless uploading)
- \___ impl. XON/XOFF protocol to increase commm. speed
-            Headers for file uploading/downloading
-             \__ <name-0><sizeHSB><sizeLSB>
-
+|\___ impl. XON/XOFF protocol to increase commm. speed
+|           Headers for file uploading/downloading
+|            \__ <name-0><sizeHSB><sizeLSB>
+|
  \__ as EXEC "FILE","SD2SER","LIGHT5.BAS" ?????
 
 
 EXEC "FILE","DIRARRAY","AB$"[,"*.BAS"] -> AB$(.) feeded w/ "DIR *.BAS content"
 
-
-OUT : out a char of ascii code
-INP : wait a single char \__ from current input
-SNS : read a single char /
-CAT --> just display a plain file content (see LLIST)
 ASC( STR$ ) : returns ascii code of 1st char of STR$
+ \__ inv of CHR$(.)
+
+
+OUT : out a char of ascii code                                                 ex. OUT 65 / OUT 0,65 -> to outchar to Serial specifically
+INP : wait a single char \__ from current input -or- can specify a device ???? ex. K = INP(0)
+SNS : read a single char /
+CAT --> just display a plain file content (see LLIST) but not mandatory to Serial -> use current console device
+
 
 OPEN / CLOSE (for files) + FINPUT / FPRINT (to not have to manage file descr literals ?????)
 
