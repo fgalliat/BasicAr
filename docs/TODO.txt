@@ -1,3 +1,34 @@
+"SYSMENU.BAS" -> to SET mute, console, reset .... (customizable system menu)
+  \___ can be called by F1 when in editor mode
+
+
+host_getKey() to finish
+
+
+SD2SER / SER2SD todo + later make as same for BT HC-06 (for wireless uploading)
+ \___ impl. XON/XOFF protocol to increase commm. speed
+            Headers for file uploading/downloading
+             \__ <name-0><sizeHSB><sizeLSB>
+
+ \__ as EXEC "FILE","SD2SER","LIGHT5.BAS" ?????
+
+
+EXEC "FILE","DIRARRAY","AB$"[,"*.BAS"] -> AB$(.) feeded w/ "DIR *.BAS content"
+
+
+OUT : out a char of ascii code
+INP : wait a single char \__ from current input
+SNS : read a single char /
+CAT --> just display a plain file content (see LLIST)
+ASC( STR$ ) : returns ascii code of 1st char of STR$
+
+OPEN / CLOSE (for files) + FINPUT / FPRINT (to not have to manage file descr literals ?????)
+
+BEWARE : max 128 cmds --> else will distord 0x80 (end of token) descriptor
+
+
+____________________________________________________________________________
+
 BEEP Vs TONE : BEEP in /50ms TONE /Xms
  \___ kept BEEP only @ this time
 
@@ -21,9 +52,6 @@ EXEC "VGAT"
 
 EXEC "AUDIO","PLAY",10
 
-"SYSMENU.BAS" -> to SET mute, console, reset .... (customizable system menu)
-  \___ can be called by F1 when in editor mode
-
 
 fileio descr. & use -OR- console to set current I/O devices
             CONSOLE out,in,gfx - in progress    GFX --> BUILTIN_LCD / VGAT /... --> in progress (impl.: GCLS, GPRINT, GLOCATE)
@@ -33,19 +61,11 @@ USB HOST KBD.. >> DONE (todo : finish EscKeyRead + getKey)
   '@' is '"'             => DONE
   '#' is ??? [194]+[163] => DONE
 
-OUT : out a char of ascii code
-INP : wait a single char \__ from current input
-SNS : read a single char /
-
-
-
-CAT --> just display a plain file content (see LLIST)
-
 DUMPSTS   --> SD2SER SER2SD
 WRITE
 WRITETEXT
 
-ASC( STR$ ) : returns ascii code of 1st char of STR$
+
 
  
 

@@ -54,8 +54,6 @@ _________
 
   DUMP -> disp mem content (hex or raw)
 
-  RETRY LIGHT4.BAS /!\ w/ RND # impl (no more integer value)
-
 ================================================================
 
 basic.cpp :: stackPushNum() & stackPopNum()
@@ -122,33 +120,33 @@ DONE
 
   ADDED filter for DIR ex. "*.BAS"
 
+  Serial Vs Screen+Kbd I/O => console mode
+  SCREEN procedures + [draw pictures (neeed storage acess) : done]
 
 
 TODO HARDWARE
   Look @ XtsuBasic Hardware port mapping
   SSD1306 OLED full support (w/ gfx)          [v]
-  KBD USB                                     [ ]
+  KBD USB                                     [v] GetKey to finish !!!!
   BT Serial (HC06 slave only)                 [ ]
   VGA Serial Monitor (& RPI0W HDMI Monitor)   [v~]
 
 TODO
 
   exisiting PIN FCT to look
-  Serial Vs Screen+Kbd I/O => console mode
-  
-  SCREEN procedures + [draw pictures (neeed storage acess) : done]
   DIR to ARRAY
-  checkbreak()
+
+  checkbreak() -- to finish
   
 
 NEW COMMANDS
   1234568
-  LOCATE   [v] ==> stdout     (Serial or Serial VGA Monitor ( or RPI0W ) )
-  SLOCATE  [ ] ==> LCD screen (builtin OLED)
+  LOCATE   [v] ==> stdout     (Serial or Serial VGA Monitor ( or RPI0W ) ) (OUT_DEVICE)
+  GLOCATE  [ ] ==> LCD screen (builtin OLED) (GFX_DEVICE)
   PRINT    [v]
-  SPRINT   [ ]
+  GPRINT   [ ]
   CLS      [v]
-  SCLS     [ ]
+  GCLS     [ ]
 ______________________________________________________________
 IN PROGRESS 
   pseudo file I/O
@@ -168,11 +166,6 @@ IN PROGRESS
                              \__ Serial
 
 ______________________________________________________________
-
-
-host_showBuffer() dans host.cpp
-
-
 ______________________________________________________________
 
 ADDED >> ' for REM
@@ -192,7 +185,6 @@ ADDED >> ' for REM
          PLAYT5K & PLAYT53 : to play audio files
 
          DRAWBPP : display a 1bpp picture to builtin screen
-
          
          BTN(x) : function get button state
          LED [1..3], {0,1}
@@ -200,6 +192,8 @@ ADDED >> ' for REM
          ECHO {0;1}
          BYE : to reset the MCU
          DELAY x : wait x msec
+
+         + ... (see README.md)
 
 
 CURRENTLY :
@@ -214,7 +208,7 @@ CURRENTLY :
  IF,THEN
  FOR,TO,STEP,NEXT
  VAL()
- INT(),RND() // int(1.5) -> rounds to 1 / rnd() -> returns between 0.00 & 1.00
+ INT(),RND // int(1.5) -> rounds to 1 / rnd() -> returns between 0.00 & 1.00
  STR$() // STR$(1) => "1" (allows string concat)
  LEN(), // LEN("abc") => 3 
  RIGHT$(),MID$(),LEFT$(),
