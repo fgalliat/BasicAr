@@ -89,6 +89,11 @@ bool checkbreak() { return false; }
   #include "dev_kbd.h"
 #endif
 
+#ifdef BOARD_SND
+  #include "dev_sound_dfplayer.h"
+#endif
+
+
  // external forward decl.
  char charUpCase(char ch);
  bool endsWith(char* str, char* what);
@@ -215,6 +220,10 @@ void setupHardware() {
 
  #ifdef BOARD_VGA
    setupVGASerial();
+ #endif
+
+ #ifdef BOARD_SND
+   setupSoundDFPlayer();
  #endif
 
  #ifdef FS_SUPPORT
