@@ -16,6 +16,9 @@
   #ifdef XTSUBASIC_LAYOUT
     #define BUILTIN_LCD 1
     #define BOARD_VGA 1
+
+    #define BUILTIN_KBD 1
+    #define KEYB_TYPE_USB_HOBYTRONIC_V1 1
   #endif
 
   #define FS_SUPPORT 1

@@ -74,6 +74,7 @@ extern int curToken;
 extern boolean isWriting;
 
 void lcd_println(char* text) { isWriting = true; Serial.print("LCD:"); Serial.println(text); isWriting = false; }
+
 bool checkbreak() { return false; }
 
 // ============ Tmp Compatibility Code =============== 
@@ -84,7 +85,9 @@ bool checkbreak() { return false; }
   #include "dev_screen_VGATEXT.h"
 #endif
 
-
+#ifdef BUILTIN_KBD
+  #include "dev_kbd.h"
+#endif
 
  // external forward decl.
  char charUpCase(char ch);
@@ -178,9 +181,13 @@ void setupLCD() {
 
 #ifdef BOARD_VGA
 void setupVGASerial() {
+  host_outputString("Booting VGA\n");
   setup_vgat(false);
   //vgat_reboot(false);
+  delay(300);
   vgat_startScreen();
+  // host_outputString("Booted VGA\n");
+  delay(200);
 }
 #endif
 
@@ -200,6 +207,10 @@ void setupHardware() {
 
  #ifdef BUILTIN_LCD
    setupLCD();
+ #endif
+
+ #ifdef BUILTIN_KBD
+   setup_kbd(); // must be done before VGASerial
  #endif
 
  #ifdef BOARD_VGA
@@ -1169,3 +1180,7 @@ void DBUG_NOLN(const char* v) { Serial.print(v); }
 void DBUG_NOLN(const char* v, int v2) { Serial.print(v); Serial.print(v2); }
 void DBUG_NOLN(int v) { Serial.print(v); }
 
+// ========= Console Ops =====================
+void onKeyReceived(struct KeyEvent ke) {
+  Serial.println("a key was pressed");
+}

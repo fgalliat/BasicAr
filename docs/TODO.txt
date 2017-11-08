@@ -1,3 +1,37 @@
+"SYSMENU.BAS" -> to SET mute, console, reset .... (customizable system menu)
+  \___ can be called by F1 when in editor mode
+
+
+host_getKey() to finish
+
+
+SD2SER / SER2SD todo + later make as same for BT HC-06 (for wireless uploading)
+|\___ impl. XON/XOFF protocol to increase commm. speed
+|           Headers for file uploading/downloading
+|            \__ <name-0><sizeHSB><sizeLSB>
+|
+ \__ as EXEC "FILE","SD2SER","LIGHT5.BAS" ?????
+
+
+EXEC "FILE","DIRARRAY","AB$"[,"*.BAS"] -> AB$(.) feeded w/ "DIR *.BAS content"
+
+ASC( STR$ ) : returns ascii code of 1st char of STR$
+ \__ inv of CHR$(.)
+
+
+OUT : out a char of ascii code                                                 ex. OUT 65 / OUT 0,65 -> to outchar to Serial specifically
+INP : wait a single char \__ from current input -or- can specify a device ???? ex. K = INP(0)
+SNS : read a single char /
+CAT --> just display a plain file content (see LLIST) but not mandatory to Serial -> use current console device
+
+
+OPEN / CLOSE (for files) + FINPUT / FPRINT (to not have to manage file descr literals ?????)
+
+BEWARE : max 128 cmds --> else will distord 0x80 (end of token) descriptor
+
+
+____________________________________________________________________________
+
 BEEP Vs TONE : BEEP in /50ms TONE /Xms
  \___ kept BEEP only @ this time
 
@@ -11,39 +45,30 @@ CHAIN "<prgm>"
 PSET / PRESET / LINE / CIRCLE --> DONE
 
 _____ for LIGHT5 ______
-STRING$(nb, asciiCode) \__ DONE
-UPPER$( str )          /
-SPACE$( nb ) ----> DONE
-
 END --> doesn't work ? -> use STOP
 
 system variables : "SCR_WIDTH" & "SCR_HEIGHT"
-3475
 _______________________
 
 EXEC "WIFI","PARCEL"
 EXEC "VGAT"
 
+EXEC "AUDIO","PLAY",10
+
+
 fileio descr. & use -OR- console to set current I/O devices
             CONSOLE out,in,gfx - in progress    GFX --> BUILTIN_LCD / VGAT /... --> in progress (impl.: GCLS, GPRINT, GLOCATE)
                                                 SFX ????
 
-USB HOST KBD..
-
-
-OUT : out a char of ascii code
-INP : wait a single char \__ from current input
-SNS : read a single char /
-
-
-
-CAT --> just display a plain file content (see LLIST)
+USB HOST KBD.. >> DONE (todo : finish EscKeyRead + getKey)
+  '@' is '"'             => DONE
+  '#' is ??? [194]+[163] => DONE
 
 DUMPSTS   --> SD2SER SER2SD
 WRITE
 WRITETEXT
 
-ASC( STR$ ) : returns ascii code of 1st char of STR$
+
 
  
 

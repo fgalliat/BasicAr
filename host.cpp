@@ -60,8 +60,13 @@ extern PS2Keyboard keyboard;
 extern bool BUZZER_MUTE;
 
 #ifdef BUILTIN_LCD
- #include "dev_screen_Adafruit_SSD1306.h"
- extern Adafruit_SSD1306 display;
+  #include "dev_screen_Adafruit_SSD1306.h"
+  extern Adafruit_SSD1306 display;
+#endif
+
+
+#ifdef BUILTIN_KBD
+  #include "dev_kbd.h"
 #endif
 
 #ifdef BOARD_VGA
@@ -602,15 +607,24 @@ char *host_readLine() {
     int pos = startPos;
 
     bool done = false;
+    int kc = -1;
+    bool printable = false;
     while (!done) {
-        while (keyboard.available()) {
+
+        #ifdef BUILTIN_KBD
+          printable = false;
+          while (keyboard.available() || (kc = read_kbd(&printable)) > -1 ) {
+        #else
+          while (keyboard.available() ) {
+        #endif
             host_click();
             // read the next key
             // Optim try
             //lineDirty[pos / SCREEN_WIDTH] = 1;
-            lineDirty[pos / SCREEN_WIDTH]++;
+            //lineDirty[pos / SCREEN_WIDTH]++;
+            lineDirty[pos / SCREEN_WIDTH] = pos % SCREEN_WIDTH; // Cf VGAT + Kbd display bug
             
-            char c = keyboard.read();
+            char c = (kc > -1) ? kc : keyboard.read();
             if (c>=32 && c<=126) {
                 screenBuffer[pos++] = c;
             }
@@ -663,6 +677,12 @@ char host_getKey() {
 }
 
 bool host_ESCPressed() {
+
+    #ifdef BUILTIN_KBD
+      bool printable = false;
+      int kc = read_kbd(&printable);// TODO : finish
+    #endif
+
     // while (keyboard.available()) {
     //     // read the next key
     //     inkeyChar = keyboard.read();
