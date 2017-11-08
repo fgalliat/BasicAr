@@ -8,8 +8,8 @@
 #ifndef _dev_sound_dfplayer_h_
 #define _dev_sound_dfplayer_h_1
 
-    #include "DFRobotDFPlayerMini.h"
-    #include "host.h"
+  #include "DFRobotDFPlayerMini.h"
+  #include "host.h"
 
   // could be a SoftwareSerial too ...
   #define mp3Serial Serial5 
@@ -26,11 +26,14 @@
       host_outputString("Unable to begin:\n");
       host_outputString("1.Please recheck the connection!\n");
       host_outputString("2.Please insert the SD card!\n");
+      host_showBuffer();
       //while(true);
       mp3Ready = false;
+      delay(500);
       return;
     }
     host_outputString("DFPlayer Mini online.\n");
+    host_showBuffer();
     mp3Ready = true;
     
     myDFPlayer.volume(15);  //Set volume value. From 0 to 30

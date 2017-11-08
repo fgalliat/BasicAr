@@ -1190,6 +1190,8 @@ void DBUG_NOLN(const char* v, int v2) { Serial.print(v); Serial.print(v2); }
 void DBUG_NOLN(int v) { Serial.print(v); }
 
 // ========= Console Ops =====================
+/*
 void onKeyReceived(struct KeyEvent ke) {
   Serial.println("a key was pressed");
 }
+*/

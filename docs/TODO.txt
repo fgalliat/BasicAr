@@ -4,7 +4,8 @@
 
 host_getKey() to finish
 
-Serial Port Map
+
+* Serial Port Map *
 Serial  -> USB UART
 Serial2 -> BT HC-06
 Serial3 -> kbd/vga text
@@ -14,7 +15,9 @@ Serial5 -> |N.C| -> can use for DFPlayer mp3 @ 9600 bps
 DFPlayer mp3 module is 5v VCC / but 3.3v logical RX/TX @ 9600bps
  -> requires an uSDCard to work
  -> SDCARD need to have a /MP3/ in it & numbered files inside ex. 01_toto.mp3
+ -> code compiles... w/ DFPlayer includes
 
+start to impl "EXEC" .... to control MP3 module ....
 
 
 SD2SER / SER2SD todo + later make as same for BT HC-06 (for wireless uploading)

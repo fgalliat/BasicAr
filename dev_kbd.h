@@ -1,6 +1,7 @@
 #ifndef keyb_h_
 #define keyb_h_ 1
 
+/*
 typedef struct KeyEvent {
   int kc;
   int vkc;
@@ -24,11 +25,12 @@ enum {
   KEY_VIRT_BREAK,
   KEY_VIRT_ESC,
 };
+*/
 
 #define KEY_VIRT_CTRLC KEY_VIRT_BREAK
 
 // @Deprecated
-extern void onKeyReceived(struct KeyEvent ke);
+//extern void onKeyReceived(struct KeyEvent ke);
 
 #define KBD_ESC   27
 #define KBD_ENTER 13

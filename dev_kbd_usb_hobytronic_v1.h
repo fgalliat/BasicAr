@@ -52,11 +52,12 @@ static void setup_kbd() {
 
 
 static char seq[1];
+/*
 static bool isCtrl = false;
 static bool isAlt  = false;
 
 static struct KeyEvent ke;
-
+*/
 #define _DBUG false
 
 
