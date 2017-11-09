@@ -191,6 +191,8 @@ TokenTableEntry tokenTable[] = {
     {"STRING$", 2|TKN_RET_TYPE_STR},  // repeat x times CHR$(y)
     {"UPPER$", 1|TKN_ARG1_TYPE_STR|TKN_RET_TYPE_STR},   // returns upper str
     {"SPACE$", 1|TKN_RET_TYPE_STR},  // repeat x times CHR$(32)
+
+    {"EXEC", TKN_FMT_POST},  // execute an extended command
 };
 
 
@@ -2222,6 +2224,8 @@ int parseStmts()
             case TOKEN_PRESET : ret = xts_preset(); break;
  
             case TOKEN_DIR: ret = xts_fs_dir(); break;
+
+            case TOKEN_EXT_EXEC: ret = xts_exec_cmd(); break;
 
             // ======== Xtase cmds ============= 
 

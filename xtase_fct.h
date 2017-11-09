@@ -615,6 +615,92 @@ char* xts_str_upper(char* str) {
 
 
 // ===================================================================
+// === Extended Commands
+// ===================================================================
+
+// EXEC "WIFI","PARCEL"
+// EXEC "MP3","PAUSE"
+// @ this time : only support for String args....
+
+#ifdef BOARD_SND
+  #include "dev_sound_dfplayer.h"
+#endif
+
+
+int xts_exec_cmd() {
+  getNextToken();
+  
+  // beware : will be in inv. order
+  const int MAX_ARGS = 6;
+  char* args[MAX_ARGS]; // max 6 args
+  int argc = 0;
+
+  while (curToken != TOKEN_EOL && curToken != TOKEN_CMD_SEP) {
+    int val = parseExpression();
+    // STRING 1st arg is optional
+    if (_IS_TYPE_STR(val)) {
+      if ( executeMode && argc < MAX_ARGS) {
+        char* tt = stackPopStr();
+        char* tmp = (char*)malloc( strlen(tt)+1 ); // BEWARE w/ free()
+        memcpy( tmp, tt, strlen(tt) );
+        tmp[ strlen(tt) ] = 0x00;
+        args[argc++] = tmp;
+      }
+    } else {
+      return ERROR_BAD_PARAMETER;
+    }
+
+    getNextToken();
+    if ( curToken == TOKEN_COMMA ) {
+      getNextToken();
+    }
+  }
+  
+  // TODO : @ least 1 param
+  // else {
+  //   // @ least 1 param
+  //   return ERROR_BAD_PARAMETER;
+  // }
+
+  if ( executeMode ) {
+    //if ( strncmp( args[argc-1], "MP3", 3 ) == 0 ) {
+
+      host_outputString( args[0] );host_outputString( "\n" );
+      host_outputString( args[1] );host_outputString( "\n" );
+      host_showBuffer();
+
+
+    if ( strncmp( args[0], "MP3", 3 ) == 0 ) {
+      argc--;
+      if ( strncmp( args[1], "PLAY", 4 ) == 0 ) {
+        #ifdef BOARD_SND
+          snd_playTrack(1);
+        #endif
+        argc--;
+      } else if ( strncmp( args[1], "PAUSE", 5 ) == 0 ) {
+        #ifdef BOARD_SND
+          snd_pause();
+        #endif
+        argc--;
+      } else if ( strncmp( args[1], "NEXT", 4 ) == 0 ) {
+        #ifdef BOARD_SND
+          snd_next();
+        #endif
+        argc--;
+      } else {
+        return ERROR_BAD_PARAMETER;
+      }
+    } else {
+      return ERROR_BAD_PARAMETER;
+    }
+  }
+
+  return 0;
+}
+
+
+
+// ===================================================================
 
 
 char charUpCase(char ch) {

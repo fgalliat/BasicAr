@@ -17,6 +17,9 @@ Xtase - fgalliat @2017
 10 < Serial WIFI (ESP8266) (Serial4)              [v] - 19200bps
 11 > Serial WIFI (ESP8266) (pass through a 328P to filter packet) 
 
+12 < Sound DFPlayer mp3 (Serial5)                 [v] - 9600bps
+13 > Sound DFPlayer mp3                           [v]
+
 XX < Serial X07/Alt        (SerialX - as wired to a 328P(5v) could be I2C ?)
 XX > Serial X07/Alt
 

@@ -37,10 +37,12 @@
 
     //myDFPlayer.play(1);  //Play the first SD:/xx.mp3 then subdirs
 
-    // positionate only the current file ???
-    myDFPlayer.playMp3Folder(1); // plays SD:/MP3/0001.mp3 - @ least 1st song of /MP3/
-    delay(100);
-    myDFPlayer.play();
+    // // positionate only the current file ???
+    // myDFPlayer.playMp3Folder(1); // plays SD:/MP3/0001.mp3 - @ least 1st song of /MP3/
+    // delay(100);
+    // myDFPlayer.play();
+    
+    //snd_playTrack(1);
   }
 
   // from 0 to 30
