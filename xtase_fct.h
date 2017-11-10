@@ -630,13 +630,18 @@ char* xts_str_upper(char* str) {
 int xts_exec_cmd() {
   getNextToken();
   
-  // beware : will be in inv. order
   const int MAX_ARGS = 6;
-  char* args[MAX_ARGS]; // max 6 args
-  int argc = 0;
+  char* args[MAX_ARGS]; // string args
+  int   argc = 0;
+  int   argi[MAX_ARGS]; // int args
+  int   argci = 0;
 
+  int val = -1;
   while (curToken != TOKEN_EOL && curToken != TOKEN_CMD_SEP) {
-    int val = parseExpression();
+    val = parseExpression();
+    //if (val & _ERROR_MASK) return val;
+    if (val & _ERROR_MASK) break;
+
     // STRING 1st arg is optional
     if (_IS_TYPE_STR(val)) {
       if ( executeMode && argc < MAX_ARGS) {
@@ -647,15 +652,26 @@ int xts_exec_cmd() {
         for(int i=0; i < stlen; i++) { tmp[i] = charUpCase( tt[i] ); }
         tmp[ stlen ] = 0x00;
         args[argc++] = tmp;
+        //host_outputString( tmp );host_outputString("\n");
+      }
+    } else if (_IS_TYPE_NUM(val)) {
+      if ( executeMode && argci < MAX_ARGS) {
+        int tmp = (int)stackPopNum();
+        argi[argci++] = tmp;
+        //host_outputInt( tmp );host_outputString("\n");
       }
     } else {
       return ERROR_BAD_PARAMETER;
     }
 
-    getNextToken();
+    // getNextToken();
     if ( curToken == TOKEN_COMMA ) {
       getNextToken();
     }
+  }
+
+  if ( !executeMode ) {
+    if (val & _ERROR_MASK) return val;
   }
   
   // TODO : @ least 1 param
@@ -665,18 +681,15 @@ int xts_exec_cmd() {
   // }
 
   if ( executeMode ) {
-    //if ( strncmp( args[argc-1], "MP3", 3 ) == 0 ) {
-
-      // host_outputString( args[0] );host_outputString( "\n" );
-      // host_outputString( args[1] );host_outputString( "\n" );
-      // host_showBuffer();
-
       if ( argc > 0 ) {
         if ( strcmp( args[0], "MP3" ) == 0 ) {
           if ( argc > 1 ) {
-            if ( strcmp( args[1], "PLAY" ) == 0 ) {
+            if ( strcmp( args[1], "PLAY" ) == 0 ) {    // ex. exec "mp3","play"
+              int trackNum = 1;
+              if ( argci > 0 ) { trackNum = argi[0]; } // ex. exec "mp3","play",2
+              //host_outputString("Will play #");host_outputInt(trackNum);
               #ifdef BOARD_SND
-                snd_playTrack(1);
+                snd_playTrack(trackNum);
               #endif
             } else if ( strcmp( args[1], "PAUSE" ) == 0 ) {
               #ifdef BOARD_SND

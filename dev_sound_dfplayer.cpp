@@ -33,7 +33,7 @@
     delay(500);
     mp3Ready = true;
     
-    myDFPlayer.volume(10);  //Set volume value. From 0 to 30
+    myDFPlayer.volume(20);  //Set volume value. From 0 to 30
 
     //myDFPlayer.play(1);  //Play the first SD:/xx.mp3 then subdirs
 
@@ -53,15 +53,24 @@
   // from 1 to 2999
   void snd_playTrack(int trackNum) {
     // positionate only the current file ???
-    myDFPlayer.playMp3Folder(1); // plays SD:/MP3/0001.mp3 - @ least 1st song of /MP3/
+    myDFPlayer.playMp3Folder(trackNum); // plays SD:/MP3/0001.mp3 - @ least 1st song of /MP3/
     delay(100);
-    myDFPlayer.play();
+    myDFPlayer.play(trackNum); // ??????
   }
 
   void snd_next() {
     myDFPlayer.next();
   }
 
+  bool paused = false;
+
   void snd_pause() {
-    myDFPlayer.pause();
+    if ( !paused ) {
+      myDFPlayer.pause();
+      paused = true;
+    } else {
+      myDFPlayer.start();
+      paused = false;
+    }
   }
+
