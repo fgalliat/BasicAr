@@ -11,7 +11,6 @@
 90 ? "V - Volume"
 100 INPUT CH$
 110 CH$=UPPER$(CH$)
-120 ? CH$
 130 IF ch$="Q" THEN STOP 
 140 IF ch$="P" THEN ? "Play...": EXEC "mp3","play",14
 150 IF ch$="V" THEN ? "Volume ?": INPUT v: EXEC "mp3","vol",v
