@@ -1,13 +1,13 @@
 =====> start by wire the Serial5 ====>  \__ DONE
 =====> check if MP3 boot is OK ????     /
 
-start to impl "EXEC" .... to control MP3 module ....
-exec "MP3" "PLAY" works
-exec "MP3" "play" doesn't works
+start to impl "EXEC" .... to control MP3 module .... => DONE
+exec "MP3" "PLAY"  & exec "MP3" "play" works
 
 
 "SYSMENU.BAS" -> to SET mute, console, reset .... (customizable system menu)
   \___ can be called by F1 when in editor mode
+  \___ TODO
 
 host_getKey() to finish
 
@@ -16,7 +16,7 @@ Serial  -> USB UART
 Serial2 -> BT HC-06
 Serial3 -> kbd/vga text
 Serial4 -> ESP-over-328 ---> could test TMP DFPlayer on it
-Serial5 -> DFPlayer mp3 module @ 9600 bps
+Serial5 -> DFPlayer mp3 module @ 9600 bps => DONE
 
 DFPlayer mp3 module is 5v VCC / but 3.3v logical RX/TX @ 9600bps
  -> requires an uSDCard to work

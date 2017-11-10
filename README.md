@@ -83,13 +83,15 @@ UPPER$(str)       : function that return UPPERCASE of str
 STRING$(nbTimes, chr) : function that returns repeating string of nbTimes * CHR$(chr)
 SPACE$(nbTimes)   : function that returns repeating string of nbTimes * CHR$(32)
 
-EXEC "<extCmd>", "<extArg>" : to launch an extended command
+EXEC "<extCmd>", "[<extArg>]" : to launch an extended command
 
 BYE               : to reset the MCU
 ```
 
 **Builtin USB Keyboard support** (via HobbyTronic board) is now nearly complete !
 
+**Board TTY VGAText support** is functional !
+**Board MP3 DFPlayer support** is functional !
 
 (The code is a bit dirty @ this time, I know)<br/>
 This work is still in progress ... (so see you @ anytime)
