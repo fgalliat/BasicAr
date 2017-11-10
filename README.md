@@ -83,6 +83,8 @@ UPPER$(str)       : function that return UPPERCASE of str
 STRING$(nbTimes, chr) : function that returns repeating string of nbTimes * CHR$(chr)
 SPACE$(nbTimes)   : function that returns repeating string of nbTimes * CHR$(32)
 
+EXEC "<extCmd>", "<extArg>" : to launch an extended command
+
 BYE               : to reset the MCU
 ```
 

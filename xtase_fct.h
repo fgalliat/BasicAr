@@ -641,9 +641,11 @@ int xts_exec_cmd() {
     if (_IS_TYPE_STR(val)) {
       if ( executeMode && argc < MAX_ARGS) {
         char* tt = stackPopStr();
-        char* tmp = (char*)malloc( strlen(tt)+1 ); // BEWARE w/ free()
-        memcpy( tmp, tt, strlen(tt) );
-        tmp[ strlen(tt) ] = 0x00;
+        int stlen = strlen(tt);
+        char* tmp = (char*)malloc( stlen+1 ); // BEWARE w/ free()
+        //memcpy( tmp, tt, strlen(tt) );
+        for(int i=0; i < stlen; i++) { tmp[i] = charUpCase( tt[i] ); }
+        tmp[ stlen ] = 0x00;
         args[argc++] = tmp;
       }
     } else {
@@ -665,35 +667,40 @@ int xts_exec_cmd() {
   if ( executeMode ) {
     //if ( strncmp( args[argc-1], "MP3", 3 ) == 0 ) {
 
-      host_outputString( args[0] );host_outputString( "\n" );
-      host_outputString( args[1] );host_outputString( "\n" );
-      host_showBuffer();
+      // host_outputString( args[0] );host_outputString( "\n" );
+      // host_outputString( args[1] );host_outputString( "\n" );
+      // host_showBuffer();
 
+      if ( argc > 0 ) {
+        if ( strcmp( args[0], "MP3" ) == 0 ) {
+          if ( argc > 1 ) {
+            if ( strcmp( args[1], "PLAY" ) == 0 ) {
+              #ifdef BOARD_SND
+                snd_playTrack(1);
+              #endif
+            } else if ( strcmp( args[1], "PAUSE" ) == 0 ) {
+              #ifdef BOARD_SND
+                snd_pause();
+              #endif
+            } else if ( strcmp( args[1], "NEXT" ) == 0 ) {
+              #ifdef BOARD_SND
+                snd_next();
+              #endif
+            } else {
+              free( args[0] );
+              free( args[1] );
+              return ERROR_BAD_PARAMETER;
+            }
+            free( args[1] );
+          } // end of argc > 1
+        } else {
+          free( args[0] );
+          return ERROR_BAD_PARAMETER;
+        }
+        free( args[0] );
+      } // end of argc > 0
 
-    if ( strncmp( args[0], "MP3", 3 ) == 0 ) {
-      argc--;
-      if ( strncmp( args[1], "PLAY", 4 ) == 0 ) {
-        #ifdef BOARD_SND
-          snd_playTrack(1);
-        #endif
-        argc--;
-      } else if ( strncmp( args[1], "PAUSE", 5 ) == 0 ) {
-        #ifdef BOARD_SND
-          snd_pause();
-        #endif
-        argc--;
-      } else if ( strncmp( args[1], "NEXT", 4 ) == 0 ) {
-        #ifdef BOARD_SND
-          snd_next();
-        #endif
-        argc--;
-      } else {
-        return ERROR_BAD_PARAMETER;
-      }
-    } else {
-      return ERROR_BAD_PARAMETER;
-    }
-  }
+  } // execMode
 
   return 0;
 }
