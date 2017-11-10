@@ -691,6 +691,12 @@ int xts_exec_cmd() {
               #ifdef BOARD_SND
                 snd_playTrack(trackNum);
               #endif
+            } else if ( strcmp( args[1], "VOL" ) == 0 ) {    // ex. exec "mp3","vol"
+              int volume = 10;
+              if ( argci > 0 ) { volume = argi[0]; } // ex. exec "mp3","vol",30
+              #ifdef BOARD_SND
+                snd_setVolume(volume);
+              #endif
             } else if ( strcmp( args[1], "PAUSE" ) == 0 ) {
               #ifdef BOARD_SND
                 snd_pause();
