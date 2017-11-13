@@ -90,8 +90,11 @@ BYE               : to reset the MCU
 
 **Builtin USB Keyboard support** (via HobbyTronic board) is now nearly complete !
 
-**Board TTY VGAText support** is functional !
+**Board TTY VGAText support** is functional !<br/>
 **Board MP3 DFPlayer support** is functional !
+
+**Started computer enclosure**
+![The XtsuBasic Computer](./docs/enclosure/enclosure1.jpg "The Xts-uBasic Computer in its enclosure...")
 
 (The code is a bit dirty @ this time, I know)<br/>
 This work is still in progress ... (so see you @ anytime)
