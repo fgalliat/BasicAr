@@ -615,6 +615,118 @@ char* xts_str_upper(char* str) {
 
 
 // ===================================================================
+// === Extended Commands
+// ===================================================================
+
+// EXEC "WIFI","PARCEL"
+// EXEC "MP3","PAUSE"
+// @ this time : only support for String args....
+
+#ifdef BOARD_SND
+  #include "dev_sound_dfplayer.h"
+#endif
+
+
+int xts_exec_cmd() {
+  getNextToken();
+  
+  const int MAX_ARGS = 6;
+  char* args[MAX_ARGS]; // string args
+  int   argc = 0;
+  int   argi[MAX_ARGS]; // int args
+  int   argci = 0;
+
+  int val = -1;
+  while (curToken != TOKEN_EOL && curToken != TOKEN_CMD_SEP) {
+    val = parseExpression();
+    //if (val & _ERROR_MASK) return val;
+    if (val & _ERROR_MASK) break;
+
+    // STRING 1st arg is optional
+    if (_IS_TYPE_STR(val)) {
+      if ( executeMode && argc < MAX_ARGS) {
+        char* tt = stackPopStr();
+        int stlen = strlen(tt);
+        char* tmp = (char*)malloc( stlen+1 ); // BEWARE w/ free()
+        //memcpy( tmp, tt, strlen(tt) );
+        for(int i=0; i < stlen; i++) { tmp[i] = charUpCase( tt[i] ); }
+        tmp[ stlen ] = 0x00;
+        args[argc++] = tmp;
+        //host_outputString( tmp );host_outputString("\n");
+      }
+    } else if (_IS_TYPE_NUM(val)) {
+      if ( executeMode && argci < MAX_ARGS) {
+        int tmp = (int)stackPopNum();
+        argi[argci++] = tmp;
+        //host_outputInt( tmp );host_outputString("\n");
+      }
+    } else {
+      return ERROR_BAD_PARAMETER;
+    }
+
+    // getNextToken();
+    if ( curToken == TOKEN_COMMA ) {
+      getNextToken();
+    }
+  }
+
+  if ( !executeMode ) {
+    if (val & _ERROR_MASK) return val;
+  }
+  
+  // TODO : @ least 1 param
+  // else {
+  //   // @ least 1 param
+  //   return ERROR_BAD_PARAMETER;
+  // }
+
+  if ( executeMode ) {
+      if ( argc > 0 ) {
+        if ( strcmp( args[0], "MP3" ) == 0 ) {
+          if ( argc > 1 ) {
+            if ( strcmp( args[1], "PLAY" ) == 0 ) {    // ex. exec "mp3","play"
+              int trackNum = 1;
+              if ( argci > 0 ) { trackNum = argi[0]; } // ex. exec "mp3","play",2
+              //host_outputString("Will play #");host_outputInt(trackNum);
+              #ifdef BOARD_SND
+                snd_playTrack(trackNum);
+              #endif
+            } else if ( strcmp( args[1], "VOL" ) == 0 ) {    // ex. exec "mp3","vol"
+              int volume = 10;
+              if ( argci > 0 ) { volume = argi[0]; } // ex. exec "mp3","vol",30
+              #ifdef BOARD_SND
+                snd_setVolume(volume);
+              #endif
+            } else if ( strcmp( args[1], "PAUSE" ) == 0 ) {
+              #ifdef BOARD_SND
+                snd_pause();
+              #endif
+            } else if ( strcmp( args[1], "NEXT" ) == 0 ) {
+              #ifdef BOARD_SND
+                snd_next();
+              #endif
+            } else {
+              free( args[0] );
+              free( args[1] );
+              return ERROR_BAD_PARAMETER;
+            }
+            free( args[1] );
+          } // end of argc > 1
+        } else {
+          free( args[0] );
+          return ERROR_BAD_PARAMETER;
+        }
+        free( args[0] );
+      } // end of argc > 0
+
+  } // execMode
+
+  return 0;
+}
+
+
+
+// ===================================================================
 
 
 char charUpCase(char ch) {

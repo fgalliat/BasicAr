@@ -89,6 +89,11 @@ bool checkbreak() { return false; }
   #include "dev_kbd.h"
 #endif
 
+#ifdef BOARD_SND
+  #include "dev_sound_dfplayer.h"
+#endif
+
+
  // external forward decl.
  char charUpCase(char ch);
  bool endsWith(char* str, char* what);
@@ -215,6 +220,10 @@ void setupHardware() {
 
  #ifdef BOARD_VGA
    setupVGASerial();
+ #endif
+
+ #ifdef BOARD_SND
+   setupSoundDFPlayer();
  #endif
 
  #ifdef FS_SUPPORT
@@ -1181,6 +1190,8 @@ void DBUG_NOLN(const char* v, int v2) { Serial.print(v); Serial.print(v2); }
 void DBUG_NOLN(int v) { Serial.print(v); }
 
 // ========= Console Ops =====================
+/*
 void onKeyReceived(struct KeyEvent ke) {
   Serial.println("a key was pressed");
 }
+*/

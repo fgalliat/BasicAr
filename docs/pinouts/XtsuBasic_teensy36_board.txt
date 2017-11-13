@@ -17,8 +17,8 @@ Xtase - fgalliat @2017
 31 RX Serial 4 ESPover328 < optional board (aka WIFI)
 32 TX Serial 4 ESPover328 >
 ------------------------
-33 TX Serial 5
-34 RX Serial 5 |N.C| (P.S. uarts.png table is wrong on this port)
+33 TX Serial 5 > Sound card (FPlayer mp3 module UART 3.3v)
+34 RX Serial 5 < (P.S. uarts.png table is wrong on this port)
 
 19 SCL0 \_ Wire0 I2C |N.C| (tmp : a 328P 3.3v w/ WIFI ? // LATER RTC(/!\5v) )
 18 SDA0 /

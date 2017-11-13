@@ -144,8 +144,10 @@
     #define TOKEN_STR_STRING        89 // repeat x times CHAR$(y)
     #define TOKEN_STR_UPPER         90 // returns uppercase
     #define TOKEN_STR_SPACE         91 // repeat x times ' '
+
+    #define TOKEN_EXT_EXEC          92 // execute EXTENDED command
     
-    #define TOKEN_LASTONE TOKEN_STR_SPACE
+    #define TOKEN_LASTONE TOKEN_EXT_EXEC
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT

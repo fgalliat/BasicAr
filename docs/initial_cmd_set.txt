@@ -1,4 +1,6 @@
-Initial XtsuBasic command set (deprecated documentation)
+(Deprecated documentation)
+
+Initial XtsuBasic command set 
 
 
 ADDED support for STRING & INT arrays
