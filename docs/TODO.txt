@@ -1,31 +1,18 @@
-=====> start by wire the Serial5 ====>  \__ DONE
-=====> check if MP3 boot is OK ????     /
-
-start to impl "EXEC" .... to control MP3 module .... => DONE
-exec "MP3" "PLAY"  & exec "MP3" "play" works
-
-
 "SYSMENU.BAS" -> to SET mute, console, reset .... (customizable system menu)
   \___ can be called by F1 when in editor mode
   \___ TODO
 
 host_getKey() to finish
 
-* Serial Port Map *
-Serial  -> USB UART                       => DONE
-Serial2 -> BT HC-06
-Serial3 -> kbd/vga text                   => DONE
-Serial4 -> ESP-over-328 ---> could test TMP DFPlayer on it
-Serial5 -> DFPlayer mp3 module @ 9600 bps => DONE
+DIR args -> check for executeMode
 
-___________________________________
-DFPlayer mp3 module is 5v VCC / but 3.3v logical RX/TX @ 9600bps
- -> requires an uSDCard to work
- -> SDCARD need to have a /MP3/ in it & numbered files inside ex. 01_toto.mp3
+CONSOLE  -> can cause dead-locks
 
-' Set Volume & play StarFox Theme
-exec "mp3","vol",30 : exec "mp3","play",14 
-___________________________________
+LIST on LIGHT5.BAS -> causes dead-locks (it doesn't on MP3.BAS)
+
+MILLIS   -> function that returns millis from MCU boot
+
+remove VGATxt + USBKbd double same port initialisation code (keep only one - VGAT)
 
 
 SD2SER / SER2SD todo + later make as same for BT HC-06 (for wireless uploading)
@@ -41,6 +28,31 @@ EXEC "FILE","DIRARRAY","AB$"[,"*.BAS"] -> AB$(.) feeded w/ "DIR *.BAS content"
 ASC( STR$ ) : returns ascii code of 1st char of STR$
  \__ inv of CHR$(.)
 
+
+
+___________________________________
+=====> start by wire the Serial5 ====>  \__ DONE
+=====> check if MP3 boot is OK ????     /
+
+start to impl "EXEC" .... to control MP3 module .... => DONE
+exec "MP3" "PLAY"  & exec "MP3" "play" works
+___________________________________
+
+* Serial Port Map *
+Serial  -> USB UART                       => DONE
+Serial2 -> BT HC-06
+Serial3 -> kbd/vga text                   => DONE
+Serial4 -> ESP-over-328 ---> may be replaced by a NodeMCU module ....
+Serial5 -> DFPlayer mp3 module @ 9600 bps => DONE
+
+___________________________________
+DFPlayer mp3 module is 5v VCC / but 3.3v logical RX/TX @ 9600bps
+ -> requires an uSDCard to work
+ -> SDCARD need to have a /MP3/ in it & numbered files inside ex. 01_toto.mp3
+
+' Set Volume & play StarFox Theme
+exec "mp3","vol",30 : exec "mp3","play",14 
+___________________________________
 
 OUT : out a char of ascii code                                                 ex. OUT 65 / OUT 0,65 -> to outchar to Serial specifically
 INP : wait a single char \__ from current input -or- can specify a device ???? ex. K = INP(0)
