@@ -694,7 +694,13 @@ bool host_ESCPressed() {
 
     #ifdef BUILTIN_KBD
       bool printable = false;
-      int kc = read_kbd(&printable);// TODO : finish
+      int kc = -1;
+      while ( (kc = read_kbd(&printable) ) != -1 ) {
+          inkeyChar = kc;
+          if ( inkeyChar == PS2_ESC || inkeyChar == KBD_CTRL_C || inkeyChar == KBD_BREAK ) {
+              return true;
+          }
+      }
     #endif
 
     // while (keyboard.available()) {

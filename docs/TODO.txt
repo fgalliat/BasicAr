@@ -1,8 +1,21 @@
+== DONE & have to be TESTED ==
+
+* removed VGATxt + USBKbd double same port initialisation code (keep only one - VGAT)
+
+* VGAT display optimization
+   \___ @ this time : keep vid-char-mem
+   \___ but display text & chars directly to Serial port
+
+* host_getKey() & breakcheck --> ESC / BREAK / Ctrl-C
+__________________________________________________________________
+__________________________________________________________________
+
+
 "SYSMENU.BAS" -> to SET mute, console, reset .... (customizable system menu)
   \___ can be called by F1 when in editor mode
   \___ TODO
 
-host_getKey() to finish
+
 
 DIR args -> check for executeMode
 
@@ -11,12 +24,6 @@ CONSOLE  -> can cause dead-locks
 LIST on LIGHT5.BAS -> causes dead-locks (it doesn't on MP3.BAS)
 
 MILLIS   -> function that returns millis from MCU boot
-
-remove VGATxt + USBKbd double same port initialisation code (keep only one - VGAT)
-
-VGAT display optimization
- \___ @ this time : keep vid-char-mem
- \___ but display text & chars directly to Serial port
 
 SD2SER / SER2SD todo + later make as same for BT HC-06 (for wireless uploading)
 |\___ impl. XON/XOFF protocol to increase commm. speed
