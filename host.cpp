@@ -343,38 +343,39 @@ interrupts();
 
         #ifdef BOARD_VGA
 
+            // no more done since 16/11/2017 - 'cause direct print
             isWriting = true;
-            bool dirty = false;
-            for (int y=0; y<SCREEN_HEIGHT; y++) {
-                if ( SCREEN_LOCKER ) { return; }
-                if ( lineDirty[y] != 0 ) {
-                    dirty = true;
-                    break;
-                }
-            }
+            // bool dirty = false;
+            // for (int y=0; y<SCREEN_HEIGHT; y++) {
+            //     if ( SCREEN_LOCKER ) { return; }
+            //     if ( lineDirty[y] != 0 ) {
+            //         dirty = true;
+            //         break;
+            //     }
+            // }
         
-            if ( !dirty ) { isWriting = false; return; }
+            // if ( !dirty ) { isWriting = false; return; }
 
-            for (int y=0; y<SCREEN_HEIGHT; y++) {
-                if ( SCREEN_LOCKER ) { return; }
+            // for (int y=0; y<SCREEN_HEIGHT; y++) {
+            //     if ( SCREEN_LOCKER ) { return; }
 
-                if ( lineDirty[y] == 0 ) { continue; }
+            //     if ( lineDirty[y] == 0 ) { continue; }
 
-                vgat_locate(0,y);
-                for (int x=0; x<SCREEN_WIDTH; x++) {
-                  char c = screenBuffer[y*SCREEN_WIDTH+x];
-                  if (c<32) c = ' ';
-                  line[x] = c;
-                  if ( x > lineDirty[y] ) { line[x] = 0x00; break; }
-                }
-                line[SCREEN_WIDTH] = 0x00;
+            //     vgat_locate(0,y);
+            //     for (int x=0; x<SCREEN_WIDTH; x++) {
+            //       char c = screenBuffer[y*SCREEN_WIDTH+x];
+            //       if (c<32) c = ' ';
+            //       line[x] = c;
+            //       if ( x > lineDirty[y] ) { line[x] = 0x00; break; }
+            //     }
+            //     line[SCREEN_WIDTH] = 0x00;
 
-                vgat_print( line );
+            //     vgat_print( line );
                 
-                //if (lineDirty[y] || (inputMode && y==curY)) {
-                lineDirty[y] = 0;
-                //}
-            }
+            //     //if (lineDirty[y] || (inputMode && y==curY)) {
+            //     lineDirty[y] = 0;
+            //     //}
+            // }
             isWriting = false;
 
         #else
@@ -492,6 +493,13 @@ void host_outputString(char *str) {
     // Optim try
     if (curX > lineDirty[curY] ) { lineDirty[curY] = curX; }
 
+    #ifdef BOARD_VGA
+    if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
+        vgat_print( (const char*)str );
+    }
+    #endif
+
+
     isWriting = false;
 }
 
@@ -520,6 +528,12 @@ void host_outputChar(char c) {
 
     // Optim try
     if ( curX > lineDirty[curY] ) { lineDirty[curY] = curX; }
+
+    #ifdef BOARD_VGA
+    if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
+        vgat_print( c, false );
+    }
+    #endif
 
     isWriting = false;
 }
