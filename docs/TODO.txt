@@ -19,7 +19,7 @@ __________________________________________________________________
 
 DIR args -> check for executeMode
 
-CONSOLE  -> can cause dead-locks
+CONSOLE  -> can cause dead-locks (may comes from args parse....)
 
 LIST on LIGHT5.BAS -> causes dead-locks (it doesn't on MP3.BAS)
 
