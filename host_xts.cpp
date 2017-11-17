@@ -482,18 +482,19 @@ void __playTune(unsigned char* tuneStream, bool btnStop = false) {
   short tempoPercent = (*tuneStream++ << 8) | (*tuneStream++);
 
   //printfln("nbN:%d title:'%s' tmp:%d", nbNotes, (const char*)songname, tempoPercent);
-  
-  host_outputString("   -= Playing =-\n");
-  host_outputString( songname );
-  host_outputString("\n");
-  host_showBuffer();
+  if ( !true ) {
+    host_outputString("   -= Playing =-\n");
+    host_outputString( songname );
+    host_outputString("\n");
+    host_showBuffer();
+  }
 
-  #if ((defined SCREEN_SUPPORT) && (SCREEN_SUPPORT > 0))
-    //lcd_cls();
-    //           12345678901234567890
-    lcd_println("   -= Playing =-\n");
-    lcd_println("-=%s=-", (const char*)songname);
-  #endif
+  // #if ((defined SCREEN_SUPPORT) && (SCREEN_SUPPORT > 0))
+  //   //lcd_cls();
+  //   //           12345678901234567890
+  //   lcd_println("   -= Playing =-\n");
+  //   lcd_println("-=%s=-", (const char*)songname);
+  // #endif
 
   float tempo = (float)tempoPercent / 100.0;
   // cf a bit too slow (Cf decoding)
@@ -552,17 +553,19 @@ void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
   short tempoPercent = (*tuneStream++ << 8) | (*tuneStream++);
 
   //printfln("nbN:%d title:'%s' tmp:%d", nbNotes, (const char*)songname, tempoPercent);
-  host_outputString("   -= Playing =-");
-  host_outputString( songname );
-  host_outputString("\n");
-  host_showBuffer();
+  if ( !true ) {
+    host_outputString("   -= Playing =-");
+    host_outputString( songname );
+    host_outputString("\n");
+    host_showBuffer();
+  }
   
-  #if ((defined SCREEN_SUPPORT) && (SCREEN_SUPPORT > 0))
-    //lcd_cls();
-    //           12345678901234567890
-    lcd_println("   -= Playing =-");
-    lcd_println("-=%s=-", (const char*)songname);
-  #endif
+  // #if ((defined SCREEN_SUPPORT) && (SCREEN_SUPPORT > 0))
+  //   //lcd_cls();
+  //   //           12345678901234567890
+  //   lcd_println("   -= Playing =-");
+  //   lcd_println("-=%s=-", (const char*)songname);
+  // #endif
 
   float tempo = (float)tempoPercent / 100.0;
   // cf a bit too slow (Cf decoding)

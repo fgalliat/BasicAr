@@ -8,6 +8,31 @@
 
 * host_getKey() & breakcheck --> ESC / BREAK / Ctrl-C    ===> WORKS
 __________________________________________________________________
+
+1 METI.BPP
+2 BOOT.BPP
+3 LAMBO.BPP
+4 LOTUS.BPP
+5 BLAST.BPP
+6 CC3.BPP
+
+1 MONKEY.T5K
+2 WINDMILL.T5K
+3 LOTUS.T5K
+4 XENON.T5K
+5 ELF.T5K
+6 SPBALL.T5K
+
+1 IMPERIAL.T53
+2 MARIO.T53
+3 STUNTS.T53
+4 LOTUS3.T53
+5 DUEL.T53
+6 CC3.T53
+
+
+
+
 __________________________________________________________________
 
 
