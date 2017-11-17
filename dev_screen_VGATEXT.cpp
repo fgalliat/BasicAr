@@ -102,6 +102,7 @@ if ( llen > 128 ) { llen = 128; }
 
     SerialVGA.printf( _vgatLine, v );
     // free(line);
+    SerialVGA.flush();
 }
 
 void vgat_print(char* str) {
@@ -117,6 +118,11 @@ void vgat_print(const char* str) {
     vgat_print((char*) str);
 }
 
+void vgat_printCh(char ch) {
+    if ( ch == '\n' && true ) { SerialVGA.print( '\r' ); }
+    SerialVGA.print( (char)ch );
+    SerialVGA.flush();
+}
 
 /** may not use it to send a command */
 void vgat_print(char ch, bool autoReplaceLF = true) {
