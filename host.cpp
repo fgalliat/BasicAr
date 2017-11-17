@@ -724,6 +724,8 @@ bool host_ESCPressed() {
               return true;
           }
       }
+    #else
+      return anyBtn();
     #endif
 
     // while (keyboard.available()) {
@@ -735,7 +737,7 @@ bool host_ESCPressed() {
     //return false;
     //host_sleep(50);
     
-    return anyBtn();
+    //return anyBtn();
 }
 
 void host_outputFreeMem(unsigned int val)

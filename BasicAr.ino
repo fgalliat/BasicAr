@@ -137,7 +137,7 @@ void setScreenSize(int cols, int rows) {
 
 void setup() {
 
-    BUZZER_MUTE = true;
+    // BUZZER_MUTE = true;
     // inputString.reserve(200);
     
     SCREEN_LOCKER = true;

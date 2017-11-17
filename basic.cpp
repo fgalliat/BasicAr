@@ -162,8 +162,8 @@ TokenTableEntry tokenTable[] = {
     {"LED",2}, // to switch on/off a led
     {"BEEP",2}, {"MUTE", 0},
     {"PLAY",1|TKN_ARG1_TYPE_STR},
-    {"PLAYT5K",1|TKN_ARG1_TYPE_STR},
-    {"PLAYT53",1|TKN_ARG1_TYPE_STR},
+    {"PLAYT5K",1|TKN_ARG1_TYPE_STR|TKN_FMT_POST},
+    {"PLAYT53",1|TKN_ARG1_TYPE_STR|TKN_FMT_POST},
 
     {"BYE",TKN_FMT_POST},
 
@@ -177,7 +177,7 @@ TokenTableEntry tokenTable[] = {
 
     {"LLIST",TKN_FMT_POST}, // to dump current/fromSD PRGM to Serial console
 
-    {"DRAWBPP",1|TKN_ARG1_TYPE_STR},
+    {"DRAWBPP",1|TKN_ARG1_TYPE_STR|TKN_FMT_POST},
 
     {"SECS", 0}, // returns nb of seconds since boot time
 
