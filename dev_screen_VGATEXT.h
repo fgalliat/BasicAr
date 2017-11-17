@@ -39,6 +39,8 @@ void vgat_print(const char* str, int v);
 void vgat_print(const char* str);
 
 
+void vgat_printCh(char ch);
+
 /** may not use it to send a command */
 void vgat_print(char ch, bool autoReplaceLF);
 

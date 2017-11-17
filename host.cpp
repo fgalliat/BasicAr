@@ -446,7 +446,7 @@ void scrollBuffer() {
             host_showBuffer();// just a test
         }
     #endif
-    #ifdef BUILTIN_LCD
+    #ifdef BOARD_VGA
         if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
             //vgat_cls();
         }
@@ -465,6 +465,14 @@ void host_outputString(char *str) {
     isWriting = true;
     int pos = curY*SCREEN_WIDTH+curX;
     char ch;
+
+    // @ top else need to 'rewind' str
+    #ifdef BOARD_VGA
+    if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
+        vgat_print( (const char*)str );
+    }
+    #endif
+
     while (*str) {
         // Optim try
         //lineDirty[pos / SCREEN_WIDTH] = 1;
@@ -492,14 +500,7 @@ void host_outputString(char *str) {
 
     // Optim try
     if (curX > lineDirty[curY] ) { lineDirty[curY] = curX; }
-
-    #ifdef BOARD_VGA
-    if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
-        vgat_print( (const char*)str );
-    }
-    #endif
-
-
+    
     isWriting = false;
 }
 
@@ -531,7 +532,7 @@ void host_outputChar(char c) {
 
     #ifdef BOARD_VGA
     if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
-        vgat_print( c, false );
+        vgat_printCh( c );
     }
     #endif
 
@@ -608,6 +609,12 @@ void host_newLine() {
 //host_showBuffer();
 // ==========
 
+    #ifdef BOARD_VGA
+    if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
+        vgat_print( "\n" );
+    }
+    #endif
+
     isWriting = false;
 }
 
@@ -641,13 +648,29 @@ char *host_readLine() {
             char c = (kc > -1) ? kc : keyboard.read();
             if (c>=32 && c<=126) {
                 screenBuffer[pos++] = c;
+                
+                #ifdef BOARD_VGA
+                    if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
+                        vgat_printCh( c );
+                    }
+                #endif
             }
             else if (c==PS2_DELETE && pos > startPos) {
                 screenBuffer[--pos] = 0;
+                #ifdef BOARD_VGA
+                    if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
+                        vgat_printCh( '\b' );
+                    }
+                #endif
             }
             else if (c==PS2_ENTER) {
                 done = true;
                 //screenBuffer[pos] = 0;
+                #ifdef BOARD_VGA
+                    if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
+                        vgat_printCh( '\n' );
+                    }
+                #endif
             }
             curX = pos % SCREEN_WIDTH;
             curY = pos / SCREEN_WIDTH;
