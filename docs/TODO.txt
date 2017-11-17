@@ -1,12 +1,12 @@
 == DONE & have to be TESTED ==
 
-* removed VGATxt + USBKbd double same port initialisation code (keep only one - VGAT)
+* removed VGATxt + USBKbd double same port initialisation code (keep only one - VGAT) ===> NOT WORKING
 
 * VGAT display optimization
    \___ @ this time : keep vid-char-mem
-   \___ but display text & chars directly to Serial port
+   \___ but display text & chars directly to Serial port ===> WORKS
 
-* host_getKey() & breakcheck --> ESC / BREAK / Ctrl-C
+* host_getKey() & breakcheck --> ESC / BREAK / Ctrl-C    ===> WORKS
 __________________________________________________________________
 __________________________________________________________________
 
