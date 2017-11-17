@@ -1,5 +1,5 @@
 # BasicAr
-Basic for Arduino'ish MCUs (Xtase version)
+Basic for Arduino'like MCUs (Teensy tested) (Xtase version)
 
 **Initialy based on _Robin Edwards_ work (https://github.com/robinhedwards/ArduinoBASIC)**
 
@@ -7,7 +7,7 @@ Originally designed for **Teensy serie** (3.2 & 3.6 tested)
 
 The hardware driver layout isn't finished & is provided as is (coded for the XtsUBasic board :><br/>
  https://hackaday.io/project/19223-xts-ubasic<br/>
- http://xtase.over-blog.com/2017/02/xts-ubasic-starting-mother-board/debuts-de-la-carte-mere.html)
+ http://xtase.over-blog.com/2017/11/xts-ubasic-reborns-from-ashes.html)
 ![The XtsuBasic Computer boards](./docs/allBoards.jpg "The Xts-uBasic Computer...")
 
 ## Builtin hardware :
@@ -94,7 +94,7 @@ BYE               : to reset the MCU
 **Board MP3 DFPlayer support** is functional !
 
 **Started computer enclosure**
-![The XtsuBasic Computer](./docs/enclosure/enclosure1.jpg "The Xts-uBasic Computer in its enclosure...")
+![The XtsuBasic Computer](./docs/enclosure/xts_screen_mini.jpg "The Xts-uBasic Computer in its enclosure...")
 
 (The code is a bit dirty @ this time, I know)<br/>
 This work is still in progress ... (so see you @ anytime)

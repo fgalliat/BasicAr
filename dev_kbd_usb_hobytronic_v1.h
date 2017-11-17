@@ -45,7 +45,10 @@ static char map(char ch) {
 
 
 static void setup_kbd() {
-  kbd.begin(9600);
+  #ifndef BOARD_VGA
+    // try to not double init Serial3 shared port (Cf VGAText board)
+    kbd.begin(9600);
+  #endif
 }
 
 
