@@ -59,6 +59,13 @@ int fct_getSecs() {
   return _TYPE_NUMBER;	
 }
 
+int fct_getMillis() {
+  getNextToken();
+  if (executeMode && !stackPushNum((float)(millis())))
+      return ERROR_OUT_OF_MEMORY;
+  return _TYPE_NUMBER;	
+}
+
 
 // == Screen 
 int xts_locate() {
@@ -595,6 +602,24 @@ int xts_delBas(char* optFilename=NULL) {
 }
 
 // ===== Strings =====
+
+int xts_str_asc(char* str) {
+  if ( str == NULL || strlen(str) < 1 ) { return 0; }
+  int ret = (int)str[0];
+
+  return ret;
+}
+
+int xts_str_instr(char* str, char* search) {
+  if ( str == NULL || search == NULL ) { return 0; }
+  char* ret = strstr(str, search);
+
+  // the result is 1-based
+  if ( ret == NULL ) { return 0; }
+
+  // BEWARE w/ that ?????
+  return (&ret - &str ) + 1;
+}
 
 char* xts_str_string(int nbTimes, int chr) {
   // BEWARE w/ that ?????

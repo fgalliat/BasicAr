@@ -146,8 +146,12 @@
     #define TOKEN_STR_SPACE         91 // repeat x times ' '
 
     #define TOKEN_EXT_EXEC          92 // execute EXTENDED command
+
+    #define TOKEN_STR_ASC           93 // return ascii code (inv. of CHR$)
+    #define TOKEN_STR_INSTR         94 // return 1st occurance of arg2 in arg1
+    #define TOKEN_MILLIS            95 // return millis since boot
     
-    #define TOKEN_LASTONE TOKEN_EXT_EXEC
+    #define TOKEN_LASTONE TOKEN_MILLIS
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT
