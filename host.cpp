@@ -638,8 +638,9 @@ char *host_readLine() {
           while (keyboard.available() || (kc = read_kbd(&printable)) > -1 ) {
               if ( MODE_EDITOR && kc == KBD_F1 ) {
                 host_system_menu();
-                // doesn't affect the char-mem
-                break;
+                // to trigger end-of-line
+                // & execute selfRun
+                kc = PS2_ENTER;
               }
         #else
           while (keyboard.available() ) {
