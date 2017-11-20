@@ -177,11 +177,11 @@ void setup() {
       if ( STORAGE_OK ) { host_outputString("SD : OK.\n"); }
       else              { host_outputString("SD : FAILED.\n"); }
 
-      #ifdef USE_SDFAT_LIB
-        host_outputString("SD : MODE FAT\n");
-      #else
-        host_outputString("SD : MODE LEG\n");
-      #endif
+    //   #ifdef USE_SDFAT_LIB
+    //     host_outputString("SD : MODE FAT\n");
+    //   #else
+    //     host_outputString("SD : MODE LEG\n");
+    //   #endif
     #endif
 
     host_showBuffer();
@@ -204,13 +204,16 @@ void setup() {
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
+bool MODE_EDITOR = false;
 
 void loop() {
     int ret = ERROR_NONE;
 
     if (!autorun) {
         // get a line from the user
+        MODE_EDITOR = true;
         char *input = host_readLine();
+        MODE_EDITOR = false;
 
         // special editor commands
         // Xtase modif

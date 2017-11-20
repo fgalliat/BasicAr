@@ -1198,3 +1198,18 @@ void onKeyReceived(struct KeyEvent ke) {
   Serial.println("a key was pressed");
 }
 */
+
+
+// ======== System Configuration =============
+extern bool selfRun; // for CHAIN "<...>" cmd
+extern int xts_loadBas(char * optFilename);
+
+void host_system_menu() {
+  // == true Cf used w/ parameters => bool result
+  if ( xts_loadBas("SYSMENU") == true) {
+    selfRun = true;
+  } else {
+    host_outputString("no SYSMENU PRGM");
+  }
+}
+
