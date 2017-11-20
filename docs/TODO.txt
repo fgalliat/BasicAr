@@ -1,17 +1,17 @@
 == DONE but to be tested ==
-(v) ASC( STR$ ) : returns ascii code of 1st char of STR$
+(OK) ASC( STR$ ) : returns ascii code of 1st char of STR$
       \__ inv of CHR$(.)
+(OK) INSTR( STR$, STRtoFIND$ ) -> indexOf
+(OK) MILLIS   -> function that returns millis from MCU boot
 
-(v) INSTR( STR$, STRtoFIND$ ) -> indexOf
-    ---> BEWARE w/ impl. : has to test index finding
-
-(v) MILLIS   -> function that returns millis from MCU boot
-
-(.) detection of editor mode
-
+(OK) detection of editor mode + SYSMENU.BAS
 "SYSMENU.BAS" -> to SET mute, console, reset .... (customizable system menu)
   \___ can be called by F1 when in editor mode
   \___ TODO --- beware : if chain "..." will erase current PRGM !!!!!
+
+(??)
+---> could start by a save "tmp" / chain "sysmenu" / load "tmp"
+
 
 == TODO ==
 
