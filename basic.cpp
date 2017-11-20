@@ -1490,6 +1490,7 @@ int parsePrimary() {
     case TOKEN_STR_STRING: // Xtase code
     case TOKEN_STR_UPPER: // Xtase code
     case TOKEN_STR_SPACE: // Xtase code
+    case TOKEN_STR_ASC: // Xtase code
     case TOKEN_STR_INSTR: // Xtase code
 
         return parseFnCallExpr();

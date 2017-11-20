@@ -603,6 +603,17 @@ int xts_delBas(char* optFilename=NULL) {
 
 // ===== Strings =====
 
+// ''''''' to move in a generic string include ''''''
+int strpos(char *hay, char *needle, int offset) {
+   char haystack[strlen(hay)];
+   strncpy(haystack, hay+offset, strlen(hay)-offset);
+   char *p = strstr(haystack, needle);
+   if (p)
+      return p - haystack+offset;
+   return -1;
+}
+// ''''''''''''''''''''''''''''''''''''''''''''''''''
+
 int xts_str_asc(char* str) {
   if ( str == NULL || strlen(str) < 1 ) { return 0; }
   int ret = (int)str[0];
@@ -612,13 +623,12 @@ int xts_str_asc(char* str) {
 
 int xts_str_instr(char* str, char* search) {
   if ( str == NULL || search == NULL ) { return 0; }
-  char* ret = strstr(str, search);
-
-  // the result is 1-based
-  if ( ret == NULL ) { return 0; }
-
-  // BEWARE w/ that ?????
-  return (&ret - &str ) + 1;
+  // char* ret = strstr(str, search);
+  // // the result is 1-based
+  // if ( ret == NULL ) { return 0; }
+  // // BEWARE w/ that ?????
+  // return (&ret - &str) + 1;
+  return strpos(str, search, 0) + 1;
 }
 
 char* xts_str_string(int nbTimes, int chr) {
