@@ -84,7 +84,7 @@ UPPER$(str)       : function that return UPPERCASE of str
 STRING$(nbTimes, chr) : function that returns repeating string of nbTimes * CHR$(chr)
 SPACE$(nbTimes)   : function that returns repeating string of nbTimes * CHR$(32)
 ASC( str )        : returns ascii code of 1st char of str
-INSTR( str, toFind ) : returns index of second string in 1st (else 0)
+INSTR( str, toFind ) : returns index of 'toFind' in 'str' (else 0)
 
 
 EXEC "<extCmd>", "[<extArg>]" : to launch an extended command
