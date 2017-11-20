@@ -1,4 +1,50 @@
-== DONE & have to be TESTED ==
+== DONE but to be tested ==
+(v) ASC( STR$ ) : returns ascii code of 1st char of STR$
+      \__ inv of CHR$(.)
+
+(v) INSTR( STR$, STRtoFIND$ ) -> indexOf
+    ---> BEWARE w/ impl. : has to test index finding
+
+(v) MILLIS   -> function that returns millis from MCU boot
+
+(.) detection of editor mode
+
+"SYSMENU.BAS" -> to SET mute, console, reset .... (customizable system menu)
+  \___ can be called by F1 when in editor mode
+  \___ TODO --- beware : if chain "..." will erase current PRGM !!!!!
+
+== TODO ==
+
+exec "vgat","reboot"
+exec "wifi","connect","<essid>","<keypass>"
+
+test INKEY$ => check behaviour (non blocking getKey)
+
+DIR args -> check for executeMode
+
+CONSOLE  -> can cause dead-locks (may comes from args parse....)
+
+LIST on LIGHT5.BAS -> causes dead-locks (it doesn't on MP3.BAS)
+
+
+SD2SER / SER2SD todo + later make as same for BT HC-06 (for wireless uploading)
+|\___ impl. XON/XOFF protocol to increase commm. speed
+|           Headers for file uploading/downloading
+|            \__ <name-0><sizeHSB><sizeLSB>
+|
+ \__ as EXEC "FILE","SD2SER","LIGHT5.BAS" ?????
+
+
+EXEC "FILE","DIRARRAY","AB$"[,"*.BAS"] -> AB$(.) feeded w/ "DIR *.BAS content"
+
+
+
+
+
+
+_____________________________________________________
+
+== DONE ==
 
 * removed VGATxt + USBKbd double same port initialisation code (keep only one - VGAT) ===> NOT WORKING
 
@@ -30,39 +76,7 @@ __________________________________________________________________
 5 DUEL.T53
 6 CC3.T53
 
-
-
-
 __________________________________________________________________
-
-
-"SYSMENU.BAS" -> to SET mute, console, reset .... (customizable system menu)
-  \___ can be called by F1 when in editor mode
-  \___ TODO
-
-
-
-DIR args -> check for executeMode
-
-CONSOLE  -> can cause dead-locks (may comes from args parse....)
-
-LIST on LIGHT5.BAS -> causes dead-locks (it doesn't on MP3.BAS)
-
-MILLIS   -> function that returns millis from MCU boot
-
-SD2SER / SER2SD todo + later make as same for BT HC-06 (for wireless uploading)
-|\___ impl. XON/XOFF protocol to increase commm. speed
-|           Headers for file uploading/downloading
-|            \__ <name-0><sizeHSB><sizeLSB>
-|
- \__ as EXEC "FILE","SD2SER","LIGHT5.BAS" ?????
-
-
-EXEC "FILE","DIRARRAY","AB$"[,"*.BAS"] -> AB$(.) feeded w/ "DIR *.BAS content"
-
-ASC( STR$ ) : returns ascii code of 1st char of STR$
- \__ inv of CHR$(.)
-
 
 
 ___________________________________

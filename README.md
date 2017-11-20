@@ -78,10 +78,14 @@ ECHO {0;1}        : enable/disable console output
 
 DELAY x           : wait x msec
 SECS              : function that returns nb of seconds elapsed since boot
+MILLIS            : function that returns nb of milli-seconds elapsed since boot
 
 UPPER$(str)       : function that return UPPERCASE of str
 STRING$(nbTimes, chr) : function that returns repeating string of nbTimes * CHR$(chr)
 SPACE$(nbTimes)   : function that returns repeating string of nbTimes * CHR$(32)
+ASC( str )        : returns ascii code of 1st char of str
+INSTR( str, toFind ) : returns index of second string in 1st (else 0)
+
 
 EXEC "<extCmd>", "[<extArg>]" : to launch an extended command
 
