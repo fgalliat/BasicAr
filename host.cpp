@@ -14,7 +14,8 @@
 #include <limits.h>
 
 bool LOCAL_ECHO = true;
-
+extern bool MODE_EDITOR;
+extern void host_system_menu();
 
 #include <Arduino.h>
 #ifdef BUT_TEENSY
@@ -635,6 +636,12 @@ char *host_readLine() {
         #ifdef BUILTIN_KBD
           printable = false;
           while (keyboard.available() || (kc = read_kbd(&printable)) > -1 ) {
+              if ( MODE_EDITOR && kc == KBD_F1 ) {
+                host_system_menu();
+                // to trigger end-of-line
+                // & execute selfRun
+                kc = PS2_ENTER;
+              }
         #else
           while (keyboard.available() ) {
         #endif

@@ -193,6 +193,10 @@ TokenTableEntry tokenTable[] = {
     {"SPACE$", 1|TKN_RET_TYPE_STR},  // repeat x times CHR$(32)
 
     {"EXEC", TKN_FMT_POST},  // execute an extended command
+
+    {"ASC", 1|TKN_ARG1_TYPE_STR},  // returns ascii code of 1st char of string
+    {"INSTR", 2|TKN_ARG1_TYPE_STR|TKN_ARG2_TYPE_STR},  // returns ascii code of 1st char of string
+    {"MILLIS", 0}, // returns nb of milli-seconds since boot time
 };
 
 
@@ -1217,6 +1221,7 @@ int parseFnCallExpr() {
     // now all the arguments will be on the stack (last first)
     if (executeMode) {
         int tmp, tmp2;
+        char* tmpS1;
 
         switch (op) {
         case TOKEN_INT:
@@ -1305,6 +1310,15 @@ int parseFnCallExpr() {
             tmp2 = (int)stackPopNum();  // inv. sorting
             tmp = (int)stackPopNum();
             if (!stackPushStr(xts_str_string(tmp, tmp2))) return ERROR_OUT_OF_MEMORY;
+            break;
+
+        case TOKEN_STR_INSTR:
+            tmpS1 = stackPopStr();  // inv. sorting
+            if (!stackPushNum(xts_str_instr(stackPopStr(), tmpS1))) return ERROR_OUT_OF_MEMORY;
+            break;
+
+        case TOKEN_STR_ASC:
+            if (!stackPushNum(xts_str_asc( stackPopStr() ))) return ERROR_OUT_OF_MEMORY;
             break;
 
         case TOKEN_STR_UPPER:
@@ -1452,6 +1466,8 @@ int parsePrimary() {
 // -- XTase
     case TOKEN_SECS:	
         return fct_getSecs();
+    case TOKEN_MILLIS:	
+        return fct_getMillis();
 // -- XTase
 
         // unary ops
@@ -1474,6 +1490,8 @@ int parsePrimary() {
     case TOKEN_STR_STRING: // Xtase code
     case TOKEN_STR_UPPER: // Xtase code
     case TOKEN_STR_SPACE: // Xtase code
+    case TOKEN_STR_ASC: // Xtase code
+    case TOKEN_STR_INSTR: // Xtase code
 
         return parseFnCallExpr();
 
