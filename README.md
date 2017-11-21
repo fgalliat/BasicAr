@@ -100,5 +100,9 @@ BYE               : to reset the MCU
 **Started computer enclosure**
 ![The XtsuBasic Computer](./docs/enclosure/xts_screen_mini.jpg "The Xts-uBasic Computer in its enclosure...")
 
+**Added comp.sh**
+to compile on a g++ linux env. w/ libncurses installed,<br/>
+so you can test BASIC directly on your computer (hardw support is in progress...)<br/>
+<br/>
 (The code is a bit dirty @ this time, I know)<br/>
 This work is still in progress ... (so see you @ anytime)
