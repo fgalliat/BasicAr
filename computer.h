@@ -125,8 +125,11 @@
 
 
   static int digitalRead(int pin) {
-      printf("TO IMPL. digitalRead(%d)\n", pin);
-      return LOW;
+      //printf("TO IMPL. digitalRead(%d)\n", pin);
+      //return LOW;
+
+      // Cf INPUT_PULLUP btns
+      return HIGH;
   }
 
   static int analogRead(int pin) {
