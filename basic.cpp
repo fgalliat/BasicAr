@@ -56,7 +56,16 @@
 
 #include "xts_arch.h"
 #ifdef BUT_TEENSY
-  #include "xts_teensy.h"
+  //#include "xts_teensy.h"
+
+  #ifndef COMPUTER
+    #include "xts_teensy.h"
+  #else 
+    #include "computer.h"
+  #endif
+
+
+
 #else
   #include <Arduino.h>
 #endif

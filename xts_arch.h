@@ -62,6 +62,29 @@
   #define RAM_END (64*1024)-1
   #define EEPROM_END (2*1024)-1
   #define SPEED 72
+#elif defined(COMPUTER)
+  // PC or anything else
+  #define ARCH_TYPE "Generic Computer"
+  #define BUT_TEENSY 1
+
+  #define BUZZER_PIN 5
+  
+  #define LED1_PIN 13
+  #define LED2_PIN LED1_PIN
+  #define LED3_PIN LED1_PIN
+
+  #define BTN1_PIN 35
+  #define BTN2_PIN 36
+  #define BTN3_PIN 37
+
+  // 5KB buffer
+  #define AUDIO_BUFF_SIZE (5*1024) 
+  // lcd(128*64) / 8(1bpp)
+  #define PICTURE_BUFF_SIZE (1*1024)
+
+  #define RAM_END (256*1024)-1
+  #define EEPROM_END (2*1024)-1
+  #define SPEED 1000
 #else
   #define ARCH_TYPE "Unknown platform"
   

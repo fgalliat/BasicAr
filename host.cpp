@@ -17,7 +17,12 @@ bool LOCAL_ECHO = true;
 extern bool MODE_EDITOR;
 extern void host_system_menu();
 
-#include <Arduino.h>
+#ifndef COMPUTER
+  #include <Arduino.h>
+#else
+  #include "computer.h"
+#endif
+
 #ifdef BUT_TEENSY
   #include "xts_teensy.h"
 #endif
@@ -41,14 +46,17 @@ extern bool SCREEN_LOCKER;
 
 
  #include "desktop_devices.h"
- #include <EEPROM.h>
+
+ #ifndef COMPUTER
+   #include <EEPROM.h>
+ #else
+   extern EEPROMClass EEPROM;
+ #endif
+
 extern SSD1306ASCII oled;
 extern PS2Keyboard keyboard;
-// extern EEPROMClass EEPROM;
-
 //   #include <SSD1306ASCII.h>
 //   #include <PS2Keyboard.h>
-//   #include <EEPROM.h>
 
 
 #include "host.h"
@@ -230,7 +238,9 @@ void host_cls() {
     #endif
 
       if ( OUTPUT_DEVICE == OUT_DEV_SERIAL ) {
+          #ifndef COMPUTER
           Serial.print("\n\n\n\n------------\n\n\n");
+          #endif
       }
 
     isWriting = false;
@@ -258,6 +268,8 @@ void host_moveCursor(int x, int y) {
     isWriting = false;
 }
 
+int dirtyCOunter = 0;
+
 void host_showBuffer() {
   if ( SCREEN_LOCKER ) { return; }
 
@@ -267,39 +279,40 @@ void host_showBuffer() {
 //#ifdef BUT_TEENSY
 #ifndef BUILTIN_LCD
 
-noInterrupts();
-
-isWriting = true;
-    static char line[SCREEN_WIDTH+1];
-    boolean dirty = false;
-    for (int y=0; y<SCREEN_HEIGHT; y++) {
-      if ( lineDirty[y] != 0 ) {
-        dirty = true;
-        break;
-      }
-    }
-
-    if ( !dirty ) { isWriting = false; interrupts(); return; }
-    
-    Serial.print( "\n\n----------\n" );
-    Serial.flush();
-    for (int y=0; y<SCREEN_HEIGHT; y++) {
-        for (int x=0; x<SCREEN_WIDTH; x++) {
-          char c = screenBuffer[y*SCREEN_WIDTH+x];
-          if (c<32) c = ' ';
-          line[x] = c;
+        isWriting = true;
+        bool dirty = false;
+        for (int y=0; y<SCREEN_HEIGHT; y++) {
+          if ( SCREEN_LOCKER ) { return; }
+          if ( lineDirty[y] != 0 ) {
+            dirty = true;
+            break;
+          }
         }
-        line[SCREEN_WIDTH] = 0x00;
-        Serial.println( line );
+    
+        if ( !dirty ) { isWriting = false; return; }
+        //Serial.print( "\n\n----------\n" );
         Serial.flush();
-        
-        //if (lineDirty[y] || (inputMode && y==curY)) {
-          lineDirty[y] = 0;
-        //}
-    }
-    isWriting = false;
+        for (int y=0; y<SCREEN_HEIGHT; y++) {
+            if ( SCREEN_LOCKER ) { return; }
+            for (int x=0; x<SCREEN_WIDTH; x++) {
+              char c = screenBuffer[y*SCREEN_WIDTH+x];
+              if (c<32) c = ' ';
+              line[x] = c;
+            }
+            line[SCREEN_WIDTH] = 0x00;
+            //Serial.println( line );
+            Serial._printAt( 0, y, line );
+            Serial.flush();
+            
+            //if (lineDirty[y] || (inputMode && y==curY)) {
+              lineDirty[y] = 0;
+            //}
+        }
+        isWriting = false;
 
-interrupts();
+        Serial._printAt(0, SCREEN_HEIGHT-1, "Show buffer on regular TTY : ");
+        //Serial._printAt(80-2, y+1, dirtyCOunter);
+        dirtyCOunter++;
 
 #else    
 
@@ -700,7 +713,12 @@ char *host_readLine() {
         if (redraw) {
             if (LOCAL_ECHO) { host_showBuffer(); }
         }
-    }
+
+        #ifdef COMPUTER
+        delay(50);
+        #endif
+
+    } // end of while(done)
     screenBuffer[pos] = 0;
     inputMode = 0;
     

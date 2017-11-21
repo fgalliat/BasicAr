@@ -5,6 +5,10 @@
 #ifndef __desk_dev_h_ 
 #define __desk_dev_h_ 1
 
+#ifdef COMPUTER
+  #include "computer.h"
+#endif
+
   // =======================================================
 
   #define PS2_DELETE 8
@@ -14,7 +18,7 @@
 // =========/ Serial Event /==============
 // extern String inputString;
 // extern volatile boolean stringComplete;
-extern volatile boolean isWriting;
+extern volatile bool isWriting;
 // =========/ Serial Event /==============
 
   class PS2Keyboard {
@@ -126,26 +130,27 @@ extern volatile boolean isWriting;
           // };
   };
   
-//   class EEPROMClass {
-//       private:
-//           int content[1024];
+#ifdef COMPUTER
+  class EEPROMClass {
+      private:
+          int content[1024];
   
-//       public:
-//           int read(int addr) { 
-//               if ( addr >= 1024 ) {
-//                printAt(1, 1, "\n\n\nERROR EEPROM ADDR");
-//                return 0;
-//               }
-//               return this->content[ addr ]; 
-//           }
+      public:
+          int read(int addr) { 
+              if ( addr >= 1024 ) {
+               Serial.println("\n\n\nERROR EEPROM ADDR\n");
+               return 0;
+              }
+              return this->content[ addr ]; 
+          }
   
-//           void write(int addr, int value) { 
-//               this->content[addr] = value; 
-//               printAt(0, 5, "\n\n\nWRITING ON EEPROM");
-//           }
-//   };
+          void write(int addr, int value) { 
+              this->content[addr] = value; 
+              Serial.println("\n\n\nWRITING ON EEPROM\n");
+          }
+  };
   
-//   static EEPROMClass EEPROM = EEPROMClass();
-
+  static EEPROMClass EEPROM = EEPROMClass();
+#endif
 
 #endif

@@ -12,8 +12,9 @@
 (??)
 ---> could start by a save "tmp" / chain "sysmenu" / load "tmp"
 
-
 == TODO ==
+
+on COMPUTER : manage BCKSPACE
 
 exec "vgat","reboot"
 exec "wifi","connect","<essid>","<keypass>"

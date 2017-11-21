@@ -7,7 +7,11 @@
 #include "basic.h"
 //#include "host.h"
 
-#include <Arduino.h>
+#ifndef COMPUTER
+  #include <Arduino.h>
+#else 
+  #include "computer.h"
+#endif
 
 #include "xts_io.h"
 extern int OUTPUT_DEVICE;
@@ -595,7 +599,9 @@ int xts_delBas(char* optFilename=NULL) {
   }
 
   if ( executeMode ) {
-    deleteBasFile( optFilename );
+    #ifdef FS_SUPPORT
+      deleteBasFile( optFilename );
+    #endif
   }
 
   return woFileMode ? 0 : 1; // 1 for true when use in saleVloadCmd(..)
