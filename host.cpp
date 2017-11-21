@@ -238,7 +238,9 @@ void host_cls() {
     #endif
 
       if ( OUTPUT_DEVICE == OUT_DEV_SERIAL ) {
+          #ifndef COMPUTER
           Serial.print("\n\n\n\n------------\n\n\n");
+          #endif
       }
 
     isWriting = false;
@@ -711,7 +713,12 @@ char *host_readLine() {
         if (redraw) {
             if (LOCAL_ECHO) { host_showBuffer(); }
         }
-    }
+
+        #ifdef COMPUTER
+        delay(50);
+        #endif
+
+    } // end of while(done)
     screenBuffer[pos] = 0;
     inputMode = 0;
     
