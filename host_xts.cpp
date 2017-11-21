@@ -3,7 +3,11 @@
 * Hardware Layer
 ****************/
 
-#include <Arduino.h>
+#ifndef COMPUTER
+  #include <Arduino.h>
+#else 
+  #include "computer.h"
+#endif
 
 #include "xts_arch.h"
 #include "xts_io.h"
@@ -42,7 +46,12 @@
     return SDentryName;
   }
 
-
+#else
+  char* autocomplete_fileExt(char* filename, const char* defFileExt) {
+    // TODO
+    Serial.println("autocomplete_fileExt NYI.");
+    return "TOTO.BAS";
+  }
 #endif
 
 
@@ -71,7 +80,7 @@ void cleanPictureBuff() { memset(picturebuff, 0x00, PICTURE_BUFF_SIZE); }
 extern int curToken;
 
 // ============ Tmp Compatibility Code ===============
-extern boolean isWriting;
+extern bool isWriting;
 
 void lcd_println(char* text) { isWriting = true; Serial.print("LCD:"); Serial.println(text); isWriting = false; }
 
@@ -609,23 +618,29 @@ void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
 
 void drawLine(int x1, int y1, int x2, int y2) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
+    #ifdef BUILTIN_LCD
     display.drawLine(x1, y1, x2, y2, WHITE);
     display.display();
+    #endif
   }
 }
 
 void drawCircle(int x1, int y1, int radius) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
+    #ifdef BUILTIN_LCD
     display.drawCircle(x1, y1, radius, WHITE);
     display.display();
+    #endif
   }
 }
 
 // 0: black else :white
 void drawPixel(int x1, int y1, int color) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
+    #ifdef BUILTIN_LCD
     display.drawPixel(x1, y1, color);
     display.display(); // see if fast enought .... else use interrupts.
+    #endif 
   }
 }
 
@@ -650,6 +665,7 @@ bool drawBPPfile(char* filename) {
 
   autocomplete_fileExt(filename, ".BPP");
   
+  #ifdef FS_SUPPORT
   // SFATLIB mode -> have to switch for regular SD lib
   SdFile file;
   if (! file.open( SDentryName , FILE_READ) ) {
@@ -667,12 +683,15 @@ bool drawBPPfile(char* filename) {
     return false;
   }
   file.close();
+  #endif
 
   // do something w/ these bytes ...
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
-    display.clearDisplay();
-    display.drawBitmap(0, 0, picturebuff, 128, 64, 0x01);
-    display.display();
+    #ifdef BUILTIN_LCD
+      display.clearDisplay();
+      display.drawBitmap(0, 0, picturebuff, 128, 64, 0x01);
+      display.display();
+    #endif
   }
 
   return true;
@@ -1139,11 +1158,15 @@ int MCU_freeRam() {
   // THIS IMPL : just return the space used by the sketch
   // we have to substract varMem & prgmMmem
 
-//extern int __heap_start, *__brkval; 
-extern int *__brkval; 
-int v; 
-//int fr = (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
-int fr = (int) &v - ((int) __brkval); 
+#ifdef COMPUTER
+  int fr = 16*1024*1024; // 16MB
+#else
+  //extern int __heap_start, *__brkval; 
+  extern int *__brkval; 
+  int v; 
+  //int fr = (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
+  int fr = (int) &v - ((int) __brkval); 
+#endif
    Serial.print("Free ram: ");
    Serial.println(fr);
 return fr;
@@ -1155,7 +1178,11 @@ void MCU_reset() {
   host_outputString("\nRebooting\n");
   host_showBuffer();
   #ifdef BUT_TEENSY
-    SCB_AIRCR = 0x05FA0004; // software reset
+    #ifdef COMPUTER
+      exit(0);
+    #else
+      SCB_AIRCR = 0x05FA0004; // software reset
+    #endif
   #endif
       // void(*resetFunc)(void) = 0;
       // resetFunc();

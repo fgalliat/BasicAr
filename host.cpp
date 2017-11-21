@@ -17,7 +17,10 @@ bool LOCAL_ECHO = true;
 extern bool MODE_EDITOR;
 extern void host_system_menu();
 
-#include <Arduino.h>
+#ifndef COMPUTER
+  #include <Arduino.h>
+#endif
+
 #ifdef BUT_TEENSY
   #include "xts_teensy.h"
 #endif

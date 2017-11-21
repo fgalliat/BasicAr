@@ -7,7 +7,9 @@
 #include "basic.h"
 //#include "host.h"
 
-#include <Arduino.h>
+#ifndef COMPUTER
+  #include <Arduino.h>
+#endif
 
 #include "xts_io.h"
 extern int OUTPUT_DEVICE;

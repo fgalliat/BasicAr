@@ -1,0 +1,1 @@
+g++ -Wall -Wno-write-strings -DCOMPUTER BasicAr.ino basic.cpp host.cpp host_xts.cpp -o basic -lcurses
