@@ -9,6 +9,7 @@
  #include <cstdlib>
  #include <cstring>
  #include <stdio.h>
+ #include <unistd.h>
 
 
   class _Serial {
@@ -33,21 +34,37 @@
           void print(const char* v) { printf("%s", v); }
           void println(int v) { printf("%d\n", v); }
           void println(const char* v) { printf("%s\n", v); }
+
+          void flush() {}
   };
 
 
-  _Serial Serial = _Serial();
+  static _Serial Serial = _Serial();
 
 
-  void delay(long millis) {
-      printf("TO IMPL. delay(%ld)\n", millis);
+  static void interrupts() {
+      printf("TO IMPL. interrupts()\n");
+  }
+  static void noInterrupts() {
+      printf("TO IMPL. noInterrupts()\n");
   }
 
-  void tone(int BUZZPIN, int freq, int dur) {
+
+
+  static void delay(long millis) {
+      usleep( millis * 1000 );
+  }
+
+  static long millis() {
+      printf("TO IMPL. millis()\n");
+    return 500;
+  }
+
+  static void tone(int BUZZPIN, int freq, int dur) {
       printf("TO IMPL. tone(%d, %d)\n", freq, dur);
   }
 
-  void noTone(int BUZZPIN) {
+  static void noTone(int BUZZPIN) {
       printf("TO IMPL. noTone()\n");
   }
 
@@ -59,17 +76,22 @@
   #define INPUT        2
   #define INPUT_PULLUP 3
 
-  void digitalWrite(int pin, int value) {
-      printf("TO IMPL. digitalWrite(%d, %d)\n", pin, value);
+  static void digitalWrite(int pin, int value) {
+      //printf("TO IMPL. digitalWrite(%d, %d)\n", pin, value);
   }
 
 
-  int digitalRead(int pin) {
+  static int digitalRead(int pin) {
       printf("TO IMPL. digitalRead(%d)\n", pin);
       return LOW;
   }
 
-  void pinMode(int pin, int mode) {
+  static int analogRead(int pin) {
+      printf("TO IMPL. analogRead(%d)\n", pin);
+      return 512;
+  }
+
+  static void pinMode(int pin, int mode) {
       printf("TO IMPL. pinMode(%d, %d)\n", pin, mode);
   }
 

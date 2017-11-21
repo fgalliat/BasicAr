@@ -207,9 +207,9 @@ void setupVGASerial() {
 
 
 #ifdef BUT_TEENSY
-  //#include <TimerOne.h> // for Teensy 2 & 2++
+  //#include <TimerOne.h> // for Teensy 2 & 2++ ONLY
 
-  IntervalTimer myTimer;
+  //IntervalTimer myTimer;
 
   // code in host.cpp
   extern void _ISR_emul();

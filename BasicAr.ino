@@ -25,7 +25,9 @@ extern int INPUT_DEVICE;
 #ifdef BUT_TEENSY
     #include "desktop_devices.h"
 
-    #include <EEPROM.h>
+    #ifndef COMPUTER
+      #include <EEPROM.h>
+    #endif
 #else
     #include <font.h>
     #include <SSD1306ASCII.h>
@@ -85,7 +87,7 @@ bool selfRun = false; // for CHAIN "<...>" cmd
 // =========/ Serial Event /==============
 // String inputString = "";         // a String to hold incoming data
 // volatile boolean stringComplete = false;  // whether the string is complete
-volatile boolean isWriting = false; // lock read when write
+volatile bool isWriting = false; // lock read when write
 // =========/ Serial Event /==============
 
 // WILL HAVE TO malloc(...)
@@ -333,18 +335,18 @@ void xts_serialEvent() {
 
 
 // ___________________________________________________________
-#ifdef DESKTOP_COMPUTER
+#ifdef COMPUTER
   // ========================
   int main(int argc, char** argv) {
-    setupComputer();
+    //setupComputer();
     setup();
 
     while(true) {
         loop();
-        usleep( 10 * 1000 );
+        delay( 100 );
     }
 
     // to call.....
-    closeComputer();
+    //closeComputer();
   }
 #endif
