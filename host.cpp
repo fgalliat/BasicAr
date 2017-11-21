@@ -266,6 +266,8 @@ void host_moveCursor(int x, int y) {
     isWriting = false;
 }
 
+int dirtyCOunter = 0;
+
 void host_showBuffer() {
   if ( SCREEN_LOCKER ) { return; }
 
@@ -286,7 +288,7 @@ void host_showBuffer() {
         }
     
         if ( !dirty ) { isWriting = false; return; }
-        Serial.print( "\n\n----------\n" );
+        //Serial.print( "\n\n----------\n" );
         Serial.flush();
         for (int y=0; y<SCREEN_HEIGHT; y++) {
             if ( SCREEN_LOCKER ) { return; }
@@ -296,7 +298,8 @@ void host_showBuffer() {
               line[x] = c;
             }
             line[SCREEN_WIDTH] = 0x00;
-            Serial.println( line );
+            //Serial.println( line );
+            Serial._printAt( 0, y, line );
             Serial.flush();
             
             //if (lineDirty[y] || (inputMode && y==curY)) {
@@ -305,7 +308,9 @@ void host_showBuffer() {
         }
         isWriting = false;
 
-        Serial.println("Show buffer on regular TTY");
+        Serial._printAt(0, SCREEN_HEIGHT-1, "Show buffer on regular TTY : ");
+        //Serial._printAt(80-2, y+1, dirtyCOunter);
+        dirtyCOunter++;
 
 #else    
 

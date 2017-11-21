@@ -339,6 +339,7 @@ void xts_serialEvent() {
   // ========================
   int main(int argc, char** argv) {
     //setupComputer();
+    // system ("/bin/stty raw");
     setup();
 
     while(true) {
@@ -347,6 +348,7 @@ void xts_serialEvent() {
     }
 
     // to call.....
-    //closeComputer();
+    closeComputer();
+    // system ("/bin/stty cooked");
   }
 #endif

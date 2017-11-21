@@ -1179,6 +1179,7 @@ void MCU_reset() {
   host_showBuffer();
   #ifdef BUT_TEENSY
     #ifdef COMPUTER
+      closeComputer();
       exit(0);
     #else
       SCB_AIRCR = 0x05FA0004; // software reset

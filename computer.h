@@ -11,35 +11,78 @@
  #include <stdio.h>
  #include <unistd.h>
 
+ #include <ncurses.h>
 
   class _Serial {
       private:
         // N.B. : unsigned long  is very important
         unsigned long lastTime = 0;
+        int lastKC = -1;
       public:
           void begin(int speed) {
+             WINDOW *w = initscr();
+             cbreak();
+             noecho();
+             nodelay(w, TRUE); // prevent getch() from blocking !!!!!!
           }
           
           int available() { 
-            return 0;
+            lastKC = getch(); // ncurses version
+            return lastKC > -1 ? 1 : 0;
           }
   
           int read() { 
-            return -1;
+            int ret = lastKC;
+            lastKC = -1;
+            return ret;
           }
   
+          void _printAt(int x, int y, char* str) {
+            mvprintw(y, x, str);
+          }
 
           // TODO : use curses
           void print(int v) { printf("%d", v); }
-          void print(const char* v) { printf("%s", v); }
           void println(int v) { printf("%d\n", v); }
-          void println(const char* v) { printf("%s\n", v); }
+          
+          void print(const char* v) { 
+              int l = strlen(v);
+              char* vv = (char*)malloc(l+1);
+              for ( int i=0; i < l; i++ ) {
+                  if ( vv[i] == '\r' ) { vv[i] = '\n'; }
+                  else vv[i] = v[i];
+              }
+              vv[l] = 0x00;
+              printf("%s", vv); 
+              free(vv);        
+              refresh();      
+          }
+
+          void println(const char* v) { 
+              int l = strlen(v);
+              char* vv = (char*)malloc(l+1);
+              for ( int i=0; i < l; i++ ) {
+                  if ( vv[i] == '\r' ) { vv[i] = 0x00; }
+                  else vv[i] = v[i];
+              }
+              vv[l] = 0x00;
+              printf("%s\n", vv); 
+              free(vv);
+              refresh();
+          }
 
           void flush() {}
   };
 
 
   static _Serial Serial = _Serial();
+
+
+  static void closeComputer() {
+    clrtoeol();
+	refresh();
+	endwin();
+  }
 
 
   static void interrupts() {
