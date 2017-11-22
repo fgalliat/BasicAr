@@ -4,6 +4,10 @@
 (OK) INSTR( STR$, STRtoFIND$ ) -> indexOf
 (OK) MILLIS   -> function that returns millis from MCU boot
 
+(OK) DIRARRAY [done]
+ -> creates DIR$(128)
+    last entry is "-EOF-"
+
 (OK) detection of editor mode + SYSMENU.BAS
 "SYSMENU.BAS" -> to SET mute, console, reset .... (customizable system menu)
   \___ can be called by F1 when in editor mode
@@ -13,10 +17,6 @@
 ---> could start by a save "tmp" / chain "sysmenu" / load "tmp"
 
 == TODO ==
-
-DIRARRAY [done seems to work]
- -> fabrique DIR$(128)
-    se terminant par "-EOF-"
 
 on COMPUTER : manage BCKSPACE
               Ctrl-C & F1 keys
@@ -44,11 +44,6 @@ SD2SER / SER2SD todo + later make as same for BT HC-06 (for wireless uploading)
 
 
 EXEC "FILE","DIRARRAY","AB$"[,"*.BAS"] -> AB$(.) feeded w/ "DIR *.BAS content"
-
-
-
-
-
 
 _____________________________________________________
 
