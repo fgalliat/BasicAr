@@ -338,7 +338,7 @@ void xts_serialEvent() {
 #ifdef COMPUTER
   // ========================
   int main(int argc, char** argv) {
-    //setupComputer();
+    setupComputer();
     // system ("/bin/stty raw");
     setup();
 

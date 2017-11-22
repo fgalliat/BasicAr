@@ -10,8 +10,17 @@
  #include <cstring>
  #include <stdio.h>
  #include <unistd.h>
+ #include <iostream>
 
  #include <ncurses.h>
+ #include <sys/ioctl.h>
+ #include <fcntl.h>
+ #include <linux/kd.h>
+
+ #include <SDL2/SDL.h>
+ #include "dev_sound_pcspeaker.h"
+
+  static SDL_Window *window;
 
   class _Serial {
       private:
@@ -78,38 +87,23 @@
   static _Serial Serial = _Serial();
 
 
-  static void closeComputer() {
-    clrtoeol();
-	refresh();
-	endwin();
-  }
+
+  void setupComputer();
 
 
-  static void interrupts() {
-      printf("TO IMPL. interrupts()\n");
-  }
-  static void noInterrupts() {
-      printf("TO IMPL. noInterrupts()\n");
-  }
+  void closeComputer();
 
 
+  void interrupts();
+  void noInterrupts();
 
-  static void delay(long millis) {
-      usleep( millis * 1000 );
-  }
+  void delay(long millis);
 
-  static long millis() {
-      printf("TO IMPL. millis()\n");
-    return 500;
-  }
+  long millis();
 
-  static void tone(int BUZZPIN, int freq, int dur) {
-      printf("TO IMPL. tone(%d, %d)\n", freq, dur);
-  }
+  void tone(int BUZZPIN, int freq, int dur);
 
-  static void noTone(int BUZZPIN) {
-      printf("TO IMPL. noTone()\n");
-  }
+  void noTone(int BUZZPIN);
 
 
   #define HIGH 255
@@ -119,27 +113,14 @@
   #define INPUT        2
   #define INPUT_PULLUP 3
 
-  static void digitalWrite(int pin, int value) {
-      //printf("TO IMPL. digitalWrite(%d, %d)\n", pin, value);
-  }
+  void digitalWrite(int pin, int value);
 
 
-  static int digitalRead(int pin) {
-      //printf("TO IMPL. digitalRead(%d)\n", pin);
-      //return LOW;
+  int digitalRead(int pin);
 
-      // Cf INPUT_PULLUP btns
-      return HIGH;
-  }
+  int analogRead(int pin);
 
-  static int analogRead(int pin) {
-      printf("TO IMPL. analogRead(%d)\n", pin);
-      return 512;
-  }
-
-  static void pinMode(int pin, int mode) {
-      printf("TO IMPL. pinMode(%d, %d)\n", pin, mode);
-  }
+  void pinMode(int pin, int mode);
 
 
 

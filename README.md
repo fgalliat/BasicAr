@@ -20,6 +20,11 @@ The hardware driver layout isn't finished & is provided as is (coded for the Xts
  * 3 push buttons
  * own-designed BUS to deal w/ peripheral cards
 
+**Added comp.sh**<br/>
+to compile on a g++ linux env. w/ ncurses+SDL2 installed,<br/>
+so you can test BASIC directly on your computer (hardw support is still in progress...)<br/>
+<br/>
+
 
 ### Initial command set :
 ```
@@ -100,9 +105,6 @@ BYE               : to reset the MCU
 **Started computer enclosure**
 ![The XtsuBasic Computer](./docs/enclosure/xts_screen_mini.jpg "The Xts-uBasic Computer in its enclosure...")
 
-**Added comp.sh**
-to compile on a g++ linux env. w/ libncurses installed,<br/>
-so you can test BASIC directly on your computer (hardw support is in progress...)<br/>
-<br/>
+
 (The code is a bit dirty @ this time, I know)<br/>
 This work is still in progress ... (so see you @ anytime)
