@@ -56,7 +56,8 @@
             mvprintw(y, x, str);
           }
 
-          // TODO : use curses
+
+          void print(char v) { printf("%c", v); }
           void print(int v) { printf("%d", v); }
           void println(int v) { printf("%d\n", v); }
           
@@ -115,13 +116,19 @@
         bool dirMode = false;
 
         DIR *dir;
+        FILE *file;
         bool _isDir = false;
+        bool opened = false;
       public:
         SdFile() {}
         ~SdFile() {}
 
         bool open(char* filename, int mode) {
-            // a bit dirty I know
+
+            memcpy( name, filename, min( 8+1+3, strlen( filename ) ) );
+            opened = true;
+
+            // a bit dirty I know...
             if ( strcmp(filename, "/") == 0 ) {
                 dirMode = true;
                 //dir = opendir(filename);
@@ -129,9 +136,18 @@
                 if (dir == NULL) {
                     return false;
                 }
-            }
+            } else {
+                char fullEntryName[ 5 + 8+1+3 +1 ];
+                strcpy(fullEntryName, "./FS/");
+                strcat(fullEntryName, filename);
 
-            // ELSE TODO
+                Serial.println( fullEntryName );
+
+                file = fopen(fullEntryName, mode == O_READ ? "r" : "w");
+                if ( !file ) {
+                    return false;
+                }
+            }
 
             return true;
         }
@@ -139,35 +155,48 @@
         void close() {
             if (dirMode) {
                 closedir( dir );
-            } 
-            // ELSE TODO
+            } else {
+                if ( file != NULL && opened ) {
+                  fclose( file );
+                }
+            }
         }
 
         void flush() {
         }
 
         void print( char* str ) {
+            fputs(str, file);
         }
 
         void print( int v ) {
+            char num[10];
+            sprintf(num, "%d");
+            fputs(num, file);
         }
 
         int fgets(char* dest, int maxLen) {
-            dest[0] = '?';
-            return 1;
+            char c; int cpt = 0;
+            while ( (c = fgetc(file)) != EOF && cpt < maxLen) {
+                if (c == '\r' || c == '\n') { break; }
+                dest[cpt++] = c;
+                //Serial.print( c );
+            }
+            return cpt;
         }
 
         int read(void* dest, int maxLen) {
-            //(*dest[0]) = '?';
-            return 1;
+            return fread( dest, 1, maxLen, file );
         }
         
         int read() {
-            return -1;
+            char res[1];
+            fread(res, 1, 1, file);
+            return (int)res[0];
         }
 
         void seekSet(int offset) {
-
+            fseek(file, offset, SEEK_SET);
         }
 
         bool openNext( SdFile* fs_entry, int mode ) {
