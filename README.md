@@ -60,7 +60,7 @@ MEM               : function to return free mem ammount ----------> <*> shortcut
 LOCATE <ROW>,<COL>
 
 FS_SUPPORT for Teensy3.6 w/ SDCard
-DIR/FILES (in progress)
+DIR/DIRARRAY      : DIRARRAY sends result to 'DIR$()' array variable
 SAVE/LOAD/LLIST
 CHAIN "random"    : will load & run program "RANDOM.BAS"
 

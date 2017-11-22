@@ -14,7 +14,7 @@
 
 == TODO ==
 
-DIRARRAY
+DIRARRAY [done seems to work]
  -> fabrique DIR$(128)
     se terminant par "-EOF-"
 

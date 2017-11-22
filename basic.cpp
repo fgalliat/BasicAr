@@ -206,6 +206,8 @@ TokenTableEntry tokenTable[] = {
     {"ASC", 1|TKN_ARG1_TYPE_STR},  // returns ascii code of 1st char of string
     {"INSTR", 2|TKN_ARG1_TYPE_STR|TKN_ARG2_TYPE_STR},  // returns ascii code of 1st char of string
     {"MILLIS", 0}, // returns nb of milli-seconds since boot time
+
+    {"DIRARRAY", TKN_FMT_POST}, // DIR -> redirected to DIR$() array variable
 };
 
 
@@ -734,6 +736,58 @@ int createArray(char *name, int isString) {
     return 1;
 }
 
+// ======================= Xtase code ==================
+// can only create 1-dim arrays @ this time
+int xts_createArray(char *name, int isString, int dimension) {
+    int nameLen = strlen(name);
+    int bytesNeeded = 3;	// len + flags
+    bytesNeeded += nameLen + 1;	// name
+    bytesNeeded += 2;		// num dims
+    int numElements = 1;
+    int i = 0;
+    int numDims = 1; // HARDCODED
+    
+    int oldSTACKEND = sysSTACKEND;	
+    numElements = dimension;
+
+    bytesNeeded += 2 * numDims + (isString ? 1 : sizeof(float)) * numElements;
+    // strings and arrays are re-allocated if they already exist
+    unsigned char *p = findVariable(name, (isString ? VAR_TYPE_STR_ARRAY : VAR_TYPE_NUM_ARRAY));
+    if (p != NULL) {
+        // check there will actually be room for the new value
+        uint16_t oldVarLen = *(uint16_t*)p;
+        if (sysVARSTART - (bytesNeeded - oldVarLen) < sysSTACKEND)
+            return 0;	// not enough memory
+        deleteVariableAt(p);
+    }
+
+    if (sysVARSTART - bytesNeeded < sysSTACKEND)
+        return 0;	// out of memory
+    sysVARSTART -= bytesNeeded;
+
+    p = &mem[sysVARSTART];
+    *(uint16_t *)p = bytesNeeded; 
+    p += 2;
+    *p++ = (isString ? VAR_TYPE_STR_ARRAY : VAR_TYPE_NUM_ARRAY);
+    strcpy((char*)p, name); 
+    p += nameLen + 1;
+    *(uint16_t *)p = numDims; 
+    p += 2;
+    sysSTACKEND = oldSTACKEND;
+
+    // for (int i=0; i<numDims; i++) {
+    //     int dim = (int)stackPopNum();
+    //     *(uint16_t *)p = dim; 
+    //     p += 2;
+    // }
+    *(uint16_t *)p = dimension; 
+    p += 2;
+
+    memset(p, 0, numElements * (isString ? 1 : sizeof(float)));
+    return 1;
+}
+// =====================================================
+
 int _getArrayElemOffset(unsigned char **p, int *pOffset) {
     // check for correct dimensionality
     int numArrayDims = *(uint16_t*)*p; 
@@ -818,6 +872,87 @@ int setStrArrayElem(char *name) {
     sysVARSTART -= bytesNeeded;
     return ERROR_NONE;
 }
+
+// ======================= Xtase code ==================
+// can ONLY treat 1-dim arrays @ this time
+int xts_getArrayElemOffset(unsigned char **p, int *pOffset, int _index ) {
+    // check for correct dimensionality
+    int numArrayDims = *(uint16_t*)*p; 
+    *p+=2;
+
+    //int numDimsGiven = (int)stackPopNum();
+    int numDimsGiven = 1; // HARDCODED
+
+    if (numArrayDims != numDimsGiven)
+        return ERROR_WRONG_ARRAY_DIMENSIONS;
+    // now lookup the element
+    int offset = 0;
+    int base = 1;
+    for (int i=0; i<numArrayDims; i++) {
+
+        // except that the numDim is 1
+        // int index = (int)stackPopNum();
+        int index = _index;
+
+        int arrayDim = *(uint16_t*)*p; 
+        *p+=2;
+        if (index < 1 || index > arrayDim)
+            return ERROR_ARRAY_SUBSCRIPT_OUT_RANGE;
+        offset += base * (index-1);
+        base *= arrayDim;
+    }
+    *pOffset = offset;
+    return 0;
+}
+
+
+int xts_setStrArrayElem(char *name, int index, char* value) {
+    // string is top of the stack
+    // each index and number of dimensions on the calculator stack
+
+    // keep the current stack position, since we can't overwrite the value string
+    int oldSTACKEND = sysSTACKEND;
+
+    // how long is the new value?
+    // char *newValPtr = stackPopStr();
+    char *newValPtr = value;
+    int newValLen = strlen(newValPtr);
+
+    unsigned char *p = findVariable(name, VAR_TYPE_STR_ARRAY);
+    unsigned char *p1 = p;	// so we can correct the length when done
+    if (p == NULL)
+        return ERROR_VARIABLE_NOT_FOUND;
+
+    p += 3 + strlen(name) + 1;
+    
+    int offset;
+    //int ret = _getArrayElemOffset(&p, &offset);
+    int ret = xts_getArrayElemOffset(&p, &offset, index);
+    if (ret) return ret;
+    
+    // find the correct element by skipping over null terminators
+    int i = 0;
+    while (i < offset) {
+        if (*p == 0) i++;
+        p++;
+    }
+    int oldValLen = strlen((char*)p);
+    int bytesNeeded = newValLen - oldValLen;
+    // check if we've got enough room for the new value
+    if (sysVARSTART - bytesNeeded < oldSTACKEND)
+        return 0;	// out of memory
+    // correct the length of the variable
+    *(uint16_t*)p1 += bytesNeeded;
+    memmove(&mem[sysVARSTART - bytesNeeded], &mem[sysVARSTART], p - &mem[sysVARSTART]);
+    // copy in the new value
+    strcpy((char*)(p - bytesNeeded), newValPtr);
+    sysVARSTART -= bytesNeeded;
+    return ERROR_NONE;
+}
+
+// =====================================================
+
+
 
 float lookupNumArrayElem(char *name, int *error) {
     // each index and number of dimensions on the calculator stack
@@ -2251,6 +2386,7 @@ int parseStmts()
             case TOKEN_PRESET : ret = xts_preset(); break;
  
             case TOKEN_DIR: ret = xts_fs_dir(); break;
+            case TOKEN_DIRARRAY: ret = xts_fs_dir(true); break;
 
             case TOKEN_EXT_EXEC: ret = xts_exec_cmd(); break;
 
