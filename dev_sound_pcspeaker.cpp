@@ -3,6 +3,10 @@
  * Xtase - fgalliat @Nov 2017 
  *************/
 
+// else Arduino IDE will try to compile it !!!!
+#ifdef COMPUTER
+
+
 #include <SDL2/SDL.h>
 
 #include <cmath>
@@ -114,3 +118,6 @@ void audio_callback(void *_beeper, Uint8 *_stream, int _length) {
     
     beeper->generateSamples(stream, length);
 }
+
+
+#endif

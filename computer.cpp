@@ -3,6 +3,9 @@
  * Xtase - fgalliat @Nov 2017 
  *************/
 
+// else Arduino IDE will try to compile it !!!!
+#ifdef COMPUTER
+
  #include <cstdlib>
  #include <cstring>
  #include <stdio.h>
@@ -185,3 +188,4 @@
       printf("TO IMPL. pinMode(%d, %d)\n", pin, mode);
   }
 
+#endif
