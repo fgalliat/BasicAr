@@ -496,12 +496,14 @@ void __playTune(unsigned char* tuneStream, bool btnStop = false) {
   short tempoPercent = (*tuneStream++ << 8) | (*tuneStream++);
 
   //printfln("nbN:%d title:'%s' tmp:%d", nbNotes, (const char*)songname, tempoPercent);
-  if ( !true ) {
+  //if ( !true ) {
+  #ifdef COMPUTER
     host_outputString("   -= Playing =-\n");
     host_outputString( songname );
     host_outputString("\n");
     host_showBuffer();
-  }
+  #endif
+  //}
 
   // #if ((defined SCREEN_SUPPORT) && (SCREEN_SUPPORT > 0))
   //   //lcd_cls();

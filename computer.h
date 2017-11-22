@@ -190,7 +190,7 @@
         }
         
         int read() {
-            char res[1];
+            unsigned char res[1];
             fread(res, 1, 1, file);
             return (int)res[0];
         }
