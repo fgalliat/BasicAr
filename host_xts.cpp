@@ -30,6 +30,11 @@
     SdFatSdio sd;
     SdFile file;
     SdFile dirFile;
+  #elif USE_FS_LEGACY
+    // ex. regular computer
+    SDClass sd;
+    SdFile file;
+    SdFile dirFile;
   #endif
 
 

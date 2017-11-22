@@ -22,6 +22,95 @@
 
   static SDL_Window *window;
 
+  #define O_READ 1
+  #define FILE_READ O_READ
+  #define O_WRITE 2
+  #define FILE_WRITE O_WRITE
+  #define BUILTIN_SDCARD 1
+
+  class SdFile {
+      private:
+        char* name;
+      public:
+        SdFile() {}
+        ~SdFile() {}
+
+        int open(char* filename, int mode) {
+            return 0;
+        }
+
+        void close() {
+        }
+
+        void flush() {
+        }
+
+        void print( char* str ) {
+        }
+
+        void print( int v ) {
+        }
+
+        int fgets(char* dest, int maxLen) {
+            dest[0] = '?';
+            return 1;
+        }
+
+        int read(void* dest, int maxLen) {
+            //(*dest[0]) = '?';
+            return 1;
+        }
+        
+        int read() {
+            return -1;
+        }
+
+        void seekSet(int offset) {
+
+        }
+
+        bool openNext( SdFile* entry, int mode ) {
+            return false;
+        }
+
+        bool isSubDir() {
+            return false;
+        }
+
+        bool isDir() {
+            return false;
+        }
+
+        bool isHidden() {
+            return false;
+        }
+
+        void getName(char* buff, int maxLen) {
+            buff[0] = '@';
+        }
+
+  };
+
+  class SDClass {
+      private:
+      public:
+        SDClass() {}
+        ~SDClass() {}
+
+        bool begin(int pin) {
+            return true;
+        }
+
+        int remove(char* filename) {
+            return 0;
+        }
+
+  };
+
+  static SDClass SD; 
+
+  // ===================================
+
   class _Serial {
       private:
         // N.B. : unsigned long  is very important
