@@ -1,5 +1,5 @@
 /**************
- * Computer - Arduino equiv
+ * Computer - Arduino emulation layer
  * Xtase - fgalliat @Nov 2017 
  *************/
 
@@ -10,7 +10,10 @@
  #include <cstring>
  #include <stdio.h>
  #include <unistd.h>
+
+ #include <sys/types.h>
  #include <iostream>
+ #include <dirent.h>
 
  #include <ncurses.h>
  #include <sys/ioctl.h>
@@ -22,95 +25,9 @@
 
   static SDL_Window *window;
 
-  #define O_READ 1
-  #define FILE_READ O_READ
-  #define O_WRITE 2
-  #define FILE_WRITE O_WRITE
-  #define BUILTIN_SDCARD 1
+ #define min(a,b) a<b ? a : b
 
-  class SdFile {
-      private:
-        char* name;
-      public:
-        SdFile() {}
-        ~SdFile() {}
-
-        int open(char* filename, int mode) {
-            return 0;
-        }
-
-        void close() {
-        }
-
-        void flush() {
-        }
-
-        void print( char* str ) {
-        }
-
-        void print( int v ) {
-        }
-
-        int fgets(char* dest, int maxLen) {
-            dest[0] = '?';
-            return 1;
-        }
-
-        int read(void* dest, int maxLen) {
-            //(*dest[0]) = '?';
-            return 1;
-        }
-        
-        int read() {
-            return -1;
-        }
-
-        void seekSet(int offset) {
-
-        }
-
-        bool openNext( SdFile* entry, int mode ) {
-            return false;
-        }
-
-        bool isSubDir() {
-            return false;
-        }
-
-        bool isDir() {
-            return false;
-        }
-
-        bool isHidden() {
-            return false;
-        }
-
-        void getName(char* buff, int maxLen) {
-            buff[0] = '@';
-        }
-
-  };
-
-  class SDClass {
-      private:
-      public:
-        SDClass() {}
-        ~SDClass() {}
-
-        bool begin(int pin) {
-            return true;
-        }
-
-        int remove(char* filename) {
-            return 0;
-        }
-
-  };
-
-  static SDClass SD; 
-
-  // ===================================
-
+// ================ Serial Console emulation ============
   class _Serial {
       private:
         // N.B. : unsigned long  is very important
@@ -175,6 +92,156 @@
 
   static _Serial Serial = _Serial();
 
+
+// ======== File System Emulation ===========
+
+  #define O_READ 1
+  #define FILE_READ O_READ
+  #define O_WRITE 2
+  #define FILE_WRITE O_WRITE
+  #define BUILTIN_SDCARD 1
+
+// struct dirent {
+//     ino_t d_ino; /* inode number */
+//     off_t d_off; /* offset to the next dirent */
+//     unsigned short d_reclen; /* length of this record */
+//     unsigned char d_type; /* type of file */
+//     char d_name[256]; /* filename */
+// };
+
+  class SdFile {
+      private:
+        char name[8+1+3+1];
+        bool dirMode = false;
+
+        DIR *dir;
+        bool _isDir = false;
+      public:
+        SdFile() {}
+        ~SdFile() {}
+
+        bool open(char* filename, int mode) {
+            // a bit dirty I know
+            if ( strcmp(filename, "/") == 0 ) {
+                dirMode = true;
+                //dir = opendir(filename);
+                dir = opendir("./FS/");
+                if (dir == NULL) {
+                    return false;
+                }
+            }
+
+            // ELSE TODO
+
+            return true;
+        }
+
+        void close() {
+            if (dirMode) {
+                closedir( dir );
+            } 
+            // ELSE TODO
+        }
+
+        void flush() {
+        }
+
+        void print( char* str ) {
+        }
+
+        void print( int v ) {
+        }
+
+        int fgets(char* dest, int maxLen) {
+            dest[0] = '?';
+            return 1;
+        }
+
+        int read(void* dest, int maxLen) {
+            //(*dest[0]) = '?';
+            return 1;
+        }
+        
+        int read() {
+            return -1;
+        }
+
+        void seekSet(int offset) {
+
+        }
+
+        bool openNext( SdFile* fs_entry, int mode ) {
+            DIR* parent = fs_entry->dir;
+            struct dirent *entry;
+            while( true ) {
+                entry = readdir(parent);
+                if ( entry == NULL ) {
+                    return false;
+                }
+
+                // 10 -> file
+                // 4  -> dir
+                _isDir = entry->d_type == 4;
+
+                memset( name, 0x00, 8+1+3 );
+                if ( entry->d_name == NULL ) {
+                    memcpy( name, "?????", 5 );
+                } else {
+                    //Serial.println( entry->d_name );
+                    memcpy( name, entry->d_name, min(8+1+3, strlen(entry->d_name) ) );
+                    //Serial.println( entry->d_type );
+                }
+
+                if ( _isDir && ( strcmp( name, "." ) == 0) || ( strcmp( name, ".." ) == 0) ) {
+                    continue;
+                }
+                break;
+            }
+            return true;
+        }
+
+        bool isSubDir() {
+            return false;
+        }
+
+        bool isDir() {
+            return _isDir;
+        }
+
+        bool isHidden() {
+            return false;
+        }
+
+        void getName(char* dest, int maxLen) {
+            if ( name == NULL ) {
+                memcpy( dest, "?????", 5 );
+            }
+            // Serial.println( "before" );
+            memcpy(dest, name, strlen(name));
+        }
+
+  };
+
+  class SDClass {
+      private:
+      public:
+        SDClass() {}
+        ~SDClass() {}
+
+        bool begin(int pin) {
+            return true;
+        }
+
+        int remove(char* filename) {
+            Serial.println("FS.remove to impl.");
+            return 0;
+        }
+
+  };
+
+  static SDClass SD; 
+
+  // ===================================
 
 
   void setupComputer();
