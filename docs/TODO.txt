@@ -14,7 +14,14 @@
 
 == TODO ==
 
+DIRARRAY
+ -> fabrique DIR$(128)
+    se terminant par "-EOF-"
+
 on COMPUTER : manage BCKSPACE
+              Ctrl-C & F1 keys
+              charUpCase on filenames
+              play mp3s
 
 exec "vgat","reboot"
 exec "wifi","connect","<essid>","<keypass>"

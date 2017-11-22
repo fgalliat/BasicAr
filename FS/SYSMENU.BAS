@@ -5,6 +5,7 @@
 30 ? "1. Set console"
 40 ? "2. Set Buzzer"
 50 ? "3. Send/Recv File"
+60 ? "4. Set WIFI"
 90 ? "9. Reboot"
 95 ? "0. Exit";
 100 INPUT CH$
