@@ -67,6 +67,9 @@
   #define ARCH_TYPE "Generic Computer"
   #define BUT_TEENSY 1
 
+  #define FS_SUPPORT 1
+    #define USE_FS_LEGACY 1
+
   #define BUZZER_PIN 5
   
   #define LED1_PIN 13
