@@ -713,12 +713,12 @@ bool drawBPPfile(char* filename) {
 // ==============================================
 
  #ifndef FS_SUPPORT
-  void lsStorage(char* filter=NULL) {
+  void lsStorage(char* filter=NULL, bool sendToArray=false) {
     host_outputString("ERR : NO Storage support\n");
   }
  #else
   extern int curY;
-  bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter);
+  bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter, bool sendToArray);
 
   // bool _lsStorage2(File dir, int numTabs, bool recurse, char* filter) {
   //   while(true) {
@@ -751,8 +751,10 @@ bool drawBPPfile(char* filename) {
   // }
 
 
-
-  void lsStorage(char* filter=NULL) {
+  // filter can be "*.BAS"
+  // sendToArray == true -> create "DIR$" array & fill it
+  //   instead of sending to console display
+  void lsStorage(char* filter=NULL, bool sendToArray=false) {
     bool recurse = false;
 
     // SdFile dirFile;
@@ -769,7 +771,7 @@ bool drawBPPfile(char* filename) {
 
 //root = SD.open("/");
 
-    _lsStorage(dirFile, 0, recurse, filter);
+    _lsStorage(dirFile, 0, recurse, filter, sendToArray);
     //_lsStorage2(root, 0, recurse, filter);
 
 // root.close();
@@ -782,8 +784,17 @@ bool drawBPPfile(char* filename) {
 //   #define SCREEN_HEIGHT       8
 //  #endif
 
-bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter) {
+bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter, bool sendToArray) {
     SdFile file;
+
+    if ( sendToArray ) {
+      // can't use createArray because it use expr stack
+      #define MAX_FILE_IN_ARRAY 128
+      if ( ! xts_createArray("DIR$", 1, MAX_FILE_IN_ARRAY) ) {
+        host_outputString("Could not create DIR$");
+        return false;
+      }
+    }
 
     int cpt = 0;
     while (file.openNext(&dirFile, O_READ)) {
@@ -826,24 +837,42 @@ bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter) {
           }
         }
 
+        if ( !sendToArray ) {
+          host_outputInt( (cpt+1) );
+          host_outputString("\t");
+          host_outputString(SDentryName);
+        } else {
+          // SDentryName @ (cpt+1)
 
-        host_outputInt( (cpt+1) );
-        host_outputString("\t");
+          // to check
+          if ( file.isDir() ) { SDentryName[ 13-1 ] = '/'; }
+          else                { SDentryName[ 13-1 ] = 0x00; }
 
-        host_outputString(SDentryName);
+          if ( xts_setStrArrayElem( "DIR$", (cpt+1), SDentryName ) != ERROR_NONE ) {
+            host_outputInt( (cpt+1) );
+            host_outputString("\t");
+            host_outputString(SDentryName);
+            host_outputString(" : ERROR\n");
+
+            break;
+          }
+        }
 
         if ( file.isDir() ) {
           // Indicate a directory.
-          host_outputString("/");
+          if ( !sendToArray ) {
+            host_outputString("/");
+          }
         }
-        host_outputString("\n");
+        if ( !sendToArray ) {
+          host_outputString("\n");
 
-// TMP - DIRTY ----- begin
-//if ( curY % SCREEN_HEIGHT == SCREEN_HEIGHT-1 ) {
-if ( cpt % SCREEN_HEIGHT == SCREEN_HEIGHT-1 ) {
-  host_showBuffer();
-}
-// TMP - DIRTY ----- end
+          // TMP - DIRTY ----- begin
+          if ( cpt % SCREEN_HEIGHT == SCREEN_HEIGHT-1 ) {
+            host_showBuffer();
+          }
+          // TMP - DIRTY ----- end
+        }
 
         cpt++;
 
@@ -851,12 +880,14 @@ if ( cpt % SCREEN_HEIGHT == SCREEN_HEIGHT-1 ) {
       file.close();
     }
 
-    host_outputString("nb files : ");
-    host_outputInt( cpt );
-    host_outputString("\n");
-
-    
-host_showBuffer();
+    if ( sendToArray ) {
+      xts_setStrArrayElem( "DIR$", (cpt+1), "-EOF-" );
+    } else {
+      host_outputString("nb files : ");
+      host_outputInt( cpt );
+      host_outputString("\n");
+      host_showBuffer();
+    }
 
     return true;
   }

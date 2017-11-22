@@ -150,8 +150,10 @@
     #define TOKEN_STR_ASC           93 // return ascii code (inv. of CHR$)
     #define TOKEN_STR_INSTR         94 // return 1st occurance of arg2 in arg1
     #define TOKEN_MILLIS            95 // return millis since boot
+
+    #define TOKEN_DIRARRAY          96 // dir to DIR$() array variable ("-EOF-" @ end)
     
-    #define TOKEN_LASTONE TOKEN_MILLIS
+    #define TOKEN_LASTONE TOKEN_DIRARRAY
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT
@@ -257,6 +259,10 @@ void reset();
 void doRunPrg();
 int tokenize(unsigned char *input, unsigned char *output, int outputSize);
 int processInput(unsigned char *tokenBuf);
+
+// ========== Xtase ext functions ========
+int xts_createArray(char *name, int isString, int dimension);
+int xts_setStrArrayElem(char *name, int index, char* value);
 
 #endif
 

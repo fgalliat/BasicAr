@@ -1,0 +1,6 @@
+5 CLS
+10 DIRARRAY
+20 FOR I=1 TO 128
+30 IF DIR$(I) = "-EOF-" THEN GOTO 50
+40 NEXT I
+50 ? (I-1);" files on FS"

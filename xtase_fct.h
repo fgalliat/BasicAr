@@ -95,7 +95,7 @@ int xts_locate() {
 
 
 // BEWARE : no more a "SimpleCmd"
-int xts_fs_dir() {
+int xts_fs_dir(bool sendToArray=false) {
   getNextToken(); //==> NO (SimpleCmd : spe case) => NO MORE
 
   char* filter = NULL;
@@ -112,7 +112,7 @@ int xts_fs_dir() {
 
 
   if ( executeMode ) {
-    lsStorage(filter);
+    lsStorage(filter, sendToArray);
   }
 
   return 0;
