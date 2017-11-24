@@ -24,6 +24,9 @@ The hardware driver layout isn't finished & is provided as is (coded for the Xts
 to compile on a g++ linux env. w/ ncurses+SDL2 installed,<br/>
 so you can test BASIC directly on your computer (hardw support is still in progress...)<br/>
 <br/>
+Already have Sound & VGAText emulated (see subComponent/RPIDisplay).
+![The XtsuBasic Emulated](./docs/VideoCard/emulation/X11emul.png "The Xts-uBasic Emulated on X11...")
+<br/>
 
 
 ### Initial command set :
