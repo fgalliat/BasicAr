@@ -110,9 +110,8 @@
 
   void closeComputer() {
     #ifdef BOARD_VGA
-      Serial3.print( (char)3 );
-      Serial3.print( '\n' );
-      Serial3.flush();
+      Serial3.close();
+      delay(100);
     #endif
 
     clrtoeol();

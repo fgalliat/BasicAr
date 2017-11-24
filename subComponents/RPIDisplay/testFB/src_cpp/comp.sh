@@ -1,0 +1,1 @@
+g++ -Wall -o gistfile gistfile1.c

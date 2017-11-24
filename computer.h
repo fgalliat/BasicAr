@@ -112,6 +112,13 @@
               portOK = true;
           }
           
+          void close() {
+              // 4 is arbitrary EXIT CODE
+              // because 3 (break) failed
+              if ( portOK ) { fputc(0x04, pipeFile); flush(); fclose(pipeFile); }
+              //remove("/tmp/vgat");
+          }
+
           // output ONLY port
           int available() { 
             return 0;
@@ -126,17 +133,25 @@
           void print(char v) { 
               if ( !portOK ) { return; }
               fprintf(pipeFile, "%c", v); 
+
+              flush();
           }
           void print(int v) { 
               if ( !portOK ) { return; }
               fprintf(pipeFile, "%d", v); 
+
+              flush();
           }
           void println(int v) { 
               if ( !portOK ) { return; }
               fprintf(pipeFile, "%d\n", v); 
+
+              flush();
           }
           
           void print(const char* v) { 
+              if ( !portOK ) { return; }
+
               int l = strlen(v);
               char* vv = (char*)malloc(l+1);
               for ( int i=0; i < l; i++ ) {
@@ -146,9 +161,13 @@
               vv[l] = 0x00;
               fprintf(pipeFile, "%s", vv); 
               free(vv);        
+
+              flush();
           }
 
           void printf(const char* v, int i) { 
+              if ( !portOK ) { return; }
+
               int l = strlen(v);
               char* vv = (char*)malloc(l+1);
               for ( int i=0; i < l; i++ ) {
@@ -158,9 +177,13 @@
               vv[l] = 0x00;
               fprintf(pipeFile, vv, i); 
               free(vv);        
+
+              flush();
           }
 
           void println(const char* v) { 
+              if ( !portOK ) { return; }
+
               int l = strlen(v);
               char* vv = (char*)malloc(l+1);
               for ( int i=0; i < l; i++ ) {
@@ -170,9 +193,13 @@
               vv[l] = 0x00;
               fprintf(pipeFile, "%s\n", vv); 
               free(vv);
+
+              flush();
           }
 
           void flush() {
+              if ( !portOK ) { return; }
+
               fflush(pipeFile);
           }
   };
