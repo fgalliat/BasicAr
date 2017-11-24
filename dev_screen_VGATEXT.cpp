@@ -5,15 +5,12 @@
   @Xtase - fgalliat Jan2017
 */
 
-#include <Arduino.h>
-
-// Le croquis utilise 93 848 octets (8%) de l'espace de stockage de programmes. Le maximum est de 1 048 576 octets.
-// Les variables globales utilisent 36 504 octets (13%) de mémoire dynamique, ce qui laisse 225 640 octets pour les variable
-// s locales. Le maximum est de 262 144 octets.
-
-// Le croquis utilise 94 512 octets (9%) de l'espace de stockage de programmes. Le maximum est de 1 048 576 octets.
-// Les variables globales utilisent 36 504 octets (13%) de mémoire dynamique, ce qui laisse 225 640 octets pour les variable
-// s locales. Le maximum est de 262 144 octets.
+#ifndef COMPUTER
+  #include <Arduino.h>
+#else
+  #include "computer.h"
+  #define max(a,b) a > b ? a : b
+#endif
 
 
 #define SerialVGA Serial3
@@ -207,8 +204,8 @@ void vgat_startScreen() {
 }
 
 
-extern int ext_OUTPUT_VGA_BOARD_TXT;
-extern void setRawOutputType(int out); 
+//extern int ext_OUTPUT_VGA_BOARD_TXT;
+//extern void setRawOutputType(int out); 
 
 void vgat_switchTo() {
     //vgat_reboot();
@@ -219,6 +216,6 @@ void vgat_switchTo() {
     vgat_focuswin(1); // clear main win
     vgat_cls();
 
-    setRawOutputType( ext_OUTPUT_VGA_BOARD_TXT );
+    //setRawOutputType( ext_OUTPUT_VGA_BOARD_TXT );
 }
 

@@ -1,4 +1,20 @@
-== DONE but to be tested ==
+== TODO ==
+IPC between Java & C w/ pseudo file
+  http://www.jonathanbeard.io/tutorials/CtoJava
+  $> mkfifo toto
+
+  then 'toto' is seen as file 
+    C can write in it
+    Java can read it
+
+RPI Java FrameBuffer
+  /vm_mnt/devl/Arduino/rpiZeroW/Java/testFB
+
+  so make a Faked Java interface instead of JNI way
+   > in progress + ( mkfifo /tmp/vgat ) for local-local serialport emulation
+
+
+== DONE ==
 (OK) ASC( STR$ ) : returns ascii code of 1st char of STR$
       \__ inv of CHR$(.)
 (OK) INSTR( STR$, STRtoFIND$ ) -> indexOf

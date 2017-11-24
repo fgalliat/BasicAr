@@ -60,7 +60,7 @@ void vgat_line(int x1, int y1, int x2, int y2);
 void vgat_startScreen();
 
 
-extern void setRawOutputType(int out); 
+//extern void setRawOutputType(int out); 
 
 void vgat_switchTo();
 

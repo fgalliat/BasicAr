@@ -109,6 +109,11 @@
 
 
   void closeComputer() {
+    #ifdef BOARD_VGA
+      Serial3.close();
+      delay(100);
+    #endif
+
     clrtoeol();
 	refresh();
 	endwin();
