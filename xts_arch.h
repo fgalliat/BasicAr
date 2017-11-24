@@ -70,6 +70,9 @@
   #define FS_SUPPORT 1
     #define USE_FS_LEGACY 1
 
+  #define BOARD_VGA 1
+    #define BOARD_VGA_FAKE_SERIAL 1
+
   #define BUZZER_PIN 5
   
   #define LED1_PIN 13
