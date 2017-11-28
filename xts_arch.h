@@ -21,6 +21,8 @@
     #define KEYB_TYPE_USB_HOBYTRONIC_V1 1
 
     #define BOARD_SND 1
+
+    #define BOARD_RPID 1
   #endif
 
   #define FS_SUPPORT 1

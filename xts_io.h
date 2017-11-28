@@ -9,13 +9,15 @@
 enum GFX_DEVICES {
     GFX_DEV_SERIAL = 0,
     GFX_DEV_LCD_MINI,
-    GFX_DEV_VGA_SERIAL
+    GFX_DEV_VGA_SERIAL,
+    GFX_DEV_RPID_SERIAL
 };
 
 enum OUTPUT_DEVICES {
     OUT_DEV_SERIAL = 0,
     OUT_DEV_LCD_MINI,
-    OUT_DEV_VGA_SERIAL
+    OUT_DEV_VGA_SERIAL,
+    OUT_DEV_RPID_SERIAL
 };
 
 enum INPUT_DEVICES {
@@ -32,6 +34,10 @@ enum INPUT_DEVICES {
 // ~ 2KB of RAM
 #define VGA_TEXT_WIDTH 80
 #define VGA_TEXT_HEIGHT 24
+
+// ~ 2KB of RAM
+#define RPID_TEXT_WIDTH 80
+#define RPID_TEXT_HEIGHT 24
 
 #define SER_TEXT_WIDTH 80
 #define SER_TEXT_HEIGHT 15
@@ -76,6 +82,12 @@ static int setConsoles(int outDev, int inDev, int gfxDev) {
       outDev = OUTPUT_DEVICE;
       setScreenSize(VGA_TEXT_WIDTH, VGA_TEXT_HEIGHT);
       GFX_DEVICE = GFX_DEV_LCD_MINI;  // TMP : DRAWxxx routines to port to serialt
+      gfxDev = GFX_DEVICE;
+    } else if ( outDev == OUT_DEV_RPID_SERIAL ) { // 3
+      OUTPUT_DEVICE = OUT_DEV_RPID_SERIAL; 
+      outDev = OUTPUT_DEVICE;
+      setScreenSize(RPID_TEXT_WIDTH, RPID_TEXT_HEIGHT);
+      GFX_DEVICE = GFX_DEV_LCD_MINI;  // just for this time....
       gfxDev = GFX_DEVICE;
     }
     return gfxDev;

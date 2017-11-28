@@ -208,6 +208,134 @@
   // the serial port used for VGAT
   static _FakedSerial Serial3 = _FakedSerial();
 
+// ======== VGAT output emulation (extern prgm) =======
+
+  class _FakedSoftwareSerial {
+      private:
+        bool portOK = false;
+        // N.B. : unsigned long  is very important
+        unsigned long lastTime = 0;
+        int lastKC = -1;
+        FILE* pipeFile;
+        FILE* pipeFileIn;
+      public:
+          _FakedSoftwareSerial(int rxPin, int txPin) {
+          }
+          ~_FakedSoftwareSerial() {
+              close();
+          }
+
+          void begin(int speed) {
+              pipeFile = fopen("/tmp/rpid_out", "w");
+              if ( !pipeFile ) {
+                  Serial.println("Failed to open SerialVGA port\n");
+                  return;
+              }
+
+              pipeFileIn = fopen("/tmp/rpid_in", "r");
+
+              portOK = true;
+          }
+          
+          void close() {
+              // 4 is arbitrary EXIT CODE
+              // because 3 (break) failed
+              if ( portOK ) { 
+                  fputc(0x04, pipeFile); 
+                  flush(); 
+                  fclose(pipeFile);
+
+                  fclose(pipeFileIn); 
+              }
+          }
+
+          // input port emulation TODO
+          int available() { 
+            return 0;
+          }
+  
+          // input port emulation TODO
+          int read() { 
+            return -1;
+          }
+  
+
+          void print(char v) { 
+              if ( !portOK ) { return; }
+              fprintf(pipeFile, "%c", v); 
+
+              flush();
+          }
+          void print(int v) { 
+              if ( !portOK ) { return; }
+              fprintf(pipeFile, "%d", v); 
+
+              flush();
+          }
+          void println(int v) { 
+              if ( !portOK ) { return; }
+              fprintf(pipeFile, "%d\n", v); 
+
+              flush();
+          }
+          
+          void print(const char* v) { 
+              if ( !portOK ) { return; }
+
+              int l = strlen(v);
+              char* vv = (char*)malloc(l+1);
+              for ( int i=0; i < l; i++ ) {
+                  if ( vv[i] == '\r' ) { vv[i] = '\n'; }
+                  else vv[i] = v[i];
+              }
+              vv[l] = 0x00;
+              fprintf(pipeFile, "%s", vv); 
+              free(vv);        
+
+              flush();
+          }
+
+          void printf(const char* v, int i) { 
+              if ( !portOK ) { return; }
+
+              int l = strlen(v);
+              char* vv = (char*)malloc(l+1);
+              for ( int i=0; i < l; i++ ) {
+                  if ( vv[i] == '\r' ) { vv[i] = '\n'; }
+                  else vv[i] = v[i];
+              }
+              vv[l] = 0x00;
+              fprintf(pipeFile, vv, i); 
+              free(vv);        
+
+              flush();
+          }
+
+          void println(const char* v) { 
+              if ( !portOK ) { return; }
+
+              int l = strlen(v);
+              char* vv = (char*)malloc(l+1);
+              for ( int i=0; i < l; i++ ) {
+                  if ( vv[i] == '\r' ) { vv[i] = 0x00; }
+                  else vv[i] = v[i];
+              }
+              vv[l] = 0x00;
+              fprintf(pipeFile, "%s\n", vv); 
+              free(vv);
+
+              flush();
+          }
+
+          void flush() {
+              if ( !portOK ) { return; }
+
+              fflush(pipeFile);
+          }
+  };
+
+  #define SoftwareSerial _FakedSoftwareSerial
+
 // ======== File System Emulation ===========
 
   #define O_READ 1
