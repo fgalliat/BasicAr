@@ -99,6 +99,11 @@ bool checkbreak() { return false; }
   #include "dev_screen_VGATEXT.h"
 #endif
 
+
+#ifdef BOARD_RPID
+  #include "dev_screen_RPIGFX.h"
+#endif
+
 #ifdef BUILTIN_KBD
   #include "dev_kbd.h"
 #endif
@@ -210,6 +215,20 @@ void setupVGASerial() {
 }
 #endif
 
+#ifdef BOARD_RPID
+// TODO : better
+void setupRPISerial() {
+  host_outputString("Booting RPID\n");
+  setup_rpid(false);
+  //vgat_reboot(false);
+  //delay(300);
+  rpid_startScreen();
+  // host_outputString("Booted VGA\n");
+  delay(200);
+}
+#endif
+
+
 
 #ifdef BUT_TEENSY
   //#include <TimerOne.h> // for Teensy 2 & 2++ ONLY
@@ -234,6 +253,10 @@ void setupHardware() {
 
  #ifdef BOARD_VGA
    setupVGASerial();
+ #endif
+
+ #ifdef BOARD_RPID
+   setupRPISerial();
  #endif
 
  #ifdef BOARD_SND

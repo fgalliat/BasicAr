@@ -210,7 +210,7 @@
 
 // ======== VGAT output emulation (extern prgm) =======
 
-  class _FakedSoftwareSerial {
+  class _FakedHardwareSerial {
       private:
         bool portOK = false;
         // N.B. : unsigned long  is very important
@@ -219,11 +219,14 @@
         FILE* pipeFile;
         FILE* pipeFileIn;
       public:
-          _FakedSoftwareSerial(int rxPin, int txPin) {
+          _FakedHardwareSerial() {
           }
-          ~_FakedSoftwareSerial() {
+          ~_FakedHardwareSerial() {
               close();
           }
+
+          void setRX(int pin) {}
+          void setTX(int pin) {}
 
           void begin(int speed) {
               pipeFile = fopen("/tmp/rpid_out", "w");
@@ -334,7 +337,8 @@
           }
   };
 
-  #define SoftwareSerial _FakedSoftwareSerial
+  // the serial port used for RPIDisplay
+  static _FakedHardwareSerial Serial1 = _FakedHardwareSerial();
 
 // ======== File System Emulation ===========
 

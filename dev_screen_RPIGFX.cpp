@@ -7,7 +7,6 @@
 
 #ifndef COMPUTER
   #include <Arduino.h>
-  #include <SoftwareSerial.h>
 #else
   #include "computer.h"
   #define max(a,b) a > b ? a : b
@@ -16,8 +15,8 @@
 // on Teensy 3.6 : alt pins for Serial1 (aka Serial)
 #define RPID_RX 27
 #define RPID_TX 26
-SoftwareSerial SoftSerial1( RPID_RX, RPID_TX );
-#define SerialRPID SoftSerial1
+//SoftwareSerial SoftSerial1( RPID_RX, RPID_TX );
+#define SerialRPID Serial1
 
 bool yetLayoutGUI=false;
 
@@ -25,6 +24,8 @@ void rpid_reboot(bool wait);
 void rpid_cls();
 
 void setup_rpid(bool wait) {
+    SerialRPID.setRX( RPID_RX );
+    SerialRPID.setTX( RPID_TX );
     SerialRPID.begin(115200);
     SerialRPID.flush();
 
