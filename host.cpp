@@ -83,6 +83,11 @@ extern bool BUZZER_MUTE;
 #endif
 
 
+#ifdef BOARD_RPID
+  #include "dev_screen_RPIGFX.h"
+#endif
+
+
 int timer1_counter;
 
 
@@ -237,6 +242,12 @@ void host_cls() {
         } else 
     #endif
 
+    #ifdef BOARD_RPID
+        if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
+            rpid_cls(); 
+        } else 
+    #endif
+
       if ( OUTPUT_DEVICE == OUT_DEV_SERIAL ) {
           #ifndef COMPUTER
           Serial.print("\n\n\n\n------------\n\n\n");
@@ -263,6 +274,11 @@ void host_moveCursor(int x, int y) {
     #ifdef BOARD_VGA
         if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
             vgat_locate(x,y);
+        }
+    #endif
+    #ifdef BOARD_RPID
+        if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
+            rpid_locate(x,y);
         }
     #endif
     isWriting = false;
@@ -396,6 +412,18 @@ void host_showBuffer() {
             Serial.println("Show buffer on VGA TEXT Serial");
         #endif
 
+    }  else if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
+
+        #ifdef BOARD_RPID
+
+            // no more done since 16/11/2017 - 'cause direct print
+            isWriting = true;
+            isWriting = false;
+
+        #else
+            Serial.println("Show buffer on RPI Display Serial");
+        #endif
+
     } else if ( OUTPUT_DEVICE == OUT_DEV_SERIAL ) {
         isWriting = true;
         bool dirty = false;
@@ -465,6 +493,11 @@ void scrollBuffer() {
             //vgat_cls();
         }
     #endif
+    #ifdef BOARD_RPID
+        if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
+            //vgat_cls();
+        }
+    #endif
     isWriting = false;
 }
 
@@ -484,6 +517,11 @@ void host_outputString(char *str) {
     #ifdef BOARD_VGA
     if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
         vgat_print( (const char*)str );
+    }
+    #endif
+    #ifdef BOARD_RPID
+    if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
+        rpid_print( (const char*)str );
     }
     #endif
 
@@ -547,6 +585,12 @@ void host_outputChar(char c) {
     #ifdef BOARD_VGA
     if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
         vgat_printCh( c );
+    }
+    #endif
+
+    #ifdef BOARD_RPID
+    if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
+        rpid_printCh( c );
     }
     #endif
 
@@ -628,6 +672,11 @@ void host_newLine() {
         vgat_print( "\n" );
     }
     #endif
+    #ifdef BOARD_RPID
+    if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
+        rpid_print( "\n" );
+    }
+    #endif
 
     isWriting = false;
 }
@@ -674,12 +723,23 @@ char *host_readLine() {
                         vgat_printCh( c );
                     }
                 #endif
+
+                #ifdef BOARD_RPID
+                    if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
+                        rpid_printCh( c );
+                    }
+                #endif
             }
             else if (c==PS2_DELETE && pos > startPos) {
                 screenBuffer[--pos] = 0;
                 #ifdef BOARD_VGA
                     if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
                         vgat_printCh( '\b' );
+                    }
+                #endif
+                #ifdef BOARD_RPID
+                    if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
+                        rpid_printCh( '\b' );
                     }
                 #endif
             }
@@ -689,6 +749,11 @@ char *host_readLine() {
                 #ifdef BOARD_VGA
                     if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
                         vgat_printCh( '\n' );
+                    }
+                #endif
+                #ifdef BOARD_RPID
+                    if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
+                        rpid_printCh( '\n' );
                     }
                 #endif
             }

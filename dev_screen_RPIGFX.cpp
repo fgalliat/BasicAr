@@ -35,8 +35,24 @@ void setup_rpid(bool wait) {
 }
 
 void _rpid_cmd(const char* cmd, long delayToWait) {
-    SerialRPID.print("^[");   // send escape sequence
-    SerialRPID.println(cmd);  // send Command string
+    // SerialRPID.print("^[");   // send escape sequence
+    // SerialRPID.print(cmd);  // send Command string
+    // SerialRPID.print('\n');
+
+
+    SerialRPID.print('^');   // send escape sequence
+    // delay(1);
+    SerialRPID.print('[');   // send escape sequence
+    // delay(1);
+    //SerialRPID.print(cmd);  // send Command string
+    for(int i=0; i < strlen(cmd); i++) {
+      SerialRPID.print( cmd[i] );
+      delay(1);
+    }
+    SerialRPID.print('\n');
+    // delay(1);
+    SerialRPID.flush();
+    // delay(1);
 
     delay( delayToWait );
 }
@@ -51,11 +67,13 @@ void rpid_reboot(bool wait=true) {
 char _rpidFocus[] = {'f',',','?',0x00};
 void rpid_focuswin(int winNum) {
   _rpidFocus[2] = (char)('0'+winNum);
-  _rpid_cmd( (char*)_rpidFocus, 2 );
+  _rpid_cmd( (char*)_rpidFocus, 10 );
 }
 
 void rpid_clearwin() {
-    _rpid_cmd( (char*)"e", 2 );
+    //_rpid_cmd( (char*)"e", 20 );
+    SerialRPID.println("^[e");
+    delay(20);
 }
 
 void rpid_cls() {
