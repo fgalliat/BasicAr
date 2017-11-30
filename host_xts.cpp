@@ -1251,6 +1251,31 @@ void MCU_reset() {
       // for(;;) {}
 }
 
+extern bool systemHalted;
+
+void MCU_halt() {
+  host_outputString("\nHalting system\n");
+  host_showBuffer();
+  #ifdef BUT_TEENSY
+
+    #ifdef BOARD_RPID
+      rpid_haltGPU();
+    #endif
+
+    #ifdef BOARD_SND
+      snd_pause();
+    #endif
+
+    #ifdef COMPUTER
+      closeComputer();
+      exit(0);
+    #else
+      systemHalted = true;
+    #endif
+    
+  #endif
+}
+
 
 
 extern unsigned char mem[];

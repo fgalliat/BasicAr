@@ -208,6 +208,8 @@ TokenTableEntry tokenTable[] = {
     {"MILLIS", 0}, // returns nb of milli-seconds since boot time
 
     {"DIRARRAY", TKN_FMT_POST}, // DIR -> redirected to DIR$() array variable
+
+    {"HALT",TKN_FMT_POST}, // halt the whole System
 };
 
 
@@ -2265,6 +2267,10 @@ int parseSimpleCmd() {
             case TOKEN_BYE:
                 xts_mcu_reset();
                 break;
+
+            case TOKEN_HALT:
+                xts_mcu_halt();
+                break;
         }
     }
     return 0;
@@ -2352,6 +2358,7 @@ int parseStmts()
             //case TOKEN_DIR:
 
             case TOKEN_BYE: // Xtase code
+            case TOKEN_HALT: // Xtase code
 
                 ret = parseSimpleCmd();
                 break;

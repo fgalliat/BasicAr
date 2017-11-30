@@ -75,6 +75,8 @@
   #define BOARD_VGA 1
     #define BOARD_VGA_FAKE_SERIAL 1
 
+  #define BOARD_RPID 1
+
   #define BUZZER_PIN 5
   
   #define LED1_PIN 13

@@ -152,8 +152,10 @@
     #define TOKEN_MILLIS            95 // return millis since boot
 
     #define TOKEN_DIRARRAY          96 // dir to DIR$() array variable ("-EOF-" @ end)
+
+    #define TOKEN_HALT              97 // halt whole system
     
-    #define TOKEN_LASTONE TOKEN_DIRARRAY
+    #define TOKEN_LASTONE TOKEN_HALT
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT

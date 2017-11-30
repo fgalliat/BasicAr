@@ -207,9 +207,15 @@ void setup() {
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 bool MODE_EDITOR = false;
+bool systemHalted = false;
 
 void loop() {
     int ret = ERROR_NONE;
+
+    if ( systemHalted ) {
+        delay(200);
+        return;
+    }
 
     if (!autorun) {
         // get a line from the user

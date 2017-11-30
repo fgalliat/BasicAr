@@ -126,6 +126,12 @@ void xts_mcu_reset() {
   }
 }
 
+void xts_mcu_halt() {
+  if ( executeMode ) {
+    MCU_halt();
+  }
+}
+
 // =========================================================
 
 int __xts_playSpeakerTune(int format) {

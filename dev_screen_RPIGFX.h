@@ -8,6 +8,8 @@
   @Xtase - fgalliat Nov2017
 */
 
+/* request to really halt RPI Unit */
+void rpid_haltGPU(bool wait=true);
 
 void rpid_reboot(bool wait);
 void rpid_cls();

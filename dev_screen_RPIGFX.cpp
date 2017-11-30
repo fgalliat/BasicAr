@@ -47,7 +47,7 @@ void _rpid_cmd(const char* cmd, long delayToWait) {
     //SerialRPID.print(cmd);  // send Command string
     for(int i=0; i < strlen(cmd); i++) {
       SerialRPID.print( cmd[i] );
-      delay(1);
+      //delay(1);
     }
     SerialRPID.print('\n');
     // delay(1);
@@ -57,6 +57,14 @@ void _rpid_cmd(const char* cmd, long delayToWait) {
     delay( delayToWait );
 }
 
+/* request to really halt RPI Unit */
+void rpid_haltGPU(bool wait=true) {
+  _rpid_cmd("halt", wait?2000:500);
+
+  yetLayoutGUI=false;
+}
+
+/* reboot only TXT part */
 void rpid_reboot(bool wait=true) {
   _rpid_cmd("r", wait?2000:500);
 
