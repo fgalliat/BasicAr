@@ -12,7 +12,7 @@ RPI Java FrameBuffer
 
   so make a Faked Java interface instead of JNI way
    > in progress + ( mkfifo /tmp/vgat ) for local-local serialport emulation
- 
+ _______
   > ^[halt => have to halt the RPI
 
   > for GUI version : 
