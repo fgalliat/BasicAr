@@ -20,6 +20,8 @@ RPI Java FrameBuffer
      900px / 50ch = 18px font height
      12px * 100ch = 1200px screen width ....
 
+  > add pseudo interrupt to handle RPID feeback
+    (Serial1 listening)
 
 == DONE ==
 (OK) ASC( STR$ ) : returns ascii code of 1st char of STR$
