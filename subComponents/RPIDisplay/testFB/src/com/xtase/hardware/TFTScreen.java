@@ -176,9 +176,16 @@ public int[] blit(BufferedImage img, int index,int x, int y, int width, int heig
     }
 
   // ===========================================
-    public void blitString(String txt, int x, int y, int color) {  
-      blitString (txt,x,y,color, 1);
-    }
+  public void blitString(String txt, int x, int y, int color) {  
+    blitString (txt,x,y,color, 1);
+  }
+
+
+  // made for GUIInterface
+  public void blitString(String txt, int x, int y, int color, int zoom, boolean renderSpaces) {  
+    drawString (txt,x,y,color,zoom, renderSpaces);
+  }
+
   
     // faster if no needs to render 'space' chars
     public void blitString(String txt, int x, int y, int color, boolean renderSpaces) {  
@@ -203,5 +210,8 @@ public int[] blit(BufferedImage img, int index,int x, int y, int width, int heig
 
   // ===========================================
 
+  public void reshape() {
+    // update screen size if needed
+  }
 
 }

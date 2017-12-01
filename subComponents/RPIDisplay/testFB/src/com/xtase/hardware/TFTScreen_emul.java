@@ -216,6 +216,10 @@ static TextArea zone = null;
       win.setVisible(true);
     }
 
+    public void reshape() {
+      win.setSize( (int)SCREEN_WIDTH, (int)SCREEN_VIRTUAL_HEIGHT );
+    }
+
     public void close() {
       cls();
       closeFb();
