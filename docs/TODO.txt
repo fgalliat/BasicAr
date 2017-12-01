@@ -20,6 +20,10 @@ RPI Java FrameBuffer
      900px / 50ch = 18px font height
      12px * 100ch = 1200px screen width ....
 
+  > or just double the font zoom
+    6x2 -> 12px -> 1200px SCR_WIDTH
+    8x2 -> 16px -> 800px  SCR_HEIGHT
+
   > add pseudo interrupt to handle RPID feeback
     (Serial1 listening)
 
