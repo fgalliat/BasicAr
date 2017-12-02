@@ -89,7 +89,7 @@ public class TestGUI {
         // echo -e "^[e" > /tmp/vgat  -- to cls system
         // echo -e "\\u3" > /tmp/vgat  -- to close system (but w/ only 1 '\')
 
-        String pipeFileName = "vgat";
+        String pipeFileName = "rpid_out"; // here its the input !!!!
         File pipeFile = new File("/tmp/", pipeFileName);
         pipeFile.delete();
         if ( !pipeFile.exists() ) {
