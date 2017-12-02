@@ -70,6 +70,8 @@ public class GUIInterfaceFB {
 	static Color FG = Color.green;
 	static Color BG = Color.black;
 
+	static int WHITE_RGB = Color.white.getRed();
+
   static int HERE_MODIFIER = 1;
   
   // !!!!!! needs @ least 800px height
@@ -124,7 +126,12 @@ public class GUIInterfaceFB {
         win.hasBeenRendered = true;
       }
       if ( askFinishRedraw ) { win.setDirty(); break; }
-    }
+	}
+	
+	// =======================================
+	d_drawString("coucou", (100-10)*ftWidth, 1*ftHeight, WHITE_RGB, true);
+	// =======================================
+
     askFinishRedraw = false;
     finishedRedraw = true;
   }

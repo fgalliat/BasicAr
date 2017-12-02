@@ -210,14 +210,15 @@ static TextArea zone = null;
       SCREEN_WIDTH = 800;
       SCREEN_HEIGHT= 600;
 
-      win.setSize( (int)SCREEN_WIDTH, (int)SCREEN_VIRTUAL_HEIGHT );
+      win.setSize( (int)SCREEN_WIDTH, (int)SCREEN_HEIGHT );
       //win.setSize( (int)SCREEN_VIRTUAL_WIDTH, (int)SCREEN_HEIGHT);
       win.setLocation(100, 0);
       win.setVisible(true);
     }
 
     public void reshape() {
-      win.setSize( (int)SCREEN_WIDTH, (int)SCREEN_VIRTUAL_HEIGHT );
+      win.setSize( (int)SCREEN_WIDTH, (int)SCREEN_HEIGHT );
+      System.out.println("Screen is now "+SCREEN_WIDTH+"x"+SCREEN_HEIGHT);
     }
 
     public void close() {

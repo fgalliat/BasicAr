@@ -110,7 +110,7 @@ public class TestGUI {
           while ( serial.available() > 0 ) {
             ch = (char)serial.read();
 
-System.out.println((int)ch+ " "+ (char)ch);
+//System.out.println((int)ch+ " "+ (char)ch);
 
             if ( ch == EXIT_CHAR ) { break; } // Ctrl-C code
             vgat.submitChar( ch );
