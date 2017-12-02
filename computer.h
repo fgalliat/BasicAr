@@ -13,6 +13,7 @@
 
  #include <sys/types.h>
  #include <iostream>
+ #include <fstream>
  #include <dirent.h>
 
  #include <ncurses.h>
@@ -95,6 +96,12 @@
 
 // ======== VGAT output emulation (extern prgm) =======
 
+static bool is_file_exist(const char *fileName)
+{
+    std::ifstream infile(fileName);
+    return infile.good();
+}
+
   class _FakedSerial {
       private:
         bool portOK = false;
@@ -104,9 +111,17 @@
         FILE* pipeFile;
       public:
           void begin(int speed) {
-              pipeFile = fopen("/tmp/vgat", "w");
-              if ( !pipeFile ) {
+
+              if ( ! is_file_exist("/tmp/vgat") ) {
                   Serial.println("Failed to open SerialVGA port\n");
+                  portOK = false;
+                  return;
+              }
+
+              pipeFile = fopen("/tmp/vgat", "w");
+              if ( pipeFile != NULL ) {
+                  Serial.println("Failed to open SerialVGA port\n");
+                  portOK = false;
                   return;
               }
               portOK = true;
@@ -229,13 +244,25 @@
           void setTX(int pin) {}
 
           void begin(int speed) {
-              pipeFile = fopen("/tmp/rpid_out", "w");
-              if ( !pipeFile ) {
-                  Serial.println("Failed to open SerialVGA port\n");
+              if ( ! is_file_exist("/tmp/rpid_out") ) {
+                  Serial.println("Failed to open SerialRPID port\n");
+                  portOK = false;
                   return;
               }
 
+              pipeFile = fopen("/tmp/rpid_out", "w");
+              if ( !pipeFile ) {
+                Serial.println("Failed to open SerialRPID port\n");
+                portOK = false;
+                return;
+              }
+
               pipeFileIn = fopen("/tmp/rpid_in", "r");
+              if ( !pipeFileIn ) {
+                  Serial.println("Failed to open SerialRPID port\n");
+                  portOK = false;
+                  return;
+              }
 
               portOK = true;
           }
