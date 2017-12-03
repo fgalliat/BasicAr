@@ -2,6 +2,8 @@
 import java.awt.Color;
 import java.util.*;
 
+import java.text.*; // SimpleDateFormat
+
 import com.xtase.hardware.*;
 import com.xtase.struct.*;
 
@@ -29,6 +31,8 @@ public class GUIInterfaceFB {
 
 	protected static int TTY_WIDTH = 100;
 	protected static int TTY_HEIGHT = 50;
+
+	static SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm:ss");
 
 	public static GUIInterfaceFB getInstance() {
 		return instance;
@@ -129,7 +133,9 @@ public class GUIInterfaceFB {
 	}
 	
 	// =======================================
-	d_drawString("coucou", (100-10)*ftWidth, 1*ftHeight, WHITE_RGB, true);
+	//String time = timeFormat.format(new Date());
+	String time = "cocou";
+	d_drawString(time, (100-10)*ftWidth, 1*ftHeight, WHITE_RGB, true);
 	// =======================================
 
     askFinishRedraw = false;

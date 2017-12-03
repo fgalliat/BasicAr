@@ -112,13 +112,13 @@ static bool is_file_exist(const char *fileName)
       public:
           void begin(int speed) {
 
-              if ( ! is_file_exist("/tmp/vgat") ) {
-                  Serial.println("Failed to open SerialVGA port\n");
-                  portOK = false;
-                  return;
-              }
+            //   if ( ! is_file_exist("/tmp/vgat") ) {
+            //       Serial.println("Failed to open SerialVGA port (x1)\n");
+            //       portOK = false;
+            //       return;
+            //   }
 
-              pipeFile = fopen("/tmp/vgat", "w");
+              pipeFile = fopen("/tmp/vgat", "w+");
               if ( pipeFile != NULL ) {
                   Serial.println("Failed to open SerialVGA port\n");
                   portOK = false;
@@ -244,24 +244,26 @@ static bool is_file_exist(const char *fileName)
           void setTX(int pin) {}
 
           void begin(int speed) {
-              if ( ! is_file_exist("/tmp/rpid_out") ) {
-                  Serial.println("Failed to open SerialRPID port\n");
-                  portOK = false;
-                  return;
-              }
+            //   if ( ! is_file_exist("/tmp/rpid_out") ) {
+            //       Serial.println("Failed to open SerialRPID out port (x1)\n");
+            //       portOK = false;
+            //       return;
+            //   }
 
-              pipeFile = fopen("/tmp/rpid_out", "w");
+              pipeFile = fopen("/tmp/rpid_out", "w+");
               if ( !pipeFile ) {
-                Serial.println("Failed to open SerialRPID port\n");
+                Serial.println("Failed to open SerialRPID out port\n");
                 portOK = false;
                 return;
               }
 
-              pipeFileIn = fopen("/tmp/rpid_in", "r");
-              if ( !pipeFileIn ) {
-                  Serial.println("Failed to open SerialRPID port\n");
-                  portOK = false;
-                  return;
+              if ( is_file_exist("/tmp/rpid_in") ) {
+                pipeFileIn = fopen("/tmp/rpid_in", "r+");
+                if ( !pipeFileIn ) {
+                    Serial.println("Failed to open SerialRPID in port in\n");
+                    //portOK = false;
+                    //return;
+                }
               }
 
               portOK = true;
