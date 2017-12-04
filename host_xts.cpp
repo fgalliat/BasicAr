@@ -652,6 +652,10 @@ void drawLine(int x1, int y1, int x2, int y2) {
     display.drawLine(x1, y1, x2, y2, WHITE);
     display.display();
     #endif
+  } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
+    #ifdef BOARD_RPID
+      rpid_gfx_line(x1, y1, x2, y2, 0xFFFFFF);
+    #endif
   }
 }
 
@@ -660,6 +664,10 @@ void drawCircle(int x1, int y1, int radius) {
     #ifdef BUILTIN_LCD
     display.drawCircle(x1, y1, radius, WHITE);
     display.display();
+    #endif
+  } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
+    #ifdef BOARD_RPID
+      rpid_gfx_circle(x1, y1, radius, 0xFFFFFF);
     #endif
   }
 }
@@ -671,6 +679,10 @@ void drawPixel(int x1, int y1, int color) {
     display.drawPixel(x1, y1, color);
     display.display(); // see if fast enought .... else use interrupts.
     #endif 
+  } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
+    #ifdef BOARD_RPID
+      rpid_gfx_drawPixel(x1, y1, 0xFFFFFF);
+    #endif
   }
 }
 
@@ -718,6 +730,13 @@ bool drawBPPfile(char* filename) {
   // do something w/ these bytes ...
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     #ifdef BUILTIN_LCD
+      display.clearDisplay();
+      display.drawBitmap(0, 0, picturebuff, 128, 64, 0x01);
+      display.display();
+    #endif
+  } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
+    #ifdef BUILTIN_LCD
+      // TMP !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       display.clearDisplay();
       display.drawBitmap(0, 0, picturebuff, 128, 64, 0x01);
       display.display();

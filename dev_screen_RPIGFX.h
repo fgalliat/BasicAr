@@ -48,14 +48,20 @@ void rpid_print(char ch, bool autoReplaceLF);
 
 // =============================================
 
-void rpid_drawPixel(char px, int left, int top);
+
 
 void rpid_Vline(int x1, int y1, int y2);
-
 void rpid_Hline(int x1, int y1, int x2);
 
-
+void rpid_drawPixel(char px, int left, int top);
 void rpid_line(int x1, int y1, int x2, int y2);
+
+// ================
+
+void rpid_gfx_circle(int x1, int y1, int radius, int color);
+void rpid_gfx_drawPixel(int left, int top, int color);
+void rpid_gfx_line(int x1, int y1, int x2, int y2, int color);
+
 
 // =============================================
 
