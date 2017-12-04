@@ -87,7 +87,7 @@ static int setConsoles(int outDev, int inDev, int gfxDev) {
       OUTPUT_DEVICE = OUT_DEV_RPID_SERIAL; 
       outDev = OUTPUT_DEVICE;
       setScreenSize(RPID_TEXT_WIDTH, RPID_TEXT_HEIGHT);
-      GFX_DEVICE = GFX_DEV_LCD_MINI;  // just for this time....
+      GFX_DEVICE = GFX_DEV_RPID_SERIAL;
       gfxDev = GFX_DEVICE;
     }
     return gfxDev;
