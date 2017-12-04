@@ -660,24 +660,20 @@ public class GUIInterfaceFB {
   
   protected boolean yetReceivedChar = false;
   
+  protected boolean gfxModeCmd = false;
+
   public void submitChar(char ch) {
-    //if ( !yetReceivedChar ) {
-    //  yetReceivedChar = true;
-    //  reboot();
-    //  cls();
-    //  setDirty();
-    //}
-    
     
     // CMDS do ends with an '\n'
     if ( ch == '^' && tmpCmd == null ) {
       tmpCmd = "^";
       waitFor2ndEscChar = true;
-    } else if (waitFor2ndEscChar && ch == '[') {
-      tmpCmd += "[";
+    } else if (waitFor2ndEscChar && (ch == '[' || ch == '(') ) {
+	  tmpCmd += ch;
+	  if ( ch == '(' ) { gfxModeCmd = true; }
       waitFor2ndEscChar = false;
       waitForCmd = true;
-    } else if (waitFor2ndEscChar && ch != '[') {
+    } else if (waitFor2ndEscChar && !(ch == '[' || ch == '(') ) {
       submit( tmpCmd );
       waitFor2ndEscChar = false;
       waitForCmd = false;
@@ -702,7 +698,28 @@ public class GUIInterfaceFB {
   
 	public void submit(String expr) {
       //System.out.println(">>"+expr+"<<");
-      
+	  
+		if ( gfxModeCmd ) {
+			if (expr.startsWith("^(")) {
+				expr = expr.substring(2);
+				if (expr.startsWith("l,")) {
+					// line
+					String[] tks = expr.split("\\,");
+					dispSrv.drawLine( toInt(tks[1]),toInt(tks[2]),toInt(tks[3]), toInt(tks[4]), toInt(tks[5]) );
+				} else if (expr.startsWith("c,")) {
+					// circle
+					String[] tks = expr.split("\\,");
+					dispSrv.drawCircle( toInt(tks[1]),toInt(tks[2]),toInt(tks[3]), toInt(tks[4]) );
+				} else if (expr.startsWith("p,")) {
+					// pixel
+					String[] tks = expr.split("\\,");
+					dispSrv.drawPixel( toInt(tks[1]),toInt(tks[2]),toInt(tks[3]) );
+				} 
+			} else {
+				print(expr);
+			}
+		} else
+
 		if (expr.startsWith("^[")) {
 			expr = expr.substring(2);
 			if (expr.equals("r")) {
