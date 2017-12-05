@@ -74,6 +74,9 @@ public class TestGUI {
 
     if (MODE_RPI) {
       t = TFTScreen.getInstance();
+      if ( TFTScreen.SCREEN_HEIGHT < GUIInterfaceFB.ftHeight * GUIInterfaceFB.TTY_HEIGHT ) {
+        GUIInterfaceFB.TXT_ZOOM = 1;
+      }
     } else {
       t = TFTScreen_emul.getInstance();
     }

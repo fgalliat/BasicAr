@@ -35,12 +35,23 @@ public class GUIInterfaceFB {
 
 	static SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm:ss");
 
+	static int HERE_MODIFIER = 1;
+	
+	// !!!!!! needs @ least 800px height
+	static int TXT_ZOOM = 2;
+	static int ftHeight = (10 - 1) * TXT_ZOOM; // -1 is experimental !!!!
+	static int ftWidth = (7 - HERE_MODIFIER) * TXT_ZOOM;
+
 	public static GUIInterfaceFB getInstance() {
 		return instance;
 	}
 
 	public GUIInterfaceFB(TFTScreen dispSrv) {
 		instance = this;
+
+		ftHeight = (10 - 1) * TXT_ZOOM; // -1 is experimental !!!!
+		ftWidth = (7 - HERE_MODIFIER) * TXT_ZOOM;
+
 		//offscreen = Bitmap.createNew(  dispSrv.SCREEN_WIDTH, dispSrv.SCREEN_HEIGHT );
 
 		System.out.println(dispSrv.SCREEN_WIDTH + "x" + dispSrv.SCREEN_HEIGHT);
@@ -81,12 +92,7 @@ public class GUIInterfaceFB {
 
 	static int WHITE_RGB = Color.white.getRed();
 
-	static int HERE_MODIFIER = 1;
-
-	// !!!!!! needs @ least 800px height
-	static int TXT_ZOOM = 2;
-	static int ftHeight = (10 - 1) * TXT_ZOOM; // -1 is experimental !!!!
-	static int ftWidth = (7 - HERE_MODIFIER) * TXT_ZOOM;
+	
 
 	// -------------------------------------------------
 	boolean yetDrawn = false;
@@ -255,7 +261,7 @@ public class GUIInterfaceFB {
 			attach();
 			focus();
 
-			System.out.println("created win id#" + id);
+			//System.out.println("created win id#" + id);
 		}
 
 		// Cf here : text is topLeft driven (not bottommLeft driven)
@@ -714,7 +720,7 @@ public class GUIInterfaceFB {
 				tmpCmd = null;
 				return shutdown;
 			} else if (ch == '\r') {
-				return true;
+				return false;
 			} else {
 				tmpCmd += ch;
 			}
