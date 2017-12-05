@@ -18,7 +18,7 @@ public class TestGUI {
 	// =============================================================
 	
   static TFTScreen t = null;
-	static GPIOInput gpioIn = new GPIOInput();
+	// static GPIOInput gpioIn = new GPIOInput();
 	
   	
   
@@ -116,7 +116,7 @@ public class TestGUI {
             vgat.submitChar( ch );
           }
           if ( ch == EXIT_CHAR ) { break; } // Ctrl-C code
-          Zzz(100);
+          TFTScreen.Zzz(100);
         }
 
         serial.close();

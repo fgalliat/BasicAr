@@ -140,9 +140,9 @@ public class TFTScreen {
   public void drawPixel(int x, int y, int color, int zoom) {
     blitPixel(x*zoom, y*zoom, color);
     if ( zoom >= 2 ) {
-      blitPixel((x+1)*zoom, (y+0)*zoom, color);
-      blitPixel((x+1)*zoom, (y+1)*zoom, color);
-      blitPixel((x+0)*zoom, (y+1)*zoom, color);
+      blitPixel((x*zoom+1), (y*zoom+0), color);
+      blitPixel((x*zoom+1), (y*zoom+1), color);
+      blitPixel((x*zoom+0), (y*zoom+1), color);
     }
   }
   // ___________________________________________________
@@ -300,5 +300,12 @@ public class TFTScreen {
   public void reshape() {
     // update screen size if needed
   }
+
+  public static void Zzz(long time) {
+		try {
+			Thread.sleep(time);
+		} catch (Exception ex) {
+		}
+	}
 
 }

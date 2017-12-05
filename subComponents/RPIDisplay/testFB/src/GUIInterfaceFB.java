@@ -911,10 +911,7 @@ public class GUIInterfaceFB {
 	}
 
 	static void Zzz(long time) {
-		try {
-			Thread.sleep(time);
-		} catch (Exception ex) {
-		}
+		TFTScreen.Zzz(time);
 	}
 
 }
