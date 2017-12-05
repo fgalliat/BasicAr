@@ -45,7 +45,7 @@ public class GUIInterfaceFB {
 
 		System.out.println(dispSrv.SCREEN_WIDTH + "x" + dispSrv.SCREEN_HEIGHT);
 		GUIInterfaceFB.dispSrv = dispSrv;
-		
+
 		System.out.println("BLACK:" + Color.BLACK.getRGB());
 		System.out.println("WHITE:" + Color.WHITE.getRGB());
 		System.out.println("RED:" + Color.RED.getRGB());
@@ -172,12 +172,12 @@ public class GUIInterfaceFB {
 		boolean borders;
 		String title;
 		int xModifier = 0, yModifierTop = 0, yModifierBottom = 0;
-	  
-	  	boolean[] dirtyLines = new boolean[ 0 ];
 
-      static char BLANK_CHAR = ' ';
-      //static char BLANK_CHAR = 0x00;
-      
+		boolean[] dirtyLines = new boolean[0];
+
+		static char BLANK_CHAR = ' ';
+		//static char BLANK_CHAR = 0x00;
+
 		int cursX = 0;
 		int cursY = 0;
 
@@ -185,22 +185,22 @@ public class GUIInterfaceFB {
 
 		protected boolean isDirty = false;
 		protected boolean isAttached = false;
-      	protected boolean hasBeenRendered = false;
-      
+		protected boolean hasBeenRendered = false;
 
 		int ttyWidth, ttyHeight;
 
 		protected void setDirty() {
-          setDirty(true);
-        }
-        protected void setDirty(boolean propagate) {
+			setDirty(true);
+		}
+
+		protected void setDirty(boolean propagate) {
 			this.isDirty = true;
 			// .... ????
 
 			//if (propagate) GUIInterfaceFB.getInstance().setDirty(this);
 
 			// new : sync redraw Cf gfx ....
-			render( GUIInterfaceFB.getInstance() );
+			render(GUIInterfaceFB.getInstance());
 
 		}
 
@@ -216,10 +216,12 @@ public class GUIInterfaceFB {
 			this.w = w;
 			this.h = h;
 			this.borders = borders;
-          
-			dirtyLines = new boolean[ h ];
-			for(int i=0; i < h; i++) { dirtyLines[i] = true; } 
-          
+
+			dirtyLines = new boolean[h];
+			for (int i = 0; i < h; i++) {
+				dirtyLines[i] = true;
+			}
+
 			if (title != null && title.isEmpty()) {
 				title = null;
 			}
@@ -251,45 +253,45 @@ public class GUIInterfaceFB {
 			GUIInterfaceFB.getInstance().windows[id] = this;
 
 			attach();
-            focus();
-          
-            System.out.println( "created win id#"+id );
-		}
-      
+			focus();
 
-        // Cf here : text is topLeft driven (not bottommLeft driven)
-        int TTY_Y_MODIFIER = 1;
-        int TTY_X_MODIFIER = 1;
+			System.out.println("created win id#" + id);
+		}
+
+		// Cf here : text is topLeft driven (not bottommLeft driven)
+		int TTY_Y_MODIFIER = 1;
+		int TTY_X_MODIFIER = 1;
 
 		protected void applyLineColor(GUIInterfaceFB iface, int y) {
-            int color = Color.black.getRGB();
-          
-			if (iface.screenlines[this.y + y] == null) {
-              color = BG.getRGB();
-			} else {
-              color = iface.screenlines[this.y + y].BG.getRGB();
-              //color = (255<<24)+(r<<16) + (g << 8) + b ;
-			}
-          
-          // AA RR GG BB
-          // color = 0xFF00FF00;
-          
-            d_fillRect(this.x * ftWidth, (this.y + y+TTY_Y_MODIFIER) * ftHeight, (this.w+TTY_X_MODIFIER) * ftWidth, 1 * ftHeight, color);
+			int color = Color.black.getRGB();
 
 			if (iface.screenlines[this.y + y] == null) {
-              FGcolor = FG.getRGB();
+				color = BG.getRGB();
 			} else {
-              FGcolor = iface.screenlines[this.y + y].FG.getRGB();
+				color = iface.screenlines[this.y + y].BG.getRGB();
+				//color = (255<<24)+(r<<16) + (g << 8) + b ;
+			}
+
+			// AA RR GG BB
+			// color = 0xFF00FF00;
+
+			d_fillRect(this.x * ftWidth, (this.y + y + TTY_Y_MODIFIER) * ftHeight, (this.w + TTY_X_MODIFIER) * ftWidth,
+					1 * ftHeight, color);
+
+			if (iface.screenlines[this.y + y] == null) {
+				FGcolor = FG.getRGB();
+			} else {
+				FGcolor = iface.screenlines[this.y + y].FG.getRGB();
 			}
 		}
 
 		public void render(GUIInterfaceFB iface) {
-          GUIInterfaceFB.inRender = true;
+			GUIInterfaceFB.inRender = true;
 			String line = "";
 
 			if (!hasBeenRendered && borders) {
-              //hasBeenRendered = true;
-              
+				//hasBeenRendered = true;
+
 				// TODO : nicer borders
 				line = "";
 				for (int i = 0; i < this.w; i++) {
@@ -298,29 +300,29 @@ public class GUIInterfaceFB {
 				// upper line
 				applyLineColor(iface, 0);
 				//iface.getGraphics().drawString(line, this.x * ftWidth, (this.y + 1) * ftHeight);
- 				d_drawString(line, this.x * ftWidth, (this.y + 1) * ftHeight, FGcolor, false);
+				d_drawString(line, this.x * ftWidth, (this.y + 1) * ftHeight, FGcolor, false);
 
 				// lower line
 				applyLineColor(iface, (this.h - 1));
 				//iface.getGraphics().drawString(line, this.x * ftWidth, ((this.y + this.h - 1) + 1) * ftHeight);
- 				d_drawString(line, this.x * ftWidth, ((this.y + this.h - 1) + 1) * ftHeight, FGcolor, false);
+				d_drawString(line, this.x * ftWidth, ((this.y + this.h - 1) + 1) * ftHeight, FGcolor, false);
 
 				if (hasTitle()) {
 					// under-title line
 					applyLineColor(iface, (1 + 1));
 					//iface.getGraphics().drawString(line, this.x * ftWidth, (this.y + 1 + 1 + 1) * ftHeight);
- 					d_drawString(line, this.x * ftWidth, (this.y + 1 + 1 + 1) * ftHeight, FGcolor, false);
+					d_drawString(line, this.x * ftWidth, (this.y + 1 + 1 + 1) * ftHeight, FGcolor, false);
 
 					// title line
 					line = "|";
-					int xx = ((this.w-2) - title.length()) / 2;
-					
+					int xx = ((this.w - 2) - title.length()) / 2;
+
 					// not centered by default
 					//xx = 0;
 					//for (int zz = 0; zz < xx; zz++) {
 					//	line += BLANK_CHAR;
 					//}
-                  
+
 					line += title;
 					for (int zz = line.length(); zz < this.w - 1; zz++) {
 						line += BLANK_CHAR;
@@ -328,16 +330,19 @@ public class GUIInterfaceFB {
 					line += "|";
 					applyLineColor(iface, 1);
 					//iface.getGraphics().drawString(line, this.x * ftWidth, (this.y + 1 + 1) * ftHeight);
-   					d_drawString(line, this.x * ftWidth, (this.y + 1 + 1) * ftHeight, FGcolor, false);
+					d_drawString(line, this.x * ftWidth, (this.y + 1 + 1) * ftHeight, FGcolor, false);
 				}
 			}
 
 			for (int yy = 0; yy < this.h - (yModifierTop + yModifierBottom); yy++) {
-              
-				  //if ( hasBeenRendered && yy > yMaxWritten ) { break; }
-				if ( !dirtyLines[ yy ] ) { continue; }
-				else { dirtyLines[ yy ] = false; }
-              
+
+				//if ( hasBeenRendered && yy > yMaxWritten ) { break; }
+				if (!dirtyLines[yy]) {
+					continue;
+				} else {
+					dirtyLines[yy] = false;
+				}
+
 				char[] lineSeg = this.content[yy];
 				line = "";
 				if (borders) {
@@ -354,23 +359,23 @@ public class GUIInterfaceFB {
 				//iface.getGraphics().drawString(line, this.x * ftWidth, (this.y + yy + yModifierTop + 1) * ftHeight);
 				d_drawString(line, this.x * ftWidth, (this.y + yy + yModifierTop + 1) * ftHeight, FGcolor, false);
 			}
-          
-            //d_blit();
-          
+
+			//d_blit();
+
 			isDirty = false;
-          
-          GUIInterfaceFB.inRender = false;
+
+			GUIInterfaceFB.inRender = false;
 		}
 
 		public boolean isAttached() {
 			return this.isAttached;
 		}
 
-        public void attach() {
-          isAttached = true;
-          setDirty();
-        }
-      
+		public void attach() {
+			isAttached = true;
+			setDirty();
+		}
+
 		public void detach() {
 			isAttached = false;
 			setDirty();
@@ -382,7 +387,7 @@ public class GUIInterfaceFB {
 					// System.out.println("("+ id +") x="+x+", y="+y+" Vs w="+w+", h="+h);
 					content[y][x] = BLANK_CHAR;
 				}
-				dirtyLines[ y ] = true;
+				dirtyLines[y] = true;
 			}
 			cursX = 0;
 			cursY = 0;
@@ -397,7 +402,7 @@ public class GUIInterfaceFB {
 		}
 
 		protected void print(char ch) {
-			dirtyLines[ cursY ] = true;
+			dirtyLines[cursY] = true;
 
 			if (ch == '\r') {
 				return;
@@ -418,21 +423,21 @@ public class GUIInterfaceFB {
 			cursY++;
 			cursX = 0;
 			if (cursY >= this.ttyHeight) {
-			  scrollUp();
-              cursY--;
+				scrollUp();
+				cursY--;
 			}
 		}
 
 		protected void scrollUp() {
-          for (int y = 1; y < this.ttyHeight; y++) {
-            //this.content[y-1] = this.content[y];
-			System.arraycopy( this.content[y], 0, this.content[y-1], 0, this.ttyWidth );
-			dirtyLines[ y-1 ] = true;
-          }          
-          for (int x = 0; x < this.ttyWidth; x++) {
-			content[this.ttyHeight-1][x] = BLANK_CHAR;
-			dirtyLines[ this.ttyHeight-1-1 ] = true;
-          }
+			for (int y = 1; y < this.ttyHeight; y++) {
+				//this.content[y-1] = this.content[y];
+				System.arraycopy(this.content[y], 0, this.content[y - 1], 0, this.ttyWidth);
+				dirtyLines[y - 1] = true;
+			}
+			for (int x = 0; x < this.ttyWidth; x++) {
+				content[this.ttyHeight - 1][x] = BLANK_CHAR;
+				dirtyLines[this.ttyHeight - 1 - 1] = true;
+			}
 		}
 
 		public void locate(int x2, int y2) {
@@ -682,7 +687,7 @@ public class GUIInterfaceFB {
 
 	protected boolean gfxModeCmd = false;
 
-	public void submitChar(char ch) {
+	public boolean submitChar(char ch) {
 
 		// CMDS do ends with an '\n'
 		if (ch == '^' && tmpCmd == null) {
@@ -696,18 +701,20 @@ public class GUIInterfaceFB {
 			waitFor2ndEscChar = false;
 			waitForCmd = true;
 		} else if (waitFor2ndEscChar && !(ch == '[' || ch == '(')) {
-			submit(tmpCmd);
+			boolean shutdown = submit(tmpCmd);
 			waitFor2ndEscChar = false;
 			waitForCmd = false;
 			tmpCmd = null;
+			return shutdown;
 		} else if (waitForCmd) {
 			if (ch == '\n') {
-				submit(tmpCmd);
+				boolean shutdown = submit(tmpCmd);
 				waitFor2ndEscChar = false;
 				waitForCmd = false;
 				tmpCmd = null;
+				return shutdown;
 			} else if (ch == '\r') {
-				return;
+				return true;
 			} else {
 				tmpCmd += ch;
 			}
@@ -716,22 +723,22 @@ public class GUIInterfaceFB {
 			print(ch);
 		}
 
+		return false;
 	}
 
 	protected void line(int x, int y, int x2, int y2, int color) {
-		dispSrv.drawLine(x, y, x2, y2, color,TXT_ZOOM);
+		dispSrv.drawLine(x, y, x2, y2, color, TXT_ZOOM);
 	}
 
 	protected void circle(int x, int y, int radius, int color) {
-		dispSrv.drawCircle(x,y,radius,color,TXT_ZOOM);
+		dispSrv.drawCircle(x, y, radius, color, TXT_ZOOM);
 	}
 
 	protected void pixel(int x, int y, int color) {
-		dispSrv.drawPixel(x,y,color,TXT_ZOOM);
+		dispSrv.drawPixel(x, y, color, TXT_ZOOM);
 	}
- 
 
-	public void submit(String expr) {
+	public boolean submit(String expr) {
 		//System.out.println(">>"+expr+"<<");
 
 		if (gfxModeCmd) {
@@ -771,6 +778,8 @@ public class GUIInterfaceFB {
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
+				return true;
+
 			} else if (expr.equals("e")) {
 				cls();
 			} else if (expr.startsWith("p,")) {
@@ -804,6 +813,7 @@ public class GUIInterfaceFB {
 		} else {
 			print(expr);
 		}
+		return false;
 	}
 
 	// -----------------------------

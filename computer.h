@@ -273,7 +273,7 @@ static bool is_file_exist(const char *fileName)
               // 4 is arbitrary EXIT CODE
               // because 3 (break) failed
               if ( portOK ) { 
-                  fputc(0x04, pipeFile); 
+                  fprintf(pipeFile, "^[halt\n"); 
                   flush(); 
                   fclose(pipeFile);
 

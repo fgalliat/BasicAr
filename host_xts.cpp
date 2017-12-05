@@ -1285,7 +1285,7 @@ void MCU_halt() {
   #ifdef BUT_TEENSY
 
     #ifdef BOARD_RPID
-      rpid_haltGPU();
+      rpid_haltGPU(false);
     #endif
 
     #ifdef BOARD_SND
