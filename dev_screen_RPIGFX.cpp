@@ -159,19 +159,19 @@ void _rpid_gfx_cmd(const char* cmd, long delayToWait) {
 
 void rpid_gfx_circle(int x1, int y1, int radius, int color) {
     char msg[16];
-    sprintf( msg, "c%d,%d,%d,%d", x1, y1, radius, color );
+    sprintf( msg, "c,%d,%d,%d,%d", x1, y1, radius, color );
     _rpid_gfx_cmd( msg, 10 );
 }
 
 void rpid_gfx_drawPixel(int left, int top, int color) {
     char msg[16];
-    sprintf( msg, "p%d,%d,%d", left, top, color );
+    sprintf( msg, "p,%d,%d,%d", left, top, color );
     _rpid_gfx_cmd( msg, 10 );
 }
 
 void rpid_gfx_line(int x1, int y1, int x2, int y2, int color) {
     char msg[16];
-    sprintf( msg, "l%d,%d,%d", x1, y1, x2, y2, color );
+    sprintf( msg, "l,%d,%d,%d,%d,%d", x1, y1, x2, y2, color );
     _rpid_gfx_cmd( msg, 10 );
 }
 

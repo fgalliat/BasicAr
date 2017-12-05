@@ -646,6 +646,13 @@ void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
 //#define WHITE 1
 //#define BLACK 0
 
+#define RPID_BLACK -16777216
+#define RPID_WHITE -1
+#define RPID_RED   -65536
+#define RPID_GREEN -16711936
+#define RPID_BLUE  -16776961
+
+
 void drawLine(int x1, int y1, int x2, int y2) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     #ifdef BUILTIN_LCD
@@ -654,7 +661,7 @@ void drawLine(int x1, int y1, int x2, int y2) {
     #endif
   } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
     #ifdef BOARD_RPID
-      rpid_gfx_line(x1, y1, x2, y2, 0xFFFFFF);
+      rpid_gfx_line(x1, y1, x2, y2, RPID_WHITE);
     #endif
   }
 }
@@ -667,7 +674,7 @@ void drawCircle(int x1, int y1, int radius) {
     #endif
   } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
     #ifdef BOARD_RPID
-      rpid_gfx_circle(x1, y1, radius, 0xFFFFFF);
+      rpid_gfx_circle(x1, y1, radius, RPID_WHITE);
     #endif
   }
 }
@@ -681,7 +688,7 @@ void drawPixel(int x1, int y1, int color) {
     #endif 
   } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
     #ifdef BOARD_RPID
-      rpid_gfx_drawPixel(x1, y1, 0xFFFFFF);
+      rpid_gfx_drawPixel(x1, y1, RPID_WHITE);
     #endif
   }
 }

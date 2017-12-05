@@ -67,8 +67,12 @@ public class TFTScreen {
   }
 
   public void drawCircle(int x, int y, int radius, int color) {
+    drawCircle(x, y, radius, color, 1);
+  }
+
+  public void drawCircle(int x, int y, int radius, int color, int zoom) {
     for (int i = 0; i < 360; i++) {
-      drawPixel(x + (int) (radius * cos[i]), y + (int) (radius * sin[i]), color);
+      drawPixel(x + (int) (radius * cos[i]), y + (int) (radius * sin[i]), color, zoom);
     }
   }
 
@@ -81,6 +85,10 @@ public class TFTScreen {
   }
 
   public void drawLine(int x, int y, int x2, int y2, int color) {
+    drawLine(x, y, x2, y2, color, 1);
+  }
+
+  public void drawLine(int x, int y, int x2, int y2, int color, int zoom) {
     if (y == y2) {
       if (y < 0 || y >= SCREEN_VIRTUAL_HEIGHT) {
         return;
@@ -91,7 +99,7 @@ public class TFTScreen {
         x = swap;
       }
       for (int i = max(x, 0); i <= min(x2, SCREEN_VIRTUAL_WIDTH); i++) {
-        blitPixel(i, y, color);
+        drawPixel(i, y, color, zoom);
       }
     } else if (x == x2) {
       if (x < 0 || x >= SCREEN_VIRTUAL_WIDTH) {
@@ -103,7 +111,7 @@ public class TFTScreen {
         y = swap;
       }
       for (int i = max(y, 0); i <= min(y2, SCREEN_VIRTUAL_HEIGHT); i++) {
-        blitPixel(x, i, color);
+        drawPixel(x, i, color, zoom);
       }
     } else {
       int X1 = x, X2 = x2, Y1 = y, Y2 = y2;
@@ -120,13 +128,22 @@ public class TFTScreen {
       int _y;
       for (int _x = X1; _x < X2; _x++) {
         _y = Y1 + dy * (_x - X1) / dx;
-        blitPixel(_x, _y, color);
+        drawPixel(_x, _y, color, zoom);
       }
     }
   }
 
   public void drawPixel(int x, int y, int color) {
-    blitPixel(x, y, color);
+    drawPixel(x, y, color, 1);
+  }
+
+  public void drawPixel(int x, int y, int color, int zoom) {
+    blitPixel(x*zoom, y*zoom, color);
+    if ( zoom >= 2 ) {
+      blitPixel((x+1)*zoom, (y+0)*zoom, color);
+      blitPixel((x+1)*zoom, (y+1)*zoom, color);
+      blitPixel((x+0)*zoom, (y+1)*zoom, color);
+    }
   }
   // ___________________________________________________
 

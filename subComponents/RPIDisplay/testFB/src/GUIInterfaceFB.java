@@ -1,3 +1,4 @@
+
 // BEWARE : as uses .awt.Color / .awt.Image .. seems to need X11 started
 import java.awt.Color;
 import java.util.*;
@@ -20,11 +21,11 @@ import com.xtase.struct.*;
 
 public class GUIInterfaceFB {
 
-  //static Bitmap offscreen = null;
-  static boolean inRender = false;
-  
-  static boolean DO_ONLY_SINGLE_TEST = false;
-  
+	//static Bitmap offscreen = null;
+	static boolean inRender = false;
+
+	static boolean DO_ONLY_SINGLE_TEST = false;
+
 	protected static TFTScreen dispSrv = null;
 
 	protected static GUIInterfaceFB instance = null;
@@ -40,34 +41,38 @@ public class GUIInterfaceFB {
 
 	public GUIInterfaceFB(TFTScreen dispSrv) {
 		instance = this;
+		//offscreen = Bitmap.createNew(  dispSrv.SCREEN_WIDTH, dispSrv.SCREEN_HEIGHT );
 
-        //offscreen = Bitmap.createNew(  dispSrv.SCREEN_WIDTH, dispSrv.SCREEN_HEIGHT );
-      
-        System.out.println( dispSrv.SCREEN_WIDTH +"x"+ dispSrv.SCREEN_HEIGHT );
+		System.out.println(dispSrv.SCREEN_WIDTH + "x" + dispSrv.SCREEN_HEIGHT);
 		GUIInterfaceFB.dispSrv = dispSrv;
+		
+		System.out.println("BLACK:" + Color.BLACK.getRGB());
+		System.out.println("WHITE:" + Color.WHITE.getRGB());
+		System.out.println("RED:" + Color.RED.getRGB());
+		System.out.println("GREEN:" + Color.GREEN.getRGB());
+		System.out.println("BLUE:" + Color.BLUE.getRGB());
 
 		new TextWindow(0, 0, 0, TTY_WIDTH, TTY_HEIGHT, false, null);
 		curWindow = 0; // no win (100x50 chars default main win)
 
-      	// ralenti le deamrrage mais si pas d'autre fenetres 
-        // definies -> necessaire ....
+		// ralenti le deamrrage mais si pas d'autre fenetres 
+		// definies -> necessaire ....
 		setDirty(windows[0]);
-      
-   
-      new Thread() {
-        public void run() {
-          while(true) {
-            //if (screenIsDirty) { d_blit(); /*screenIsDirty = false;*/ }
-            if (screenIsDirty) { 
-              doRedraw(); 
-              //d_blit(); 
-              screenIsDirty = false;
-            }
-            Zzz(55);
-          }
-        }
-      }.start();
-      
+
+		new Thread() {
+			public void run() {
+				while (true) {
+					//if (screenIsDirty) { d_blit(); /*screenIsDirty = false;*/ }
+					if (screenIsDirty) {
+						doRedraw();
+						//d_blit(); 
+						screenIsDirty = false;
+					}
+					Zzz(55);
+				}
+			}
+		}.start();
+
 	}
 
 	// will be changeable later
@@ -76,75 +81,78 @@ public class GUIInterfaceFB {
 
 	static int WHITE_RGB = Color.white.getRed();
 
-  static int HERE_MODIFIER = 1;
-  
-  // !!!!!! needs @ least 800px height
-  static int TXT_ZOOM = 2;
-	static int ftHeight = (10-1)*TXT_ZOOM; // -1 is experimental !!!!
+	static int HERE_MODIFIER = 1;
+
+	// !!!!!! needs @ least 800px height
+	static int TXT_ZOOM = 2;
+	static int ftHeight = (10 - 1) * TXT_ZOOM; // -1 is experimental !!!!
 	static int ftWidth = (7 - HERE_MODIFIER) * TXT_ZOOM;
 
 	// -------------------------------------------------
 	boolean yetDrawn = false;
-  
-    static boolean screenIsDirty = false;
+
+	static boolean screenIsDirty = false;
 
 	protected synchronized void setDirty(TextWindow win) {
 		if (!yetDrawn) {
 			yetDrawn = true;
 
-// BEWARE : no more cls
-            //dispSrv.cls();
-    //       fillRect(0,0,dispSrv.SCREEN_WIDTH,dispSrv.SCREEN_HEIGHT, BG.getRGB() );
-          
-            FGcolor = FG.getRGB();
+			// BEWARE : no more cls
+			//dispSrv.cls();
+			//       fillRect(0,0,dispSrv.SCREEN_WIDTH,dispSrv.SCREEN_HEIGHT, BG.getRGB() );
+
+			FGcolor = FG.getRGB();
 
 			// System.out.print("YD ");
 		}
-      /*
+		/*
 		if (win.isAttached()) {
 			win.render(this);
 			// System.out.print("wr ");
 		}
-      */
-      
-      //d_blit();
-      screenIsDirty = true;
+		*/
+
+		//d_blit();
+		screenIsDirty = true;
 	}
 
-  boolean finishedRedraw = false;
-  boolean askFinishRedraw = false;
-  
-  /*synchronized*/ void doRedraw() {
-    
-    if ( !finishedRedraw ) {
-      askFinishRedraw = true;
-    }
-    
-    
-    finishedRedraw = false;
-    TextWindow win;
-    for (int i = 0; i < this.windows.length; i++) {
-      win = this.windows[i];
-      if (win != null && win.isAttached() && win.isDirty) {
-        win.render(this);
-        win.hasBeenRendered = true;
-      }
-      if ( askFinishRedraw ) { win.setDirty(); break; }
-	}
-	
-	// =======================================
-	//String time = timeFormat.format(new Date());
-	String time = "cocou";
-	d_drawString(time, (100-10)*ftWidth, 1*ftHeight, WHITE_RGB, true);
-	// =======================================
+	boolean finishedRedraw = false;
+	boolean askFinishRedraw = false;
 
-    askFinishRedraw = false;
-    finishedRedraw = true;
-  }
-  
-  
+	/*synchronized*/ void doRedraw() {
+
+		if (!finishedRedraw) {
+			askFinishRedraw = true;
+		}
+
+		if (false) { // stop async. redraw
+			finishedRedraw = false;
+			TextWindow win;
+			for (int i = 0; i < this.windows.length; i++) {
+				win = this.windows[i];
+				if (win != null && win.isAttached() && win.isDirty) {
+					win.render(this);
+					win.hasBeenRendered = true;
+				}
+				if (askFinishRedraw) {
+					win.setDirty();
+					break;
+				}
+			}
+		}
+
+		// =======================================
+		//String time = timeFormat.format(new Date());
+		String time = "cocou";
+		d_drawString(time, (100 - 10) * ftWidth, 1 * ftHeight, WHITE_RGB, true);
+		// =======================================
+
+		askFinishRedraw = false;
+		finishedRedraw = true;
+	}
+
 	protected void setDirty() {
-      /*
+		/*
 		TextWindow win;
 		for (int i = 0; i < this.windows.length; i++) {
 			win = this.windows[i];
@@ -152,8 +160,8 @@ public class GUIInterfaceFB {
 				setDirty(win);
 			}
 		}
-        */
-      //d_blit();
+		*/
+		//d_blit();
 	}
 
 	// -------------------------------------------------
@@ -164,7 +172,8 @@ public class GUIInterfaceFB {
 		boolean borders;
 		String title;
 		int xModifier = 0, yModifierTop = 0, yModifierBottom = 0;
-      int yMaxWritten = -1;
+	  
+	  	boolean[] dirtyLines = new boolean[ 0 ];
 
       static char BLANK_CHAR = ' ';
       //static char BLANK_CHAR = 0x00;
@@ -187,7 +196,12 @@ public class GUIInterfaceFB {
         protected void setDirty(boolean propagate) {
 			this.isDirty = true;
 			// .... ????
-			if (propagate) GUIInterfaceFB.getInstance().setDirty(this);
+
+			//if (propagate) GUIInterfaceFB.getInstance().setDirty(this);
+
+			// new : sync redraw Cf gfx ....
+			render( GUIInterfaceFB.getInstance() );
+
 		}
 
 		protected boolean hasTitle() {
@@ -203,7 +217,8 @@ public class GUIInterfaceFB {
 			this.h = h;
 			this.borders = borders;
           
-            this.yMaxWritten = this.h;
+			dirtyLines = new boolean[ h ];
+			for(int i=0; i < h; i++) { dirtyLines[i] = true; } 
           
 			if (title != null && title.isEmpty()) {
 				title = null;
@@ -319,7 +334,9 @@ public class GUIInterfaceFB {
 
 			for (int yy = 0; yy < this.h - (yModifierTop + yModifierBottom); yy++) {
               
-              if ( hasBeenRendered && yy > yMaxWritten ) { break; }
+				  //if ( hasBeenRendered && yy > yMaxWritten ) { break; }
+				if ( !dirtyLines[ yy ] ) { continue; }
+				else { dirtyLines[ yy ] = false; }
               
 				char[] lineSeg = this.content[yy];
 				line = "";
@@ -335,7 +352,7 @@ public class GUIInterfaceFB {
 				}
 				applyLineColor(iface, (yy + yModifierTop));
 				//iface.getGraphics().drawString(line, this.x * ftWidth, (this.y + yy + yModifierTop + 1) * ftHeight);
-   				d_drawString(line, this.x * ftWidth, (this.y + yy + yModifierTop + 1) * ftHeight, FGcolor, false);
+				d_drawString(line, this.x * ftWidth, (this.y + yy + yModifierTop + 1) * ftHeight, FGcolor, false);
 			}
           
             //d_blit();
@@ -365,11 +382,10 @@ public class GUIInterfaceFB {
 					// System.out.println("("+ id +") x="+x+", y="+y+" Vs w="+w+", h="+h);
 					content[y][x] = BLANK_CHAR;
 				}
+				dirtyLines[ y ] = true;
 			}
 			cursX = 0;
 			cursY = 0;
-            //yMaxWritten = 0;
-            this.yMaxWritten = this.h;
 			setDirty();
 		}
 
@@ -381,6 +397,8 @@ public class GUIInterfaceFB {
 		}
 
 		protected void print(char ch) {
+			dirtyLines[ cursY ] = true;
+
 			if (ch == '\r') {
 				return;
 			}
@@ -399,7 +417,6 @@ public class GUIInterfaceFB {
 		protected void br() {
 			cursY++;
 			cursX = 0;
-          yMaxWritten = cursY;
 			if (cursY >= this.ttyHeight) {
 			  scrollUp();
               cursY--;
@@ -409,17 +426,18 @@ public class GUIInterfaceFB {
 		protected void scrollUp() {
           for (int y = 1; y < this.ttyHeight; y++) {
             //this.content[y-1] = this.content[y];
-            System.arraycopy( this.content[y], 0, this.content[y-1], 0, this.ttyWidth );
+			System.arraycopy( this.content[y], 0, this.content[y-1], 0, this.ttyWidth );
+			dirtyLines[ y-1 ] = true;
           }          
           for (int x = 0; x < this.ttyWidth; x++) {
-            content[this.ttyHeight-1][x] = BLANK_CHAR;
+			content[this.ttyHeight-1][x] = BLANK_CHAR;
+			dirtyLines[ this.ttyHeight-1-1 ] = true;
           }
 		}
 
 		public void locate(int x2, int y2) {
 			cursX = x2;
 			cursY = y2;
-          if ( cursY > yMaxWritten ) { yMaxWritten = cursY; }
 		}
 
 		public void unfocus() {
@@ -446,20 +464,20 @@ public class GUIInterfaceFB {
 			}
 
 			// TODO : fewer times
-			
-          	// BEWARE I rempoved this code
-            GUIInterfaceFB.getInstance().screenIsDirty = true;
-          	GUIInterfaceFB.getInstance().setDirty();
-          /*
-          for (int i = 0; i < GUIInterfaceFB.getInstance().windows.length; i++) {
+
+			// BEWARE I rempoved this code
+			GUIInterfaceFB.getInstance().screenIsDirty = true;
+			GUIInterfaceFB.getInstance().setDirty();
+			/*
+			for (int i = 0; i < GUIInterfaceFB.getInstance().windows.length; i++) {
 			TextWindow win = GUIInterfaceFB.getInstance().windows[i];
 			if (win != null && win.isAttached()) {
-            	win.hasBeenRendered = false;
-            	//win.isDirty = true;
-                win.setDirty( !false );
-            }
-          }
-          */
+				win.hasBeenRendered = false;
+				//win.isDirty = true;
+			    win.setDirty( !false );
+			}
+			}
+			*/
 		}
 
 		protected static Color parseColor(String str) {
@@ -481,55 +499,57 @@ public class GUIInterfaceFB {
 
 	}
 
-    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  
-    // Use a BufferedImage for window rendering then render text on FB
-  
-    // il y a 50 frames de 320x240
-  	// static int FRAME_INDEX = 2+1;
-    static int FGcolor = Color.green.getRGB();
-  
-    static int LOCAL_SCREEN_X = -1;
-    static int LOCAL_SCREEN_Y = -1;
-  
-      static protected void d_fillRect(int x, int y, int w, int h, int color) {
-        if ( LOCAL_SCREEN_X == -1 ) { 
-          LOCAL_SCREEN_X = (TFTScreen.SCREEN_VIRTUAL_WIDTH-(TTY_WIDTH*ftWidth) )/2;
-          LOCAL_SCREEN_Y = (TFTScreen.SCREEN_VIRTUAL_HEIGHT-(TTY_HEIGHT*ftHeight))/2;
-        }
-        
-        /*
-        int[] rgba = new int[ w*h ];
-        for(int i=0; i < rgba.length; i++) { rgba[i] = color; }
-        //dispSrv.blit(rgba, FRAME_INDEX, x, y, w, h);
-        dispSrv.fillDirect(rgba, TFTScreen.SCREEN_VIRTUAL_X+LOCAL_SCREEN_X+x, TFTScreen.SCREEN_VIRTUAL_Y+LOCAL_SCREEN_Y+y, w, h);
-        */
-        dispSrv.fillColor(color, TFTScreen.SCREEN_VIRTUAL_X+LOCAL_SCREEN_X+x, TFTScreen.SCREEN_VIRTUAL_Y+LOCAL_SCREEN_Y+y, w, h);
-        
-        screenIsDirty = true;
-      }
-  
-     static protected void d_drawString(String text, int x, int y, int color, boolean renderSpaces) {
-       dispSrv.blitString(text, TFTScreen.SCREEN_VIRTUAL_X+LOCAL_SCREEN_X+x, TFTScreen.SCREEN_VIRTUAL_Y+LOCAL_SCREEN_Y+y, color, TXT_ZOOM, renderSpaces);
-       screenIsDirty = true;
-     }
-    
-     static synchronized void d_blit() {
-       //if ( !GUIInterfaceFB.inRender ) {
-       //  //dispSrv.resetFrame(FRAME_INDEX);
-       //}
-       //screenIsDirty = false;
-     }
-  
-     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
-  
+	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+	// Use a BufferedImage for window rendering then render text on FB
+
+	// il y a 50 frames de 320x240
+	// static int FRAME_INDEX = 2+1;
+	static int FGcolor = Color.green.getRGB();
+
+	static int LOCAL_SCREEN_X = -1;
+	static int LOCAL_SCREEN_Y = -1;
+
+	static protected void d_fillRect(int x, int y, int w, int h, int color) {
+		if (LOCAL_SCREEN_X == -1) {
+			LOCAL_SCREEN_X = (TFTScreen.SCREEN_VIRTUAL_WIDTH - (TTY_WIDTH * ftWidth)) / 2;
+			LOCAL_SCREEN_Y = (TFTScreen.SCREEN_VIRTUAL_HEIGHT - (TTY_HEIGHT * ftHeight)) / 2;
+		}
+
+		/*
+		int[] rgba = new int[ w*h ];
+		for(int i=0; i < rgba.length; i++) { rgba[i] = color; }
+		//dispSrv.blit(rgba, FRAME_INDEX, x, y, w, h);
+		dispSrv.fillDirect(rgba, TFTScreen.SCREEN_VIRTUAL_X+LOCAL_SCREEN_X+x, TFTScreen.SCREEN_VIRTUAL_Y+LOCAL_SCREEN_Y+y, w, h);
+		*/
+		dispSrv.fillColor(color, TFTScreen.SCREEN_VIRTUAL_X + LOCAL_SCREEN_X + x,
+				TFTScreen.SCREEN_VIRTUAL_Y + LOCAL_SCREEN_Y + y, w, h);
+
+		screenIsDirty = true;
+	}
+
+	static protected void d_drawString(String text, int x, int y, int color, boolean renderSpaces) {
+		dispSrv.blitString(text, TFTScreen.SCREEN_VIRTUAL_X + LOCAL_SCREEN_X + x,
+				TFTScreen.SCREEN_VIRTUAL_Y + LOCAL_SCREEN_Y + y, color, TXT_ZOOM, renderSpaces);
+		screenIsDirty = true;
+	}
+
+	static synchronized void d_blit() {
+		//if ( !GUIInterfaceFB.inRender ) {
+		//  //dispSrv.resetFrame(FRAME_INDEX);
+		//}
+		//screenIsDirty = false;
+	}
+
+	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
+
 	protected TextWindow[] windows = new TextWindow[10];
 	protected int curWindow = -1;
 
-    // Cf Java 1.5
+	// Cf Java 1.5
 	//protected List<ColorLine> lines = new LinkedList<ColorLine>();
-    protected java.util.List lines = new LinkedList();
-  
+	protected java.util.List lines = new LinkedList();
+
 	protected ColorLine[] screenlines = new ColorLine[50];
 
 	// ################################################
@@ -647,77 +667,98 @@ public class GUIInterfaceFB {
 		cls();
 		print("10 CLS\n20 PRINT 3+2\n>");
 
-      // TMP Cf non refreshed colored windows (ex. upper win)
-      //GUIInterfaceFB.getInstance().setDirty();
-      //GUIInterfaceFB.getInstance().windows[1].setDirty();
+		// TMP Cf non refreshed colored windows (ex. upper win)
+		//GUIInterfaceFB.getInstance().setDirty();
+		//GUIInterfaceFB.getInstance().windows[1].setDirty();
 	}
 
 	// -----------------------------
 
-  protected String tmpCmd = null;
-  protected boolean waitFor2ndEscChar = false;
-  protected boolean waitForCmd = false;
-  
-  protected boolean yetReceivedChar = false;
-  
-  protected boolean gfxModeCmd = false;
+	protected String tmpCmd = null;
+	protected boolean waitFor2ndEscChar = false;
+	protected boolean waitForCmd = false;
 
-  public void submitChar(char ch) {
-    
-    // CMDS do ends with an '\n'
-    if ( ch == '^' && tmpCmd == null ) {
-      tmpCmd = "^";
-      waitFor2ndEscChar = true;
-    } else if (waitFor2ndEscChar && (ch == '[' || ch == '(') ) {
-	  tmpCmd += ch;
-	  if ( ch == '(' ) { gfxModeCmd = true; }
-      waitFor2ndEscChar = false;
-      waitForCmd = true;
-    } else if (waitFor2ndEscChar && !(ch == '[' || ch == '(') ) {
-      submit( tmpCmd );
-      waitFor2ndEscChar = false;
-      waitForCmd = false;
-      tmpCmd = null;
-    } else if (waitForCmd) {
-      if ( ch == '\n' ) {
-        submit( tmpCmd );
-        waitFor2ndEscChar = false;
-        waitForCmd = false;
-        tmpCmd = null;
-      } else if ( ch == '\r' ) {
-        return;
-      } else {
-        tmpCmd += ch;
-      }
-    } else {
-      //submit(""+ch); // very slow ...
-      print(ch);
-    }
-    
-  }
-  
+	protected boolean yetReceivedChar = false;
+
+	protected boolean gfxModeCmd = false;
+
+	public void submitChar(char ch) {
+
+		// CMDS do ends with an '\n'
+		if (ch == '^' && tmpCmd == null) {
+			tmpCmd = "^";
+			waitFor2ndEscChar = true;
+		} else if (waitFor2ndEscChar && (ch == '[' || ch == '(')) {
+			tmpCmd += ch;
+			if (ch == '(') {
+				gfxModeCmd = true;
+			}
+			waitFor2ndEscChar = false;
+			waitForCmd = true;
+		} else if (waitFor2ndEscChar && !(ch == '[' || ch == '(')) {
+			submit(tmpCmd);
+			waitFor2ndEscChar = false;
+			waitForCmd = false;
+			tmpCmd = null;
+		} else if (waitForCmd) {
+			if (ch == '\n') {
+				submit(tmpCmd);
+				waitFor2ndEscChar = false;
+				waitForCmd = false;
+				tmpCmd = null;
+			} else if (ch == '\r') {
+				return;
+			} else {
+				tmpCmd += ch;
+			}
+		} else {
+			//submit(""+ch); // very slow ...
+			print(ch);
+		}
+
+	}
+
+	protected void line(int x, int y, int x2, int y2, int color) {
+		dispSrv.drawLine(x, y, x2, y2, color,TXT_ZOOM);
+	}
+
+	protected void circle(int x, int y, int radius, int color) {
+		dispSrv.drawCircle(x,y,radius,color,TXT_ZOOM);
+	}
+
+	protected void pixel(int x, int y, int color) {
+		dispSrv.drawPixel(x,y,color,TXT_ZOOM);
+	}
+ 
+
 	public void submit(String expr) {
-      //System.out.println(">>"+expr+"<<");
-	  
-		if ( gfxModeCmd ) {
+		//System.out.println(">>"+expr+"<<");
+
+		if (gfxModeCmd) {
 			if (expr.startsWith("^(")) {
 				expr = expr.substring(2);
 				if (expr.startsWith("l,")) {
+					System.out.println("req line " + expr);
 					// line
 					String[] tks = expr.split("\\,");
-					dispSrv.drawLine( toInt(tks[1]),toInt(tks[2]),toInt(tks[3]), toInt(tks[4]), toInt(tks[5]) );
+					System.out.println(Color.WHITE.getRGB());
+					line(toInt(tks[1]), toInt(tks[2]), toInt(tks[3]), toInt(tks[4]), toInt(tks[5]));
 				} else if (expr.startsWith("c,")) {
+					System.out.println("req circle " + expr);
 					// circle
 					String[] tks = expr.split("\\,");
-					dispSrv.drawCircle( toInt(tks[1]),toInt(tks[2]),toInt(tks[3]), toInt(tks[4]) );
+					circle(toInt(tks[1]), toInt(tks[2]), toInt(tks[3]), toInt(tks[4]));
 				} else if (expr.startsWith("p,")) {
+					System.out.println("req pixel " + expr);
 					// pixel
 					String[] tks = expr.split("\\,");
-					dispSrv.drawPixel( toInt(tks[1]),toInt(tks[2]),toInt(tks[3]) );
-				} 
+					pixel(toInt(tks[1]), toInt(tks[2]), toInt(tks[3]));
+				}
 			} else {
 				print(expr);
 			}
+
+			gfxModeCmd = false;
 		} else
 
 		if (expr.startsWith("^[")) {
@@ -725,8 +766,9 @@ public class GUIInterfaceFB {
 			if (expr.equals("r")) {
 				reboot();
 			} else if (expr.equals("halt")) {
-				try { Runtime.getRuntime().exec("./haltScript.sh"); }
-				catch(Exception ex) {
+				try {
+					Runtime.getRuntime().exec("./haltScript.sh");
+				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
 			} else if (expr.equals("e")) {
@@ -743,18 +785,20 @@ public class GUIInterfaceFB {
 				// bckLine(toInt(tks[1]), toInt(tks[2]), tks[3], tks[4]);
 				lines.add(ColorLine.fromStr("^[" + expr));
 			} else if (expr.startsWith("w,")) {
-                // BEWARE : that syntax is wrong !!!! 
+				// BEWARE : that syntax is wrong !!!! 
 				// "w,3,70,3,30,32,1,Calculated Values";
 				String[] tks = expr.split("\\,");
 				String title = tks.length > 7 && tks[7].trim().length() > 0 ? tks[7] : null;
-				createWindow(toInt(tks[1]), toInt(tks[2]), toInt(tks[3]), toInt(tks[4]), toInt(tks[5]), toInt(tks[6]) == 1, title);
+				createWindow(toInt(tks[1]), toInt(tks[2]), toInt(tks[3]), toInt(tks[4]), toInt(tks[5]),
+						toInt(tks[6]) == 1, title);
 			} else if (expr.startsWith("w")) {
 				// "w3,70,3,30,32,1,Calculated Values";
-                // dirty strap
-                expr = "?,"+expr.substring(1);
+				// dirty strap
+				expr = "?," + expr.substring(1);
 				String[] tks = expr.split("\\,");
 				String title = tks.length > 7 && tks[7].trim().length() > 0 ? tks[7] : null;
-				createWindow(toInt(tks[1]), toInt(tks[2]), toInt(tks[3]), toInt(tks[4]), toInt(tks[5]), toInt(tks[6]) == 1, title);
+				createWindow(toInt(tks[1]), toInt(tks[2]), toInt(tks[3]), toInt(tks[4]), toInt(tks[5]),
+						toInt(tks[6]) == 1, title);
 			}
 			// STILL missing : cursor function
 		} else {
@@ -782,7 +826,7 @@ public class GUIInterfaceFB {
 		curWindow = 0;
 		windows[0].cls();
 		//windows[0].detach();
-        windows[0].attach();
+		windows[0].attach();
 
 		lines.clear();
 		for (int i = 0; i < screenlines.length; i++) {
@@ -790,27 +834,35 @@ public class GUIInterfaceFB {
 		}
 
 		_("I rebooted ....");
-        setDirty();
+		setDirty();
 	}
 
 	public void cls() {
-      if ( windows[curWindow] == null ) { curWindow=0; }
-	  windows[curWindow].cls();
+		if (windows[curWindow] == null) {
+			curWindow = 0;
+		}
+		windows[curWindow].cls();
 	}
 
 	public void print(String txt) {
-      if ( windows[curWindow] == null ) { curWindow=0; }
-      windows[curWindow].print(txt);
+		if (windows[curWindow] == null) {
+			curWindow = 0;
+		}
+		windows[curWindow].print(txt);
 	}
-  
-  	public void print(char ch) {
-      if ( windows[curWindow] == null ) { curWindow=0; }
-      windows[curWindow].print(ch);
+
+	public void print(char ch) {
+		if (windows[curWindow] == null) {
+			curWindow = 0;
+		}
+		windows[curWindow].print(ch);
 	}
 
 	public void locate(int x, int y) {
-      if ( windows[curWindow] == null ) { curWindow=0; }
-      windows[curWindow].locate(x, y);
+		if (windows[curWindow] == null) {
+			curWindow = 0;
+		}
+		windows[curWindow].locate(x, y);
 	}
 
 	// 1 to 9
@@ -820,11 +872,11 @@ public class GUIInterfaceFB {
 			return;
 		}
 		curWindow = id;
-        if ( windows[curWindow] != null ) {
-          windows[curWindow].focus();
-        } else {
-          System.out.println("BEWARE win#"+ curWindow +" is null");
-        }
+		if (windows[curWindow] != null) {
+			windows[curWindow].focus();
+		} else {
+			System.out.println("BEWARE win#" + curWindow + " is null");
+		}
 	}
 
 	public void createWindow(int id, int x, int y, int w, int h, boolean borders, String title) {
@@ -858,9 +910,11 @@ public class GUIInterfaceFB {
 		}
 	}
 
- 	static void Zzz(long time) {
-	  try { Thread.sleep(time); } catch(Exception ex) {}
+	static void Zzz(long time) {
+		try {
+			Thread.sleep(time);
+		} catch (Exception ex) {
+		}
 	}
 
-  
 }
