@@ -89,20 +89,20 @@ JNIEXPORT void JNICALL Java_com_xtase_hardware_TFTScreen_fill
 }
 JNIEXPORT void JNICALL Java_com_xtase_hardware_TFTScreen_fillColor
   (JNIEnv *env, jobject, jint color, jint x, jint y, jint width, jint height) {
-/*
+
   const int sz = ((int)width*(int)height);
-  int colArry[ sz ];
+  unsigned int colArry[ sz ];
   //memset( colArry, color, sz); // ONLY deals w/ bytes
-  for(int i=0; i < sz; i++) { colArry[i] = color; } // need int(s)
+  for(int i=0; i < sz; i++) { colArry[i] = (unsigned int)color; } // need int(s)
 
-  fbDriver.fill( (unsigned int*)colArry, (int)x, (int) y, (int)width, (int)height);  
-*/
+  fbDriver.fill( colArry, (int)x, (int) y, (int)width, (int)height);  
 
-  for(int yy=0; yy < height; yy++) {
-    for(int xx=0; xx < width; xx++) {
-      fbDriver.blitPixel( xx+x, yy+y, color );
-    }
-  }
+
+  // for(int yy=0; yy < height; yy++) {
+  //   for(int xx=0; xx < width; xx++) {
+  //     fbDriver.blitPixel( xx+x, yy+y, color );
+  //   }
+  // }
 
 }
 

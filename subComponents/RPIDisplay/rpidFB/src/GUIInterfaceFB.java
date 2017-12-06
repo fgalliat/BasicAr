@@ -36,7 +36,7 @@ public class GUIInterfaceFB {
 	static SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm:ss");
 
 	static int HERE_MODIFIER = 1;
-	
+
 	// !!!!!! needs @ least 800px height
 	static int TXT_ZOOM = 2;
 	static int ftHeight = (10 - 1) * TXT_ZOOM; // -1 is experimental !!!!
@@ -91,8 +91,6 @@ public class GUIInterfaceFB {
 	static Color BG = Color.black;
 
 	static int WHITE_RGB = Color.white.getRed();
-
-	
 
 	// -------------------------------------------------
 	boolean yetDrawn = false;
@@ -338,6 +336,8 @@ public class GUIInterfaceFB {
 					//iface.getGraphics().drawString(line, this.x * ftWidth, (this.y + 1 + 1) * ftHeight);
 					d_drawString(line, this.x * ftWidth, (this.y + 1 + 1) * ftHeight, FGcolor, false);
 				}
+
+				hasBeenRendered = true;
 			}
 
 			for (int yy = 0; yy < this.h - (yModifierTop + yModifierBottom); yy++) {
@@ -527,12 +527,6 @@ public class GUIInterfaceFB {
 			LOCAL_SCREEN_Y = (TFTScreen.SCREEN_VIRTUAL_HEIGHT - (TTY_HEIGHT * ftHeight)) / 2;
 		}
 
-		/*
-		int[] rgba = new int[ w*h ];
-		for(int i=0; i < rgba.length; i++) { rgba[i] = color; }
-		//dispSrv.blit(rgba, FRAME_INDEX, x, y, w, h);
-		dispSrv.fillDirect(rgba, TFTScreen.SCREEN_VIRTUAL_X+LOCAL_SCREEN_X+x, TFTScreen.SCREEN_VIRTUAL_Y+LOCAL_SCREEN_Y+y, w, h);
-		*/
 		dispSrv.fillColor(color, TFTScreen.SCREEN_VIRTUAL_X + LOCAL_SCREEN_X + x,
 				TFTScreen.SCREEN_VIRTUAL_Y + LOCAL_SCREEN_Y + y, w, h);
 
@@ -733,15 +727,20 @@ public class GUIInterfaceFB {
 	}
 
 	protected void line(int x, int y, int x2, int y2, int color) {
-		dispSrv.drawLine(x, y, x2, y2, color, TXT_ZOOM);
+		dispSrv.drawLine(TFTScreen.SCREEN_VIRTUAL_X + x, TFTScreen.SCREEN_VIRTUAL_Y + y,
+				TFTScreen.SCREEN_VIRTUAL_X + x2, TFTScreen.SCREEN_VIRTUAL_Y + y2, color, TXT_ZOOM);
 	}
 
 	protected void circle(int x, int y, int radius, int color) {
-		dispSrv.drawCircle(x, y, radius, color, TXT_ZOOM);
+		dispSrv.drawCircle(TFTScreen.SCREEN_VIRTUAL_X + x, TFTScreen.SCREEN_VIRTUAL_Y + y, radius, color, TXT_ZOOM);
 	}
 
 	protected void pixel(int x, int y, int color) {
-		dispSrv.drawPixel(x, y, color, TXT_ZOOM);
+		dispSrv.drawPixel(TFTScreen.SCREEN_VIRTUAL_X + x, TFTScreen.SCREEN_VIRTUAL_Y + y, color, TXT_ZOOM);
+	}
+
+	protected void rect(int x, int y, int w, int h, int color) {
+		d_fillRect(x*TXT_ZOOM, y*TXT_ZOOM, w*TXT_ZOOM, h*TXT_ZOOM, color);
 	}
 
 	public boolean submit(String expr) {
@@ -751,18 +750,18 @@ public class GUIInterfaceFB {
 			if (expr.startsWith("^(")) {
 				expr = expr.substring(2);
 				if (expr.startsWith("l,")) {
-					System.out.println("req line " + expr);
+					// System.out.println("req line " + expr);
 					// line
 					String[] tks = expr.split("\\,");
 					System.out.println(Color.WHITE.getRGB());
 					line(toInt(tks[1]), toInt(tks[2]), toInt(tks[3]), toInt(tks[4]), toInt(tks[5]));
 				} else if (expr.startsWith("c,")) {
-					System.out.println("req circle " + expr);
+					// System.out.println("req circle " + expr);
 					// circle
 					String[] tks = expr.split("\\,");
 					circle(toInt(tks[1]), toInt(tks[2]), toInt(tks[3]), toInt(tks[4]));
 				} else if (expr.startsWith("p,")) {
-					System.out.println("req pixel " + expr);
+					// System.out.println("req pixel " + expr);
 					// pixel
 					String[] tks = expr.split("\\,");
 					pixel(toInt(tks[1]), toInt(tks[2]), toInt(tks[3]));

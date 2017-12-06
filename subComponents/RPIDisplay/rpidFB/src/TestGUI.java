@@ -128,7 +128,7 @@ public class TestGUI {
           if (shutdown) {
             break;
           }
-          TFTScreen.Zzz(100);
+          TFTScreen.Zzz(5);
         }
         System.out.println("OK Bye");
 
