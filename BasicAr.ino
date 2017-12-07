@@ -343,13 +343,24 @@ void xts_serialEvent() {
 // ___________________________________________________________
 #ifdef COMPUTER
   // ========================
+
   int main(int argc, char** argv) {
     setupComputer();
     // system ("/bin/stty raw");
     setup();
 
+    SDL_Event event;
     while(true) {
         loop();
+
+		if ( SDL_PollEvent( &event ) ) {
+			if ( event.type == SDL_QUIT ) {
+                break;
+            }
+        }
+
+PC_ISR();
+
         delay( 100 );
     }
 

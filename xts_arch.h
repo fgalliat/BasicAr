@@ -77,6 +77,8 @@
 
   #define BOARD_RPID 1
 
+  #define BUILTIN_LCD 1
+
   #define BUZZER_PIN 5
   
   #define LED1_PIN 13

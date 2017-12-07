@@ -170,10 +170,13 @@ void setupGPIO() {
 #ifdef BUILTIN_LCD
  // Teensy3.6 XtsuBasic hardware config
 
-#include <SPI.h>
-#include <i2c_t3.h>
-#include <Adafruit_GFX.h>
-#include "dev_screen_Adafruit_SSD1306.h"
+#ifndef COMPUTER
+  #include <SPI.h>
+  #include <i2c_t3.h>
+  #include <Adafruit_GFX.h>
+  #include "dev_screen_Adafruit_SSD1306.h"
+#endif
+
 //default is 4 that is an I2C pin on t3.6
 #define OLED_RESET 6
 Adafruit_SSD1306 display(OLED_RESET);
@@ -183,7 +186,9 @@ Adafruit_SSD1306 display(OLED_RESET);
 #endif
 
 void setupLCD() {
-  Wire2.begin(I2C_MASTER, 0x00, I2C_PINS_3_4, I2C_PULLUP_EXT, 400000);
+  #ifndef COMPUTER
+    Wire2.begin(I2C_MASTER, 0x00, I2C_PINS_3_4, I2C_PULLUP_EXT, 400000);
+  #endif
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   display.setTextSize(1);
   

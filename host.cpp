@@ -53,7 +53,7 @@ extern bool SCREEN_LOCKER;
    extern EEPROMClass EEPROM;
  #endif
 
-extern SSD1306ASCII oled;
+// extern SSD1306ASCII oled;
 extern PS2Keyboard keyboard;
 //   #include <SSD1306ASCII.h>
 //   #include <PS2Keyboard.h>
@@ -69,8 +69,12 @@ extern PS2Keyboard keyboard;
 extern bool BUZZER_MUTE;
 
 #ifdef BUILTIN_LCD
-  #include "dev_screen_Adafruit_SSD1306.h"
-  extern Adafruit_SSD1306 display;
+  #ifndef COMPUTER
+   #include "dev_screen_Adafruit_SSD1306.h"
+   extern Adafruit_SSD1306 display;
+  #else 
+   //#define display _displayOLED
+  #endif
 #endif
 
 
