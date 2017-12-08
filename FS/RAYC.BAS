@@ -30,8 +30,9 @@
 129 ' LINE (S + 160, 0)-(S + 169, 99 - H), 0, BF 
 130 ' LINE (S + 160, 101 + H)-(S + 169, 320), 0, BF
 135 NEXT S
-139 ' A$ = INKEY$
-140 INPUT A$
+136 A$ = INKEY$
+137 B=BTN(0)
+140 ' INPUT A$
 141 IF A$ = "d" THEN F = F+5
 142 IF A$ = "f" THEN F = F-5
 143 IF F < 0 THEN F = 355
@@ -41,9 +42,9 @@
 152 IF XX > 7 THEN XX = 7
 153 YY = (Y + SIN(F / 57)) / 16 : IF YY < 1 THEN YY = 1
 154 IF YY > 7 THEN YY = 7
-155 IF A$ = " " AND (L(XX, YY) = 0) THEN X = X + COS(F / 57)
+155 IF A$ = "s" AND (L(XX, YY) = 0) THEN X = X + COS(F / 57)
 190 IF A$ = "q" then STOP
-195 Y = Y + SIN(F / 57)
+195 IF A$ = "r" THEN Y = Y + SIN(F / 57)
 198 DELAY 10
 199 GOTO 101
 207 ' 6 lines raycaster in GW BASIC !!!!!
