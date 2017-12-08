@@ -30,14 +30,8 @@ static void PC_ISR();
 static void __DrawPixel(int x, int y, int brightness);
 #include "dev_screen_Adafruit_SSD1306_emul.h"
 
-// static SDL_Window *window;
-// static SDL_Renderer *renderer;
-// // surtout pas sinon ecrase la valeur a chaque appel
-// //static SDL_Texture * texture = NULL;
-// static SDL_Texture *texture;
-// static SDL_Surface *surface;
-
 #define min(a, b) a < b ? a : b
+#define max(a, b) a > b ? a : b
 
 #define icos(a) cos((double)a / 3.141596 * 180.0)
 #define isin(a) sin((double)a / 3.141596 * 180.0)
@@ -747,12 +741,10 @@ class Adafruit_SSD1306
     SDL_Color color;
     SDL_Color black;
 
+    int txtColor = 1;
+
     void __blit()
     {
-        //SDL_RenderPresent(renderer); // blitts the screen
-
-        //Serial.println("blitt");
-        //SDL_UpdateWindowSurface(window);
     }
 
   public:
@@ -817,6 +809,7 @@ class Adafruit_SSD1306
     void setTextColor(int color)
     {
         // TODO : XOR ...
+        txtColor = color;
     }
 
     void setTextSize(int size)
@@ -895,7 +888,7 @@ class Adafruit_SSD1306
         {
             for (int xx = 0; xx < width; xx++)
             {
-                c = ( picBuff[(yy * (width/8)) + (xx/8)] >> (7-( (xx) % 8 )) ) % 2;
+                c = (picBuff[(yy * (width / 8)) + (xx / 8)] >> (7 - ((xx) % 8))) % 2;
                 if (c == 0x00)
                 {
                     drawPixel(x + xx, y + yy, 0);
@@ -935,23 +928,78 @@ class Adafruit_SSD1306
         }
     }
 
-    void drawLine(int x, int y, int x2, int y2, unsigned int color)
+    void drawLine(int x1, int y1, int x2, int y2, unsigned int color)
     {
-        // if (color == 0x01)
-        // {
-        //     // RGBA
-        //     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        // }
-        // else
-        // {
-        //     // TODO xor .....
-        //     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        // }
-        // SDL_RenderDrawLine(renderer, x, y, x2, y2);
-        // __blit();
+        if ( surface == NULL ) {
+            //return;
+            __init();
+        }
+
+        if (y1 == y2)
+        {
+            if (y1 < 0 || y1 >= SCREEN_HEIGHT)
+            {
+                return;
+            }
+            if (x2 < x1)
+            {
+                int swap = x2;
+                x2 = x1;
+                x1 = swap;
+            }
+
+            int e0 = max(x1, 0);
+            int e1 = min(x2, this->SCREEN_WIDTH-1);
+
+            for (int i = e0; i <= e1; i++)
+            {
+                this->drawPixel(i, y1, color);
+            }
+        }
+        else if (x1 == x2)
+        {
+            if (x1 < 0 || x1 >= SCREEN_WIDTH)
+            {
+                return;
+            }
+            if (y2 < y1)
+            {
+                int swap = y2;
+                y2 = y1;
+                y1 = swap;
+            }
+
+            int e0 = max(y1, 0);
+            int e1 = min(y2, this->SCREEN_HEIGHT-1);
+
+            for (int i = e0; i <= e1; i++)
+            {
+                this->drawPixel(x1, i, color);
+            }
+        }
+        else
+        {
+            int X1 = x1, X2 = x2, Y1 = y1, Y2 = y2;
+            if (x1 > x2)
+            {
+                X1 = x2;
+                Y1 = y2;
+                X2 = x1;
+                Y2 = y1;
+            }
+
+            int dx = X2 - X1;
+            int dy = Y2 - Y1;
+            int _y;
+            for (int _x = X1; _x < X2; _x++)
+            {
+                _y = Y1 + dy * (_x - X1) / dx;
+                this->drawPixel(_x, _y, color);
+            }
+        }
     }
 
-    void drawFastHLine(int x, int y, int x2, unsigned int color)
+    void drawFastHLine(int x, int y, int x2, int color)
     {
         drawLine(x, y, x2, y, color);
     }

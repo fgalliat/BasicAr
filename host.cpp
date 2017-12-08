@@ -350,14 +350,14 @@ void host_showBuffer() {
                 display.setCursor(0,y*8);
 
                 display.setTextColor( BLACK );
-                display.drawFastHLine( 0, (y+0)*8, 128, (y+0)*8 );
-                display.drawFastHLine( 0, (y+1)*8, 128, (y+1)*8 );
-                display.drawFastHLine( 0, (y+2)*8, 128, (y+2)*8 );
-                display.drawFastHLine( 0, (y+3)*8, 128, (y+3)*8 );
-                display.drawFastHLine( 0, (y+4)*8, 128, (y+4)*8 );
-                display.drawFastHLine( 0, (y+5)*8, 128, (y+5)*8 );
-                display.drawFastHLine( 0, (y+6)*8, 128, (y+6)*8 );
-                display.drawFastHLine( 0, (y+7)*8, 128, (y+7)*8 );
+                display.drawFastHLine( 0, (y+0)*8, 128, BLACK );
+                display.drawFastHLine( 0, (y+1)*8, 128, BLACK );
+                display.drawFastHLine( 0, (y+2)*8, 128, BLACK );
+                display.drawFastHLine( 0, (y+3)*8, 128, BLACK );
+                display.drawFastHLine( 0, (y+4)*8, 128, BLACK );
+                display.drawFastHLine( 0, (y+5)*8, 128, BLACK );
+                display.drawFastHLine( 0, (y+6)*8, 128, BLACK );
+                display.drawFastHLine( 0, (y+7)*8, 128, BLACK );
                 display.setTextColor( WHITE );
 
                 for (int x=0; x<SCREEN_WIDTH; x++) {
