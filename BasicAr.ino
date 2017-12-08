@@ -361,7 +361,7 @@ void xts_serialEvent() {
 
 PC_ISR();
 
-        delay( 100 );
+        delay( 10 );
     }
 
     // to call.....

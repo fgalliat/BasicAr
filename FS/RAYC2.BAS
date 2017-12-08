@@ -12,22 +12,28 @@
 100 X = 4*16: Y = 4*16: F = 45
 101 CLS
 105 FOR S = -160 TO 149 STEP 30: R = F + (S * .1875)
-107 RR = R / 57
-112 COSR = COS(RR)
-113 XI = COSR: YI = SIN(RR): Xa = X: Ya = Y
+106 IF R > 360 THEN R = 0
+107 IF R < 0 THEN R = 359
+112 ' R = R + 360 * (LF - RF)
+113 XI = COS(R / 57): YI = SIN(R / 57): Xa = X: Ya = Y
 114 Xa = Xa + XI: Ya = Ya + YI
 115 XX = (Xa / 16) : IF XX < 1 THEN XX = 1
 116 IF XX > 7 THEN XX = 7
 117 YY = (Ya / 16) : IF YY < 1 THEN YY = 1
 118 IF YY > 7 THEN YY = 7
 124 IF L( XX, YY ) = 0 THEN GOTO 114
-125 D = ABS((X - Xa) / COSR): H = (1816 / D) / 3
-126 SS = S / 3
-127 LINE (SS + 64) , (32 - H), (SS + 69), (32 + H)
+125 D = ABS((X - Xa) / COS(R / 57)): H = (1816 / D)
+126 ' LINE ( (S + 160)/2 , (100 - H)/2 )-( (S + 169)/2, (100 + H)/2 ), 1
+127 LINE ((S + 160)/3) , ((100 - H)/3), ((S + (169))/3), ((100 + H)/3)
+128 ' LINE (S + 160, 100 - H)-(S + 169, 100 + H), 1, BF
+129 ' LINE (S + 160, 0)-(S + 169, 99 - H), 0, BF 
+130 ' LINE (S + 160, 101 + H)-(S + 169, 320), 0, BF
 135 NEXT S
 136 A$ = INKEY$
-141 IF A$ = "f" THEN F = F+5 : GOTO 101
-142 IF A$ = "d" THEN F = F-5 : GOTO 101
+141 IF A$ = "d" THEN F = F+5 : GOTO 101
+142 IF A$ = "f" THEN F = F-5 : GOTO 101
+143 IF F < 0 THEN F = 355
+144 IF F > 355 THEN F = 0
 151 XX = (X + COS(F / 57)) / 16 : IF XX < 1 THEN XX = 1
 152 IF XX > 7 THEN XX = 7
 153 YY = (Y + SIN(F / 57)) / 16 : IF YY < 1 THEN YY = 1

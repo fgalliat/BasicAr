@@ -228,8 +228,8 @@ void host_startupTone() {
 void host_cls() {
     if ( SCREEN_LOCKER ) { return; }
     isWriting = true;
-    memset(screenBuffer, 32, SCREEN_WIDTH*SCREEN_HEIGHT);
-    memset(lineDirty, 1, SCREEN_HEIGHT);
+    memset(screenBuffer, 0x00, SCREEN_WIDTH*SCREEN_HEIGHT);
+    memset(lineDirty, 0, SCREEN_HEIGHT);
     curX = 0;
     curY = 0;
 
