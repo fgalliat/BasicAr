@@ -210,6 +210,11 @@ TokenTableEntry tokenTable[] = {
     {"DIRARRAY", TKN_FMT_POST}, // DIR -> redirected to DIR$() array variable
 
     {"HALT",TKN_FMT_POST}, // halt the whole System
+
+    {"ABS", 1},  // returns ABS(x)
+    {"COS", 1},  // returns COS(x) in degrees
+    {"SIN", 1},  // returns SIN(x) in degrees
+
 };
 
 
@@ -1477,6 +1482,18 @@ int parseFnCallExpr() {
             if (!stackPushStr(xts_str_string(tmp, tmp2))) return ERROR_OUT_OF_MEMORY;
             break;
 
+        case TOKEN_ABS:
+            if (!stackPushNum(xts_abs( stackPopNum() ))) return ERROR_OUT_OF_MEMORY;
+            break;
+        case TOKEN_COS:
+            // in degrees
+            if (!stackPushNum(xts_cos( stackPopNum() ))) return ERROR_OUT_OF_MEMORY;
+            break;
+        case TOKEN_SIN:
+            // in degrees
+            if (!stackPushNum(xts_sin( stackPopNum() ))) return ERROR_OUT_OF_MEMORY;
+            break;
+
 // ==============================
 
         default:
@@ -1638,6 +1655,10 @@ int parsePrimary() {
     case TOKEN_STR_SPACE: // Xtase code
     case TOKEN_STR_ASC: // Xtase code
     case TOKEN_STR_INSTR: // Xtase code
+
+    case TOKEN_ABS: // Xtase code
+    case TOKEN_COS: // Xtase code
+    case TOKEN_SIN: // Xtase code
 
         return parseFnCallExpr();
 

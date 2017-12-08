@@ -661,6 +661,26 @@ char* xts_str_upper(char* str) {
 }
 
 
+float xts_abs(float arg0) {
+  float ret = arg0 < 0 ? -arg0 : arg0;
+  return ret;
+}
+
+#define degToRag (3.141596 / 180.0)
+
+// in degrees
+float xts_cos(float arg0) {
+  float ret = cos(arg0 * degToRag);
+  return ret;
+}
+
+// in degrees
+float xts_sin(float arg0) {
+  float ret = sin(arg0 * degToRag);
+  return ret;
+}
+
+
 // ===================================================================
 // === Extended Commands
 // ===================================================================

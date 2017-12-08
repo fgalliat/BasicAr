@@ -154,8 +154,13 @@
     #define TOKEN_DIRARRAY          96 // dir to DIR$() array variable ("-EOF-" @ end)
 
     #define TOKEN_HALT              97 // halt whole system
+
+    #define TOKEN_ABS               98 // returns ABS(x)
+    #define TOKEN_COS               99 // returns COS(x) in degrees
+    #define TOKEN_SIN              100 // returns SIN(x) in degrees
+
     
-    #define TOKEN_LASTONE TOKEN_HALT
+    #define TOKEN_LASTONE TOKEN_SIN
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT
