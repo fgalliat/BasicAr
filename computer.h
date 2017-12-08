@@ -30,8 +30,10 @@ static void PC_ISR();
 static void __DrawPixel(int x, int y, int brightness);
 #include "dev_screen_Adafruit_SSD1306_emul.h"
 
-#define min(a, b) a < b ? a : b
-#define max(a, b) a > b ? a : b
+#define min(a, b) (a < b ? a : b)
+#define max(a, b) (a > b ? a : b)
+#define abs(a) (a < 0 ? -a : a)
+static void swap(int& a, int& b) { int swp=a; a=b; b=swp; }
 
 #define icos(a) cos((double)a / 3.141596 * 180.0)
 #define isin(a) sin((double)a / 3.141596 * 180.0)
@@ -930,7 +932,8 @@ class Adafruit_SSD1306
 
     void drawLine(int x1, int y1, int x2, int y2, unsigned int color)
     {
-        if ( surface == NULL ) {
+        if (surface == NULL)
+        {
             //return;
             __init();
         }
@@ -949,7 +952,7 @@ class Adafruit_SSD1306
             }
 
             int e0 = max(x1, 0);
-            int e1 = min(x2, this->SCREEN_WIDTH-1);
+            int e1 = min(x2, this->SCREEN_WIDTH - 1);
 
             for (int i = e0; i <= e1; i++)
             {
@@ -970,7 +973,7 @@ class Adafruit_SSD1306
             }
 
             int e0 = max(y1, 0);
-            int e1 = min(y2, this->SCREEN_HEIGHT-1);
+            int e1 = min(y2, this->SCREEN_HEIGHT - 1);
 
             for (int i = e0; i <= e1; i++)
             {
@@ -979,22 +982,73 @@ class Adafruit_SSD1306
         }
         else
         {
-            int X1 = x1, X2 = x2, Y1 = y1, Y2 = y2;
-            if (x1 > x2)
+            //     int X1 = x1, X2 = x2, Y1 = y1, Y2 = y2;
+            //     if (x1 > x2)
+            //     {
+            //         X1 = x2;
+            //         Y1 = y2;
+            //         X2 = x1;
+            //         Y2 = y1;
+            //     }
+
+            //     int dx = X2 - X1;
+            //     int dy = Y2 - Y1;
+            //     int _y;
+            //     for (int _x = X1; _x < X2; _x++)
+            //     {
+            //         _y = Y1 + dy * (_x - X1) / dx;
+            //         this->drawPixel(_x, _y, color);
+            //     }
+
+            int x0 = x1;
+            int y0 = y1;
+            x1 = x2;
+            y1 = y2;
+            int16_t steep = abs(y1 - y0) > abs(x1 - x0);
+            if (steep)
             {
-                X1 = x2;
-                Y1 = y2;
-                X2 = x1;
-                Y2 = y1;
+                swap(x0, y0);
+                swap(x1, y1);
             }
 
-            int dx = X2 - X1;
-            int dy = Y2 - Y1;
-            int _y;
-            for (int _x = X1; _x < X2; _x++)
+            if (x0 > x1)
             {
-                _y = Y1 + dy * (_x - X1) / dx;
-                this->drawPixel(_x, _y, color);
+                swap(x0, x1);
+                swap(y0, y1);
+            }
+
+            int16_t dx, dy;
+            dx = x1 - x0;
+            dy = abs(y1 - y0);
+
+            int16_t err = dx / 2;
+            int16_t ystep;
+
+            if (y0 < y1)
+            {
+                ystep = 1;
+            }
+            else
+            {
+                ystep = -1;
+            }
+
+            for (; x0 <= x1; x0++)
+            {
+                if (steep)
+                {
+                    drawPixel(y0, x0, color);
+                }
+                else
+                {
+                    drawPixel(x0, y0, color);
+                }
+                err -= dy;
+                if (err < 0)
+                {
+                    y0 += ystep;
+                    err += dx;
+                }
             }
         }
     }
