@@ -736,13 +736,16 @@ class Adafruit_SSD1306
 {
   private:
     int y = 0, x = 0;
-    int SCREEN_HEIGHT=64, SCREEN_WIDTH=128;
-    Uint32* pixels = NULL;
+    int SCREEN_HEIGHT = 64, SCREEN_WIDTH = 128;
+    Uint32 *pixels = NULL;
 
-SDL_Window *window;
-SDL_Renderer *renderer;
-SDL_Texture *texture;
-SDL_Surface *surface;
+    SDL_Window *window;
+    SDL_Renderer *renderer;
+    SDL_Texture *texture;
+    SDL_Surface *surface;
+
+    SDL_Color color;
+    SDL_Color black;
 
     void __blit()
     {
@@ -753,54 +756,54 @@ SDL_Surface *surface;
     }
 
   public:
-    Adafruit_SSD1306(int rstPin) {
+    Adafruit_SSD1306(int rstPin)
+    {
         printf("je passe ICI\n");
     }
 
-
-
     void __init()
     {
-       int MINI_LCD_WIDTH=128,MINI_LCD_HEIGHT=64;
+        window = SDL_CreateWindow("SSD1306", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_BORDERLESS);
+        if (window == NULL)
+        {
+            std::cout << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
+            exit(1);
+        }
 
-        window = SDL_CreateWindow("SSD1306", 0, 0, MINI_LCD_WIDTH, MINI_LCD_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_BORDERLESS);
-    if (window == NULL) {
-        std::cout << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
-        exit(1);
-    }
+        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+        if (renderer == NULL)
+        {
+            std::cout << "Failed to create renderer : " << SDL_GetError();
+            exit(1);
+        }
 
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    if (renderer == NULL) {
-        std::cout << "Failed to create renderer : " << SDL_GetError();
-        exit(1);
-    }
+        surface = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT,
+                                       32,
+                                       0,
+                                       0,
+                                       0,
+                                       0);
 
-    // int ok = SDL_RenderSetLogicalSize(renderer, MINI_LCD_WIDTH, MINI_LCD_HEIGHT);
-    // if ( ok != 0 ) {
-    //     std::cout << "Failed to set logical size for renderer : " << SDL_GetError();
-    //     exit(1);
-    // }
+        if (surface == NULL)
+        {
+            printf("Could not create surface !!!!\n");
+            exit(1);
+        }
 
-
-  surface = SDL_CreateRGBSurface( 0, MINI_LCD_WIDTH, MINI_LCD_HEIGHT, 
-  32,
-  //16,
-                                    0,
-                                    0,
-                                    0,
-0 );
-
-    if ( surface == NULL ) {
-        printf("Could not create surface !!!!\n");
-        exit(1);
-    }
-
-        int SCREEN_WIDTH = 128;
-        int SCREEN_HEIGHT = 64;
         texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, SCREEN_WIDTH, SCREEN_HEIGHT);
 
+        // monochrome blue
+        color.r = 50;
+        color.g = 50;
+        color.b = 255;
+
+        black.r = 0;
+        black.g = 0;
+        black.b = 0;
     }
+
     ~Adafruit_SSD1306() {}
+
     void close()
     {
         SDL_DestroyTexture(texture);
@@ -813,10 +816,12 @@ SDL_Surface *surface;
 
     void setTextColor(int color)
     {
+        // TODO : XOR ...
     }
 
     void setTextSize(int size)
     {
+        // usually 1
     }
 
     void setCursor(int x, int y)
@@ -827,129 +832,107 @@ SDL_Surface *surface;
 
     void println(char *str)
     {
-        //Serial.println(str);
-        //Serial.println(str);
-        for (int i=0; i <strlen(str); i++) {
+        for (int i = 0; i < strlen(str); i++)
+        {
             print(str[i]);
         }
-        y+=8;
+        y += 8;
     }
 
     void print(char ch)
     {
-        //SDL_RenderClear(renderer);
-        //Serial.print(ch);
 
-        // DrawChar(ch, x,y,1);
-        // __blit();
+        if (surface == NULL)
+        {
+            // Serial.print(ch);
+            // return;
+            __init();
+        }
 
-        Serial.print(ch);
+        if (ch == '\n')
+        {
+            this->x = 0;
+            this->y += 8;
+            // scrollIfNeeded();
+            return;
+        }
 
-if ( surface == NULL ) {return;}
+        // see also : https://github.com/watterott/Arduino-Libs/blob/master/GraphicsLib/fonts.h
+        DrawChar(ch, this->x, this->y, 1);
 
-SDL_Rect r;
-r.x = x;
-r.y = y;
-r.w = 4;
-r.h = 4;
-SDL_Color color;
-color.r = 255;
-color.g = 0;
-color.b = 255;
-
-// draw a rect
-SDL_FillRect( surface, &r, SDL_MapRGB( surface->format, color.r, color.g, color.b ) );        
-
-x+=6;
+        this->x += 6;
     }
 
     void clearDisplay()
     {
-        // SDL_RenderClear(renderer);
-        // __blit();
-        Serial.println("<cls>");
-if ( surface == NULL ) { Serial.println("NULL Surface"); return; }
- // cls
- SDL_FillRect( surface, NULL, 0 );
-
+        x = 0;
+        y = 0;
+        if (surface == NULL)
+        {
+            Serial.println("NULL Surface");
+            return;
+        }
+        // cls
+        SDL_FillRect(surface, NULL, 0);
     }
+
     void display()
     {
         //__blit();
     }
+
     void drawBitmap(int x, int y, unsigned char *picBuff, int width, int height, unsigned int color)
     {
-        // if (color == 0x01)
-        // {
-        //     // RGBA
-        //     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        // }
-        // else
-        // {
-        //     // TODO xor .....
-        // }
-        // unsigned char lastColor = 0x00;
-        // unsigned char c;
-        // for (int yy = 0; yy < height; yy++)
-        // {
-        //     for (int xx = 0; xx < width; xx++)
-        //     {
-        //         c = picBuff[(yy * width) + xx];
-        //         if (c != lastColor)
-        //         {
-        //             if (c == 0x00)
-        //             {
-        //                 SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        //             }
-        //             else
-        //             {
-        //                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        //             }
-        //         }
-        //         SDL_RenderDrawPoint(renderer, x + xx, y + yy);
-        //         lastColor = c;
-        //     }
-        // }
+        if (color == 0x01)
+        {
+        }
+        else
+        {
+            // TODO xor .....
+        }
+        unsigned char c;
+        for (int yy = 0; yy < height; yy++)
+        {
+            for (int xx = 0; xx < width; xx++)
+            {
+                c = ( picBuff[(yy * (width/8)) + (xx/8)] >> (7-( (xx) % 8 )) ) % 2;
+                if (c == 0x00)
+                {
+                    drawPixel(x + xx, y + yy, 0);
+                }
+                else
+                {
+                    drawPixel(x + xx, y + yy, 1);
+                }
+            }
+        }
         // __blit();
     }
 
     void drawPixel(int x, int y, unsigned int color)
     {
-        // if (color == 0x01)
-        // {
-        //     // RGBA
-        //     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        // }
-        // else
-        // {
-        //     // TODO xor .....
-        //     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        // }
-        // SDL_RenderDrawPoint(renderer, x, y);
-        // __blit();
+        int zoom = 1;
+        SDL_Rect r;
+        r.x = x * zoom;
+        r.y = y * zoom;
+        r.w = zoom;
+        r.h = zoom;
+
+        SDL_Color usedColor = color == 0x00 ? this->black : this->color;
+
+        // draw a rect
+        SDL_FillRect(surface, &r, SDL_MapRGB(surface->format, usedColor.r, usedColor.g, usedColor.b));
     }
 
     void drawCircle(int x, int y, int radius, unsigned int color)
     {
-        // if (color == 0x01)
-        // {
-        //     // RGBA
-        //     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        // }
-        // else
-        // {
-        //     // TODO xor .....
-        //     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        // }
-
-        // // very slow impl.
-        // for (int i = 0; i < 360; i++)
-        // {
-        //     int xx = (int)((double)radius * icos(i));
-        //     int yy = (int)((double)radius * isin(i));
-        //     SDL_RenderDrawPoint(renderer, x + xx, y + yy);
-        // }
-        // __blit();
+        // very slow impl.
+        for (int i = 0; i < 360; i++)
+        {
+            int xx = (int)((double)radius * icos(i));
+            int yy = (int)((double)radius * isin(i));
+            this->drawPixel(x + xx, y + yy, color);
+        }
     }
 
     void drawLine(int x, int y, int x2, int y2, unsigned int color)
@@ -973,55 +956,20 @@ if ( surface == NULL ) { Serial.println("NULL Surface"); return; }
         drawLine(x, y, x2, y, color);
     }
 
-    void _MEGABlitt() {
-        // SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        // SDL_RenderClear(renderer);
-        // SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    void _MEGABlitt()
+    {
+        if (surface == NULL)
+        {
+            __init();
 
-        // SDL_RenderDrawLine(renderer, 10, 10, 20, 20);
+            // cls
+            SDL_FillRect(surface, NULL, 0);
+        }
 
-
-        // SDL_RenderPresent(renderer); // blitts the screen
-
-if ( surface == NULL ) { 
-//return;
-__init();
-
- // cls
- SDL_FillRect( surface, NULL, 0 );
-
- }
-
- 
-
-// SDL_Rect r;
-// r.x = 60;
-// r.y = 30;
-// r.w = 4;
-// r.h = 4;
-// SDL_Color color;
-// color.r = 255;
-// color.g = 0;
-// color.b = 255;
-
-// // draw a rect
-// SDL_FillRect( surface, &r, SDL_MapRGB( surface->format, color.r, color.g, color.b ) );        
-
-SDL_UpdateTexture( texture, NULL, surface->pixels, surface->pitch );
-    SDL_RenderCopy( renderer, texture, NULL, NULL );
-SDL_RenderPresent( renderer );
-    }
-
-    void _prepare() {
-        SDL_UpdateTexture(texture, NULL, pixels, SCREEN_WIDTH * sizeof(Uint32));
-    }
-
-    void _flush() {
-        SDL_RenderClear(renderer);
+        SDL_UpdateTexture(texture, NULL, surface->pixels, surface->pitch);
         SDL_RenderCopy(renderer, texture, NULL, NULL);
         SDL_RenderPresent(renderer);
     }
-
 };
 
 //static Adafruit_SSD1306 display(-1);
@@ -1032,10 +980,10 @@ static void __DrawPixel(int x, int y, int brightness)
     display.drawPixel(x, y, brightness > 0 ? 1 : 0);
 }
 
-static void PC_ISR() {
+static void PC_ISR()
+{
     display._MEGABlitt();
 }
-
 
 // ===================================
 
