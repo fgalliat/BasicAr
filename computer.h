@@ -43,6 +43,9 @@ static void swap(int& a, int& b) { int swp=a; a=b; b=swp; }
 #define SSD1306_LCDHEIGHT 64
 #define SSD1306_SWITCHCAPVCC 1111
 
+#define KBD_CTRL_C 3
+#define KBD_BREAK 1000
+
 // ================ Serial Console emulation ============
 class _Serial
 {

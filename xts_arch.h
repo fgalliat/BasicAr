@@ -79,6 +79,9 @@
 
   #define BUILTIN_LCD 1
 
+  // #define BUILTIN_KBD 1
+  // #define KEYB_TYPE_USB_HOBYTRONIC_V1 1
+
   #define BUZZER_PIN 5
   
   #define LED1_PIN 13

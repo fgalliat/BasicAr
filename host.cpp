@@ -800,11 +800,19 @@ char *host_readLine() {
 }
 
 char host_getKey() {
-    char c = inkeyChar;
-    inkeyChar = 0;
-    if (c >= 32 && c <= 126)
-        return c;
-    else return 0;
+      #ifdef COMPUTER
+        Serial.available(); // just to poll ncurses kbd
+        int c = Serial.read();
+        if (c >= 32 && c <= 126)
+            return c;
+        else return 0;
+      #else
+        char c = inkeyChar;
+        inkeyChar = 0;
+        if (c >= 32 && c <= 126)
+            return c;
+        else return 0;
+    #endif
 }
 
 bool host_ESCPressed() {
