@@ -1001,6 +1001,7 @@ bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter, bool se
 
   cleanCodeLine();
   memset( tokenBuf, 0x00, TOKEN_BUF_SIZE );
+  int lineCpt = 1;
   while( ( n = file.fgets(codeLine, ASCII_CODELINE_SIZE) ) > 0 ) {
     // // show line
     // host_outputString( codeLine );
@@ -1017,12 +1018,15 @@ bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter, bool se
       host_outputString((char *)codeLine);
       host_outputString((char *)" ->");
       host_outputString((char *)errorTable[ret]); 
+      host_outputString((char *)" @");
+      host_outputInt( lineCpt );
       host_outputString((char *)"\n");
       host_showBuffer(); 
     }
     //ret = ERROR_NONE;
     cleanCodeLine();
     memset( tokenBuf, 0x00, TOKEN_BUF_SIZE );
+    lineCpt++;
   }
   file.close();
 

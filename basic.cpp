@@ -212,8 +212,8 @@ TokenTableEntry tokenTable[] = {
     {"HALT",TKN_FMT_POST}, // halt the whole System
 
     {"ABS", 1},  // returns ABS(x)
-    {"COS", 1},  // returns COS(x) in degrees
-    {"SIN", 1},  // returns SIN(x) in degrees
+    {"COS", 1},  // returns COS(x) in radian
+    {"SIN", 1},  // returns SIN(x) in radian
 
 };
 

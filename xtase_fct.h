@@ -668,15 +668,15 @@ float xts_abs(float arg0) {
 
 #define degToRag (3.141596 / 180.0)
 
-// in degrees
+// in radian
 float xts_cos(float arg0) {
-  float ret = cos(arg0 * degToRag);
+  float ret = cos(arg0 /* * degToRag */);
   return ret;
 }
 
-// in degrees
+// in radian
 float xts_sin(float arg0) {
-  float ret = sin(arg0 * degToRag);
+  float ret = sin(arg0 /* * degToRag */);
   return ret;
 }
 

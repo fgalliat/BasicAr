@@ -156,8 +156,8 @@
     #define TOKEN_HALT              97 // halt whole system
 
     #define TOKEN_ABS               98 // returns ABS(x)
-    #define TOKEN_COS               99 // returns COS(x) in degrees
-    #define TOKEN_SIN              100 // returns SIN(x) in degrees
+    #define TOKEN_COS               99 // returns COS(x) in radians
+    #define TOKEN_SIN              100 // returns SIN(x) in radians
 
     
     #define TOKEN_LASTONE TOKEN_SIN
@@ -217,12 +217,12 @@
 #define MEMORY_SIZE	(16*1024)
 
 // max char per code lines (depends of ammount of RAM ??)
-#define ASCII_CODELINE_SIZE 128
+#define ASCII_CODELINE_SIZE (128*2)
 
 
 // max token per line ???
 //#define TOKEN_BUF_SIZE 64
-#define TOKEN_BUF_SIZE 128
+#define TOKEN_BUF_SIZE ASCII_CODELINE_SIZE
 // ______________________________________
 
 
