@@ -100,6 +100,34 @@
   #define RAM_END (256*1024)-1
   #define EEPROM_END (2*1024)-1
   #define SPEED 1000
+#elif defined(ARDUINO_ARCH_ESP32)
+  // PC or anything else
+  #define ARCH_TYPE "ESP32 Board"
+  #define BUT_TEENSY 1
+
+  #define BUILTIN_LCD 1
+
+  // TO BE CHECKED ......
+  #define BUZZER_PIN 16
+  #define noTone(pin) { ; }
+  #define tone(pin, freq, duration) { ; }
+
+  #define LED1_PIN LED_BUILTIN
+  #define LED2_PIN LED1_PIN
+  #define LED3_PIN LED1_PIN
+
+  #define BTN1_PIN -1
+  #define BTN2_PIN -1
+  #define BTN3_PIN -1
+
+  // 5KB buffer
+  #define AUDIO_BUFF_SIZE (5*1024) 
+  // lcd(128*64) / 8(1bpp)
+  #define PICTURE_BUFF_SIZE (1*1024)
+
+  #define RAM_END (256*1024)-1
+  #define EEPROM_END (4*1024)-1
+  #define SPEED 80
 #else
   #define ARCH_TYPE "Unknown platform"
   

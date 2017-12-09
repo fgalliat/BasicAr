@@ -69,11 +69,16 @@ extern PS2Keyboard keyboard;
 extern bool BUZZER_MUTE;
 
 #ifdef BUILTIN_LCD
-  #ifndef COMPUTER
+  #if defined(ARDUINO_ARCH_ESP32)
+   #include <SSD1306.h>
+   extern SSD1306 display;
+  #else
+   #ifndef COMPUTER
    #include "dev_screen_Adafruit_SSD1306.h"
    extern Adafruit_SSD1306 display;
   #else 
    //#define display _displayOLED
+  #endif
   #endif
 #endif
 
@@ -235,7 +240,11 @@ void host_cls() {
 
     #ifdef BUILTIN_LCD
         if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
+            #if defined(ARDUINO_ARCH_ESP32)
+            display.clear();
+            #else
             display.clearDisplay();
+            #endif
             display.display();
         } else 
     #endif
@@ -272,7 +281,11 @@ void host_moveCursor(int x, int y) {
 
     #ifdef BUILTIN_LCD
         if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
-            display.setCursor(x*6,y*8);
+            #if defined(ARDUINO_ARCH_ESP32)
+             // Oups what TODO
+            #else
+             display.setCursor(x*6,y*8);
+            #endif
         }
     #endif
     #ifdef BOARD_VGA
@@ -347,8 +360,18 @@ void host_showBuffer() {
 
             if (lineDirty[y] || (inputMode && y==curY)) {
                 //display.setCursor(0,y);
-                display.setCursor(0,y*8);
 
+#if defined(ARDUINO_ARCH_ESP32)
+ // TODO : BETTER
+ char line[SCREEN_WIDTH];
+ for (int x=0; x<SCREEN_WIDTH; x++) {
+   char c = screenBuffer[y*SCREEN_WIDTH+x];
+   if (c<32) c = ' ';
+   line[x] = c;
+ }
+ display.drawString( 0, y*8, line );
+#else
+                display.setCursor(0,y*8);
                 display.setTextColor( BLACK );
                 display.drawFastHLine( 0, (y+0)*8, 128, BLACK );
                 display.drawFastHLine( 0, (y+1)*8, 128, BLACK );
@@ -367,6 +390,7 @@ void host_showBuffer() {
                     if (x==curX && y==curY && inputMode && _flash) c = 127;
                     display.print(c);
                 }
+#endif
                 lineDirty[y] = 0;
             }
         }
@@ -485,7 +509,11 @@ void scrollBuffer() {
 
     #ifdef BUILTIN_LCD
         if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
+            #if defined(ARDUINO_ARCH_ESP32)
+            display.clear();
+            #else
             display.clearDisplay();
+            #endif
             for(int i=0; i < SCREEN_HEIGHT; i++) {
                 lineDirty[i] = SCREEN_WIDTH;
             }

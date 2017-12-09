@@ -170,37 +170,52 @@ void setupGPIO() {
 #ifdef BUILTIN_LCD
  // Teensy3.6 XtsuBasic hardware config
 
-#ifndef COMPUTER
-  #include <SPI.h>
-  #include <i2c_t3.h>
-  #include <Adafruit_GFX.h>
-  #include "dev_screen_Adafruit_SSD1306.h"
-#endif
+#ifdef ARDUINO_ARCH_ESP32
+  #include <SSD1306.h>
+  SSD1306  display(0x3c, 5, 4);
+#else
 
-//default is 4 that is an I2C pin on t3.6
-#define OLED_RESET 6
-Adafruit_SSD1306 display(OLED_RESET);
+  #ifndef COMPUTER
+    #include <SPI.h>
+    #include <i2c_t3.h>
+    #include <Adafruit_GFX.h>
+    #include "dev_screen_Adafruit_SSD1306.h"
+  #endif
 
-#if (SSD1306_LCDHEIGHT != 64)
- #error("Height incorrect, please fix Adafruit_SSD1306.h!");
+  //default is 4 that is an I2C pin on t3.6
+  #define OLED_RESET 6
+  Adafruit_SSD1306 display(OLED_RESET);
+
+  #if (SSD1306_LCDHEIGHT != 64)
+  #error("Height incorrect, please fix Adafruit_SSD1306.h!");
+  #endif
+
 #endif
 
 void setupLCD() {
-  #ifndef COMPUTER
-    Wire2.begin(I2C_MASTER, 0x00, I2C_PINS_3_4, I2C_PULLUP_EXT, 400000);
+
+  #ifdef ARDUINO_ARCH_ESP32
+    display.init();
+    display.flipScreenVertically();
+    display.setContrast(255);
+    display.clear();
+  #else
+    #ifndef COMPUTER
+      Wire2.begin(I2C_MASTER, 0x00, I2C_PINS_3_4, I2C_PULLUP_EXT, 400000);
+    #endif
+    display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+    display.setTextSize(1);
+    // tmp try
+    display.setTextColor(WHITE);
+    //display.setTextColor(INVERSE);
+    // tmp try
+    // avoid firware LOGO display
+    display.clearDisplay();
+    display.setCursor(0,0);
   #endif
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-  display.setTextSize(1);
   
-  // tmp try
-  display.setTextColor(WHITE);
-  //display.setTextColor(INVERSE);
-  // tmp try
 
-  // avoid firware LOGO display
-  display.clearDisplay();
-
-  display.setCursor(0,0);
+  
   display.println( "LCD Ready" );
 
   display.display();
@@ -661,8 +676,12 @@ void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
 void drawLine(int x1, int y1, int x2, int y2) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     #ifdef BUILTIN_LCD
-    display.drawLine(x1, y1, x2, y2, WHITE);
-    display.display();
+     #ifdef ARDUINO_ARCH_ESP32
+      display.drawLine(x1, y1, x2, y2);
+     #else
+      display.drawLine(x1, y1, x2, y2, WHITE);
+     #endif
+     display.display();
     #endif
   } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
     #ifdef BOARD_RPID
@@ -674,8 +693,12 @@ void drawLine(int x1, int y1, int x2, int y2) {
 void drawCircle(int x1, int y1, int radius) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     #ifdef BUILTIN_LCD
-    display.drawCircle(x1, y1, radius, WHITE);
-    display.display();
+     #ifdef ARDUINO_ARCH_ESP32
+       display.drawCircle(x1, y1, radius);
+     #else
+       display.drawCircle(x1, y1, radius, WHITE);
+     #endif
+     display.display();
     #endif
   } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
     #ifdef BOARD_RPID
@@ -688,8 +711,13 @@ void drawCircle(int x1, int y1, int radius) {
 void drawPixel(int x1, int y1, int color) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     #ifdef BUILTIN_LCD
-    display.drawPixel(x1, y1, color);
-    display.display(); // see if fast enought .... else use interrupts.
+     #ifdef ARDUINO_ARCH_ESP32
+      display.setColor(color == 1 ? WHITE : BLACK);
+      display.setPixel(x1, y1);
+     #else
+      display.drawPixel(x1, y1, color);
+     #endif
+     display.display(); // see if fast enought .... else use interrupts.
     #endif 
   } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
     #ifdef BOARD_RPID
@@ -742,15 +770,25 @@ bool drawBPPfile(char* filename) {
   // do something w/ these bytes ...
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     #ifdef BUILTIN_LCD
-      display.clearDisplay();
-      display.drawBitmap(0, 0, picturebuff, 128, 64, 0x01);
+      #ifdef ARDUINO_ARCH_ESP32
+        display.clear();
+        display.drawFastImage(0, 0, 128, 64, (const char*)picturebuff);
+      #else
+        display.clearDisplay();
+        display.drawBitmap(0, 0, picturebuff, 128, 64, 0x01);
+      #endif
       display.display();
     #endif
   } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
     #ifdef BUILTIN_LCD
       // TMP !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      display.clearDisplay();
-      display.drawBitmap(0, 0, picturebuff, 128, 64, 0x01);
+      #ifdef ARDUINO_ARCH_ESP32
+        display.clear();
+        display.drawFastImage(0, 0, 128, 64, (const char*)picturebuff);
+      #else
+        display.clearDisplay();
+        display.drawBitmap(0, 0, picturebuff, 128, 64, 0x01);
+      #endif
       display.display();
     #endif
   }
@@ -1277,6 +1315,8 @@ void MCU_reset() {
     #ifdef COMPUTER
       closeComputer();
       exit(0);
+    #elif defined (ARDUINO_ARCH_ESP32)
+      // TODO
     #else
       SCB_AIRCR = 0x05FA0004; // software reset
     #endif

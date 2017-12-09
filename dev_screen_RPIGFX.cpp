@@ -1,3 +1,5 @@
+#ifndef ARDUINO_ARCH_ESP32
+
 /**
   RPI0W : Serial HDMI Controller
   Control routines
@@ -264,3 +266,6 @@ void rpid_switchTo() {
     rpid_cls();
 }
 
+
+#endif
+// not to include for ESP32 OLED

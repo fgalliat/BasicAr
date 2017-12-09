@@ -1,3 +1,5 @@
+#ifndef ARDUINO_ARCH_ESP32
+
 #ifndef screen_RPIGFX_h
 #define screen_RPIGFX_h 1
 
@@ -72,3 +74,6 @@ void rpid_startScreen();
 void rpid_switchTo();
 
 #endif 
+
+#endif 
+// not to include for ESP32OLED

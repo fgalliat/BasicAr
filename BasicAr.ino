@@ -59,6 +59,7 @@ const int DataPin = 8;
 const int IRQpin =  3;
 PS2Keyboard keyboard;
 
+#ifndef ARDUINO_ARCH_ESP32
 // OLED --- to remove !!!
 #define OLED_DATA 9
 #define OLED_CLK 10
@@ -66,6 +67,9 @@ PS2Keyboard keyboard;
 #define OLED_CS 12
 #define OLED_RST 13
 SSD1306ASCII oled(OLED_DATA, OLED_CLK, OLED_DC, OLED_RST, OLED_CS);
+#endif
+// not to include for ESP32 OLED
+
 
 // BASIC
 unsigned char mem[MEMORY_SIZE];
@@ -157,7 +161,7 @@ void setup() {
 
     // TO REMOVE...
     keyboard.begin(DataPin, IRQpin);
-    oled.ssd1306_init(SSD1306_SWITCHCAPVCC);
+    //oled.ssd1306_init(SSD1306_SWITCHCAPVCC);
 
     reset();
     host_init(BUZZER_PIN);

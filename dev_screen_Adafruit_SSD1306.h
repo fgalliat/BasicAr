@@ -1,3 +1,5 @@
+#ifndef ARDUINO_ARCH_ESP32
+
 /*********************************************************************
 This is a library for our Monochrome OLEDs based on SSD1306 drivers
 
@@ -180,3 +182,6 @@ class Adafruit_SSD1306 : public Adafruit_GFX {
 };
 
 #endif /* _Adafruit_SSD1306_H_ */
+
+#endif
+// not to include for ESP32OLED
