@@ -7,6 +7,13 @@
  * Xtase - fgalliat @ Dec 2017
  ***************/
 
+ /**************
+  * FS as obj : read txt,bin,dir
+* in XtsuBasic : pad as additionals btns
+*
+*
+****************/
+
   #ifndef _ESP32OLED_H
   #define _ESP32OLED_H 1
 
@@ -75,12 +82,12 @@
                 //display.println("Hardware test");
                 //display.drawLogBuffer(0, 0);
 
-                this->drawString(0, _oled_ttyY*8, str);
-                _oled_ttyY++;
+                this->drawString(0, this->_oled_ttyY*8, str);
+                this->_oled_ttyY++;
 
-                if ( _oled_ttyY >= 8 ) {
+                if ( this->_oled_ttyY >= 8 ) {
                     // auto scroll
-                    _oled_ttyY = 8;
+                    this->_oled_ttyY = 8;
                 }
             }
 
@@ -110,42 +117,31 @@
             }
     };
 
-    class Esp32Oled {
+    class Esp32OledFs {
         private:
-          Esp32OledScreen screen;
         public:
-        Esp32Oled() {
-        }
+          Esp32OledFs() {}
+          ~Esp32OledFs() {}
 
-        ~Esp32Oled() {
-        }
-
-        void setup() {
-            this->initGPIO();
-            this->initBuzzer();
-            this->initLCD();
-            this->initFS();
-        }
-        // === FileSystem ===
-        void initFS() {
+          void init() {
             SPIFFS.begin();
             //bool ff = SPIFFS.format();
-        }
+          }
 
-        // filename = "/toto.txt"
-        // returns nb of bytes readed
-        int readBinFile(char* filename, uint8_t* dest, int maxLen) {
+          // filename = "/toto.txt"
+          // returns nb of bytes readed
+          int readBinFile(char* filename, uint8_t* dest, int maxLen) {
             File f = SPIFFS.open(filename, "r");
             if ( !f ) { return -1; }
             int readed = f.readBytes( (char*)dest, maxLen);
             f.close();
             return readed;
-        }
+          }
 
-        // filename = "/toto.txt"
-        // returns nb of lines readed
-        // callbacked lines does not contains trailing '\n'
-        int readTextFile(char* filename, void (*callback)(char*) ) {
+          // filename = "/toto.txt"
+          // returns nb of lines readed
+          // callbacked lines does not contains trailing '\n'
+          int readTextFile(char* filename, void (*callback)(char*) ) {
             File f = SPIFFS.open(filename, "r");
             if ( !f ) { return -1; }
             int lineNb = 0;
@@ -179,16 +175,56 @@
             }
             f.close();
             return lineNb;
+          }
+
+          // listDir("/") -> returns nb of file
+          int listDir(char* dirName, void (*callback)(char*) ) {
+            File dir = SPIFFS.open("/");
+            File entry;
+            int entryNb = 0;
+            while( (entry = dir.openNextFile() ) ) {
+                if ( entry.isDirectory() ) { continue; }
+                callback( (char*)entry.name() );
+                entryNb++;
+            }
+            return entryNb;
+          }
+    };
+
+    class Esp32Oled {
+        private:
+          Esp32OledScreen* screen = new Esp32OledScreen();
+          Esp32OledFs* fs = new Esp32OledFs();
+        public:
+        Esp32Oled() {
+        }
+
+        ~Esp32Oled() {
+        }
+
+        void setup() {
+            this->initGPIO();
+            this->initBuzzer();
+            this->initLCD();
+            this->initFS();
+        }
+        // === FileSystem ===
+        void initFS() {
+            fs->init();
+        }
+
+        Esp32OledFs* getFs() {
+            return fs;
         }
 
         // ==================
         // ===== Screen =====
 
         void initLCD() {
-            screen.init();
+            screen->init();
         }
 
-        Esp32OledScreen getScreen() {
+        Esp32OledScreen* getScreen() {
             return screen;
         }
 
@@ -215,6 +251,8 @@
             ledcWrite(BUZ_channel, 0);
         }
 
+        // ==== Inputs =====
+
         int readBtns() {
             return readBtn(0);
         }
@@ -234,22 +272,6 @@
             return 0;
         }
 
-        void tone(int freq, int duration) {
-            ledcWrite(BUZ_channel, 125); // volume
-            ledcWriteTone(BUZ_channel, freq); // freq
-
-            //delay(duration);
-            //ledcWrite(BUZ_channel, 0); // volume    
-        }
-
-        void noTone() {
-          ledcWrite(BUZ_channel, 0); // volume  
-        }
-
-        void led(bool state) {
-            digitalWrite( LED1, state ? HIGH : LOW );
-        }
-
         int readPadXaxis() {
             int v = analogRead( X_AXIS );
             if ( v <= 800 ) { return 1; }
@@ -264,6 +286,32 @@
             else if ( v >= 2800 ) { return 1; }
             else { v = 0; }
             return v;
+        }
+
+
+        // equiv of Ctrl-C / Break key
+        bool getBreakSignal() {
+            return readBtn(1) && readBtn(2);
+        }
+
+        // ==== Sound ====
+
+        void tone(int freq, int duration) {
+            ledcWrite(BUZ_channel, 125); // volume
+            ledcWriteTone(BUZ_channel, freq); // freq
+
+            //delay(duration);
+            //ledcWrite(BUZ_channel, 0); // volume    
+        }
+
+        void noTone() {
+          ledcWrite(BUZ_channel, 0); // volume  
+        }
+
+        // ===== Leds =======
+
+        void led(bool state) {
+            digitalWrite( LED1, state ? HIGH : LOW );
         }
 
     };

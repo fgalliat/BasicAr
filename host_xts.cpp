@@ -219,8 +219,8 @@ void setupLCD() {
   #endif
   
   #ifdef BUT_ESP32
-    esp32.getScreen().println( "LCD Ready" );
-    esp32.getScreen().blitt();
+    esp32.getScreen()->println( "LCD Ready" );
+    esp32.getScreen()->blitt();
   #else
     display.println( "LCD Ready" );
     display.display();
@@ -693,8 +693,8 @@ void drawLine(int x1, int y1, int x2, int y2) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     #ifdef BUILTIN_LCD
      #ifdef BUT_ESP32
-      esp32.getScreen().drawLine(x1, y1, x2, y2);
-      esp32.getScreen().blitt();
+      esp32.getScreen()->drawLine(x1, y1, x2, y2);
+      esp32.getScreen()->blitt();
      #else
       display.drawLine(x1, y1, x2, y2, WHITE);
       display.display();
@@ -711,8 +711,8 @@ void drawCircle(int x1, int y1, int radius) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     #ifdef BUILTIN_LCD
      #ifdef BUT_ESP32
-       esp32.getScreen().drawCircle(x1, y1, radius);
-       esp32.getScreen().blitt();
+       esp32.getScreen()->drawCircle(x1, y1, radius);
+       esp32.getScreen()->blitt();
      #else
        display.drawCircle(x1, y1, radius, WHITE);
        display.display();
@@ -730,9 +730,9 @@ void drawPixel(int x1, int y1, int color) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     #ifdef BUILTIN_LCD
      #ifdef BUT_ESP32
-      esp32.getScreen().setColor(color == 1 ? WHITE : BLACK);
-      esp32.getScreen().setPixel(x1, y1);
-      esp32.getScreen().blitt();
+      esp32.getScreen()->setColor(color == 1 ? WHITE : BLACK);
+      esp32.getScreen()->setPixel(x1, y1);
+      esp32.getScreen()->blitt();
      #else
       display.drawPixel(x1, y1, color);
       display.display(); // see if fast enought .... else use interrupts.
@@ -790,9 +790,9 @@ bool drawBPPfile(char* filename) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     #ifdef BUILTIN_LCD
       #ifdef BUT_ESP32
-        esp32.getScreen().clear();
-        esp32.getScreen().drawImg(0, 0, 128, 64, picturebuff);
-        esp32.getScreen().blitt();
+        esp32.getScreen()->clear();
+        esp32.getScreen()->drawImg(0, 0, 128, 64, picturebuff);
+        esp32.getScreen()->blitt();
       #else
         display.clearDisplay();
         display.drawBitmap(0, 0, picturebuff, 128, 64, 0x01);
@@ -803,9 +803,9 @@ bool drawBPPfile(char* filename) {
     #ifdef BUILTIN_LCD
       // TMP !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       #ifdef BUT_ESP32
-        esp32.getScreen().clear();
-        esp32.getScreen().drawImg(0, 0, 128, 64, picturebuff);
-        esp32.getScreen().blitt();
+        esp32.getScreen()->clear();
+        esp32.getScreen()->drawImg(0, 0, 128, 64, picturebuff);
+        esp32.getScreen()->blitt();
       #else
         display.clearDisplay();
         display.drawBitmap(0, 0, picturebuff, 128, 64, 0x01);

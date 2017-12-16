@@ -245,8 +245,8 @@ void host_cls() {
     #ifdef BUILTIN_LCD
         if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
             #if defined(BUT_ESP32)
-              esp32.getScreen().clear();
-              esp32.getScreen().blitt();
+              esp32.getScreen()->clear();
+              esp32.getScreen()->blitt();
             #else
               display.clearDisplay();
               display.display();
@@ -375,7 +375,7 @@ void host_showBuffer() {
    line[x] = c;
  }
  line[SCREEN_WIDTH] = 0x00;
- esp32.getScreen().drawString( 0, y*8, line );
+ esp32.getScreen()->drawString( 0, y*8, line );
 #else
                 display.setCursor(0,y*8);
                 display.setTextColor( BLACK );
@@ -403,7 +403,7 @@ void host_showBuffer() {
 
         // Xtase
 #ifdef BUT_ESP32
-        esp32.getScreen().blitt();
+        esp32.getScreen()->blitt();
 #else
         display.display(); // to place in an interrupt
 #endif
@@ -520,7 +520,7 @@ void scrollBuffer() {
     #ifdef BUILTIN_LCD
         if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
             #if defined(BUT_ESP32)
-             esp32.getScreen().clear();
+             esp32.getScreen()->clear();
             #else
              display.clearDisplay();
             #endif
