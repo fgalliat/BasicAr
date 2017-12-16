@@ -242,19 +242,6 @@ void host_cls() {
     curX = 0;
     curY = 0;
 
-// test
-#if defined(BUT_ESP32)
-              esp32.getScreen().clear();
-              esp32.getScreen().blitt();
-
-// _oled_display.clear();
-// _oled_display.display();
-
-              isWriting = false;
-              return;
-#endif
-
-
     #ifdef BUILTIN_LCD
         if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
             #if defined(BUT_ESP32)
@@ -381,12 +368,13 @@ void host_showBuffer() {
 
 #if defined(BUT_ESP32)
  // TODO : BETTER
- char line[SCREEN_WIDTH];
+ char line[SCREEN_WIDTH+1];
  for (int x=0; x<SCREEN_WIDTH; x++) {
    char c = screenBuffer[y*SCREEN_WIDTH+x];
    if (c<32) c = ' ';
    line[x] = c;
  }
+ line[SCREEN_WIDTH] = 0x00;
  esp32.getScreen().drawString( 0, y*8, line );
 #else
                 display.setCursor(0,y*8);
