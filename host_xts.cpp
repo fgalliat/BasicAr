@@ -12,6 +12,11 @@
 #include "xts_arch.h"
 #include "xts_io.h"
 
+#ifdef BUT_ESP32
+  extern Esp32Oled esp32;
+  extern void noTone(int pin);
+  extern void tone(int pin, int freq, int duration);
+#endif
 
 #define BASIC_ASCII_FILE_EXT ".BAS"
 
@@ -130,6 +135,10 @@ bool STORAGE_OK = false;
 #ifdef FS_SUPPORT
 
  void setupSD() {
+   #ifdef BUT_ESP32
+     esp32.initFS();
+   #endif
+
    #ifdef USE_SDFAT_LIB
      if (!sd.begin()) {
    #else
@@ -170,9 +179,7 @@ void setupGPIO() {
 #ifdef BUILTIN_LCD
  // Teensy3.6 XtsuBasic hardware config
 
-#ifdef ARDUINO_ARCH_ESP32
-  #include <SSD1306.h>
-  SSD1306  display(0x3c, 5, 4);
+#ifdef BUT_ESP32
 #else
 
   #ifndef COMPUTER
@@ -194,11 +201,8 @@ void setupGPIO() {
 
 void setupLCD() {
 
-  #ifdef ARDUINO_ARCH_ESP32
-    display.init();
-    display.flipScreenVertically();
-    display.setContrast(255);
-    display.clear();
+  #ifdef BUT_ESP32
+    //esp32.initLCD();
   #else
     #ifndef COMPUTER
       Wire2.begin(I2C_MASTER, 0x00, I2C_PINS_3_4, I2C_PULLUP_EXT, 400000);
@@ -214,11 +218,13 @@ void setupLCD() {
     display.setCursor(0,0);
   #endif
   
-
-  
-  display.println( "LCD Ready" );
-
-  display.display();
+  #ifdef BUT_ESP32
+    esp32.getScreen().println( "LCD Ready" );
+    esp32.getScreen().blitt();
+  #else
+    display.println( "LCD Ready" );
+    display.display();
+  #endif
 }
 
 #endif
@@ -261,6 +267,13 @@ void setupRPISerial() {
 
 
 void setupHardware() {
+
+ #ifdef BUT_ESP32
+   //esp32.setup();
+   return;
+ #endif
+
+
  setupGPIO();
 
  #ifdef BUILTIN_LCD
@@ -386,6 +399,7 @@ void playNote(int note_freq, int duration) {
   noTone(BUZZER_PIN);
   tone(BUZZER_PIN, note_freq, duration*50);
   delay(duration*50);
+  noTone(BUZZER_PIN); // MANDATORY for ESP32Oled
 }
 
 void playTuneString(char* strTune) {
@@ -436,6 +450,7 @@ void playTuneString(char* strTune) {
    delay(defDuration);
 
   }
+  noTone(BUZZER_PIN); // MANDATORY for ESP32Oled
 } // end of playTuneStreamSTring
 
 
@@ -525,6 +540,7 @@ void playTuneFromStorage(char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bo
 
   #endif
   
+  noTone(BUZZER_PIN); // MANDATORY for ESP32Oled
  }
  
 // where tuneStream is the audio buffer content
@@ -676,12 +692,13 @@ void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
 void drawLine(int x1, int y1, int x2, int y2) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     #ifdef BUILTIN_LCD
-     #ifdef ARDUINO_ARCH_ESP32
-      display.drawLine(x1, y1, x2, y2);
+     #ifdef BUT_ESP32
+      esp32.getScreen().drawLine(x1, y1, x2, y2);
+      esp32.getScreen().blitt();
      #else
       display.drawLine(x1, y1, x2, y2, WHITE);
+      display.display();
      #endif
-     display.display();
     #endif
   } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
     #ifdef BOARD_RPID
@@ -693,12 +710,13 @@ void drawLine(int x1, int y1, int x2, int y2) {
 void drawCircle(int x1, int y1, int radius) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     #ifdef BUILTIN_LCD
-     #ifdef ARDUINO_ARCH_ESP32
-       display.drawCircle(x1, y1, radius);
+     #ifdef BUT_ESP32
+       esp32.getScreen().drawCircle(x1, y1, radius);
+       esp32.getScreen().blitt();
      #else
        display.drawCircle(x1, y1, radius, WHITE);
+       display.display();
      #endif
-     display.display();
     #endif
   } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
     #ifdef BOARD_RPID
@@ -711,13 +729,14 @@ void drawCircle(int x1, int y1, int radius) {
 void drawPixel(int x1, int y1, int color) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     #ifdef BUILTIN_LCD
-     #ifdef ARDUINO_ARCH_ESP32
-      display.setColor(color == 1 ? WHITE : BLACK);
-      display.setPixel(x1, y1);
+     #ifdef BUT_ESP32
+      esp32.getScreen().setColor(color == 1 ? WHITE : BLACK);
+      esp32.getScreen().setPixel(x1, y1);
+      esp32.getScreen().blitt();
      #else
       display.drawPixel(x1, y1, color);
+      display.display(); // see if fast enought .... else use interrupts.
      #endif
-     display.display(); // see if fast enought .... else use interrupts.
     #endif 
   } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
     #ifdef BOARD_RPID
@@ -770,26 +789,28 @@ bool drawBPPfile(char* filename) {
   // do something w/ these bytes ...
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     #ifdef BUILTIN_LCD
-      #ifdef ARDUINO_ARCH_ESP32
-        display.clear();
-        display.drawFastImage(0, 0, 128, 64, (const char*)picturebuff);
+      #ifdef BUT_ESP32
+        esp32.getScreen().clear();
+        esp32.getScreen().drawImg(0, 0, 128, 64, picturebuff);
+        esp32.getScreen().blitt();
       #else
         display.clearDisplay();
         display.drawBitmap(0, 0, picturebuff, 128, 64, 0x01);
+        display.display();
       #endif
-      display.display();
     #endif
   } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
     #ifdef BUILTIN_LCD
       // TMP !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      #ifdef ARDUINO_ARCH_ESP32
-        display.clear();
-        display.drawFastImage(0, 0, 128, 64, (const char*)picturebuff);
+      #ifdef BUT_ESP32
+        esp32.getScreen().clear();
+        esp32.getScreen().drawImg(0, 0, 128, 64, picturebuff);
+        esp32.getScreen().blitt();
       #else
         display.clearDisplay();
         display.drawBitmap(0, 0, picturebuff, 128, 64, 0x01);
+        display.display();
       #endif
-      display.display();
     #endif
   }
 

@@ -28,6 +28,10 @@ extern void host_system_menu();
 #endif
 
 #include "xts_arch.h"
+#ifdef BUT_ESP32
+  extern Esp32Oled esp32;
+#endif
+
 
 #include "xts_io.h"
 int OUTPUT_DEVICE;
@@ -69,9 +73,8 @@ extern PS2Keyboard keyboard;
 extern bool BUZZER_MUTE;
 
 #ifdef BUILTIN_LCD
-  #if defined(ARDUINO_ARCH_ESP32)
-   #include <SSD1306.h>
-   extern SSD1306 display;
+  #if defined(BUT_ESP32)
+   // ......
   #else
    #ifndef COMPUTER
    #include "dev_screen_Adafruit_SSD1306.h"
@@ -184,8 +187,9 @@ void host_init(int buzzerPin) {
     
     //oled.clear();
 
-    if (buzPin)
+    if (buzPin > 0) {
         pinMode(buzPin, OUTPUT);
+    }
 
     initTimer();
 }
@@ -211,14 +215,14 @@ void host_pinMode(int pin,int mode) {
 }
 
 void host_click() {
-    if (!buzPin || BUZZER_MUTE) return;
+    if ( buzPin <= 0 || BUZZER_MUTE) return;
     digitalWrite(buzPin, HIGH);
     delay(1);
     digitalWrite(buzPin, LOW);
 }
 
 void host_startupTone() {
-    if (!buzPin) return;
+    if ( buzPin <= 0 || BUZZER_MUTE) return;
     for (int i=1; i<=2; i++) {
         for (int j=0; j<50*i; j++) {
             digitalWrite(buzPin, HIGH);
@@ -238,14 +242,28 @@ void host_cls() {
     curX = 0;
     curY = 0;
 
+// test
+#if defined(BUT_ESP32)
+              esp32.getScreen().clear();
+              esp32.getScreen().blitt();
+
+// _oled_display.clear();
+// _oled_display.display();
+
+              isWriting = false;
+              return;
+#endif
+
+
     #ifdef BUILTIN_LCD
         if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
-            #if defined(ARDUINO_ARCH_ESP32)
-            display.clear();
+            #if defined(BUT_ESP32)
+              esp32.getScreen().clear();
+              esp32.getScreen().blitt();
             #else
-            display.clearDisplay();
+              display.clearDisplay();
+              display.display();
             #endif
-            display.display();
         } else 
     #endif
 
@@ -361,7 +379,7 @@ void host_showBuffer() {
             if (lineDirty[y] || (inputMode && y==curY)) {
                 //display.setCursor(0,y);
 
-#if defined(ARDUINO_ARCH_ESP32)
+#if defined(BUT_ESP32)
  // TODO : BETTER
  char line[SCREEN_WIDTH];
  for (int x=0; x<SCREEN_WIDTH; x++) {
@@ -369,7 +387,7 @@ void host_showBuffer() {
    if (c<32) c = ' ';
    line[x] = c;
  }
- display.drawString( 0, y*8, line );
+ esp32.getScreen().drawString( 0, y*8, line );
 #else
                 display.setCursor(0,y*8);
                 display.setTextColor( BLACK );
@@ -396,7 +414,11 @@ void host_showBuffer() {
         }
 
         // Xtase
+#ifdef BUT_ESP32
+        esp32.getScreen().blitt();
+#else
         display.display(); // to place in an interrupt
+#endif
     } else if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
 
         #ifdef BOARD_VGA
@@ -509,10 +531,10 @@ void scrollBuffer() {
 
     #ifdef BUILTIN_LCD
         if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
-            #if defined(ARDUINO_ARCH_ESP32)
-            display.clear();
+            #if defined(BUT_ESP32)
+             esp32.getScreen().clear();
             #else
-            display.clearDisplay();
+             display.clearDisplay();
             #endif
             for(int i=0; i < SCREEN_HEIGHT; i++) {
                 lineDirty[i] = SCREEN_WIDTH;
