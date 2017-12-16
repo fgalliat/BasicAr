@@ -141,6 +141,8 @@ bool STORAGE_OK = false;
 
    #ifdef USE_SDFAT_LIB
      if (!sd.begin()) {
+   #elif defined(ESP32_FS)
+     if (true) {
    #else
      if (!SD.begin(BUILTIN_SDCARD)) { // Teensy3.6 initialization
    #endif
@@ -508,36 +510,41 @@ void playTuneFromStorage(char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bo
   //  return;        
   // }
 
-  // sdfat lib
-  SdFile file;
-  if (! file.open( ftuneStreamName , O_READ) ) {
-    led1(true);
-    return;        
-  }
+  #ifdef ESP32_FS
+    host_outputString("ZIK NYI for esp32\n");
+    host_showBuffer();
+  #else
+    // sdfat lib
+    SdFile file;
+    if (! file.open( ftuneStreamName , O_READ) ) {
+      led1(true);
+      return;        
+    }
 
-  //  host_outputString( "OK : Opening : " );
-  //  host_outputString( (char*)tuneStreamName );
-  //  host_outputString( "\n" );
-  //zik.rewind();
+    //  host_outputString( "OK : Opening : " );
+    //  host_outputString( (char*)tuneStreamName );
+    //  host_outputString( "\n" );
+    //zik.rewind();
 
-  int nbNotes = (file.read()<<8)|file.read();
-  file.seekSet(0);
-  int fileLen = (nbNotes*sizeof(Note))+2+16+2;
-  if ( format == AUDIO_FORMAT_T53 ) {
-    fileLen = (nbNotes*(3+3+3))+2+16+2;
-  }
-  //file.readBytes( audiobuff, fileLen );
-  file.read( audiobuff, fileLen );
+    int nbNotes = (file.read()<<8)|file.read();
+    file.seekSet(0);
+    int fileLen = (nbNotes*sizeof(Note))+2+16+2;
+    if ( format == AUDIO_FORMAT_T53 ) {
+      fileLen = (nbNotes*(3+3+3))+2+16+2;
+    }
+    //file.readBytes( audiobuff, fileLen );
+    file.read( audiobuff, fileLen );
 
-  led3(false);
-  file.close();
+    led3(false);
+    file.close();
 
-  if ( format == AUDIO_FORMAT_T5K ) {
-    __playTune( audiobuff, btnStop );  
-  } else {
-    __playTuneT53( audiobuff, btnStop );  
-  }
+    if ( format == AUDIO_FORMAT_T5K ) {
+      __playTune( audiobuff, btnStop );  
+    } else {
+      __playTuneT53( audiobuff, btnStop );  
+    }
 
+    #endif
   #endif
   
   noTone(BUZZER_PIN); // MANDATORY for ESP32Oled
@@ -767,23 +774,37 @@ bool drawBPPfile(char* filename) {
   autocomplete_fileExt(filename, ".BPP");
   
   #ifdef FS_SUPPORT
-  // SFATLIB mode -> have to switch for regular SD lib
-  SdFile file;
-  if (! file.open( SDentryName , FILE_READ) ) {
-    host_outputString("ERR : File not ready\n");
-    return false;        
-  }
+    #ifdef USE_SDFAT_LIB
+    // SFATLIB mode -> have to switch for regular SD lib
+    SdFile file;
+    if (! file.open( SDentryName , FILE_READ) ) {
+      host_outputString("ERR : File not ready\n");
+      return false;        
+    }
 
-  file.seekSet(0);
-  int n;
-  if ( (n = file.read(&picturebuff, PICTURE_BUFF_SIZE)) != PICTURE_BUFF_SIZE ) {
-    host_outputString("ERR : File not valid\n");
-    host_outputInt( n );
-    host_outputString(" bytes read\n");
+    file.seekSet(0);
+    int n;
+    if ( (n = file.read(&picturebuff, PICTURE_BUFF_SIZE)) != PICTURE_BUFF_SIZE ) {
+      host_outputString("ERR : File not valid\n");
+      host_outputInt( n );
+      host_outputString(" bytes read\n");
+      file.close();
+      return false;
+    }
     file.close();
-    return false;
-  }
-  file.close();
+    #elif defined(ESP32_FS)
+      int n = esp32.getFs()->readBinFile(SDentryName, picturebuff, PICTURE_BUFF_SIZE);
+      if ( n <= 0 ) { 
+        host_outputString("ERR : File not ready\n");
+        return false;
+      } else if (n != PICTURE_BUFF_SIZE) {
+        host_outputString("ERR : File not valid\n");
+        host_outputInt( n );
+        host_outputString(" bytes read\n");
+        return false;
+      }
+      return true;
+    #endif
   #endif
 
   // do something w/ these bytes ...
@@ -831,179 +852,177 @@ bool drawBPPfile(char* filename) {
   }
  #else
   extern int curY;
-  bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter, bool sendToArray);
 
-  // bool _lsStorage2(File dir, int numTabs, bool recurse, char* filter) {
-  //   while(true) {
-      
-  //     File entry =  dir.openNextFile();
-  //     if (! entry) {
-  //       // no more files
-  //       //Serial.println("**nomorefiles**");
-  //       break;
-  //     }
-  //     for (uint8_t i=0; i<numTabs; i++) {
-  //       //Serial.print('\t');
-  //       host_outputString(" ");
-  //     }
-  //     //Serial.print(entry.name());
-  //     host_outputString("entry name");
-  //     if (entry.isDirectory()) {
-  //       //Serial.println("/");
-  //       host_outputString("/\n");
-  //       //printDirectory(entry, numTabs+1);
-  //     } else {
-  //       // files have sizes, directories do not
-  //       // Serial.print("\t\t");
-  //       // Serial.println(entry.size(), DEC);
-  //       host_outputString("*\n");
-  //     }
-  //     entry.close();
-  //   }
-  //   host_showBuffer();
-  // }
+  #ifdef ESP32_FS
 
-
-  // filter can be "*.BAS"
-  // sendToArray == true -> create "DIR$" array & fill it
-  //   instead of sending to console display
-  void lsStorage(char* filter=NULL, bool sendToArray=false) {
-    bool recurse = false;
-
-    // SdFile dirFile;
-
-    if ( !STORAGE_OK ) {
-      host_outputString("ERR : Storage not ready\n");
-      return;
+    void esp_ls_callback(char* entry) {
+      host_outputString(entry);
+      host_outputString("\n");
+      host_showBuffer();
     }
 
-    if (!dirFile.open("/", O_READ)) {
-      host_outputString("ERR : opening SD root failed\n");
-      return;
-    }
-
-//root = SD.open("/");
-
-    _lsStorage(dirFile, 0, recurse, filter, sendToArray);
-    //_lsStorage2(root, 0, recurse, filter);
-
-// root.close();
-
-    dirFile.close();
-  }
-
-
-//  #ifndef SCREEN_HEIGHT
-//   #define SCREEN_HEIGHT       8
-//  #endif
-
-bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter, bool sendToArray) {
-    SdFile file;
-
-    if ( sendToArray ) {
-      // can't use createArray because it use expr stack
-      #define MAX_FILE_IN_ARRAY 128
-      if ( ! xts_createArray("DIR$", 1, MAX_FILE_IN_ARRAY) ) {
-        host_outputString("Could not create DIR$");
-        return false;
+    void lsStorage(char* filter=NULL, bool sendToArray=false) {
+      if ( sendToArray ) {
+        host_outputString("DIR2ARRAY NYI !");
+        host_showBuffer();
+        return;
       }
-    }
 
-    int cpt = 0;
-    while (file.openNext(&dirFile, O_READ)) {
-      if (!file.isSubDir() && !file.isHidden() ) {
-        // //file.printFileSize(&Serial);
-        // //file.printModifyDateTime(&Serial);
-        // //file.printName(&Serial);
+      int cpt = esp32.getFs()->listDir("/", esp_ls_callback);
 
-        memset(SDentryName, 0x00, 13);
-        file.getName( SDentryName, 13 );
-
-        if ( filter != NULL ) {
-          // TODO : optimize !!!!!
-          int strt = 0;
-          if ( filter[strt] == '*' ) { strt++; }
-          if ( filter[strt] == '.' ) { strt++; } // see 'else' case
-
-          int tlen = strlen(SDentryName);
-          int flen = strlen(filter);
-          if ( tlen > 4 ) {
-            if ( SDentryName[ tlen-1-3 ] == '.' ) {
-              bool valid = true;
-              for(int i=0; i < flen-strt; i++) {
-
-                //host_outputChar( SDentryName[ tlen-3+i ] ); host_outputChar(' ');host_outputChar(filter[strt+i]);host_outputChar('\n');
-
-                if ( charUpCase( SDentryName[ tlen-3+i ] ) != charUpCase(filter[strt+i]) ) {
-                  valid = false;
-                  break;
-                }
-              }
-              if ( !valid ) { file.close(); continue; }
-            } else {
-              file.close(); 
-              continue;
-            }
-          } else {
-            file.close(); 
-            continue;
-          }
-        }
-
-        if ( !sendToArray ) {
-          host_outputInt( (cpt+1) );
-          host_outputString("\t");
-          host_outputString(SDentryName);
-        } else {
-          // SDentryName @ (cpt+1)
-
-          // to check
-          if ( file.isDir() ) { SDentryName[ 13-1 ] = '/'; }
-          else                { SDentryName[ 13-1 ] = 0x00; }
-
-          if ( xts_setStrArrayElem( "DIR$", (cpt+1), SDentryName ) != ERROR_NONE ) {
-            host_outputInt( (cpt+1) );
-            host_outputString("\t");
-            host_outputString(SDentryName);
-            host_outputString(" : ERROR\n");
-
-            break;
-          }
-        }
-
-        if ( file.isDir() ) {
-          // Indicate a directory.
-          if ( !sendToArray ) {
-            host_outputString("/");
-          }
-        }
-        if ( !sendToArray ) {
-          host_outputString("\n");
-
-          // TMP - DIRTY ----- begin
-          if ( cpt % SCREEN_HEIGHT == SCREEN_HEIGHT-1 ) {
-            host_showBuffer();
-          }
-          // TMP - DIRTY ----- end
-        }
-
-        cpt++;
-
-      }
-      file.close();
-    }
-
-    if ( sendToArray ) {
-      xts_setStrArrayElem( "DIR$", (cpt+1), "-EOF-" );
-    } else {
       host_outputString("nb files : ");
       host_outputInt( cpt );
       host_outputString("\n");
       host_showBuffer();
     }
 
-    return true;
-  }
+
+  #else
+
+    bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter, bool sendToArray);
+
+    // filter can be "*.BAS"
+    // sendToArray == true -> create "DIR$" array & fill it
+    //   instead of sending to console display
+    void lsStorage(char* filter=NULL, bool sendToArray=false) {
+      bool recurse = false;
+
+      // SdFile dirFile;
+
+      if ( !STORAGE_OK ) {
+        host_outputString("ERR : Storage not ready\n");
+        return;
+      }
+
+      if (!dirFile.open("/", O_READ)) {
+        host_outputString("ERR : opening SD root failed\n");
+        return;
+      }
+
+  //root = SD.open("/");
+
+      _lsStorage(dirFile, 0, recurse, filter, sendToArray);
+      //_lsStorage2(root, 0, recurse, filter);
+
+  // root.close();
+
+      dirFile.close();
+    }
+
+
+  //  #ifndef SCREEN_HEIGHT
+  //   #define SCREEN_HEIGHT       8
+  //  #endif
+
+  bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter, bool sendToArray) {
+      SdFile file;
+
+      if ( sendToArray ) {
+        // can't use createArray because it use expr stack
+        #define MAX_FILE_IN_ARRAY 128
+        if ( ! xts_createArray("DIR$", 1, MAX_FILE_IN_ARRAY) ) {
+          host_outputString("Could not create DIR$");
+          return false;
+        }
+      }
+
+      int cpt = 0;
+      while (file.openNext(&dirFile, O_READ)) {
+        if (!file.isSubDir() && !file.isHidden() ) {
+          // //file.printFileSize(&Serial);
+          // //file.printModifyDateTime(&Serial);
+          // //file.printName(&Serial);
+
+          memset(SDentryName, 0x00, 13);
+          file.getName( SDentryName, 13 );
+
+          if ( filter != NULL ) {
+            // TODO : optimize !!!!!
+            int strt = 0;
+            if ( filter[strt] == '*' ) { strt++; }
+            if ( filter[strt] == '.' ) { strt++; } // see 'else' case
+
+            int tlen = strlen(SDentryName);
+            int flen = strlen(filter);
+            if ( tlen > 4 ) {
+              if ( SDentryName[ tlen-1-3 ] == '.' ) {
+                bool valid = true;
+                for(int i=0; i < flen-strt; i++) {
+
+                  //host_outputChar( SDentryName[ tlen-3+i ] ); host_outputChar(' ');host_outputChar(filter[strt+i]);host_outputChar('\n');
+
+                  if ( charUpCase( SDentryName[ tlen-3+i ] ) != charUpCase(filter[strt+i]) ) {
+                    valid = false;
+                    break;
+                  }
+                }
+                if ( !valid ) { file.close(); continue; }
+              } else {
+                file.close(); 
+                continue;
+              }
+            } else {
+              file.close(); 
+              continue;
+            }
+          }
+
+          if ( !sendToArray ) {
+            host_outputInt( (cpt+1) );
+            host_outputString("\t");
+            host_outputString(SDentryName);
+          } else {
+            // SDentryName @ (cpt+1)
+
+            // to check
+            if ( file.isDir() ) { SDentryName[ 13-1 ] = '/'; }
+            else                { SDentryName[ 13-1 ] = 0x00; }
+
+            if ( xts_setStrArrayElem( "DIR$", (cpt+1), SDentryName ) != ERROR_NONE ) {
+              host_outputInt( (cpt+1) );
+              host_outputString("\t");
+              host_outputString(SDentryName);
+              host_outputString(" : ERROR\n");
+
+              break;
+            }
+          }
+
+          if ( file.isDir() ) {
+            // Indicate a directory.
+            if ( !sendToArray ) {
+              host_outputString("/");
+            }
+          }
+          if ( !sendToArray ) {
+            host_outputString("\n");
+
+            // TMP - DIRTY ----- begin
+            if ( cpt % SCREEN_HEIGHT == SCREEN_HEIGHT-1 ) {
+              host_showBuffer();
+            }
+            // TMP - DIRTY ----- end
+          }
+
+          cpt++;
+
+        }
+        file.close();
+      }
+
+      if ( sendToArray ) {
+        xts_setStrArrayElem( "DIR$", (cpt+1), "-EOF-" );
+      } else {
+        host_outputString("nb files : ");
+        host_outputInt( cpt );
+        host_outputString("\n");
+        host_showBuffer();
+      }
+
+      return true;
+    }
+
+  #endif // not ESP32-FS
 
  #endif // FS_SUPPORT
 
@@ -1043,54 +1062,59 @@ bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter, bool se
 
   autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
 
-  // SFATLIB mode -> have to switch for regular SD lib
-  SdFile file;
-  if (! file.open( SDentryName , O_READ) ) {
-    led1(true);
-    host_outputString("ERR : File not ready\n");
+  #ifdef ESP32_FS
+    host_outputString("LOAD NYI for esp32\n");
     host_showBuffer();
-    return;        
-  }
-
-  file.seekSet(0);
-
-  int n;
-
-  //reset(); // aka NEW -- no more Cf saveLoadCmd() call
-
-  cleanCodeLine();
-  memset( tokenBuf, 0x00, TOKEN_BUF_SIZE );
-  int lineCpt = 1;
-  while( ( n = file.fgets(codeLine, ASCII_CODELINE_SIZE) ) > 0 ) {
-    // // show line
-    // host_outputString( codeLine );
-    // if ( codeLine[n-1] != '\n' ) {
-    //   host_outputString( "\n" );
-    // }
-    // host_showBuffer();
-
-    // interpret line
-    int ret = tokenize((unsigned char*)codeLine, tokenBuf, TOKEN_BUF_SIZE); 
-    if (ret == 0) { ret = processInput(tokenBuf); }
-    if ( ret > 0 ) { 
-      //host_outputInt( curToken );
-      host_outputString((char *)codeLine);
-      host_outputString((char *)" ->");
-      host_outputString((char *)errorTable[ret]); 
-      host_outputString((char *)" @");
-      host_outputInt( lineCpt );
-      host_outputString((char *)"\n");
-      host_showBuffer(); 
+  #else
+    // SFATLIB mode -> have to switch for regular SD lib
+    SdFile file;
+    if (! file.open( SDentryName , O_READ) ) {
+      led1(true);
+      host_outputString("ERR : File not ready\n");
+      host_showBuffer();
+      return;        
     }
-    //ret = ERROR_NONE;
+
+    file.seekSet(0);
+
+    int n;
+
+    //reset(); // aka NEW -- no more Cf saveLoadCmd() call
+
     cleanCodeLine();
     memset( tokenBuf, 0x00, TOKEN_BUF_SIZE );
-    lineCpt++;
-  }
-  file.close();
+    int lineCpt = 1;
+    while( ( n = file.fgets(codeLine, ASCII_CODELINE_SIZE) ) > 0 ) {
+      // // show line
+      // host_outputString( codeLine );
+      // if ( codeLine[n-1] != '\n' ) {
+      //   host_outputString( "\n" );
+      // }
+      // host_showBuffer();
 
-  host_outputString( "-EOF-\n" );
-  host_showBuffer();
+      // interpret line
+      int ret = tokenize((unsigned char*)codeLine, tokenBuf, TOKEN_BUF_SIZE); 
+      if (ret == 0) { ret = processInput(tokenBuf); }
+      if ( ret > 0 ) { 
+        //host_outputInt( curToken );
+        host_outputString((char *)codeLine);
+        host_outputString((char *)" ->");
+        host_outputString((char *)errorTable[ret]); 
+        host_outputString((char *)" @");
+        host_outputInt( lineCpt );
+        host_outputString((char *)"\n");
+        host_showBuffer(); 
+      }
+      //ret = ERROR_NONE;
+      cleanCodeLine();
+      memset( tokenBuf, 0x00, TOKEN_BUF_SIZE );
+      lineCpt++;
+    }
+    file.close();
+
+    host_outputString( "-EOF-\n" );
+    host_showBuffer();
+  #endif
 }
 
 
@@ -1187,44 +1211,49 @@ void saveAsciiBas(char* filename) {
 
   autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
 
-  // SFATLIB mode -> have to switch for regular SD lib
-  sd.remove( SDentryName );
-  SdFile file;
-
-  if (! file.open( SDentryName , FILE_WRITE) ) {
-    led1(true);
-    host_outputString("ERR : File not ready\n");
+  #ifdef ESP32_FS
+    host_outputString("SAVE NYI for esp32\n");
     host_showBuffer();
-    return;        
-  }
+  #else
+    // SFATLIB mode -> have to switch for regular SD lib
+    sd.remove( SDentryName );
+    SdFile file;
 
-  file.seekSet(0);
+    if (! file.open( SDentryName , FILE_WRITE) ) {
+      led1(true);
+      host_outputString("ERR : File not ready\n");
+      host_showBuffer();
+      return;        
+    }
 
-  // file.print("coucou1"); file.print("\n");
-  // file.flush();
+    file.seekSet(0);
 
-  cleanCodeLine();
-  unsigned char *p = &mem[0];
-  while (p < &mem[sysPROGEND]) {
-      uint16_t lineNum = *(uint16_t*)(p+2);
-          file.print(lineNum);
-          file.print(" ");
+    // file.print("coucou1"); file.print("\n");
+    // file.flush();
 
-          //printTokens(p+4);
-          _serializeTokens(p+4, codeLine);
-          file.print(codeLine);
-          cleanCodeLine();
+    cleanCodeLine();
+    unsigned char *p = &mem[0];
+    while (p < &mem[sysPROGEND]) {
+        uint16_t lineNum = *(uint16_t*)(p+2);
+            file.print(lineNum);
+            file.print(" ");
 
-          file.print("\n");
-      p+= *(uint16_t *)p;
-  }
-  file.flush();
+            //printTokens(p+4);
+            _serializeTokens(p+4, codeLine);
+            file.print(codeLine);
+            cleanCodeLine();
 
-  
-  host_outputString( "-EOF-\n" );
-  host_showBuffer();
+            file.print("\n");
+        p+= *(uint16_t *)p;
+    }
+    file.flush();
 
-  file.close();
+    
+    host_outputString( "-EOF-\n" );
+    host_showBuffer();
+
+    file.close();
+  #endif
 }
 
 // ====== LLIST ==================
@@ -1262,30 +1291,35 @@ void llistAsciiBas(char* filename=NULL) {
 
   autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
 
-  // SFATLIB mode -> have to switch for regular SD lib
-  SdFile file;
-  if (! file.open( SDentryName , O_READ) ) {
-    led1(true);
-    host_outputString("ERR : File not ready\n");
+  #ifdef ESP32_FS
+    host_outputString("LLIST NYI for esp32\n");
     host_showBuffer();
-    return;        
-  }
-
-  file.seekSet(0);
-
-  int n;
-
-  cleanCodeLine();
-  while( ( n = file.fgets(codeLine, ASCII_CODELINE_SIZE) ) > 0 ) {
-    outSerial.print( codeLine );
-    if ( codeLine[n-1] != '\n' ) {
-      outSerial.print( "\n" );
+  #else
+    // SFATLIB mode -> have to switch for regular SD lib
+    SdFile file;
+    if (! file.open( SDentryName , O_READ) ) {
+      led1(true);
+      host_outputString("ERR : File not ready\n");
+      host_showBuffer();
+      return;        
     }
-  }
-  outSerial.print( "-EOF-\n" );
-  outSerial.flush();
 
-  file.close();
+    file.seekSet(0);
+
+    int n;
+
+    cleanCodeLine();
+    while( ( n = file.fgets(codeLine, ASCII_CODELINE_SIZE) ) > 0 ) {
+      outSerial.print( codeLine );
+      if ( codeLine[n-1] != '\n' ) {
+        outSerial.print( "\n" );
+      }
+    }
+    outSerial.print( "-EOF-\n" );
+    outSerial.flush();
+
+    file.close();
+  #endif
 }
 
 
@@ -1299,8 +1333,13 @@ void deleteBasFile(char* filename) {
 
   autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
 
-  // SFATLIB mode -> have to switch for regular SD lib
-  sd.remove( SDentryName );
+  #ifdef ESP32_FS
+    host_outputString("DEL NYI for esp32\n");
+    host_showBuffer();
+  #else
+    // SFATLIB mode -> have to switch for regular SD lib
+    sd.remove( SDentryName );
+  #endif
 }
 
 

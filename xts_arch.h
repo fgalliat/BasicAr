@@ -120,6 +120,9 @@
   #define BTN2_PIN BTN2
   #define BTN3_PIN -1
 
+  #define FS_SUPPORT 1 // TODO remove comment
+  #define ESP32_FS 1
+
   // 5KB buffer
   #define AUDIO_BUFF_SIZE (5*1024) 
   // lcd(128*64) / 8(1bpp)

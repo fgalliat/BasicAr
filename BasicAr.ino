@@ -152,6 +152,7 @@ void setup() {
 
 #ifdef BUT_ESP32
    esp32.setup();
+   STORAGE_OK = true;
 #endif
 
     // BUZZER_MUTE = true;
