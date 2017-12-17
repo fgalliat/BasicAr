@@ -26,23 +26,26 @@
 // #include <SPI.h>
 // File curFile;
 
-  char SDentryName[13];
-
   #ifdef USE_SDFAT_LIB
+    char SDentryName[13];
   // for teensy 3.6
   // > https://github.com/greiman/SdFat-beta
     #include "SdFat.h"
     SdFatSdio sd;
     SdFile file;
     SdFile dirFile;
-  #elif USE_FS_LEGACY
+  #elif defined(ESP32_FS)
+    // +1 for leading '/'
+    char SDentryName[13+1];
+  #elif defined(USE_FS_LEGACY)
+    char SDentryName[13];
     // ex. regular computer
     SDClass sd;
     SdFile file;
     SdFile dirFile;
   #endif
 
-
+#ifndef ESP32_FS
   // BEWARE : uses & modifies : SDentryName[]
   // ex. autocomplete_fileExt(filename, ".BAS") => SDentryName[] contains full file-name
   // assumes that ext is stricly 3 char long
@@ -55,13 +58,28 @@
     }
     return SDentryName;
   }
-
+#elif ESP32_FS
+  // BEWARE : uses & modifies : SDentryName[]
+  // ex. autocomplete_fileExt(filename, ".BAS") => SDentryName[] contains full file-name
+  // assumes that ext is stricly 3 char long
+  char* autocomplete_fileExt(char* filename, const char* defFileExt) {
+    int flen = strlen(filename);
+    memset(SDentryName, 0x00, 8+1+3+1+1); // 13+1 char long
+    memcpy(SDentryName, "/", 1);
+    strcat(SDentryName, filename );
+    if ( flen < 4 || filename[ flen-3 ] != '.' ) {
+      strcat( SDentryName, defFileExt );
+    }
+    Serial.println( SDentryName );
+    return SDentryName;
+  }
 #else
   char* autocomplete_fileExt(char* filename, const char* defFileExt) {
     // TODO
     Serial.println("autocomplete_fileExt NYI.");
     return "TOTO.BAS";
   }
+#endif
 #endif
 
 
@@ -492,8 +510,17 @@ void playTuneFromStorage(char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bo
   if ( lastCh >= 'a' && lastCh <= 'z' ) { lastCh = lastCh - 'a' + 'A'; }
   tuneStreamName[ tlen-1 ] = lastCh;
 
-  char ftuneStreamName[8+1+3];
-  strcpy(ftuneStreamName, tuneStreamName);
+  #ifdef ESP32_FS
+    char ftuneStreamName[8+1+3+1];
+    strcpy(ftuneStreamName, "/");
+    strcat(ftuneStreamName, tuneStreamName);
+  #else
+    char ftuneStreamName[8+1+3];
+    strcpy(ftuneStreamName, tuneStreamName);
+  #endif
+
+  
+  
 
   if ( !(( lastCh == 'K' || lastCh == '3') && (tlen >= 2 && tuneStreamName[ tlen-2 ] == '5') ) ) {
     if ( format == AUDIO_FORMAT_T5K ) {
@@ -511,8 +538,36 @@ void playTuneFromStorage(char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bo
   // }
 
   #ifdef ESP32_FS
-    host_outputString("ZIK NYI for esp32\n");
-    host_showBuffer();
+    // host_outputString("ZIK NYI for esp32\n");
+    // host_showBuffer();
+    unsigned char preBuff[2];
+    int n = esp32.getFs()->readBinFile(ftuneStreamName, preBuff, 2);
+    if ( n <= 0 ) {
+      host_outputString( ftuneStreamName );
+      host_outputString("\n");
+      host_outputString("ZIK File not ready\n");
+      host_showBuffer();
+      return;
+    }
+
+    int nbNotes = (preBuff[0]<<8)|preBuff[1];
+
+    int fileLen = (nbNotes*sizeof(Note))+2+16+2;
+    if ( format == AUDIO_FORMAT_T53 ) {
+      fileLen = (nbNotes*(3+3+3))+2+16+2;
+    }
+
+    //file.read( audiobuff, fileLen );
+    n = esp32.getFs()->readBinFile(ftuneStreamName, audiobuff, fileLen);
+
+    led3(false);
+
+    if ( format == AUDIO_FORMAT_T5K ) {
+      __playTune( audiobuff, btnStop );  
+    } else {
+      __playTuneT53( audiobuff, btnStop );  
+    }
+
   #else
     // sdfat lib
     SdFile file;
@@ -803,9 +858,9 @@ bool drawBPPfile(char* filename) {
         host_outputString(" bytes read\n");
         return false;
       }
-      return true;
     #endif
   #endif
+
 
   // do something w/ these bytes ...
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {

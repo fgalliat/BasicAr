@@ -108,6 +108,7 @@
             }
 
             void drawImg(int x,int y, int w, int h, unsigned char* img) {
+                // TO FIX
                 _oled_display->drawFastImage(x,y, w, h, (const char*)img);
             }
 
