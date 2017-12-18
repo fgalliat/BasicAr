@@ -170,29 +170,36 @@
             char line[164]; 
             int i=0, cpt=0, max=0;
             bool pending = false;
+
+            callback( "\n" ); // just to be sure ....
+
             while( pending || (!pending && (max = f.readBytes( buff, 256 )) > 0) ) {
 
-            if ( max <= 0 ) { break; }
+                if ( max <= 0 ) { break; }
 
-            pending = false;
-            while( max > 0 && i < max ) {
-                if ( buff[i] == 0x00 ) { pending = false; break; }
-                if ( buff[i] == '\n' ) { pending = true; i++; break; }
-                line[cpt++] = buff[i++];
-            }
-            
-            if ( pending ) {
-                callback( line );
+                pending = false;
+                while( max > 0 && i < max ) {
+                    if ( buff[i] == 0x00 ) { pending = false; break; }
+                    if ( buff[i] == '\n' ) { pending = true; i++; break; }
+                    line[cpt++] = buff[i++];
+                }
                 
-                lineNb++;
-                memset(line, 0x00, 164);
-                cpt=0; 
+                if ( pending ) {
+                    callback( line );
+                    
+                    lineNb++;
+                    memset(line, 0x00, 164);
+                    cpt=0; 
+                }
+
+                if ( max <= 0 || buff[i] == 0x00 ) { pending=false; break; }
+                if ( i >= max-1 ) { i=0; pending = false; }
             }
 
-            if ( max <= 0 || buff[i] == 0x00 ) { pending=false; break; }
-            if ( i >= max-1 ) { i=0; pending = false; }
-
+            if ( cpt > 0 ) {
+                callback( line );
             }
+
             f.close();
             return lineNb;
           }
@@ -317,6 +324,10 @@
         // equiv of F1
         bool getSystemSignal() {
             return readPadYaxis() > 0 && readBtn(1) && readBtn(2);
+        }
+
+        bool getEndSystemSignal() {
+            return readPadYaxis() == 0 && !readBtn(1) && !readBtn(2);
         }
 
         // ==== Sound ====

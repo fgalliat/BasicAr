@@ -24,6 +24,7 @@
 125 D = ABS((X - Xa) / COSR): H = (1816 / D) / 3
 126 SS = S / 3
 127 LINE (SS + 64) , (32 - H), (SS + 69), (32 + H)
+130 LINE (SS + 64) , (32 - H), (SS + 69), (32 - H)
 135 NEXT S
 136 A$ = INKEY$
 141 IF A$ = "f" OR BTN(5) = 1 THEN F = F+5 : GOTO 101
@@ -34,7 +35,7 @@
 154 IF YY > 7 THEN YY = 7
 155 IF A$ = "s" AND (L(XX, YY) = 0) THEN X = X + COS(F / 57) : GOTO 101
 190 IF A$ = "q" OR BTN(1) = 1 then STOP
-195 IF A$ = "r" THEN Y = Y + SIN(F / 57) : GOTO 101
+195 IF A$ = "r" OR BTN(6) = 1 THEN Y = Y + SIN(F / 57) : GOTO 101
 198 DELAY 10
 199 GOTO 136
 208 ' Original code found @ http://forum.qbasicnews.com/index.php?topic=5699.0

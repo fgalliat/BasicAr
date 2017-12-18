@@ -1120,6 +1120,9 @@ bool drawBPPfile(char* filename) {
 
   #ifdef ESP32_FS
     void loadCallback(char* codeLine) {
+
+      //Serial.print(">> ");Serial.println(codeLine);
+
       // interpret line
       int ret = tokenize((unsigned char*)codeLine, tokenBuf, TOKEN_BUF_SIZE); 
       if (ret == 0) { ret = processInput(tokenBuf); }

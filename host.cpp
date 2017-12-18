@@ -748,12 +748,14 @@ char *host_readLine() {
               }
         #elif BUT_ESP32
           if ( MODE_EDITOR && esp32.getSystemSignal() ) {
-            while( esp32.getSystemSignal() ) {
+            //while( esp32.getSystemSignal() ) {
+            while( !esp32.getEndSystemSignal() ) {
                 delay(100);
             }
             host_system_menu();
             // to trigger end-of-line
             // & execute selfRun
+
             kc = PS2_ENTER;
             screenBuffer[pos++] = '\n';
             done = true;
