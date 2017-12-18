@@ -755,8 +755,10 @@ char *host_readLine() {
             // to trigger end-of-line
             // & execute selfRun
             kc = PS2_ENTER;
+            screenBuffer[pos++] = '\n';
+            done = true;
           }
-          while (keyboard.available() ) {
+          while ( keyboard.available() ) {
         #else
           while (keyboard.available() ) {
         #endif

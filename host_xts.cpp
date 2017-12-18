@@ -1157,8 +1157,6 @@ bool drawBPPfile(char* filename) {
     host_outputString( "-EOF-\n" );
     host_showBuffer();
 
-    // host_outputString("LOAD NYI for esp32\n");
-    // host_showBuffer();
     return;
   #else
     // SFATLIB mode -> have to switch for regular SD lib
