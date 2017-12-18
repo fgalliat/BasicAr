@@ -66,7 +66,16 @@
     int flen = strlen(filename);
     memset(SDentryName, 0x00, 8+1+3+1+1); // 13+1 char long
     memcpy(SDentryName, "/", 1);
-    strcat(SDentryName, filename );
+    //strcat(SDentryName, filename );
+    int l = strlen( filename );
+    char ch;
+    for(int i=0; i < l; i++) {
+      ch = filename[i];
+      if ( ch >= 'a' && ch <= 'z' ) {
+        ch = ch - 'a' + 'A';
+      }
+      SDentryName[1+i] = ch;
+    }
     if ( flen < 4 || filename[ flen-3 ] != '.' ) {
       strcat( SDentryName, defFileExt );
     }
