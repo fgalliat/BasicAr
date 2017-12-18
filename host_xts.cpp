@@ -1550,6 +1550,7 @@ extern bool selfRun; // for CHAIN "<...>" cmd
 extern int xts_loadBas(char * optFilename);
 
 void host_system_menu() {
+  reset();
   // == true Cf used w/ parameters => bool result
   if ( xts_loadBas("SYSMENU") == true) {
     selfRun = true;

@@ -760,6 +760,15 @@ char *host_readLine() {
             screenBuffer[pos++] = '\n';
             done = true;
           }
+          else if ( MODE_EDITOR && esp32.readBtn(2) > 0 ) {
+            while( esp32.readBtn(2) > 0 ) {
+                delay(100);
+            }
+            // to trigger end-of-line
+            kc = PS2_ENTER;
+            screenBuffer[pos++] = '\n';
+            done = true;
+          }
           while ( keyboard.available() ) {
         #else
           while (keyboard.available() ) {

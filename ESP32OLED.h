@@ -201,6 +201,8 @@
             }
 
             f.close();
+            callback( "\n" ); // just to be sure ....
+
             return lineNb;
           }
 
