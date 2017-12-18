@@ -864,6 +864,8 @@ bool host_ESCPressed() {
               return true;
           }
       }
+    #elif BUT_ESP32
+      return esp32.getBreakSignal();
     #else
       return anyBtn();
     #endif

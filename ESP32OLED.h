@@ -107,9 +107,28 @@
                 _oled_display->setPixel(x,y);
             }
 
-            void drawImg(int x,int y, int w, int h, unsigned char* img) {
+            void drawImg(int x,int y, int width, int height, unsigned char* picBuff) {
                 // TO FIX
-                _oled_display->drawFastImage(x,y, w, h, (const char*)img);
+                //_oled_display->drawFastImage(x,y, w, h, (const char*)img);
+
+                unsigned char c;
+                for (int yy = 0; yy < height; yy++) {
+                    for (int xx = 0; xx < width; xx++) {
+                        c = (picBuff[(yy * (width / 8)) + (xx / 8)] >> (7 - ((xx) % 8))) % 2;
+                        if (c == 0x00) {
+                            _oled_display->setColor(BLACK);
+                            setPixel(x + xx, y + yy);
+                            // drawPixel(x + xx, y + yy, 0);
+                        }
+                        else {
+                            // drawPixel(x + xx, y + yy, 1);
+                            _oled_display->setColor(WHITE);
+                            setPixel(x + xx, y + yy);
+                        }
+                    }
+                }
+        
+
             }
 
             void clear() {

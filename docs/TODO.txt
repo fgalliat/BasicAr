@@ -1,3 +1,17 @@
+== ESP32 ==
+
+autocomplete name -> UPPERCASE
+                  -> use it for playTune
+
+use ESP32 getBreakSignal() -> OK
+
+modify RAYC.BAS to read btns
+
+fix drawBPP
+
+
+
+
 == TODO ==
 IPC between Java & C w/ pseudo file
   http://www.jonathanbeard.io/tutorials/CtoJava
