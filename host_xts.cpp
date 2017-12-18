@@ -1108,6 +1108,27 @@ bool drawBPPfile(char* filename) {
 
 
  #else
+
+  #ifdef ESP32_FS
+    void loadCallback(char* codeLine) {
+      // interpret line
+      int ret = tokenize((unsigned char*)codeLine, tokenBuf, TOKEN_BUF_SIZE); 
+      if (ret == 0) { ret = processInput(tokenBuf); }
+      if ( ret > 0 ) { 
+        //host_outputInt( curToken );
+        host_outputString((char *)codeLine);
+        host_outputString((char *)" ->");
+        host_outputString((char *)errorTable[ret]); 
+        host_outputString((char *)" @");
+        //host_outputInt( lineCpt );
+        host_outputInt( 999 );
+        host_outputString((char *)"\n");
+        host_showBuffer(); 
+      }
+    }
+  #endif
+
+
  void loadAsciiBas(char* filename) {
   if ( !STORAGE_OK ) {
     host_outputString("ERR : Storage not ready\n");
@@ -1118,8 +1139,18 @@ bool drawBPPfile(char* filename) {
   autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
 
   #ifdef ESP32_FS
-    host_outputString("LOAD NYI for esp32\n");
+
+    cleanCodeLine();
+    memset( tokenBuf, 0x00, TOKEN_BUF_SIZE );
+
+    esp32.getFs()->readTextFile(SDentryName, loadCallback);
+
+    host_outputString( "-EOF-\n" );
     host_showBuffer();
+
+    // host_outputString("LOAD NYI for esp32\n");
+    // host_showBuffer();
+    return;
   #else
     // SFATLIB mode -> have to switch for regular SD lib
     SdFile file;

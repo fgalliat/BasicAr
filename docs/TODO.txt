@@ -1,14 +1,13 @@
 == ESP32 ==
 
 autocomplete name -> UPPERCASE
-                  -> use it for playTune
-
-use ESP32 getBreakSignal() -> OK
+                  -> use it for playTune too
 
 modify RAYC.BAS to read btns
 
-fix drawBPP
-
+UP + BTN1 + BTN2 -> SYSMENU.BAS -> OK (but need a CRLF before ...)
+fix drawBPP -> OK
+use ESP32 getBreakSignal() -> OK
 
 
 

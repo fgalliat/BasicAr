@@ -314,6 +314,11 @@
             return readBtn(1) && readBtn(2);
         }
 
+        // equiv of F1
+        bool getSystemSignal() {
+            return readPadYaxis() > 0 && readBtn(1) && readBtn(2);
+        }
+
         // ==== Sound ====
 
         void tone(int freq, int duration) {

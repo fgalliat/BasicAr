@@ -746,6 +746,17 @@ char *host_readLine() {
                 // & execute selfRun
                 kc = PS2_ENTER;
               }
+        #elif BUT_ESP32
+          if ( MODE_EDITOR && esp32.getSystemSignal() ) {
+            while( esp32.getSystemSignal() ) {
+                delay(100);
+            }
+            host_system_menu();
+            // to trigger end-of-line
+            // & execute selfRun
+            kc = PS2_ENTER;
+          }
+          while (keyboard.available() ) {
         #else
           while (keyboard.available() ) {
         #endif
