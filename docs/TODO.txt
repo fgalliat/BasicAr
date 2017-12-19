@@ -1,9 +1,13 @@
 == ESP32 ==
 
-autocomplete name -> UPPERCASE
-                  -> use it for playTune too
+ESP.restart() -- restarts the CPU
+ > to use for 'BYE' cmd
 
-modify RAYC.BAS to read btns
+
+autocomplete name -> UPPERCASE -> OK
+                  -> use it for playTune too -> TODO
+
+modify RAYC.BAS to read btns -> OK
 
 UP + BTN1 + BTN2 -> SYSMENU.BAS -> OK (but need a CRLF before ...)
 fix drawBPP -> OK
