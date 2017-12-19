@@ -94,10 +94,15 @@ SPACE$(nbTimes)   : function that returns repeating string of nbTimes * CHR$(32)
 ASC( str )        : returns ascii code of 1st char of str
 INSTR( str, toFind ) : returns index of 'toFind' in 'str' (else 0)
 
+ABS(x)            : return absolute value of number
+COS(x)            : return cos( x in radians)
+SIN(x)            : return sin( x in radians)
 
 EXEC "<extCmd>", "[<extArg>]" : to launch an extended command
 
 BYE               : to reset the MCU
+
+HALT              : to halt the MCU & optional connected RPI
 ```
 
 **Builtin USB Keyboard support** (via HobbyTronic board) is now nearly complete !

@@ -21,6 +21,8 @@
     #define KEYB_TYPE_USB_HOBYTRONIC_V1 1
 
     #define BOARD_SND 1
+
+    #define BOARD_RPID 1
   #endif
 
   #define FS_SUPPORT 1
@@ -73,6 +75,13 @@
   #define BOARD_VGA 1
     #define BOARD_VGA_FAKE_SERIAL 1
 
+  #define BOARD_RPID 1
+
+  #define BUILTIN_LCD 1
+
+  // #define BUILTIN_KBD 1
+  // #define KEYB_TYPE_USB_HOBYTRONIC_V1 1
+
   #define BUZZER_PIN 5
   
   #define LED1_PIN 13
@@ -91,6 +100,37 @@
   #define RAM_END (256*1024)-1
   #define EEPROM_END (2*1024)-1
   #define SPEED 1000
+#elif defined(ARDUINO_ARCH_ESP32)
+  // ESP32 + Oled Board
+  // from mackerhawk as example
+  #define ARCH_TYPE "ESP32-Oled Board"
+  #define BUT_TEENSY 1
+  #define BUT_ESP32 1
+
+  #include "ESP32OLED.h"
+  #define BUILTIN_LCD 1
+
+  #define BUZZER_PIN -1
+  
+  #define LED1_PIN LED1
+  #define LED2_PIN LED1_PIN
+  #define LED3_PIN LED1_PIN
+
+  #define BTN1_PIN BTN1
+  #define BTN2_PIN BTN2
+  #define BTN3_PIN -1
+
+  #define FS_SUPPORT 1 // TODO remove comment
+  #define ESP32_FS 1
+
+  // 5KB buffer
+  #define AUDIO_BUFF_SIZE (5*1024) 
+  // lcd(128*64) / 8(1bpp)
+  #define PICTURE_BUFF_SIZE (1*1024)
+
+  #define RAM_END (256*1024)-1
+  #define EEPROM_END (4*1024)-1
+  #define SPEED 80
 #else
   #define ARCH_TYPE "Unknown platform"
   

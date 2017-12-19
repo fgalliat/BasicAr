@@ -1,3 +1,6 @@
+#ifndef ARDUINO_ARCH_ESP32
+
+
 /************
  * DFPlayer mp3 module - Sound Layer for Xts-uBasic 
  * Xtase - fgalliat @ Nov. 2017
@@ -74,3 +77,5 @@
     }
   }
 
+#endif
+// not to include for ESP32 OLED

@@ -1,3 +1,5 @@
+#ifndef ARDUINO_ARCH_ESP32
+
 /*********************************************************************
 This is a library for our Monochrome OLEDs based on SSD1306 drivers
 
@@ -740,3 +742,6 @@ void Adafruit_SSD1306::drawFastVLineInternal(int16_t x, int16_t __y, int16_t __h
     }
   }
 }
+
+#endif 
+// not to include for ESP32

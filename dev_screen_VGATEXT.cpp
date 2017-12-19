@@ -1,3 +1,5 @@
+#ifndef ARDUINO_ARCH_ESP32
+
 /**
   HobbyTronics : Serial VGA Monitor Driver Board v1.1
   Control routines
@@ -219,3 +221,5 @@ void vgat_switchTo() {
     //setRawOutputType( ext_OUTPUT_VGA_BOARD_TXT );
 }
 
+#endif
+// not to include for ESP32 OLED

@@ -1,3 +1,20 @@
+== ESP32 ==
+
+ESP.restart() -- restarts the CPU
+ > to use for 'BYE' cmd
+
+
+autocomplete name -> UPPERCASE -> OK
+                  -> use it for playTune too -> TODO
+
+modify RAYC.BAS to read btns -> OK
+
+UP + BTN1 + BTN2 -> SYSMENU.BAS -> OK (but need a CRLF before ...)
+fix drawBPP -> OK
+use ESP32 getBreakSignal() -> OK
+
+
+
 == TODO ==
 IPC between Java & C w/ pseudo file
   http://www.jonathanbeard.io/tutorials/CtoJava
@@ -12,7 +29,20 @@ RPI Java FrameBuffer
 
   so make a Faked Java interface instead of JNI way
    > in progress + ( mkfifo /tmp/vgat ) for local-local serialport emulation
+ _______
+  > ^[halt => have to halt the RPI
 
+  > for GUI version : 
+    font size :
+     900px / 50ch = 18px font height
+     12px * 100ch = 1200px screen width ....
+
+  > or just double the font zoom
+    6x2 -> 12px -> 1200px SCR_WIDTH
+    8x2 -> 16px -> 800px  SCR_HEIGHT
+
+  > add pseudo interrupt to handle RPID feeback
+    (Serial1 listening)
 
 == DONE ==
 (OK) ASC( STR$ ) : returns ascii code of 1st char of STR$

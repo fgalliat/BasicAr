@@ -9,6 +9,13 @@
 // Teensy's doesn't supports FS (SD, SDFat) & PROGMEM routines
 #include "xts_arch.h"
 
+#ifdef BUT_ESP32
+  Esp32Oled esp32;
+  void noTone(int pin) { esp32.noTone(); }
+  void tone(int pin, int freq, int duration) { esp32.tone(freq,duration); }
+#endif
+
+
 extern bool STORAGE_OK;
 bool BUZZER_MUTE = false;
 
@@ -59,13 +66,17 @@ const int DataPin = 8;
 const int IRQpin =  3;
 PS2Keyboard keyboard;
 
-// OLED --- to remove !!!
-#define OLED_DATA 9
-#define OLED_CLK 10
-#define OLED_DC 11
-#define OLED_CS 12
-#define OLED_RST 13
-SSD1306ASCII oled(OLED_DATA, OLED_CLK, OLED_DC, OLED_RST, OLED_CS);
+#ifndef BUT_ESP32
+ // OLED --- to remove !!!
+ #define OLED_DATA 9
+ #define OLED_CLK 10
+ #define OLED_DC 11
+ #define OLED_CS 12
+ #define OLED_RST 13
+ SSD1306ASCII oled(OLED_DATA, OLED_CLK, OLED_DC, OLED_RST, OLED_CS);
+#endif
+// not to include for ESP32 OLED
+
 
 // BASIC
 unsigned char mem[MEMORY_SIZE];
@@ -139,6 +150,11 @@ void setScreenSize(int cols, int rows) {
 
 void setup() {
 
+#ifdef BUT_ESP32
+   esp32.setup();
+   STORAGE_OK = true;
+#endif
+
     // BUZZER_MUTE = true;
     // inputString.reserve(200);
     
@@ -153,19 +169,22 @@ void setup() {
         // setScreenSize( SER_TEXT_WIDTH, SER_TEXT_HEIGHT );
     #endif
 
+#ifndef BUT_ESP32
     setupHardware();
+#endif
 
     // TO REMOVE...
     keyboard.begin(DataPin, IRQpin);
-    oled.ssd1306_init(SSD1306_SWITCHCAPVCC);
+    //oled.ssd1306_init(SSD1306_SWITCHCAPVCC);
 
     reset();
+
+#ifndef BUT_ESP32
     host_init(BUZZER_PIN);
-
-    
-
+#endif
 
     host_cls();
+
     //host_outputProgMemString(welcomeStr);
     host_outputString( (char*) welcomeStr);
 
@@ -187,19 +206,21 @@ void setup() {
     #endif
 
     host_showBuffer();
-    
+
     // IF USING EXTERNAL EEPROM
     // The following line 'wipes' the external EEPROM and prepares
     // it for use. Uncomment it, upload the sketch, then comment it back
     // in again and upload again, if you use a new EEPROM.
     // writeExtEEPROM(0,0); writeExtEEPROM(1,0);
 
+#ifndef BUT_ESP32
     if (EEPROM.read(0) == MAGIC_AUTORUN_NUMBER) {
         autorun = 1;
     }
     else {
         if ( !BUZZER_MUTE ) { host_startupTone(); }
     }
+#endif
 
 }
 
@@ -207,9 +228,15 @@ void setup() {
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 bool MODE_EDITOR = false;
+bool systemHalted = false;
 
 void loop() {
     int ret = ERROR_NONE;
+
+    if ( systemHalted ) {
+        delay(200);
+        return;
+    }
 
     if (!autorun) {
         // get a line from the user
@@ -337,14 +364,25 @@ void xts_serialEvent() {
 // ___________________________________________________________
 #ifdef COMPUTER
   // ========================
+
   int main(int argc, char** argv) {
     setupComputer();
     // system ("/bin/stty raw");
     setup();
 
+    SDL_Event event;
     while(true) {
         loop();
-        delay( 100 );
+
+		if ( SDL_PollEvent( &event ) ) {
+			if ( event.type == SDL_QUIT ) {
+                break;
+            }
+        }
+
+PC_ISR();
+
+        delay( 10 );
     }
 
     // to call.....

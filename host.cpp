@@ -28,6 +28,10 @@ extern void host_system_menu();
 #endif
 
 #include "xts_arch.h"
+#ifdef BUT_ESP32
+  extern Esp32Oled esp32;
+#endif
+
 
 #include "xts_io.h"
 int OUTPUT_DEVICE;
@@ -53,7 +57,7 @@ extern bool SCREEN_LOCKER;
    extern EEPROMClass EEPROM;
  #endif
 
-extern SSD1306ASCII oled;
+// extern SSD1306ASCII oled;
 extern PS2Keyboard keyboard;
 //   #include <SSD1306ASCII.h>
 //   #include <PS2Keyboard.h>
@@ -69,8 +73,16 @@ extern PS2Keyboard keyboard;
 extern bool BUZZER_MUTE;
 
 #ifdef BUILTIN_LCD
-  #include "dev_screen_Adafruit_SSD1306.h"
-  extern Adafruit_SSD1306 display;
+  #if defined(BUT_ESP32)
+   // ......
+  #else
+   #ifndef COMPUTER
+   #include "dev_screen_Adafruit_SSD1306.h"
+   extern Adafruit_SSD1306 display;
+  #else 
+   //#define display _displayOLED
+  #endif
+  #endif
 #endif
 
 
@@ -80,6 +92,11 @@ extern bool BUZZER_MUTE;
 
 #ifdef BOARD_VGA
   #include "dev_screen_VGATEXT.h"
+#endif
+
+
+#ifdef BOARD_RPID
+  #include "dev_screen_RPIGFX.h"
 #endif
 
 
@@ -170,8 +187,9 @@ void host_init(int buzzerPin) {
     
     //oled.clear();
 
-    if (buzPin)
+    if (buzPin > 0) {
         pinMode(buzPin, OUTPUT);
+    }
 
     initTimer();
 }
@@ -197,14 +215,20 @@ void host_pinMode(int pin,int mode) {
 }
 
 void host_click() {
-    if (!buzPin || BUZZER_MUTE) return;
+    #ifdef BUT_ESP32
+      esp32.tone(100, 20);
+      delay(20);
+      esp32.noTone();
+      return;
+    #endif
+    if ( buzPin <= 0 || BUZZER_MUTE) return;
     digitalWrite(buzPin, HIGH);
     delay(1);
     digitalWrite(buzPin, LOW);
 }
 
 void host_startupTone() {
-    if (!buzPin) return;
+    if ( buzPin <= 0 || BUZZER_MUTE) return;
     for (int i=1; i<=2; i++) {
         for (int j=0; j<50*i; j++) {
             digitalWrite(buzPin, HIGH);
@@ -219,21 +243,32 @@ void host_startupTone() {
 void host_cls() {
     if ( SCREEN_LOCKER ) { return; }
     isWriting = true;
-    memset(screenBuffer, 32, SCREEN_WIDTH*SCREEN_HEIGHT);
-    memset(lineDirty, 1, SCREEN_HEIGHT);
+    memset(screenBuffer, 0x00, SCREEN_WIDTH*SCREEN_HEIGHT);
+    memset(lineDirty, 0, SCREEN_HEIGHT);
     curX = 0;
     curY = 0;
 
     #ifdef BUILTIN_LCD
         if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
-            display.clearDisplay();
-            display.display();
+            #if defined(BUT_ESP32)
+              esp32.getScreen()->clear();
+              esp32.getScreen()->blitt();
+            #else
+              display.clearDisplay();
+              display.display();
+            #endif
         } else 
     #endif
 
     #ifdef BOARD_VGA
         if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
             vgat_cls();
+        } else 
+    #endif
+
+    #ifdef BOARD_RPID
+        if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
+            rpid_cls(); 
         } else 
     #endif
 
@@ -257,12 +292,21 @@ void host_moveCursor(int x, int y) {
 
     #ifdef BUILTIN_LCD
         if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
-            display.setCursor(x*6,y*8);
+            #if defined(ARDUINO_ARCH_ESP32)
+             // Oups what TODO
+            #else
+             display.setCursor(x*6,y*8);
+            #endif
         }
     #endif
     #ifdef BOARD_VGA
         if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
             vgat_locate(x,y);
+        }
+    #endif
+    #ifdef BOARD_RPID
+        if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
+            rpid_locate(x,y);
         }
     #endif
     isWriting = false;
@@ -327,17 +371,28 @@ void host_showBuffer() {
 
             if (lineDirty[y] || (inputMode && y==curY)) {
                 //display.setCursor(0,y);
-                display.setCursor(0,y*8);
 
+#if defined(BUT_ESP32)
+ // TODO : BETTER
+ char line[SCREEN_WIDTH+1];
+ for (int x=0; x<SCREEN_WIDTH; x++) {
+   char c = screenBuffer[y*SCREEN_WIDTH+x];
+   if (c<32) c = ' ';
+   line[x] = c;
+ }
+ line[SCREEN_WIDTH] = 0x00;
+ esp32.getScreen()->drawString( 0, y*8, line );
+#else
+                display.setCursor(0,y*8);
                 display.setTextColor( BLACK );
-                display.drawFastHLine( 0, (y+0)*8, 128, (y+0)*8 );
-                display.drawFastHLine( 0, (y+1)*8, 128, (y+1)*8 );
-                display.drawFastHLine( 0, (y+2)*8, 128, (y+2)*8 );
-                display.drawFastHLine( 0, (y+3)*8, 128, (y+3)*8 );
-                display.drawFastHLine( 0, (y+4)*8, 128, (y+4)*8 );
-                display.drawFastHLine( 0, (y+5)*8, 128, (y+5)*8 );
-                display.drawFastHLine( 0, (y+6)*8, 128, (y+6)*8 );
-                display.drawFastHLine( 0, (y+7)*8, 128, (y+7)*8 );
+                display.drawFastHLine( 0, (y+0)*8, 128, BLACK );
+                display.drawFastHLine( 0, (y+1)*8, 128, BLACK );
+                display.drawFastHLine( 0, (y+2)*8, 128, BLACK );
+                display.drawFastHLine( 0, (y+3)*8, 128, BLACK );
+                display.drawFastHLine( 0, (y+4)*8, 128, BLACK );
+                display.drawFastHLine( 0, (y+5)*8, 128, BLACK );
+                display.drawFastHLine( 0, (y+6)*8, 128, BLACK );
+                display.drawFastHLine( 0, (y+7)*8, 128, BLACK );
                 display.setTextColor( WHITE );
 
                 for (int x=0; x<SCREEN_WIDTH; x++) {
@@ -347,12 +402,17 @@ void host_showBuffer() {
                     if (x==curX && y==curY && inputMode && _flash) c = 127;
                     display.print(c);
                 }
+#endif
                 lineDirty[y] = 0;
             }
         }
 
         // Xtase
+#ifdef BUT_ESP32
+        esp32.getScreen()->blitt();
+#else
         display.display(); // to place in an interrupt
+#endif
     } else if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
 
         #ifdef BOARD_VGA
@@ -394,6 +454,18 @@ void host_showBuffer() {
 
         #else
             Serial.println("Show buffer on VGA TEXT Serial");
+        #endif
+
+    }  else if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
+
+        #ifdef BOARD_RPID
+
+            // no more done since 16/11/2017 - 'cause direct print
+            isWriting = true;
+            isWriting = false;
+
+        #else
+            Serial.println("Show buffer on RPI Display Serial");
         #endif
 
     } else if ( OUTPUT_DEVICE == OUT_DEV_SERIAL ) {
@@ -453,7 +525,11 @@ void scrollBuffer() {
 
     #ifdef BUILTIN_LCD
         if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
-            display.clearDisplay();
+            #if defined(BUT_ESP32)
+             esp32.getScreen()->clear();
+            #else
+             display.clearDisplay();
+            #endif
             for(int i=0; i < SCREEN_HEIGHT; i++) {
                 lineDirty[i] = SCREEN_WIDTH;
             }
@@ -462,6 +538,11 @@ void scrollBuffer() {
     #endif
     #ifdef BOARD_VGA
         if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
+            //vgat_cls();
+        }
+    #endif
+    #ifdef BOARD_RPID
+        if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
             //vgat_cls();
         }
     #endif
@@ -484,6 +565,11 @@ void host_outputString(char *str) {
     #ifdef BOARD_VGA
     if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
         vgat_print( (const char*)str );
+    }
+    #endif
+    #ifdef BOARD_RPID
+    if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
+        rpid_print( (const char*)str );
     }
     #endif
 
@@ -547,6 +633,12 @@ void host_outputChar(char c) {
     #ifdef BOARD_VGA
     if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
         vgat_printCh( c );
+    }
+    #endif
+
+    #ifdef BOARD_RPID
+    if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
+        rpid_printCh( c );
     }
     #endif
 
@@ -628,6 +720,11 @@ void host_newLine() {
         vgat_print( "\n" );
     }
     #endif
+    #ifdef BOARD_RPID
+    if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
+        rpid_print( "\n" );
+    }
+    #endif
 
     isWriting = false;
 }
@@ -655,6 +752,43 @@ char *host_readLine() {
                 // & execute selfRun
                 kc = PS2_ENTER;
               }
+        #elif BUT_ESP32
+          if ( MODE_EDITOR && esp32.getSystemSignal() ) {
+            //while( esp32.getSystemSignal() ) {
+            while( !esp32.getEndSystemSignal() ) {
+                delay(100);
+            }
+            host_click();
+            host_system_menu();
+            // to trigger end-of-line
+            // & execute selfRun
+
+            kc = PS2_ENTER;
+            screenBuffer[pos++] = '\n';
+            done = true;
+          }
+          else if ( MODE_EDITOR && esp32.getRebootSignal() ) {
+            while( esp32.getRebootSignal() ) {
+                delay(100);
+            }
+            // to trigger end-of-line
+            host_click();
+            kc = PS2_ENTER;
+            screenBuffer[pos++] = '\n';
+            MCU_reset();
+            done = true;
+          }
+          else if ( MODE_EDITOR && esp32.readBtn(2) > 0 ) {
+            while( esp32.readBtn(2) > 0 ) {
+                delay(100);
+            }
+            // to trigger end-of-line
+            host_click();
+            kc = PS2_ENTER;
+            screenBuffer[pos++] = '\n';
+            done = true;
+          }
+          while ( keyboard.available() ) {
         #else
           while (keyboard.available() ) {
         #endif
@@ -674,12 +808,23 @@ char *host_readLine() {
                         vgat_printCh( c );
                     }
                 #endif
+
+                #ifdef BOARD_RPID
+                    if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
+                        rpid_printCh( c );
+                    }
+                #endif
             }
             else if (c==PS2_DELETE && pos > startPos) {
                 screenBuffer[--pos] = 0;
                 #ifdef BOARD_VGA
                     if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
                         vgat_printCh( '\b' );
+                    }
+                #endif
+                #ifdef BOARD_RPID
+                    if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
+                        rpid_printCh( '\b' );
                     }
                 #endif
             }
@@ -689,6 +834,11 @@ char *host_readLine() {
                 #ifdef BOARD_VGA
                     if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
                         vgat_printCh( '\n' );
+                    }
+                #endif
+                #ifdef BOARD_RPID
+                    if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
+                        rpid_printCh( '\n' );
                     }
                 #endif
             }
@@ -731,11 +881,19 @@ char *host_readLine() {
 }
 
 char host_getKey() {
-    char c = inkeyChar;
-    inkeyChar = 0;
-    if (c >= 32 && c <= 126)
-        return c;
-    else return 0;
+      #ifdef COMPUTER
+        Serial.available(); // just to poll ncurses kbd
+        int c = Serial.read();
+        if (c >= 32 && c <= 126)
+            return c;
+        else return 0;
+      #else
+        char c = inkeyChar;
+        inkeyChar = 0;
+        if (c >= 32 && c <= 126)
+            return c;
+        else return 0;
+    #endif
 }
 
 bool host_ESCPressed() {
@@ -749,6 +907,8 @@ bool host_ESCPressed() {
               return true;
           }
       }
+    #elif BUT_ESP32
+      return esp32.getBreakSignal();
     #else
       return anyBtn();
     #endif

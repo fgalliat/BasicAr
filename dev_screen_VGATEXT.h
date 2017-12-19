@@ -1,3 +1,6 @@
+#ifndef ARDUINO_ARCH_ESP32
+
+
 #ifndef screen_VGATEXT_h
 #define screen_VGATEXT_h 1
 
@@ -65,3 +68,6 @@ void vgat_startScreen();
 void vgat_switchTo();
 
 #endif 
+
+#endif
+// not to include for ESP32 OLED

@@ -19,5 +19,18 @@
 1000 CLS : ? "   -= WIFI Menu =-" : INPUT CH$ : RETURN
 2000 CLS : ? "   -= Send/Recv =- " : INPUT CH$ : RETURN
 3000 CLS : ? "   -= BUZZER Menu =-" : INPUT CH$ : RETURN
-4000 CLS : ? "  -= Console Menu =-" : INPUT CH$ : RETURN
+4000 CLS : ? "  -= Console Menu =-" 
+4010 ? ""
+4020 ? "1. HDMI out"
+4030 ? "2. VGAT out"
+4040 ? "3. LCD out"
+4045 ? "4. Serial out"
+4050 ? "0. Return";
+4060 INPUT CH$
+4110 IF CH$ = "0" THEN RETURN
+4130 IF CH$ = "4" THEN console 0,1,1
+4140 IF CH$ = "3" THEN console 2,1,1
+4150 IF CH$ = "2" THEN console 1,1,1
+4160 IF CH$ = "1" THEN console 3,1,1
+4600 GOTO 4000
 9000 CLS : ? "Bye..."

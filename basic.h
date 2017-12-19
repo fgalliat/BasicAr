@@ -152,8 +152,15 @@
     #define TOKEN_MILLIS            95 // return millis since boot
 
     #define TOKEN_DIRARRAY          96 // dir to DIR$() array variable ("-EOF-" @ end)
+
+    #define TOKEN_HALT              97 // halt whole system
+
+    #define TOKEN_ABS               98 // returns ABS(x)
+    #define TOKEN_COS               99 // returns COS(x) in radians
+    #define TOKEN_SIN              100 // returns SIN(x) in radians
+
     
-    #define TOKEN_LASTONE TOKEN_DIRARRAY
+    #define TOKEN_LASTONE TOKEN_SIN
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT
@@ -210,12 +217,12 @@
 #define MEMORY_SIZE	(16*1024)
 
 // max char per code lines (depends of ammount of RAM ??)
-#define ASCII_CODELINE_SIZE 128
+#define ASCII_CODELINE_SIZE (128*2)
 
 
 // max token per line ???
 //#define TOKEN_BUF_SIZE 64
-#define TOKEN_BUF_SIZE 128
+#define TOKEN_BUF_SIZE ASCII_CODELINE_SIZE
 // ______________________________________
 
 
