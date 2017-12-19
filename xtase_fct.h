@@ -126,6 +126,12 @@ void xts_mcu_reset() {
   }
 }
 
+void xts_mcu_halt() {
+  if ( executeMode ) {
+    MCU_halt();
+  }
+}
+
 // =========================================================
 
 int __xts_playSpeakerTune(int format) {
@@ -204,6 +210,14 @@ int xts_buttonRead(int btnNum) {
   else if ( btnNum == 1 ) { return btn1() ? 1 : 0; }
   else if ( btnNum == 2 ) { return btn2() ? 1 : 0; }
   else if ( btnNum == 3 ) { return btn3() ? 1 : 0; }
+
+#ifdef BUT_ESP32
+  // read pad as btns
+  else if ( btnNum == 4 ) { return esp32.readPadXaxis() < 0 ? 1 : 0; }
+  else if ( btnNum == 5 ) { return esp32.readPadXaxis() > 0 ? 1 : 0; }
+  else if ( btnNum == 6 ) { return esp32.readPadYaxis() > 0 ? 1 : 0; }
+  else if ( btnNum == 7 ) { return esp32.readPadYaxis() < 0 ? 1 : 0; }
+#endif
 
   return 0;
 }
@@ -651,6 +665,26 @@ char* xts_str_upper(char* str) {
   char* ret = (char*)malloc( len+1 );
   for(int i=0; i < len; i++) { ret[i] = charUpCase(str[i]); }
   ret[len] = 0x00;
+  return ret;
+}
+
+
+float xts_abs(float arg0) {
+  float ret = arg0 < 0 ? -arg0 : arg0;
+  return ret;
+}
+
+#define degToRag (3.141596 / 180.0)
+
+// in radian
+float xts_cos(float arg0) {
+  float ret = cos(arg0 /* * degToRag */);
+  return ret;
+}
+
+// in radian
+float xts_sin(float arg0) {
+  float ret = sin(arg0 /* * degToRag */);
   return ret;
 }
 

@@ -12,6 +12,11 @@
 #include "xts_arch.h"
 #include "xts_io.h"
 
+#ifdef BUT_ESP32
+  extern Esp32Oled esp32;
+  extern void noTone(int pin);
+  extern void tone(int pin, int freq, int duration);
+#endif
 
 #define BASIC_ASCII_FILE_EXT ".BAS"
 
@@ -21,23 +26,26 @@
 // #include <SPI.h>
 // File curFile;
 
-  char SDentryName[13];
-
   #ifdef USE_SDFAT_LIB
+    char SDentryName[13];
   // for teensy 3.6
   // > https://github.com/greiman/SdFat-beta
     #include "SdFat.h"
     SdFatSdio sd;
     SdFile file;
     SdFile dirFile;
-  #elif USE_FS_LEGACY
+  #elif defined(ESP32_FS)
+    // +1 for leading '/'
+    char SDentryName[13+1];
+  #elif defined(USE_FS_LEGACY)
+    char SDentryName[13];
     // ex. regular computer
     SDClass sd;
     SdFile file;
     SdFile dirFile;
   #endif
 
-
+#ifndef ESP32_FS
   // BEWARE : uses & modifies : SDentryName[]
   // ex. autocomplete_fileExt(filename, ".BAS") => SDentryName[] contains full file-name
   // assumes that ext is stricly 3 char long
@@ -50,13 +58,37 @@
     }
     return SDentryName;
   }
-
+#elif ESP32_FS
+  // BEWARE : uses & modifies : SDentryName[]
+  // ex. autocomplete_fileExt(filename, ".BAS") => SDentryName[] contains full file-name
+  // assumes that ext is stricly 3 char long
+  char* autocomplete_fileExt(char* filename, const char* defFileExt) {
+    int flen = strlen(filename);
+    memset(SDentryName, 0x00, 8+1+3+1+1); // 13+1 char long
+    memcpy(SDentryName, "/", 1);
+    //strcat(SDentryName, filename );
+    int l = strlen( filename );
+    char ch;
+    for(int i=0; i < l; i++) {
+      ch = filename[i];
+      if ( ch >= 'a' && ch <= 'z' ) {
+        ch = ch - 'a' + 'A';
+      }
+      SDentryName[1+i] = ch;
+    }
+    if ( flen < 4 || filename[ flen-3 ] != '.' ) {
+      strcat( SDentryName, defFileExt );
+    }
+    Serial.println( SDentryName );
+    return SDentryName;
+  }
 #else
   char* autocomplete_fileExt(char* filename, const char* defFileExt) {
     // TODO
     Serial.println("autocomplete_fileExt NYI.");
     return "TOTO.BAS";
   }
+#endif
 #endif
 
 
@@ -99,6 +131,11 @@ bool checkbreak() { return false; }
   #include "dev_screen_VGATEXT.h"
 #endif
 
+
+#ifdef BOARD_RPID
+  #include "dev_screen_RPIGFX.h"
+#endif
+
 #ifdef BUILTIN_KBD
   #include "dev_kbd.h"
 #endif
@@ -125,8 +162,14 @@ bool STORAGE_OK = false;
 #ifdef FS_SUPPORT
 
  void setupSD() {
+   #ifdef BUT_ESP32
+     esp32.initFS();
+   #endif
+
    #ifdef USE_SDFAT_LIB
      if (!sd.begin()) {
+   #elif defined(ESP32_FS)
+     if (true) {
    #else
      if (!SD.begin(BUILTIN_SDCARD)) { // Teensy3.6 initialization
    #endif
@@ -165,35 +208,52 @@ void setupGPIO() {
 #ifdef BUILTIN_LCD
  // Teensy3.6 XtsuBasic hardware config
 
-#include <SPI.h>
-#include <i2c_t3.h>
-#include <Adafruit_GFX.h>
-#include "dev_screen_Adafruit_SSD1306.h"
-//default is 4 that is an I2C pin on t3.6
-#define OLED_RESET 6
-Adafruit_SSD1306 display(OLED_RESET);
+#ifdef BUT_ESP32
+#else
 
-#if (SSD1306_LCDHEIGHT != 64)
- #error("Height incorrect, please fix Adafruit_SSD1306.h!");
+  #ifndef COMPUTER
+    #include <SPI.h>
+    #include <i2c_t3.h>
+    #include <Adafruit_GFX.h>
+    #include "dev_screen_Adafruit_SSD1306.h"
+  #endif
+
+  //default is 4 that is an I2C pin on t3.6
+  #define OLED_RESET 6
+  Adafruit_SSD1306 display(OLED_RESET);
+
+  #if (SSD1306_LCDHEIGHT != 64)
+  #error("Height incorrect, please fix Adafruit_SSD1306.h!");
+  #endif
+
 #endif
 
 void setupLCD() {
-  Wire2.begin(I2C_MASTER, 0x00, I2C_PINS_3_4, I2C_PULLUP_EXT, 400000);
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-  display.setTextSize(1);
+
+  #ifdef BUT_ESP32
+    //esp32.initLCD();
+  #else
+    #ifndef COMPUTER
+      Wire2.begin(I2C_MASTER, 0x00, I2C_PINS_3_4, I2C_PULLUP_EXT, 400000);
+    #endif
+    display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+    display.setTextSize(1);
+    // tmp try
+    display.setTextColor(WHITE);
+    //display.setTextColor(INVERSE);
+    // tmp try
+    // avoid firware LOGO display
+    display.clearDisplay();
+    display.setCursor(0,0);
+  #endif
   
-  // tmp try
-  display.setTextColor(WHITE);
-  //display.setTextColor(INVERSE);
-  // tmp try
-
-  // avoid firware LOGO display
-  display.clearDisplay();
-
-  display.setCursor(0,0);
-  display.println( "LCD Ready" );
-
-  display.display();
+  #ifdef BUT_ESP32
+    esp32.getScreen()->println( "LCD Ready" );
+    esp32.getScreen()->blitt();
+  #else
+    display.println( "LCD Ready" );
+    display.display();
+  #endif
 }
 
 #endif
@@ -210,6 +270,20 @@ void setupVGASerial() {
 }
 #endif
 
+#ifdef BOARD_RPID
+// TODO : better
+void setupRPISerial() {
+  host_outputString("Booting RPID\n");
+  setup_rpid(false);
+  //vgat_reboot(false);
+  //delay(300);
+  rpid_startScreen();
+  // host_outputString("Booted VGA\n");
+  delay(200);
+}
+#endif
+
+
 
 #ifdef BUT_TEENSY
   //#include <TimerOne.h> // for Teensy 2 & 2++ ONLY
@@ -222,6 +296,13 @@ void setupVGASerial() {
 
 
 void setupHardware() {
+
+ #ifdef BUT_ESP32
+   //esp32.setup();
+   return;
+ #endif
+
+
  setupGPIO();
 
  #ifdef BUILTIN_LCD
@@ -234,6 +315,10 @@ void setupHardware() {
 
  #ifdef BOARD_VGA
    setupVGASerial();
+ #endif
+
+ #ifdef BOARD_RPID
+   setupRPISerial();
  #endif
 
  #ifdef BOARD_SND
@@ -343,6 +428,7 @@ void playNote(int note_freq, int duration) {
   noTone(BUZZER_PIN);
   tone(BUZZER_PIN, note_freq, duration*50);
   delay(duration*50);
+  noTone(BUZZER_PIN); // MANDATORY for ESP32Oled
 }
 
 void playTuneString(char* strTune) {
@@ -393,6 +479,7 @@ void playTuneString(char* strTune) {
    delay(defDuration);
 
   }
+  noTone(BUZZER_PIN); // MANDATORY for ESP32Oled
 } // end of playTuneStreamSTring
 
 
@@ -432,8 +519,17 @@ void playTuneFromStorage(char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bo
   if ( lastCh >= 'a' && lastCh <= 'z' ) { lastCh = lastCh - 'a' + 'A'; }
   tuneStreamName[ tlen-1 ] = lastCh;
 
-  char ftuneStreamName[8+1+3];
-  strcpy(ftuneStreamName, tuneStreamName);
+  #ifdef ESP32_FS
+    char ftuneStreamName[8+1+3+1];
+    strcpy(ftuneStreamName, "/");
+    strcat(ftuneStreamName, tuneStreamName);
+  #else
+    char ftuneStreamName[8+1+3];
+    strcpy(ftuneStreamName, tuneStreamName);
+  #endif
+
+  
+  
 
   if ( !(( lastCh == 'K' || lastCh == '3') && (tlen >= 2 && tuneStreamName[ tlen-2 ] == '5') ) ) {
     if ( format == AUDIO_FORMAT_T5K ) {
@@ -450,38 +546,72 @@ void playTuneFromStorage(char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bo
   //  return;        
   // }
 
-  // sdfat lib
-  SdFile file;
-  if (! file.open( ftuneStreamName , O_READ) ) {
-    led1(true);
-    return;        
-  }
+  #ifdef ESP32_FS
+    // host_outputString("ZIK NYI for esp32\n");
+    // host_showBuffer();
+    unsigned char preBuff[2];
+    int n = esp32.getFs()->readBinFile(ftuneStreamName, preBuff, 2);
+    if ( n <= 0 ) {
+      host_outputString( ftuneStreamName );
+      host_outputString("\n");
+      host_outputString("ZIK File not ready\n");
+      host_showBuffer();
+      return;
+    }
 
-  //  host_outputString( "OK : Opening : " );
-  //  host_outputString( (char*)tuneStreamName );
-  //  host_outputString( "\n" );
-  //zik.rewind();
+    int nbNotes = (preBuff[0]<<8)|preBuff[1];
 
-  int nbNotes = (file.read()<<8)|file.read();
-  file.seekSet(0);
-  int fileLen = (nbNotes*sizeof(Note))+2+16+2;
-  if ( format == AUDIO_FORMAT_T53 ) {
-    fileLen = (nbNotes*(3+3+3))+2+16+2;
-  }
-  //file.readBytes( audiobuff, fileLen );
-  file.read( audiobuff, fileLen );
+    int fileLen = (nbNotes*sizeof(Note))+2+16+2;
+    if ( format == AUDIO_FORMAT_T53 ) {
+      fileLen = (nbNotes*(3+3+3))+2+16+2;
+    }
 
-  led3(false);
-  file.close();
+    //file.read( audiobuff, fileLen );
+    n = esp32.getFs()->readBinFile(ftuneStreamName, audiobuff, fileLen);
 
-  if ( format == AUDIO_FORMAT_T5K ) {
-    __playTune( audiobuff, btnStop );  
-  } else {
-    __playTuneT53( audiobuff, btnStop );  
-  }
+    led3(false);
 
+    if ( format == AUDIO_FORMAT_T5K ) {
+      __playTune( audiobuff, btnStop );  
+    } else {
+      __playTuneT53( audiobuff, btnStop );  
+    }
+
+  #else
+    // sdfat lib
+    SdFile file;
+    if (! file.open( ftuneStreamName , O_READ) ) {
+      led1(true);
+      return;        
+    }
+
+    //  host_outputString( "OK : Opening : " );
+    //  host_outputString( (char*)tuneStreamName );
+    //  host_outputString( "\n" );
+    //zik.rewind();
+
+    int nbNotes = (file.read()<<8)|file.read();
+    file.seekSet(0);
+    int fileLen = (nbNotes*sizeof(Note))+2+16+2;
+    if ( format == AUDIO_FORMAT_T53 ) {
+      fileLen = (nbNotes*(3+3+3))+2+16+2;
+    }
+    //file.readBytes( audiobuff, fileLen );
+    file.read( audiobuff, fileLen );
+
+    led3(false);
+    file.close();
+
+    if ( format == AUDIO_FORMAT_T5K ) {
+      __playTune( audiobuff, btnStop );  
+    } else {
+      __playTuneT53( audiobuff, btnStop );  
+    }
+
+    #endif
   #endif
   
+  noTone(BUZZER_PIN); // MANDATORY for ESP32Oled
  }
  
 // where tuneStream is the audio buffer content
@@ -623,11 +753,27 @@ void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
 //#define WHITE 1
 //#define BLACK 0
 
+#define RPID_BLACK -16777216
+#define RPID_WHITE -1
+#define RPID_RED   -65536
+#define RPID_GREEN -16711936
+#define RPID_BLUE  -16776961
+
+
 void drawLine(int x1, int y1, int x2, int y2) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     #ifdef BUILTIN_LCD
-    display.drawLine(x1, y1, x2, y2, WHITE);
-    display.display();
+     #ifdef BUT_ESP32
+      esp32.getScreen()->drawLine(x1, y1, x2, y2);
+      esp32.getScreen()->blitt();
+     #else
+      display.drawLine(x1, y1, x2, y2, WHITE);
+      display.display();
+     #endif
+    #endif
+  } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
+    #ifdef BOARD_RPID
+      rpid_gfx_line(x1, y1, x2, y2, RPID_WHITE);
     #endif
   }
 }
@@ -635,8 +781,17 @@ void drawLine(int x1, int y1, int x2, int y2) {
 void drawCircle(int x1, int y1, int radius) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     #ifdef BUILTIN_LCD
-    display.drawCircle(x1, y1, radius, WHITE);
-    display.display();
+     #ifdef BUT_ESP32
+       esp32.getScreen()->drawCircle(x1, y1, radius);
+       esp32.getScreen()->blitt();
+     #else
+       display.drawCircle(x1, y1, radius, WHITE);
+       display.display();
+     #endif
+    #endif
+  } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
+    #ifdef BOARD_RPID
+      rpid_gfx_circle(x1, y1, radius, RPID_WHITE);
     #endif
   }
 }
@@ -645,9 +800,19 @@ void drawCircle(int x1, int y1, int radius) {
 void drawPixel(int x1, int y1, int color) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     #ifdef BUILTIN_LCD
-    display.drawPixel(x1, y1, color);
-    display.display(); // see if fast enought .... else use interrupts.
+     #ifdef BUT_ESP32
+      esp32.getScreen()->setColor(color == 1 ? WHITE : BLACK);
+      esp32.getScreen()->setPixel(x1, y1);
+      esp32.getScreen()->blitt();
+     #else
+      display.drawPixel(x1, y1, color);
+      display.display(); // see if fast enought .... else use interrupts.
+     #endif
     #endif 
+  } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
+    #ifdef BOARD_RPID
+      rpid_gfx_drawPixel(x1, y1, RPID_WHITE);
+    #endif
   }
 }
 
@@ -673,31 +838,64 @@ bool drawBPPfile(char* filename) {
   autocomplete_fileExt(filename, ".BPP");
   
   #ifdef FS_SUPPORT
-  // SFATLIB mode -> have to switch for regular SD lib
-  SdFile file;
-  if (! file.open( SDentryName , FILE_READ) ) {
-    host_outputString("ERR : File not ready\n");
-    return false;        
-  }
+    #ifdef USE_SDFAT_LIB
+    // SFATLIB mode -> have to switch for regular SD lib
+    SdFile file;
+    if (! file.open( SDentryName , FILE_READ) ) {
+      host_outputString("ERR : File not ready\n");
+      return false;        
+    }
 
-  file.seekSet(0);
-  int n;
-  if ( (n = file.read(&picturebuff, PICTURE_BUFF_SIZE)) != PICTURE_BUFF_SIZE ) {
-    host_outputString("ERR : File not valid\n");
-    host_outputInt( n );
-    host_outputString(" bytes read\n");
+    file.seekSet(0);
+    int n;
+    if ( (n = file.read(&picturebuff, PICTURE_BUFF_SIZE)) != PICTURE_BUFF_SIZE ) {
+      host_outputString("ERR : File not valid\n");
+      host_outputInt( n );
+      host_outputString(" bytes read\n");
+      file.close();
+      return false;
+    }
     file.close();
-    return false;
-  }
-  file.close();
+    #elif defined(ESP32_FS)
+      int n = esp32.getFs()->readBinFile(SDentryName, picturebuff, PICTURE_BUFF_SIZE);
+      if ( n <= 0 ) { 
+        host_outputString("ERR : File not ready\n");
+        return false;
+      } else if (n != PICTURE_BUFF_SIZE) {
+        host_outputString("ERR : File not valid\n");
+        host_outputInt( n );
+        host_outputString(" bytes read\n");
+        return false;
+      }
+    #endif
   #endif
+
 
   // do something w/ these bytes ...
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     #ifdef BUILTIN_LCD
-      display.clearDisplay();
-      display.drawBitmap(0, 0, picturebuff, 128, 64, 0x01);
-      display.display();
+      #ifdef BUT_ESP32
+        esp32.getScreen()->clear();
+        esp32.getScreen()->drawImg(0, 0, 128, 64, picturebuff);
+        esp32.getScreen()->blitt();
+      #else
+        display.clearDisplay();
+        display.drawBitmap(0, 0, picturebuff, 128, 64, 0x01);
+        display.display();
+      #endif
+    #endif
+  } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
+    #ifdef BUILTIN_LCD
+      // TMP !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      #ifdef BUT_ESP32
+        esp32.getScreen()->clear();
+        esp32.getScreen()->drawImg(0, 0, 128, 64, picturebuff);
+        esp32.getScreen()->blitt();
+      #else
+        display.clearDisplay();
+        display.drawBitmap(0, 0, picturebuff, 128, 64, 0x01);
+        display.display();
+      #endif
     #endif
   }
 
@@ -718,179 +916,177 @@ bool drawBPPfile(char* filename) {
   }
  #else
   extern int curY;
-  bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter, bool sendToArray);
 
-  // bool _lsStorage2(File dir, int numTabs, bool recurse, char* filter) {
-  //   while(true) {
-      
-  //     File entry =  dir.openNextFile();
-  //     if (! entry) {
-  //       // no more files
-  //       //Serial.println("**nomorefiles**");
-  //       break;
-  //     }
-  //     for (uint8_t i=0; i<numTabs; i++) {
-  //       //Serial.print('\t');
-  //       host_outputString(" ");
-  //     }
-  //     //Serial.print(entry.name());
-  //     host_outputString("entry name");
-  //     if (entry.isDirectory()) {
-  //       //Serial.println("/");
-  //       host_outputString("/\n");
-  //       //printDirectory(entry, numTabs+1);
-  //     } else {
-  //       // files have sizes, directories do not
-  //       // Serial.print("\t\t");
-  //       // Serial.println(entry.size(), DEC);
-  //       host_outputString("*\n");
-  //     }
-  //     entry.close();
-  //   }
-  //   host_showBuffer();
-  // }
+  #ifdef ESP32_FS
 
-
-  // filter can be "*.BAS"
-  // sendToArray == true -> create "DIR$" array & fill it
-  //   instead of sending to console display
-  void lsStorage(char* filter=NULL, bool sendToArray=false) {
-    bool recurse = false;
-
-    // SdFile dirFile;
-
-    if ( !STORAGE_OK ) {
-      host_outputString("ERR : Storage not ready\n");
-      return;
+    void esp_ls_callback(char* entry) {
+      host_outputString(entry);
+      host_outputString("\n");
+      host_showBuffer();
     }
 
-    if (!dirFile.open("/", O_READ)) {
-      host_outputString("ERR : opening SD root failed\n");
-      return;
-    }
-
-//root = SD.open("/");
-
-    _lsStorage(dirFile, 0, recurse, filter, sendToArray);
-    //_lsStorage2(root, 0, recurse, filter);
-
-// root.close();
-
-    dirFile.close();
-  }
-
-
-//  #ifndef SCREEN_HEIGHT
-//   #define SCREEN_HEIGHT       8
-//  #endif
-
-bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter, bool sendToArray) {
-    SdFile file;
-
-    if ( sendToArray ) {
-      // can't use createArray because it use expr stack
-      #define MAX_FILE_IN_ARRAY 128
-      if ( ! xts_createArray("DIR$", 1, MAX_FILE_IN_ARRAY) ) {
-        host_outputString("Could not create DIR$");
-        return false;
+    void lsStorage(char* filter=NULL, bool sendToArray=false) {
+      if ( sendToArray ) {
+        host_outputString("DIR2ARRAY NYI !");
+        host_showBuffer();
+        return;
       }
-    }
 
-    int cpt = 0;
-    while (file.openNext(&dirFile, O_READ)) {
-      if (!file.isSubDir() && !file.isHidden() ) {
-        // //file.printFileSize(&Serial);
-        // //file.printModifyDateTime(&Serial);
-        // //file.printName(&Serial);
+      int cpt = esp32.getFs()->listDir("/", esp_ls_callback);
 
-        memset(SDentryName, 0x00, 13);
-        file.getName( SDentryName, 13 );
-
-        if ( filter != NULL ) {
-          // TODO : optimize !!!!!
-          int strt = 0;
-          if ( filter[strt] == '*' ) { strt++; }
-          if ( filter[strt] == '.' ) { strt++; } // see 'else' case
-
-          int tlen = strlen(SDentryName);
-          int flen = strlen(filter);
-          if ( tlen > 4 ) {
-            if ( SDentryName[ tlen-1-3 ] == '.' ) {
-              bool valid = true;
-              for(int i=0; i < flen-strt; i++) {
-
-                //host_outputChar( SDentryName[ tlen-3+i ] ); host_outputChar(' ');host_outputChar(filter[strt+i]);host_outputChar('\n');
-
-                if ( charUpCase( SDentryName[ tlen-3+i ] ) != charUpCase(filter[strt+i]) ) {
-                  valid = false;
-                  break;
-                }
-              }
-              if ( !valid ) { file.close(); continue; }
-            } else {
-              file.close(); 
-              continue;
-            }
-          } else {
-            file.close(); 
-            continue;
-          }
-        }
-
-        if ( !sendToArray ) {
-          host_outputInt( (cpt+1) );
-          host_outputString("\t");
-          host_outputString(SDentryName);
-        } else {
-          // SDentryName @ (cpt+1)
-
-          // to check
-          if ( file.isDir() ) { SDentryName[ 13-1 ] = '/'; }
-          else                { SDentryName[ 13-1 ] = 0x00; }
-
-          if ( xts_setStrArrayElem( "DIR$", (cpt+1), SDentryName ) != ERROR_NONE ) {
-            host_outputInt( (cpt+1) );
-            host_outputString("\t");
-            host_outputString(SDentryName);
-            host_outputString(" : ERROR\n");
-
-            break;
-          }
-        }
-
-        if ( file.isDir() ) {
-          // Indicate a directory.
-          if ( !sendToArray ) {
-            host_outputString("/");
-          }
-        }
-        if ( !sendToArray ) {
-          host_outputString("\n");
-
-          // TMP - DIRTY ----- begin
-          if ( cpt % SCREEN_HEIGHT == SCREEN_HEIGHT-1 ) {
-            host_showBuffer();
-          }
-          // TMP - DIRTY ----- end
-        }
-
-        cpt++;
-
-      }
-      file.close();
-    }
-
-    if ( sendToArray ) {
-      xts_setStrArrayElem( "DIR$", (cpt+1), "-EOF-" );
-    } else {
       host_outputString("nb files : ");
       host_outputInt( cpt );
       host_outputString("\n");
       host_showBuffer();
     }
 
-    return true;
-  }
+
+  #else
+
+    bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter, bool sendToArray);
+
+    // filter can be "*.BAS"
+    // sendToArray == true -> create "DIR$" array & fill it
+    //   instead of sending to console display
+    void lsStorage(char* filter=NULL, bool sendToArray=false) {
+      bool recurse = false;
+
+      // SdFile dirFile;
+
+      if ( !STORAGE_OK ) {
+        host_outputString("ERR : Storage not ready\n");
+        return;
+      }
+
+      if (!dirFile.open("/", O_READ)) {
+        host_outputString("ERR : opening SD root failed\n");
+        return;
+      }
+
+  //root = SD.open("/");
+
+      _lsStorage(dirFile, 0, recurse, filter, sendToArray);
+      //_lsStorage2(root, 0, recurse, filter);
+
+  // root.close();
+
+      dirFile.close();
+    }
+
+
+  //  #ifndef SCREEN_HEIGHT
+  //   #define SCREEN_HEIGHT       8
+  //  #endif
+
+  bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter, bool sendToArray) {
+      SdFile file;
+
+      if ( sendToArray ) {
+        // can't use createArray because it use expr stack
+        #define MAX_FILE_IN_ARRAY 128
+        if ( ! xts_createArray("DIR$", 1, MAX_FILE_IN_ARRAY) ) {
+          host_outputString("Could not create DIR$");
+          return false;
+        }
+      }
+
+      int cpt = 0;
+      while (file.openNext(&dirFile, O_READ)) {
+        if (!file.isSubDir() && !file.isHidden() ) {
+          // //file.printFileSize(&Serial);
+          // //file.printModifyDateTime(&Serial);
+          // //file.printName(&Serial);
+
+          memset(SDentryName, 0x00, 13);
+          file.getName( SDentryName, 13 );
+
+          if ( filter != NULL ) {
+            // TODO : optimize !!!!!
+            int strt = 0;
+            if ( filter[strt] == '*' ) { strt++; }
+            if ( filter[strt] == '.' ) { strt++; } // see 'else' case
+
+            int tlen = strlen(SDentryName);
+            int flen = strlen(filter);
+            if ( tlen > 4 ) {
+              if ( SDentryName[ tlen-1-3 ] == '.' ) {
+                bool valid = true;
+                for(int i=0; i < flen-strt; i++) {
+
+                  //host_outputChar( SDentryName[ tlen-3+i ] ); host_outputChar(' ');host_outputChar(filter[strt+i]);host_outputChar('\n');
+
+                  if ( charUpCase( SDentryName[ tlen-3+i ] ) != charUpCase(filter[strt+i]) ) {
+                    valid = false;
+                    break;
+                  }
+                }
+                if ( !valid ) { file.close(); continue; }
+              } else {
+                file.close(); 
+                continue;
+              }
+            } else {
+              file.close(); 
+              continue;
+            }
+          }
+
+          if ( !sendToArray ) {
+            host_outputInt( (cpt+1) );
+            host_outputString("\t");
+            host_outputString(SDentryName);
+          } else {
+            // SDentryName @ (cpt+1)
+
+            // to check
+            if ( file.isDir() ) { SDentryName[ 13-1 ] = '/'; }
+            else                { SDentryName[ 13-1 ] = 0x00; }
+
+            if ( xts_setStrArrayElem( "DIR$", (cpt+1), SDentryName ) != ERROR_NONE ) {
+              host_outputInt( (cpt+1) );
+              host_outputString("\t");
+              host_outputString(SDentryName);
+              host_outputString(" : ERROR\n");
+
+              break;
+            }
+          }
+
+          if ( file.isDir() ) {
+            // Indicate a directory.
+            if ( !sendToArray ) {
+              host_outputString("/");
+            }
+          }
+          if ( !sendToArray ) {
+            host_outputString("\n");
+
+            // TMP - DIRTY ----- begin
+            if ( cpt % SCREEN_HEIGHT == SCREEN_HEIGHT-1 ) {
+              host_showBuffer();
+            }
+            // TMP - DIRTY ----- end
+          }
+
+          cpt++;
+
+        }
+        file.close();
+      }
+
+      if ( sendToArray ) {
+        xts_setStrArrayElem( "DIR$", (cpt+1), "-EOF-" );
+      } else {
+        host_outputString("nb files : ");
+        host_outputInt( cpt );
+        host_outputString("\n");
+        host_showBuffer();
+      }
+
+      return true;
+    }
+
+  #endif // not ESP32-FS
 
  #endif // FS_SUPPORT
 
@@ -921,6 +1117,30 @@ bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter, bool se
 
 
  #else
+
+  #ifdef ESP32_FS
+    void loadCallback(char* codeLine) {
+
+      //Serial.print(">> ");Serial.println(codeLine);
+
+      // interpret line
+      int ret = tokenize((unsigned char*)codeLine, tokenBuf, TOKEN_BUF_SIZE); 
+      if (ret == 0) { ret = processInput(tokenBuf); }
+      if ( ret > 0 ) { 
+        //host_outputInt( curToken );
+        host_outputString((char *)codeLine);
+        host_outputString((char *)" ->");
+        host_outputString((char *)errorTable[ret]); 
+        host_outputString((char *)" @");
+        //host_outputInt( lineCpt );
+        host_outputInt( 999 );
+        host_outputString((char *)"\n");
+        host_showBuffer(); 
+      }
+    }
+  #endif
+
+
  void loadAsciiBas(char* filename) {
   if ( !STORAGE_OK ) {
     host_outputString("ERR : Storage not ready\n");
@@ -930,50 +1150,67 @@ bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter, bool se
 
   autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
 
-  // SFATLIB mode -> have to switch for regular SD lib
-  SdFile file;
-  if (! file.open( SDentryName , O_READ) ) {
-    led1(true);
-    host_outputString("ERR : File not ready\n");
-    host_showBuffer();
-    return;        
-  }
+  #ifdef ESP32_FS
 
-  file.seekSet(0);
-
-  int n;
-
-  //reset(); // aka NEW -- no more Cf saveLoadCmd() call
-
-  cleanCodeLine();
-  memset( tokenBuf, 0x00, TOKEN_BUF_SIZE );
-  while( ( n = file.fgets(codeLine, ASCII_CODELINE_SIZE) ) > 0 ) {
-    // // show line
-    // host_outputString( codeLine );
-    // if ( codeLine[n-1] != '\n' ) {
-    //   host_outputString( "\n" );
-    // }
-    // host_showBuffer();
-
-    // interpret line
-    int ret = tokenize((unsigned char*)codeLine, tokenBuf, TOKEN_BUF_SIZE); 
-    if (ret == 0) { ret = processInput(tokenBuf); }
-    if ( ret > 0 ) { 
-      //host_outputInt( curToken );
-      host_outputString((char *)codeLine);
-      host_outputString((char *)" ->");
-      host_outputString((char *)errorTable[ret]); 
-      host_outputString((char *)"\n");
-      host_showBuffer(); 
-    }
-    //ret = ERROR_NONE;
     cleanCodeLine();
     memset( tokenBuf, 0x00, TOKEN_BUF_SIZE );
-  }
-  file.close();
 
-  host_outputString( "-EOF-\n" );
-  host_showBuffer();
+    esp32.getFs()->readTextFile(SDentryName, loadCallback);
+
+    host_outputString( "-EOF-\n" );
+    host_showBuffer();
+
+    return;
+  #else
+    // SFATLIB mode -> have to switch for regular SD lib
+    SdFile file;
+    if (! file.open( SDentryName , O_READ) ) {
+      led1(true);
+      host_outputString("ERR : File not ready\n");
+      host_showBuffer();
+      return;        
+    }
+
+    file.seekSet(0);
+
+    int n;
+
+    //reset(); // aka NEW -- no more Cf saveLoadCmd() call
+
+    cleanCodeLine();
+    memset( tokenBuf, 0x00, TOKEN_BUF_SIZE );
+    int lineCpt = 1;
+    while( ( n = file.fgets(codeLine, ASCII_CODELINE_SIZE) ) > 0 ) {
+      // // show line
+      // host_outputString( codeLine );
+      // if ( codeLine[n-1] != '\n' ) {
+      //   host_outputString( "\n" );
+      // }
+      // host_showBuffer();
+
+      // interpret line
+      int ret = tokenize((unsigned char*)codeLine, tokenBuf, TOKEN_BUF_SIZE); 
+      if (ret == 0) { ret = processInput(tokenBuf); }
+      if ( ret > 0 ) { 
+        //host_outputInt( curToken );
+        host_outputString((char *)codeLine);
+        host_outputString((char *)" ->");
+        host_outputString((char *)errorTable[ret]); 
+        host_outputString((char *)" @");
+        host_outputInt( lineCpt );
+        host_outputString((char *)"\n");
+        host_showBuffer(); 
+      }
+      //ret = ERROR_NONE;
+      cleanCodeLine();
+      memset( tokenBuf, 0x00, TOKEN_BUF_SIZE );
+      lineCpt++;
+    }
+    file.close();
+
+    host_outputString( "-EOF-\n" );
+    host_showBuffer();
+  #endif
 }
 
 
@@ -1070,44 +1307,49 @@ void saveAsciiBas(char* filename) {
 
   autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
 
-  // SFATLIB mode -> have to switch for regular SD lib
-  sd.remove( SDentryName );
-  SdFile file;
-
-  if (! file.open( SDentryName , FILE_WRITE) ) {
-    led1(true);
-    host_outputString("ERR : File not ready\n");
+  #ifdef ESP32_FS
+    host_outputString("SAVE NYI for esp32\n");
     host_showBuffer();
-    return;        
-  }
+  #else
+    // SFATLIB mode -> have to switch for regular SD lib
+    sd.remove( SDentryName );
+    SdFile file;
 
-  file.seekSet(0);
+    if (! file.open( SDentryName , FILE_WRITE) ) {
+      led1(true);
+      host_outputString("ERR : File not ready\n");
+      host_showBuffer();
+      return;        
+    }
 
-  // file.print("coucou1"); file.print("\n");
-  // file.flush();
+    file.seekSet(0);
 
-  cleanCodeLine();
-  unsigned char *p = &mem[0];
-  while (p < &mem[sysPROGEND]) {
-      uint16_t lineNum = *(uint16_t*)(p+2);
-          file.print(lineNum);
-          file.print(" ");
+    // file.print("coucou1"); file.print("\n");
+    // file.flush();
 
-          //printTokens(p+4);
-          _serializeTokens(p+4, codeLine);
-          file.print(codeLine);
-          cleanCodeLine();
+    cleanCodeLine();
+    unsigned char *p = &mem[0];
+    while (p < &mem[sysPROGEND]) {
+        uint16_t lineNum = *(uint16_t*)(p+2);
+            file.print(lineNum);
+            file.print(" ");
 
-          file.print("\n");
-      p+= *(uint16_t *)p;
-  }
-  file.flush();
+            //printTokens(p+4);
+            _serializeTokens(p+4, codeLine);
+            file.print(codeLine);
+            cleanCodeLine();
 
-  
-  host_outputString( "-EOF-\n" );
-  host_showBuffer();
+            file.print("\n");
+        p+= *(uint16_t *)p;
+    }
+    file.flush();
 
-  file.close();
+    
+    host_outputString( "-EOF-\n" );
+    host_showBuffer();
+
+    file.close();
+  #endif
 }
 
 // ====== LLIST ==================
@@ -1145,30 +1387,35 @@ void llistAsciiBas(char* filename=NULL) {
 
   autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
 
-  // SFATLIB mode -> have to switch for regular SD lib
-  SdFile file;
-  if (! file.open( SDentryName , O_READ) ) {
-    led1(true);
-    host_outputString("ERR : File not ready\n");
+  #ifdef ESP32_FS
+    host_outputString("LLIST NYI for esp32\n");
     host_showBuffer();
-    return;        
-  }
-
-  file.seekSet(0);
-
-  int n;
-
-  cleanCodeLine();
-  while( ( n = file.fgets(codeLine, ASCII_CODELINE_SIZE) ) > 0 ) {
-    outSerial.print( codeLine );
-    if ( codeLine[n-1] != '\n' ) {
-      outSerial.print( "\n" );
+  #else
+    // SFATLIB mode -> have to switch for regular SD lib
+    SdFile file;
+    if (! file.open( SDentryName , O_READ) ) {
+      led1(true);
+      host_outputString("ERR : File not ready\n");
+      host_showBuffer();
+      return;        
     }
-  }
-  outSerial.print( "-EOF-\n" );
-  outSerial.flush();
 
-  file.close();
+    file.seekSet(0);
+
+    int n;
+
+    cleanCodeLine();
+    while( ( n = file.fgets(codeLine, ASCII_CODELINE_SIZE) ) > 0 ) {
+      outSerial.print( codeLine );
+      if ( codeLine[n-1] != '\n' ) {
+        outSerial.print( "\n" );
+      }
+    }
+    outSerial.print( "-EOF-\n" );
+    outSerial.flush();
+
+    file.close();
+  #endif
 }
 
 
@@ -1182,8 +1429,13 @@ void deleteBasFile(char* filename) {
 
   autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
 
-  // SFATLIB mode -> have to switch for regular SD lib
-  sd.remove( SDentryName );
+  #ifdef ESP32_FS
+    host_outputString("DEL NYI for esp32\n");
+    host_showBuffer();
+  #else
+    // SFATLIB mode -> have to switch for regular SD lib
+    sd.remove( SDentryName );
+  #endif
 }
 
 
@@ -1219,6 +1471,8 @@ void MCU_reset() {
     #ifdef COMPUTER
       closeComputer();
       exit(0);
+    #elif defined (ARDUINO_ARCH_ESP32)
+      ESP.restart();
     #else
       SCB_AIRCR = 0x05FA0004; // software reset
     #endif
@@ -1226,6 +1480,31 @@ void MCU_reset() {
       // void(*resetFunc)(void) = 0;
       // resetFunc();
       // for(;;) {}
+}
+
+extern bool systemHalted;
+
+void MCU_halt() {
+  host_outputString("\nHalting system\n");
+  host_showBuffer();
+  #ifdef BUT_TEENSY
+
+    #ifdef BOARD_RPID
+      rpid_haltGPU(false);
+    #endif
+
+    #ifdef BOARD_SND
+      snd_pause();
+    #endif
+
+    #ifdef COMPUTER
+      closeComputer();
+      exit(0);
+    #else
+      systemHalted = true;
+    #endif
+    
+  #endif
 }
 
 
@@ -1271,6 +1550,7 @@ extern bool selfRun; // for CHAIN "<...>" cmd
 extern int xts_loadBas(char * optFilename);
 
 void host_system_menu() {
+  reset();
   // == true Cf used w/ parameters => bool result
   if ( xts_loadBas("SYSMENU") == true) {
     selfRun = true;

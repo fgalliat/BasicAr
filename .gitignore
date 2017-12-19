@@ -6,3 +6,4 @@ tools/bin
 _untracked
 basic
 **/bin
+subComponents/RPIDisplay/realPI

@@ -694,6 +694,11 @@ public class VGATInterfaceFB {
 			expr = expr.substring(2);
 			if (expr.equals("r")) {
 				reboot();
+			} else if (expr.equals("halt")) {
+				try { Runtime.getRuntime().exec("./haltScript.sh"); }
+				catch(Exception ex) {
+					ex.printStackTrace();
+				}
 			} else if (expr.equals("e")) {
 				cls();
 			} else if (expr.startsWith("p,")) {

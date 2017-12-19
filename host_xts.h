@@ -41,6 +41,7 @@ void drawPixel(int x1, int y1, int color); // 0: black else :white
 
 void lsStorage(char* filter, bool sendToArray);
 
+void MCU_halt();
 void MCU_reset();
 int MCU_freeRam();
 

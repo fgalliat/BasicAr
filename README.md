@@ -24,7 +24,7 @@ The hardware driver layout isn't finished & is provided as is (coded for the Xts
 to compile on a g++ linux env. w/ ncurses+SDL2 installed,<br/>
 so you can test BASIC directly on your computer (hardw support is still in progress...)<br/>
 <br/>
-Already have Sound & VGAText emulated (see subComponent/RPIDisplay).
+Already have FS, Sound & VGAText emulated (see subComponent/RPIDisplay).
 ![The XtsuBasic Emulated](./docs/VideoCard/emulation/X11emul.png "The Xts-uBasic Emulated on X11...")
 <br/>
 
@@ -94,10 +94,15 @@ SPACE$(nbTimes)   : function that returns repeating string of nbTimes * CHR$(32)
 ASC( str )        : returns ascii code of 1st char of str
 INSTR( str, toFind ) : returns index of 'toFind' in 'str' (else 0)
 
+ABS(x)            : return absolute value of number
+COS(x)            : return cos( x in radians)
+SIN(x)            : return sin( x in radians)
 
 EXEC "<extCmd>", "[<extArg>]" : to launch an extended command
 
 BYE               : to reset the MCU
+
+HALT              : to halt the MCU & optional connected RPI
 ```
 
 **Builtin USB Keyboard support** (via HobbyTronic board) is now nearly complete !
