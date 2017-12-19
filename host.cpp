@@ -215,6 +215,12 @@ void host_pinMode(int pin,int mode) {
 }
 
 void host_click() {
+    #ifdef BUT_ESP32
+      esp32.tone(100, 20);
+      delay(20);
+      esp32.noTone();
+      return;
+    #endif
     if ( buzPin <= 0 || BUZZER_MUTE) return;
     digitalWrite(buzPin, HIGH);
     delay(1);
@@ -752,6 +758,7 @@ char *host_readLine() {
             while( !esp32.getEndSystemSignal() ) {
                 delay(100);
             }
+            host_click();
             host_system_menu();
             // to trigger end-of-line
             // & execute selfRun
@@ -760,11 +767,23 @@ char *host_readLine() {
             screenBuffer[pos++] = '\n';
             done = true;
           }
+          else if ( MODE_EDITOR && esp32.getRebootSignal() ) {
+            while( esp32.getRebootSignal() ) {
+                delay(100);
+            }
+            // to trigger end-of-line
+            host_click();
+            kc = PS2_ENTER;
+            screenBuffer[pos++] = '\n';
+            MCU_reset();
+            done = true;
+          }
           else if ( MODE_EDITOR && esp32.readBtn(2) > 0 ) {
             while( esp32.readBtn(2) > 0 ) {
                 delay(100);
             }
             // to trigger end-of-line
+            host_click();
             kc = PS2_ENTER;
             screenBuffer[pos++] = '\n';
             done = true;

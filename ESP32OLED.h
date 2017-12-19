@@ -323,13 +323,18 @@
             return readBtn(1) && readBtn(2);
         }
 
-        // equiv of F1
+        // equiv of F1 (Up + A + B)
         bool getSystemSignal() {
             return readPadYaxis() > 0 && readBtn(1) && readBtn(2);
         }
 
         bool getEndSystemSignal() {
             return readPadYaxis() == 0 && !readBtn(1) && !readBtn(2);
+        }
+
+        // equiv of 'BYE' cmd (Down + A + B)
+        bool getRebootSignal() {
+            return readPadYaxis() < 0 && readBtn(1) && readBtn(2);
         }
 
         // ==== Sound ====

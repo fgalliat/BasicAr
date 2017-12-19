@@ -1472,7 +1472,7 @@ void MCU_reset() {
       closeComputer();
       exit(0);
     #elif defined (ARDUINO_ARCH_ESP32)
-      // TODO
+      ESP.restart();
     #else
       SCB_AIRCR = 0x05FA0004; // software reset
     #endif
