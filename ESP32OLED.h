@@ -303,16 +303,23 @@
 
         int readPadXaxis() {
             int v = analogRead( X_AXIS );
+            // Serial.print("x:");Serial.println(v);
             if ( v <= 800 ) { return 1; }
-            else if ( v >= 2800 ) { return -1; }
+            // VALUES CHANGED since use LIPO Battery cell
+            // else if ( v >= 2800 ) { return -1; }
+            else if ( v >= 2200 ) { return -1; }
             else { v = 0; }
             return v;
         }
 
         int readPadYaxis() {
+            // BEWARE w/ LiPo battery cell voltage...
             int v = analogRead( Y_AXIS );
+            //Serial.print("y:");Serial.println(v);
             if ( v <= 800 ) { return -1; }
-            else if ( v >= 2800 ) { return 1; }
+            // VALUES CHANGED since use LIPO Battery cell
+            // else if ( v >= 2800 ) { return 1; }
+            else if ( v >= 2200 ) { return 1; }
             else { v = 0; }
             return v;
         }

@@ -1,6 +1,10 @@
 == ESP32 ==
 
-ESP.restart() -- restarts the CPU
+06:40 - 
+  3.7v 350mAh
+
+
+ESP.restart() -- restarts the CPU -> OK
  > to use for 'BYE' cmd
 
 
@@ -13,7 +17,16 @@ UP + BTN1 + BTN2 -> SYSMENU.BAS -> OK (but need a CRLF before ...)
 fix drawBPP -> OK
 use ESP32 getBreakSignal() -> OK
 
+(((((((((((((((((((((
+BEWARE w/ LiPo & ANALOGREAD
 
+  ESP.getVcc()
+may be used to measure supply voltage.  ESP needs to reconfigure the ADC at startup in order for
+this feature to be available. Add the following line to the top of your sketch to use
+getVcc
+:
+ADC_MODE(ADC_VCC);
+)))))))))))))))))))))
 
 == TODO ==
 IPC between Java & C w/ pseudo file
