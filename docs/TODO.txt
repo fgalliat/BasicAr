@@ -1,8 +1,9 @@
 == ESP32 ==
 
-06:40 - 
+06:40 - 07:20
   3.7v 350mAh
-
+  -> ecran encore affiched mais plus rien ne reponds
+     correctement au niveau des boutons
 
 ESP.restart() -- restarts the CPU -> OK
  > to use for 'BYE' cmd
