@@ -80,8 +80,16 @@
 980 ' Endif
 990 ' Endif
 1000 NEXT I
-
-
+1100 ' calcul de l'humidite
+1110 HU = 0
+1120 FOR I=1 TO 14
+1130 DX = OX-F(I,1)
+1140 DY = OY-F(I,2)
+1050 ' DF = SQRT( POW(DX,2) + POW(DY,2) ) -> distance lineaire vers le fontaine
+1060 DF = 3 : ' TODO
+1070 ' IF DF = 0 THEN OS=60 : HU = MAX( HU, 3*MAX(0,20-DF) )
+1080 IF DF = 0 THEN OS=60 : HU = 40
+2000 LINE 113,0,113,OS : ' barre de soif
 
 
 1600 ? "Hello"
