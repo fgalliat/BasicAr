@@ -1,3 +1,34 @@
+== CMDS ==
+
+upgraded to 32KB of RAM (beware w/ Teensy 3.2 64KB total)
+
+ ... SIN is #100
+__
+ 101 A = SQRT( x )
+ 102 A = POW( x, y )
+__
+ 103 RECT x,y,w,h[,color[,mode]]
+     color 0 BLACK / 1 WHITE
+     mode  0 draw / 1 fill / 2 fill grey (1/2 pixel)
+__
+ 104 FOPEN "toto.txt",1,"W"
+ 105 FCLOSE 1 // wher '1' is the file descriptor
+
+ 106 FWRITE 1, CHR$(1)+"Hello"+CHR$(0)
+     ' allow bin & text writing (append mode)
+
+ 107 A  = FREAD 1   : ' reads a single byte
+ 108 A$ = FREADLN 1 : ' reads a text line
+ 109 FREADARRAY 1, "AR", 3 : reads 3 bytes then stores in DIM AR(3)
+ 
+
+) when Fs Ops will be OK -> restore the Serial PRGM comm.
+) could reserve some numbers for Serial/ BT /TCP Socket
+
+
+autocomplete name -> UPPERCASE -> OK
+                  -> use it for playTune too -> TODO
+
 == ESP32 ==
 
 06:40 - 07:20
@@ -6,13 +37,8 @@
      correctement au niveau des boutons
 
 ESP.restart() -- restarts the CPU -> OK
- > to use for 'BYE' cmd
+ > to use for 'BYE' cmd ==> DONE
 
-
-autocomplete name -> UPPERCASE -> OK
-                  -> use it for playTune too -> TODO
-
-modify RAYC.BAS to read btns -> OK
 
 UP + BTN1 + BTN2 -> SYSMENU.BAS -> OK (but need a CRLF before ...)
 fix drawBPP -> OK
