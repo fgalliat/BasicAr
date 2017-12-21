@@ -46,6 +46,7 @@
 480 ZR = 0 : IF RND <= DL THEN ZR = 1
 490 TT = 0
 500 IF ( I * (ZJ)+(ZI)*J )*( ZR ) + (ZI)*(ZJ)+(X<=2)+(Y<=2)+(X>=58)+(Y>=26) THEN TT = 1
+501 ' IF (( I * (ZJ)+(ZI)*J ) = 1) AND( RND() <= DL ) OR (I=0) AND (J=0) OR (X<=2) OR (Y<=2) OR (X>=58) OR (Y>=26) THEN TT = 1
 510 T(X,Y) = TT
 520 IF TT = 1 THEN LINE 2*X+3, 2*Y+3, 2*X+4, 2*Y+3
 530 IF TT = 1 THEN LINE 2*X+3, 2*Y+4, 2*X+4, 2*Y+4
@@ -71,12 +72,12 @@
 910 CLS
 915 FOR I=1 TO 14
 917 ' missing some code in the book
-920 IF NOT ( O( LV(I,1), 1 ) = 0) THEN GOTO 990
-930 IF NOT ( ( O( LV(I,2), 1 ) = 0) * ( O( LV(I,3), 1 ) = 0) ) THEN GOTO 980
-940 LINE LG(I,1),LG(I,2),LG(I,3),LG(I,4)
-950 LINE LG(I,3),LG(I,4),LG(I,5),LG(I,6)
-960 LINE LG(I,5),LG(I,6),LG(I,7),LG(I,8)
-970 IF I <= 6 THEN LINE LG(I,7),LG(I,8),LG(I,1),LG(I,2)
+920 IF NOT ( O( LV(I,1), 1 ) <> 0) THEN GOTO 990
+930 IF NOT ( ( O( LV(I,2), 1 ) = 0) AND ( O( LV(I,3), 1 ) = 0) ) THEN GOTO 980
+940 LINE LG(I,1)-1,LG(I,2)-1,LG(I,3)-1,LG(I,4)-1
+950 LINE LG(I,3)-1,LG(I,4)-1,LG(I,5)-1,LG(I,6)-1
+960 LINE LG(I,5)-1,LG(I,6)-1,LG(I,7)-1,LG(I,8)-1
+970 IF I <= 6 THEN LINE LG(I,7)-1,LG(I,8)-1,LG(I,1)-1,LG(I,2)-1
 980 ' Endif
 990 ' Endif
 1000 NEXT I
@@ -88,11 +89,69 @@
 1050 ' DF = SQRT( POW(DX,2) + POW(DY,2) ) -> distance lineaire vers le fontaine
 1060 DF = 3 : ' TODO
 1070 ' IF DF = 0 THEN OS=60 : HU = MAX( HU, 3*MAX(0,20-DF) )
-1080 IF DF = 0 THEN OS=60 : HU = 40
+1080 IF DF = 0 THEN OS=60
+1085 HU = 40 : ' HU = MAX( HU, 3*MAX(0,20-DF) )
+1090 NEXT I
 2000 LINE 113,0,113,OS : ' barre de soif
-
-
-1600 ? "Hello"
-1610 ? LG(1,1);" ";LG(8, 14)
-1615 ? LV(1,1);" ";LV(3, 14)
-1620 ? T(1,1);" ";T(3, 14)
+2010 LINE 114,0,114,OS
+2020 LINE 122,0,122,HP : ' barre de HP
+2030 LINE 123,0,123,HP
+2040 LINE 126,0,126,HP : ' barre de Humidite
+2050 LINE 127,0,127,HP
+2200 HP = HU
+2300 ' Lbl SAISIE
+2310 A$ = INKEY$ : B = BTN(0)
+2320 NX = OX+D( OD, 1 )
+2330 NY = OY+D( OD, 2 )
+2340 VAL = T(NX,NY)
+2345 ' UP key/btn
+2350 IF NOT ( (BTN(6)=1 OR A$="r") AND VAL = 0 ) THEN GOTO 2380
+2355 DELAY 200 : ' wait BTN released
+2560 OX = NX : OY = NY : OS = OS-1
+2370 IF OS = 0 THEN CLEAR : ? "Vous mourrez de soif !" : STOP
+2380 ' Endif
+2390 ' Left key
+2400 IF (BTN(4)=1 OR A$="d") THEN OD=(( OD+2 ) MOD 4) +1
+2410 IF (BTN(5)=1 OR A$="f") THEN OD=(( OD   ) MOD 4) +1
+2420 IF (BTN(2)=1 OR A$="e") THEN ? "disp map"
+2430 IF ( A$="q" ) THEN CLS : ? "Bye" : STOP
+6000 DELAY 200 : GOTO 2300
+6100 IF NOT (OD = 1) THEN GOTO 6160
+6110 FOR I=1 TO 3
+6120 FOR J=1 TO 3
+6130 O( I+ (J*3)-3, 1 ) = T( OX-2+I, OY-1+J )
+6140 NEXT J
+6150 NEXT I
+6160 ' Endif
+6200 IF NOT (OD = 2) THEN GOTO 6260
+6210 FOR I=1 TO 3
+6220 FOR J=1 TO 3
+6230 O( I+ (J*3)-3, 1 ) = T( OX-1+J, OY+2-I )
+6240 NEXT J
+6250 NEXT I
+6260 ' Endif
+6300 IF NOT (OD = 3) THEN GOTO 6360
+6310 FOR I=1 TO 3
+6320 FOR J=1 TO 3
+6330 O( I+ (J*3)-3, 1 ) = T( OX+2-I, OY+1-J )
+6340 NEXT J
+6350 NEXT I
+6360 ' Endif
+6400 IF NOT (OD = 4) THEN GOTO 6460
+6410 FOR I=1 TO 3
+6420 FOR J=1 TO 3
+6430 O( I+ (J*3)-3, 1 ) = T( OX+1-J, OY-2+I )
+6440 NEXT J
+6450 NEXT I
+6460 ' Endif
+7000 ' La sortie ?
+7010 IF NOT (OX=57 AND OY=25) THEN GOTO 7050
+7020 CLS
+7030 ? "La sortie !"
+7040 STOP
+7050 ' Endif
+7100 GOTO 900 : ' GOTO DEBUT
+8600 ' ? "Hello"
+8610 ' ? LG(1,1);" ";LG(8, 14)
+8615 ' ? LV(1,1);" ";LV(3, 14)
+8620 ' ? T(1,1);" ";T(3, 14)
