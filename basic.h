@@ -212,9 +212,11 @@
 // 8+1+3 ex. 'TOTO'+'.'+'BAS'
 #define MAX_FILENAME_LEN	12
 
-// _____________>> that in xts_arch.h ???
 //#define MEMORY_SIZE	1024
-#define MEMORY_SIZE	(16*1024)
+
+// 32KB try since 21/12/2017
+//#define MEMORY_SIZE	(16*1024)
+#define MEMORY_SIZE	(32*1024)
 
 // max char per code lines (depends of ammount of RAM ??)
 #define ASCII_CODELINE_SIZE (128*2)
