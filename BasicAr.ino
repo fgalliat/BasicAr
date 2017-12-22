@@ -233,6 +233,16 @@ void setup() {
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
+int doRun() {
+  int ret;
+  tokenBuf[0] = TOKEN_RUN;
+  tokenBuf[1] = 0;
+  selfRun = false;
+  ret = processInput(tokenBuf);
+  return ret;
+}
+
+
 bool MODE_EDITOR = false;
 bool systemHalted = false;
 
@@ -249,8 +259,8 @@ void loop() {
         if ( addAutorunFlag ) {
           addAutorunFlag = false;
           reset();
-          host_outputString("autorun ?\n");
-          host_showBuffer();
+        //   host_outputString("autorun ?\n");
+        //   host_showBuffer();
 
             //   if( xts_loadBas("AUTORUN") == true ) {
             //     selfRun = true;
@@ -261,6 +271,12 @@ void loop() {
             ret = processInput(tokenBuf);
             if ( ret > 0 ) { host_outputString((char *)errorTable[ret]); host_showBuffer(); }
             ret = ERROR_NONE;
+
+            #ifdef BUT_ESP32 
+             ret = doRun();
+             if ( ret > 0 ) { host_outputString((char *)errorTable[ret]); host_showBuffer(); }
+             ret = ERROR_NONE;
+            #endif
         }
 
         // get a line from the user
@@ -330,10 +346,11 @@ void loop() {
 
 
         if ( selfRun ) { // for CHAIN "<...>" cmd
-            tokenBuf[0] = TOKEN_RUN;
-            tokenBuf[1] = 0;
-            selfRun = false;
-            ret = processInput(tokenBuf);
+            // tokenBuf[0] = TOKEN_RUN;
+            // tokenBuf[1] = 0;
+            // selfRun = false;
+            // ret = processInput(tokenBuf);
+            ret = doRun();
         }
 
     }

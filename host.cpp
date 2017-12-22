@@ -729,6 +729,8 @@ void host_newLine() {
     isWriting = false;
 }
 
+extern int doRun();
+
 char *host_readLine() {
     inputMode = 1;
 
@@ -760,6 +762,7 @@ char *host_readLine() {
             }
             host_click();
             host_system_menu();
+            
             // to trigger end-of-line
             // & execute selfRun
 
@@ -908,7 +911,14 @@ bool host_ESCPressed() {
           }
       }
     #elif BUT_ESP32
-      return esp32.getBreakSignal();
+      if ( esp32.getBreakSignal() ) {
+          esp32.noTone();
+          while( esp32.getBreakSignal() ) {
+              delay(100);
+          }
+          return true;
+      }
+      return false;
     #else
       return anyBtn();
     #endif

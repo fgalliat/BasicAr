@@ -1548,12 +1548,16 @@ void onKeyReceived(struct KeyEvent ke) {
 // ======== System Configuration =============
 extern bool selfRun; // for CHAIN "<...>" cmd
 extern int xts_loadBas(char * optFilename);
+extern int doRun();
 
 void host_system_menu() {
   reset();
   // == true Cf used w/ parameters => bool result
   if ( xts_loadBas("SYSMENU") == true) {
     selfRun = true;
+    #ifdef BUT_ESP32
+      doRun();
+    #endif
   } else {
     host_outputString("no SYSMENU PRGM");
   }
