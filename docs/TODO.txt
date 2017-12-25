@@ -10,16 +10,18 @@ __
  103 RECT x,y,w,h[,color[,mode]]
      color 0 BLACK / 1 WHITE
      mode  0 draw / 1 fill / 2 fill grey (1/2 pixel)
-__
- 104 FOPEN "toto.txt",1,"W"
- 105 FCLOSE 1 // wher '1' is the file descriptor
 
- 106 FWRITE 1, CHR$(1)+"Hello"+CHR$(0)
+ 104 BLITT {0,1,2}
+__
+ 105 FOPEN "toto.txt",1,"W"
+ 106 FCLOSE 1 // wher '1' is the file descriptor
+
+ 107 FWRITE 1, CHR$(1)+"Hello"+CHR$(0)
      ' allow bin & text writing (append mode)
 
- 107 A  = FREAD 1   : ' reads a single byte
- 108 A$ = FREADLN 1 : ' reads a text line
- 109 FREADARRAY 1, "AR", 3 : reads 3 bytes then stores in DIM AR(3)
+ 108 A  = FREAD 1   : ' reads a single byte
+ 109 A$ = FREADLN 1 : ' reads a text line
+ 110 FREADARRAY 1, "AR", 3 : reads 3 bytes then stores in DIM AR(3)
  
 
 ) when Fs Ops will be OK -> restore the Serial PRGM comm.
