@@ -108,8 +108,8 @@
 2345 ' UP key/btn
 2350 IF NOT ( BTN(6)=1 OR A$="r" ) THEN GOTO 2380
 2351 ' DELAY 200 : ' wait release
-2352 IF VA <> 0 THEN CK = 0 : GOTO 2380
-2353 ' IF VA <> 0 THEN CK = 0 : GOTO 6000
+2352 ' IF VA <> 0 THEN CK = 0 : GOTO 2380
+2353 IF VA <> 0 THEN CK = 0 : GOTO 2300
 2560 CK = 1 : OX = NX : OY = NY : OS = OS-1
 2370 IF (OS = 0) THEN CLS : ? "Vous mourrez de soif !" : STOP
 2380 ' Endif
