@@ -159,6 +159,11 @@
     #define TOKEN_COS               99 // returns COS(x) in radians
     #define TOKEN_SIN              100 // returns SIN(x) in radians
 
+    #define TOKEN_SQRT             101 // NEW
+    #define TOKEN_POW              102
+
+    #define TOKEN_RECT             103
+    #define TOKEN_BLITT            104
     
     #define TOKEN_LASTONE TOKEN_SIN
 #else

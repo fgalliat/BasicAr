@@ -413,6 +413,39 @@ int xts_dispBPP() {
   return 0;
 }
 
+// TODO : finish that
+int xts_blittMode() {
+  getNextToken();
+
+  // TODO : check syntax
+
+  if ( executeMode ) {
+    int mode = (int)stackPopNum();
+    // TODO : finish
+  }
+
+  return 0;
+}
+
+int xts_dispRect() {
+  getNextToken();
+
+  // TODO : check syntax
+
+  if ( executeMode ) {
+    int mode = (int)stackPopNum();
+    int color = (int)stackPopNum();
+    int h = (int)stackPopNum();
+    int w = (int)stackPopNum();
+    int y = (int)stackPopNum();
+    int x = (int)stackPopNum();
+    // TODO : finish
+  }
+
+  return 0;
+}
+
+
 
 // ================================================
 // I/O Console
@@ -685,6 +718,16 @@ float xts_cos(float arg0) {
 // in radian
 float xts_sin(float arg0) {
   float ret = sin(arg0 /* * degToRag */);
+  return ret;
+}
+
+float xts_sqrt(float arg0) {
+  float ret = sqrt(arg0);
+  return ret;
+}
+
+float xts_pow(float arg0, float arg1) {
+  float ret = pow(arg0, arg1);
   return ret;
 }
 

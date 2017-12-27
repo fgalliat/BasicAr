@@ -7,6 +7,11 @@ __
  101 A = SQRT( x )
  102 A = POW( x, y )
 __
+
+ xtase_fct.h
+  ---> finish xts_blitt & xts_dispRect
+
+
  103 RECT x,y,w,h[,color[,mode]]
      color 0 BLACK / 1 WHITE
      mode  0 draw / 1 fill / 2 fill grey (1/2 pixel)
