@@ -23,11 +23,14 @@
 124 IF L( XX, YY ) = 0 THEN GOTO 114
 125 D = ABS((X - Xa) / COSR): H = (1816 / D) / 3
 126 SS = S / 3
-127 LINE (SS + 64) , (32 - H), (SS + 75), (32 + H)
-128 LINE (SS + 75) , (32 - H), (SS + 75), (32 + H)
-129 LINE (SS + 64) , (32 - H), (SS + 64), (32 + H)
-130 LINE (SS + 64) , (32 - H), (SS + 75), (32 - H)
-131 LINE (SS + 64) , (32 + H), (SS + 75), (32 + H)
+127 ' LINE (SS + 64) , (32 - H), (SS + 75), (32 + H)
+128 ' LINE (SS + 75) , (32 - H), (SS + 75), (32 + H)
+129 ' LINE (SS + 64) , (32 - H), (SS + 64), (32 + H)
+130 ' LINE (SS + 64) , (32 - H), (SS + 75), (32 - H)
+131 ' LINE (SS + 64) , (32 + H), (SS + 75), (32 + H)
+132 C = 1 : M = 1 : IF D > 32 THEN C = 2 : M = 1
+133 IF D > 50 THEN C = 1 : M = 0
+134 RECT (SS + 64) , (32 - H), 11, H*2, C, M
 135 NEXT S : BLITT 2
 136 A$ = INKEY$
 141 IF A$ = "f" OR BTN(5) = 1 THEN F = F+5 : GOTO 101
