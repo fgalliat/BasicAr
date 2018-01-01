@@ -108,9 +108,6 @@
             }
 
             void drawImg(int x,int y, int width, int height, unsigned char* picBuff) {
-                // TO FIX
-                //_oled_display->drawFastImage(x,y, w, h, (const char*)img);
-
                 unsigned char c;
                 for (int yy = 0; yy < height; yy++) {
                     for (int xx = 0; xx < width; xx++) {
@@ -127,8 +124,36 @@
                         }
                     }
                 }
-        
+            }
 
+            // slow impl.
+            // but supports gray
+            void drawRect(int x,int y, int width, int height, int color, int mode) {
+                unsigned char c; int cpt = 0;
+
+                if ( color == 0 ) { _oled_display->setColor(BLACK); }
+                else if ( color == 1 ) { _oled_display->setColor(WHITE); }
+
+                for (int yy = 0; yy < height; yy++) {
+                    for (int xx = 0; xx < width; xx++) {
+                        
+                        if ( mode == 0 && !(xx == 0 || xx == width-1) ) {
+                            if ( !(yy == 0 || yy == height-1) ) {
+                                // just draw
+                                continue;
+                            }
+                        }
+
+                        if ( color == 2 ) { 
+                            c = cpt%2; 
+                            if ( c == 1 ) _oled_display->setColor(WHITE);
+                            else          _oled_display->setColor(BLACK);
+                        }
+
+                        setPixel(x + xx, y + yy);
+                        cpt++;
+                    }
+                }
             }
 
             void clear() {
