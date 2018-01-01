@@ -831,7 +831,37 @@ void drawPixel(int x1, int y1, int color) {
   }
 }
 
-
+// color : 0 black / 1 white / 2 ~gray
+// mode  : 0 draw / 1 fill
+void drawRect(int x, int y, int w, int h, int color, int mode) {
+  if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
+    #ifdef BUILTIN_LCD
+     #ifdef BUT_ESP32
+      esp32.getScreen()->drawRect(x, y, w, h, color, mode);
+      if ( isGfxAutoBlitt() ) esp32.getScreen()->blitt();
+     #else
+      // no gray support @ this time
+      // no fill support @ this time
+      unsigned int c = color == 0 ? BLACK : WHITE;
+      display.drawLine(x, y, x+w, y, c);
+      display.drawLine(x+w, y, x+w, y+h, c);
+      display.drawLine(x+w, y+h, x, y+h, c);
+      display.drawLine(x, y+h, x, y, c);
+      if ( isGfxAutoBlitt() ) display.display();
+     #endif
+    #endif
+  } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
+    #ifdef BOARD_RPID
+      // no gray support @ this time
+      // no fill support @ this time
+      unsigned int c = color == 0 ? RPID_BLACK : RPID_WHITE;
+      rpid_gfx_line(x, y, x+w, y, c);
+      rpid_gfx_line(x+w, y, x+w, y+h, c);
+      rpid_gfx_line(x+w, y+h, x, y+h, c);
+      rpid_gfx_line(x, y+h, x, y, c);
+    #endif
+  }
+}
 
 bool drawBPPfile(char* filename) {
 

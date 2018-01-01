@@ -50,6 +50,7 @@ void drawLine(int x1, int y1, int x2, int y2);
 void drawCircle(int x1, int y1, int radius);
 void drawPixel(int x1, int y1, int color); // 0: black else :white
 void draw_blitt();
+void drawRect(int x, int y, int w, int h, int color, int mode);
 
 // ============================================
 

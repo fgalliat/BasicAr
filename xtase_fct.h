@@ -444,10 +444,31 @@ int xts_blittMode() {
   return 0;
 }
 
+// N.B. @ this time all params are mandatory
 int xts_dispRect() {
   getNextToken();
+  int val = expectNumber();  // X1
+  if (val) return val;	// error
+  
+  getNextToken();
+  val = expectNumber();  // Y1
+  if (val) return val;	// error
 
-  // TODO : check syntax
+  getNextToken();
+  val = expectNumber();  // X2
+  if (val) return val;	// error
+
+  getNextToken();
+  val = expectNumber();  // Y2
+  if (val) return val;	// error
+
+  getNextToken();
+  val = expectNumber();  // COLOR
+  if (val) return val;	// error
+
+  getNextToken();
+  val = expectNumber();  // MODE
+  if (val) return val;	// error
 
   if ( executeMode ) {
     int mode = (int)stackPopNum();
@@ -456,7 +477,8 @@ int xts_dispRect() {
     int w = (int)stackPopNum();
     int y = (int)stackPopNum();
     int x = (int)stackPopNum();
-    // TODO : finish
+    
+    drawRect(x,y,w,h,color,mode);
   }
 
   return 0;
