@@ -66,6 +66,9 @@ extern PS2Keyboard keyboard;
 #include "host.h"
 #include "basic.h"
 
+int BLITT_MODE = BLITT_AUTO;
+bool isGfxAutoBlitt() { return BLITT_MODE == BLITT_AUTO; }
+
 // for dtostre & dtostrf
 #include "xts_compat.h" 
 #include <stdlib.h> 
@@ -252,10 +255,10 @@ void host_cls() {
         if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
             #if defined(BUT_ESP32)
               esp32.getScreen()->clear();
-              esp32.getScreen()->blitt();
+              if (isGfxAutoBlitt()) esp32.getScreen()->blitt();
             #else
               display.clearDisplay();
-              display.display();
+              if (isGfxAutoBlitt()) display.display();
             #endif
         } else 
     #endif
@@ -409,9 +412,9 @@ void host_showBuffer() {
 
         // Xtase
 #ifdef BUT_ESP32
-        esp32.getScreen()->blitt();
+        if (isGfxAutoBlitt()) esp32.getScreen()->blitt();
 #else
-        display.display(); // to place in an interrupt
+        if (isGfxAutoBlitt()) display.display();
 #endif
     } else if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
 

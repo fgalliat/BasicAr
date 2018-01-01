@@ -10,6 +10,7 @@ __
 
  xtase_fct.h
   ---> finish xts_blitt & xts_dispRect
+  ---> have to use it for CLS & PRINT too
 
 
  103 RECT x,y,w,h[,color[,mode]]

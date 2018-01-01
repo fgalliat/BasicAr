@@ -165,7 +165,7 @@
     #define TOKEN_RECT             103
     #define TOKEN_BLITT            104
     
-    #define TOKEN_LASTONE TOKEN_SIN
+    #define TOKEN_LASTONE TOKEN_BLITT
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT

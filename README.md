@@ -77,6 +77,8 @@ CIRCLE x,y,r      : draw a circle
 LINE   x,y,x2,y2  : draw a line
 PSET   x,y        : switch ON a pixel
 PRESET x,y        : switch OFF a pixel
+BLITT x           : 0 stop blitt / 1 trigger blitt / 2 auto blitt (default mode)
+RECT x,y,w,h,c,m  : c : 0,1,2 (black,white,gray) // m : 0,1 (draw,fill)
          
 BTN(x)            : function get button state
 LED [1..3], {0,1} : switch on/off a LED
@@ -97,6 +99,8 @@ INSTR( str, toFind ) : returns index of 'toFind' in 'str' (else 0)
 ABS(x)            : return absolute value of number
 COS(x)            : return cos( x in radians)
 SIN(x)            : return sin( x in radians)
+SQRT(x)           : return square-root of x
+POW(x,y)          : return x pow y
 
 EXEC "<extCmd>", "[<extArg>]" : to launch an extended command
 

@@ -93,8 +93,8 @@
 
 
 #include "host_xts.h"
-
 #include "basic.h"
+extern bool isGfxAutoBlitt();
 
 extern int SCREEN_HEIGHT;
 extern unsigned char tokenBuf[];
@@ -759,16 +759,31 @@ void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
 #define RPID_GREEN -16711936
 #define RPID_BLUE  -16776961
 
+// manually triggered
+void draw_blitt() {
+  if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
+    #ifdef BUILTIN_LCD
+     #ifdef BUT_ESP32
+      esp32.getScreen()->blitt();
+     #else
+      display.display();
+     #endif
+    #endif
+  } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
+    #ifdef BOARD_RPID
+    #endif
+  }  
+}
 
 void drawLine(int x1, int y1, int x2, int y2) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
     #ifdef BUILTIN_LCD
      #ifdef BUT_ESP32
       esp32.getScreen()->drawLine(x1, y1, x2, y2);
-      esp32.getScreen()->blitt();
+      if ( isGfxAutoBlitt() ) esp32.getScreen()->blitt();
      #else
       display.drawLine(x1, y1, x2, y2, WHITE);
-      display.display();
+      if ( isGfxAutoBlitt() ) display.display();
      #endif
     #endif
   } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
@@ -783,10 +798,10 @@ void drawCircle(int x1, int y1, int radius) {
     #ifdef BUILTIN_LCD
      #ifdef BUT_ESP32
        esp32.getScreen()->drawCircle(x1, y1, radius);
-       esp32.getScreen()->blitt();
+       if ( isGfxAutoBlitt() ) esp32.getScreen()->blitt();
      #else
        display.drawCircle(x1, y1, radius, WHITE);
-       display.display();
+       if ( isGfxAutoBlitt() ) display.display();
      #endif
     #endif
   } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
@@ -803,10 +818,10 @@ void drawPixel(int x1, int y1, int color) {
      #ifdef BUT_ESP32
       esp32.getScreen()->setColor(color == 1 ? WHITE : BLACK);
       esp32.getScreen()->setPixel(x1, y1);
-      esp32.getScreen()->blitt();
+      if ( isGfxAutoBlitt() ) esp32.getScreen()->blitt();
      #else
       display.drawPixel(x1, y1, color);
-      display.display(); // see if fast enought .... else use interrupts.
+      if ( isGfxAutoBlitt() ) display.display(); // see if fast enought .... else use interrupts.
      #endif
     #endif 
   } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
@@ -877,11 +892,11 @@ bool drawBPPfile(char* filename) {
       #ifdef BUT_ESP32
         esp32.getScreen()->clear();
         esp32.getScreen()->drawImg(0, 0, 128, 64, picturebuff);
-        esp32.getScreen()->blitt();
+        if ( isGfxAutoBlitt() ) esp32.getScreen()->blitt();
       #else
         display.clearDisplay();
         display.drawBitmap(0, 0, picturebuff, 128, 64, 0x01);
-        display.display();
+        if ( isGfxAutoBlitt() ) display.display();
       #endif
     #endif
   } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
@@ -890,11 +905,11 @@ bool drawBPPfile(char* filename) {
       #ifdef BUT_ESP32
         esp32.getScreen()->clear();
         esp32.getScreen()->drawImg(0, 0, 128, 64, picturebuff);
-        esp32.getScreen()->blitt();
+        if ( isGfxAutoBlitt() ) esp32.getScreen()->blitt();
       #else
         display.clearDisplay();
         display.drawBitmap(0, 0, picturebuff, 128, 64, 0x01);
-        display.display();
+        if ( isGfxAutoBlitt() ) display.display();
       #endif
     #endif
   }

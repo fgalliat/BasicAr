@@ -2,6 +2,20 @@
  * Xtase - fgalliat @ Sept 2017 
  **********/
 
+// _______________________________
+//
+// GFX blitt Ops
+
+// enum BLITT_MODE_t {
+//   BLITT_LOCKED = 0, // lock gfx blitt
+//   BLITT_DIRECT,     // trigger a blitt request
+//   BLITT_AUTO        // default mode
+// };
+
+//static int BLITT_MODE = BLITT_AUTO;
+//static bool isGfxAutoBlitt() { return BLITT_MODE == BLITT_AUTO; }
+// _______________________________
+
 void setupHardware();
 
 void led(int ledID, bool state);
@@ -35,7 +49,7 @@ bool drawBPPfile(char* filename);
 void drawLine(int x1, int y1, int x2, int y2);
 void drawCircle(int x1, int y1, int radius);
 void drawPixel(int x1, int y1, int color); // 0: black else :white
-
+void draw_blitt();
 
 // ============================================
 

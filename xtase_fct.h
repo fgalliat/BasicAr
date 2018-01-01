@@ -413,15 +413,32 @@ int xts_dispBPP() {
   return 0;
 }
 
-// TODO : finish that
+// BEWARE : PC emulation has not
+// indirect blitt !!!
 int xts_blittMode() {
   getNextToken();
 
-  // TODO : check syntax
+  int val = parseExpression();
+  if (val & _ERROR_MASK) return val;
+  if (!_IS_TYPE_NUM(val))
+      return ERROR_EXPR_EXPECTED_NUM;
 
   if ( executeMode ) {
     int mode = (int)stackPopNum();
-    // TODO : finish
+    if ( mode < BLITT_LOCKED || mode > BLITT_AUTO ) {
+      return ERROR_BAD_PARAMETER;
+    }
+
+    if ( mode == BLITT_DIRECT ) {
+      draw_blitt();
+    } else {
+      // stores only 0 & 2
+      BLITT_MODE = mode;   
+      if ( BLITT_AUTO ){
+        draw_blitt();
+      }
+    }
+
   }
 
   return 0;
