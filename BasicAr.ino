@@ -46,6 +46,8 @@ extern int INPUT_DEVICE;
 #include "basic.h"
 #include "host.h"
 
+extern int xts_loadBas(char* optFilename=NULL);
+
 // Define in host.h if using an external EEPROM e.g. 24LC256
 // Should be connected to the I2C pins
 // SDA -> Analog Pin 4, SCL -> Analog Pin 5
@@ -147,12 +149,14 @@ void setScreenSize(int cols, int rows) {
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 
 
+bool addAutorunFlag = false;
 
 void setup() {
 
 #ifdef BUT_ESP32
    esp32.setup();
    STORAGE_OK = true;
+   addAutorunFlag = true;
 #endif
 
     // BUZZER_MUTE = true;
@@ -220,12 +224,24 @@ void setup() {
     else {
         if ( !BUZZER_MUTE ) { host_startupTone(); }
     }
+#else
+    addAutorunFlag = true;
 #endif
 
 }
 
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+int doRun() {
+  int ret;
+  tokenBuf[0] = TOKEN_RUN;
+  tokenBuf[1] = 0;
+  selfRun = false;
+  ret = processInput(tokenBuf);
+  return ret;
+}
+
 
 bool MODE_EDITOR = false;
 bool systemHalted = false;
@@ -239,6 +255,30 @@ void loop() {
     }
 
     if (!autorun) {
+
+        if ( addAutorunFlag ) {
+          addAutorunFlag = false;
+          reset();
+        //   host_outputString("autorun ?\n");
+        //   host_showBuffer();
+
+            //   if( xts_loadBas("AUTORUN") == true ) {
+            //     selfRun = true;
+            //   } ....
+            const char* _input = "CHAIN \"AUTORUN\" \n";
+
+            ret = tokenize((unsigned char*)_input, tokenBuf, TOKEN_BUF_SIZE); 
+            ret = processInput(tokenBuf);
+            if ( ret > 0 ) { host_outputString((char *)errorTable[ret]); host_showBuffer(); }
+            ret = ERROR_NONE;
+
+            #ifdef BUT_ESP32 
+             ret = doRun();
+             if ( ret > 0 ) { host_outputString((char *)errorTable[ret]); host_showBuffer(); }
+             ret = ERROR_NONE;
+            #endif
+        }
+
         // get a line from the user
         MODE_EDITOR = true;
         char *input = host_readLine();
@@ -306,10 +346,11 @@ void loop() {
 
 
         if ( selfRun ) { // for CHAIN "<...>" cmd
-            tokenBuf[0] = TOKEN_RUN;
-            tokenBuf[1] = 0;
-            selfRun = false;
-            ret = processInput(tokenBuf);
+            // tokenBuf[0] = TOKEN_RUN;
+            // tokenBuf[1] = 0;
+            // selfRun = false;
+            // ret = processInput(tokenBuf);
+            ret = doRun();
         }
 
     }

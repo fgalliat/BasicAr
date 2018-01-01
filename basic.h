@@ -159,8 +159,13 @@
     #define TOKEN_COS               99 // returns COS(x) in radians
     #define TOKEN_SIN              100 // returns SIN(x) in radians
 
+    #define TOKEN_SQRT             101 // NEW
+    #define TOKEN_POW              102
+
+    #define TOKEN_RECT             103
+    #define TOKEN_BLITT            104
     
-    #define TOKEN_LASTONE TOKEN_SIN
+    #define TOKEN_LASTONE TOKEN_BLITT
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT
@@ -212,9 +217,11 @@
 // 8+1+3 ex. 'TOTO'+'.'+'BAS'
 #define MAX_FILENAME_LEN	12
 
-// _____________>> that in xts_arch.h ???
 //#define MEMORY_SIZE	1024
-#define MEMORY_SIZE	(16*1024)
+
+// 32KB try since 21/12/2017
+//#define MEMORY_SIZE	(16*1024)
+#define MEMORY_SIZE	(32*1024)
 
 // max char per code lines (depends of ammount of RAM ??)
 #define ASCII_CODELINE_SIZE (128*2)

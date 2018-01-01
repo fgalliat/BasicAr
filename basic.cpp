@@ -219,6 +219,12 @@ TokenTableEntry tokenTable[] = {
     {"COS", 1},  // returns COS(x) in radian
     {"SIN", 1},  // returns SIN(x) in radian
 
+    {"SQRT", 1}, // numeric function
+    {"POW",  2},
+
+    {"RECT",  6}, // rect x,y,w,h[,color[,mode]]
+    {"BLITT", 1}, // {0,1,2}
+
 };
 
 
@@ -1497,6 +1503,14 @@ int parseFnCallExpr() {
             // in degrees
             if (!stackPushNum(xts_sin( stackPopNum() ))) return ERROR_OUT_OF_MEMORY;
             break;
+        case TOKEN_SQRT:
+            if (!stackPushNum(xts_sqrt( stackPopNum() ))) return ERROR_OUT_OF_MEMORY;
+            break;
+        case TOKEN_POW:
+            tmp2 = (int)stackPopNum(); // inv. order powValue
+            tmp  = (int)stackPopNum(); // powNum
+            if (!stackPushNum(xts_pow( tmp, tmp2 ))) return ERROR_OUT_OF_MEMORY;
+            break;
 
 // ==============================
 
@@ -1663,6 +1677,9 @@ int parsePrimary() {
     case TOKEN_ABS: // Xtase code
     case TOKEN_COS: // Xtase code
     case TOKEN_SIN: // Xtase code
+
+    case TOKEN_SQRT: // Xtase code
+    case TOKEN_POW:  // Xtase code
 
         return parseFnCallExpr();
 
@@ -2421,6 +2438,9 @@ int parseStmts()
             case TOKEN_DIRARRAY: ret = xts_fs_dir(true); break;
 
             case TOKEN_EXT_EXEC: ret = xts_exec_cmd(); break;
+
+            case TOKEN_BLITT : ret = xts_blittMode(); break;
+            case TOKEN_RECT  : ret = xts_dispRect(); break;
 
             // ======== Xtase cmds ============= 
 

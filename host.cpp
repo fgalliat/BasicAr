@@ -66,6 +66,9 @@ extern PS2Keyboard keyboard;
 #include "host.h"
 #include "basic.h"
 
+int BLITT_MODE = BLITT_AUTO;
+bool isGfxAutoBlitt() { return BLITT_MODE == BLITT_AUTO; }
+
 // for dtostre & dtostrf
 #include "xts_compat.h" 
 #include <stdlib.h> 
@@ -252,10 +255,10 @@ void host_cls() {
         if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
             #if defined(BUT_ESP32)
               esp32.getScreen()->clear();
-              esp32.getScreen()->blitt();
+              if (isGfxAutoBlitt()) esp32.getScreen()->blitt();
             #else
               display.clearDisplay();
-              display.display();
+              if (isGfxAutoBlitt()) display.display();
             #endif
         } else 
     #endif
@@ -409,9 +412,9 @@ void host_showBuffer() {
 
         // Xtase
 #ifdef BUT_ESP32
-        esp32.getScreen()->blitt();
+        if (isGfxAutoBlitt()) esp32.getScreen()->blitt();
 #else
-        display.display(); // to place in an interrupt
+        if (isGfxAutoBlitt()) display.display();
 #endif
     } else if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
 
@@ -729,6 +732,8 @@ void host_newLine() {
     isWriting = false;
 }
 
+extern int doRun();
+
 char *host_readLine() {
     inputMode = 1;
 
@@ -760,6 +765,7 @@ char *host_readLine() {
             }
             host_click();
             host_system_menu();
+            
             // to trigger end-of-line
             // & execute selfRun
 
@@ -908,7 +914,14 @@ bool host_ESCPressed() {
           }
       }
     #elif BUT_ESP32
-      return esp32.getBreakSignal();
+      if ( esp32.getBreakSignal() ) {
+          esp32.noTone();
+          while( esp32.getBreakSignal() ) {
+              delay(100);
+          }
+          return true;
+      }
+      return false;
     #else
       return anyBtn();
     #endif

@@ -130,7 +130,7 @@
 
   #define RAM_END (256*1024)-1
   #define EEPROM_END (4*1024)-1
-  #define SPEED 80
+  #define SPEED 240
 #else
   #define ARCH_TYPE "Unknown platform"
   

@@ -1,0 +1,14 @@
+10 ERASE
+20 CLS
+23 EXEC "WIFI","CHECK"
+25 ? "Reset OK"
+30 EXEC "WIFI","CHECK"
+40 ? "OK"
+50 EXEC "WIFI","RSS"
+60 ? "OK"
+65 N=RZ$(0)
+68 ? N, "lines readed"
+70 FOR I=1 TO N
+80 ? RZ$(I)
+90 NEXT
+100 ? "Bye"

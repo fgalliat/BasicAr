@@ -7,6 +7,14 @@
 
 #include <stdint.h>
 
+enum BLITT_MODE_t {
+  BLITT_LOCKED = 0, // lock gfx blitt
+  BLITT_DIRECT,     // trigger a blitt request
+  BLITT_AUTO        // default mode
+};
+extern int BLITT_MODE;
+bool isGfxAutoBlitt();
+
 #include "host_xts.h"
 
 // // Console echo

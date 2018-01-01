@@ -413,6 +413,78 @@ int xts_dispBPP() {
   return 0;
 }
 
+// BEWARE : PC emulation has not
+// indirect blitt !!!
+int xts_blittMode() {
+  getNextToken();
+
+  int val = parseExpression();
+  if (val & _ERROR_MASK) return val;
+  if (!_IS_TYPE_NUM(val))
+      return ERROR_EXPR_EXPECTED_NUM;
+
+  if ( executeMode ) {
+    int mode = (int)stackPopNum();
+    if ( mode < BLITT_LOCKED || mode > BLITT_AUTO ) {
+      return ERROR_BAD_PARAMETER;
+    }
+
+    if ( mode == BLITT_DIRECT ) {
+      draw_blitt();
+    } else {
+      // stores only 0 & 2
+      BLITT_MODE = mode;   
+      if ( BLITT_AUTO ){
+        draw_blitt();
+      }
+    }
+
+  }
+
+  return 0;
+}
+
+// N.B. @ this time all params are mandatory
+int xts_dispRect() {
+  getNextToken();
+  int val = expectNumber();  // X1
+  if (val) return val;	// error
+  
+  getNextToken();
+  val = expectNumber();  // Y1
+  if (val) return val;	// error
+
+  getNextToken();
+  val = expectNumber();  // X2
+  if (val) return val;	// error
+
+  getNextToken();
+  val = expectNumber();  // Y2
+  if (val) return val;	// error
+
+  getNextToken();
+  val = expectNumber();  // COLOR
+  if (val) return val;	// error
+
+  getNextToken();
+  val = expectNumber();  // MODE
+  if (val) return val;	// error
+
+  if ( executeMode ) {
+    int mode = (int)stackPopNum();
+    int color = (int)stackPopNum();
+    int h = (int)stackPopNum();
+    int w = (int)stackPopNum();
+    int y = (int)stackPopNum();
+    int x = (int)stackPopNum();
+    
+    drawRect(x,y,w,h,color,mode);
+  }
+
+  return 0;
+}
+
+
 
 // ================================================
 // I/O Console
@@ -685,6 +757,16 @@ float xts_cos(float arg0) {
 // in radian
 float xts_sin(float arg0) {
   float ret = sin(arg0 /* * degToRag */);
+  return ret;
+}
+
+float xts_sqrt(float arg0) {
+  float ret = sqrt(arg0);
+  return ret;
+}
+
+float xts_pow(float arg0, float arg1) {
+  float ret = pow(arg0, arg1);
   return ret;
 }
 

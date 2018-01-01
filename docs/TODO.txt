@@ -1,19 +1,67 @@
-== ESP32 ==
+== CMDS ==
 
-ESP.restart() -- restarts the CPU
- > to use for 'BYE' cmd
+upgraded to 32KB of RAM (beware w/ Teensy 3.2 64KB total)
+
+ ... SIN is #100
+__
+ 101 A = SQRT( x )
+ 102 A = POW( x, y )
+__
+
+ xtase_fct.h
+  ---> finish xts_blitt & xts_dispRect
+  ---> have to use it for CLS & PRINT too
+
+
+ 103 RECT x,y,w,h[,color[,mode]]
+     color 0 BLACK / 1 WHITE
+     mode  0 draw / 1 fill / 2 fill grey (1/2 pixel)
+
+ 104 BLITT {0,1,2}
+__
+ 105 FOPEN "toto.txt",1,"W"
+ 106 FCLOSE 1 // wher '1' is the file descriptor
+
+ 107 FWRITE 1, CHR$(1)+"Hello"+CHR$(0)
+     ' allow bin & text writing (append mode)
+
+ 108 A  = FREAD 1   : ' reads a single byte
+ 109 A$ = FREADLN 1 : ' reads a text line
+ 110 FREADARRAY 1, "AR", 3 : reads 3 bytes then stores in DIM AR(3)
+ 
+
+) when Fs Ops will be OK -> restore the Serial PRGM comm.
+) could reserve some numbers for Serial/ BT /TCP Socket
 
 
 autocomplete name -> UPPERCASE -> OK
                   -> use it for playTune too -> TODO
 
-modify RAYC.BAS to read btns -> OK
+== ESP32 ==
+
+06:40 - 07:20
+  3.7v 350mAh
+  -> ecran encore affiched mais plus rien ne reponds
+     correctement au niveau des boutons
+
+ESP.restart() -- restarts the CPU -> OK
+ > to use for 'BYE' cmd ==> DONE
+
 
 UP + BTN1 + BTN2 -> SYSMENU.BAS -> OK (but need a CRLF before ...)
 fix drawBPP -> OK
 use ESP32 getBreakSignal() -> OK
 
+(((((((((((((((((((((
+BEWARE w/ LiPo & ANALOGREAD
 
+  ESP.getVcc()
+may be used to measure supply voltage.  ESP needs to reconfigure the ADC at startup in order for
+this feature to be available. Add the following line to the top of your sketch to use
+getVcc
+:
+ADC_MODE(ADC_VCC);
+)))))))))))))))))))))
 
 == TODO ==
 IPC between Java & C w/ pseudo file
