@@ -28,6 +28,11 @@ Already have FS, Sound & VGAText emulated (see subComponent/RPIDisplay).
 ![The XtsuBasic Emulated](./docs/VideoCard/emulation/X11emul.png "The Xts-uBasic Emulated on X11...")
 <br/>
 
+**Added support Esp32+Oled module // XtsPocket console**<br/>
+Running a small BASIC RayCaster..
+![My new XtsuBasic Pocket Console](./docs/pocket/xtsPocket_gallery1.jpg "The Xts-uBasic Pocket Console...")
+
+
 
 ### Initial command set :
 ```
