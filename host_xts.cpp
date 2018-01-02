@@ -847,6 +847,18 @@ void drawRect(int x, int y, int w, int h, int color, int mode) {
       display.drawLine(x+w, y, x+w, y+h, c);
       display.drawLine(x+w, y+h, x, y+h, c);
       display.drawLine(x, y+h, x, y, c);
+
+      if ( mode == 1 ) {
+        // fill mode
+        for(int xx=0; xx <= w; xx++) {
+          if ( color == 2 ) {
+            // pseudo gray support
+            if (xx%2 == 1) { continue; }
+          }
+          display.drawLine(x+xx, y, x+xx, y+h, c);
+        }
+      }
+
       if ( isGfxAutoBlitt() ) display.display();
      #endif
     #endif

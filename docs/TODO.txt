@@ -7,17 +7,19 @@ __
  101 A = SQRT( x )
  102 A = POW( x, y )
 __
-
- xtase_fct.h
-  ---> finish xts_blitt & xts_dispRect
-  ---> have to use it for CLS & PRINT too
-
-
  103 RECT x,y,w,h[,color[,mode]]
      color 0 BLACK / 1 WHITE
      mode  0 draw / 1 fill / 2 fill grey (1/2 pixel)
 
  104 BLITT {0,1,2}
+__
+
+have to test an outrun-like game
+try also a tetris-like game (board 10x20 -> 14x29)
+if can store some kinda sprites : try to make a VCTRBALL clone
+
+http://basic256.blogspot.fr/ (contains a tetris clone + a lot of other examples)
+
 __
  105 FOPEN "toto.txt",1,"W"
  106 FCLOSE 1 // wher '1' is the file descriptor
