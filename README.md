@@ -82,8 +82,8 @@ CIRCLE x,y,r      : draw a circle
 LINE   x,y,x2,y2  : draw a line
 PSET   x,y        : switch ON a pixel
 PRESET x,y        : switch OFF a pixel
+RECT x,y,w,h,c,m  : c : 0,1,2,3 (black,white,gray, darkGray) // m : 0,1 (draw,fill)
 BLITT x           : 0 stop blitt / 1 trigger blitt / 2 auto blitt (default mode)
-RECT x,y,w,h,c,m  : c : 0,1,2 (black,white,gray) // m : 0,1 (draw,fill)
          
 BTN(x)            : function get button state
 LED [1..3], {0,1} : switch on/off a LED

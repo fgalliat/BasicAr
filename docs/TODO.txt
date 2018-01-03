@@ -2,14 +2,14 @@
 
 upgraded to 32KB of RAM (beware w/ Teensy 3.2 64KB total)
 
- ... SIN is #100
+ 100 SIN ...
 __
  101 A = SQRT( x )
  102 A = POW( x, y )
 __
  103 RECT x,y,w,h[,color[,mode]]
-     color 0 BLACK / 1 WHITE
-     mode  0 draw / 1 fill / 2 fill grey (1/2 pixel)
+     color 0 BLACK / 1 WHITE / 2 GREY (1/2 pixel)
+     mode  0 draw / 1 fill
 
  104 BLITT {0,1,2}
 __
