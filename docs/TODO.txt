@@ -15,10 +15,17 @@ __
 __
 
 have to test an outrun-like game
+  --> lua version may be too complex...
+  --> https://codeincomplete.com/posts/javascript-racer/
+  
 try also a tetris-like game (board 10x20 -> 14x29)
 if can store some kinda sprites : try to make a VCTRBALL clone
 
+GTrus game
+
 http://basic256.blogspot.fr/ (contains a tetris clone + a lot of other examples)
+http://www.vintage-basic.net/games.html
+http://peyre.x10.mx/GWBASIC/
 
 __
  105 FOPEN "toto.txt",1,"W"
