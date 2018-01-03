@@ -20,16 +20,18 @@
 116 IF XX > 7 THEN XX = 7
 117 YY = (Ya / 16) : IF YY < 1 THEN YY = 1
 118 IF YY > 7 THEN YY = 7
-124 IF L( XX, YY ) = 0 THEN GOTO 114
-125 D = ABS((X - Xa) / COSR): H = (1816 / D) / 3
+120 IF L( XX, YY ) = 0 THEN GOTO 114
+121 ' Dist comp + fishbowl eye fix
+122 D = ABS((X - Xa) / COSR): D = D * COS( F/57 - RR )
+125 H = (1816 / D) / 3
 126 SS = S / 3
-127 ' LINE (SS + 64) , (32 - H), (SS + 75), (32 + H)
-128 ' LINE (SS + 75) , (32 - H), (SS + 75), (32 + H)
-129 ' LINE (SS + 64) , (32 - H), (SS + 64), (32 + H)
-130 ' LINE (SS + 64) , (32 - H), (SS + 75), (32 - H)
-131 ' LINE (SS + 64) , (32 + H), (SS + 75), (32 + H)
-132 C = 1 : M = 1 : IF D > 32 THEN C = 2 : M = 1
-133 IF D > 50 THEN C = 1 : M = 0
+127 ' LINE (SS + 75) , (32 - H), (SS + 75), (32 + H)
+128 ' LINE (SS + 64) , (32 - H), (SS + 64), (32 + H)
+129 ' LINE (SS + 64) , (32 - H), (SS + 75), (32 - H)
+130 ' LINE (SS + 64) , (32 + H), (SS + 75), (32 + H)
+131 C = 1 : M = 1 : IF D > 32 THEN C = 2 : M = 1
+132 IF D > 50 THEN C = 3 : M = 1
+133 IF D > 60 THEN C = 1 : M = 0
 134 RECT (SS + 64) , (32 - H), 11, H*2, C, M
 135 NEXT S : BLITT 2
 136 A$ = INKEY$
@@ -45,3 +47,5 @@
 198 DELAY 10
 199 GOTO 136
 208 ' Original code found @ http://forum.qbasicnews.com/index.php?topic=5699.0
+210 ' tutos on http://lodev.org/cgtutor/raycasting.html
+215 ' see also http://www.permadi.com/tutorial/raycast/rayc8.html
