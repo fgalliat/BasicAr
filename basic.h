@@ -159,11 +159,11 @@
     #define TOKEN_COS               99 // returns COS(x) in radians
     #define TOKEN_SIN              100 // returns SIN(x) in radians
 
-    #define TOKEN_SQRT             101 // NEW
-    #define TOKEN_POW              102
+    #define TOKEN_SQRT             101 // returns squareRoot of x
+    #define TOKEN_POW              102 // returns pow(x by y)
 
-    #define TOKEN_RECT             103
-    #define TOKEN_BLITT            104
+    #define TOKEN_RECT             103 // RECT x,y,w,h,color,mode
+    #define TOKEN_BLITT            104 // set the screen blitt mode (0,1,2)
     
     #define TOKEN_LASTONE TOKEN_BLITT
 #else

@@ -840,8 +840,7 @@ void drawRect(int x, int y, int w, int h, int color, int mode) {
       esp32.getScreen()->drawRect(x, y, w, h, color, mode);
       if ( isGfxAutoBlitt() ) esp32.getScreen()->blitt();
      #else
-      // no gray support @ this time
-      // no fill support @ this time
+      // only ~simple pseudo~ gray support @ this time
       unsigned int c = color == 0 ? BLACK : WHITE;
       display.drawLine(x, y, x+w, y, c);
       display.drawLine(x+w, y, x+w, y+h, c);
@@ -851,9 +850,9 @@ void drawRect(int x, int y, int w, int h, int color, int mode) {
       if ( mode == 1 ) {
         // fill mode
         for(int xx=0; xx <= w; xx++) {
-          if ( color == 2 ) {
+          if ( color >= 2 ) {
             // pseudo gray support
-            if (xx%2 == 1) { continue; }
+            if (xx % color != 1) { continue; }
           }
           display.drawLine(x+xx, y, x+xx, y+h, c);
         }
