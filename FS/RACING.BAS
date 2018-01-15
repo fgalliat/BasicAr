@@ -56,21 +56,24 @@
 610 IF N>9 THEN N=1
 620 ' Endif
 630 ' EndIf
-650 LOCATE N+1-1,1   : ? " @        @ ";
-660 LOCATE A+3-1,3 : ? " o ";
-662 LOCATE B+2-1,4 : ? " o o ";
-664 LOCATE B+1-1,5 : ? " o   o ";
-666 LOCATE C+1-2,6 : ? " O     O ";
+650 LOCATE N+1-1,1 : ? " @        @";
+660 LOCATE A+3-1,3 : ? " o";
+662 LOCATE B+2-1,4 : ? " o o";
+664 LOCATE B+1-1,5 : ? " o   o";
+666 LOCATE C+1-2,6 : ? " O     O";
 668 LOCATE I+1-1,6 : ? "^";
-669 LOCATE D-2,7   : ? " O       O ";
+669 LOCATE D-2,7   : ? " O       O";
 670 LOCATE I-1,7   : ? "#_#";
+672 LOCATE 0,0 : ' NEW
 675 BLITT 2
 680 ' GOSUB 3000 : ' PAUSE
 699 ' growed roadWidth 5 -> 7
 700 IF I<=D+1 OR I>=D+7 THEN GOSUB 4000 : ' CRASH
 710 H=G : G=F : F=E : E=D : D=C : C=B : B=A
 720 J = INT( 3 * RND -1 )
-730 IF A+J < 1 OR A+J > 14 THEN J=0
+730 ' IF A+J < 1 OR A+J > 14 THEN J=0
+731 ' to prevent road overflow -> 14-2
+735 IF A+J < 1 OR A+J > 12 THEN J=0
 740 A=A+J : DELAY ISP
 750 A$=INKEY$ : BT=BTN(0)
 800 IF A$="m" THEN GOTO 100 : ' Lbl B - chg view
