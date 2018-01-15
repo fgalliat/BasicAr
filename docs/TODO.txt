@@ -12,6 +12,57 @@ __
      mode  0 draw / 1 fill
 
  104 BLITT {0,1,2}
+
+__
+
+CIRCLE :: add 2 opt. args : color + mode
+
+SCREEN cmd {0,1,2} - TO ADD
+ 0 128x64   BW
+ 1 128x128  16 colors
+ 2 160x128  16 colors
+
+ > can have a 128x64/BW display on a 160x128 col. screen !!!
+   -> ex. Screen Offset [+ ZOOM]
+
+ > if request a too high mode Cf really used hardware
+   -> rejection message
+
+Colors mode
+ > 0 black / 1 white
+   2 gray / 3 darkgray (as in current RayCaster)
+   ... 12 other colors
+
+Sprites
+ > need more gfx format
+ BPT - Bitmap Picture 1byte -> 8 pixels
+ CPT - Color Picture  1byte -> 2 pixels
+
+ VPT - Vector Picture (to have ~compilled~ draw files)
+     - allows big disp size w/ fewer pixels
+     - vector drawed sprites ...
+
+ header contains w & h to be used as sprites
+  ---> PBM RAM storage Vs SD/SPIFFS (re)reading
+       & more in color mode
+
+  ---> can have function that direct draw from FS
+       & not using fully inMem saved img
+
+       & could register some spriteFileNames to numbers
+         EXEC "IMG", "REG", "PERSO.VPT", 1
+          --> just to avoid StringFIleName parsing time
+
+       then call drawImage #RegNum, x, y
+         DRAWIMG 1, 10, 100
+          --> just to avoid StringFIleName parsing time
+
+
+
+
+
+
+
 __
 
 have to test an outrun-like game
