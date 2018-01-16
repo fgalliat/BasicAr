@@ -58,8 +58,17 @@ Sprites
           --> just to avoid StringFIleName parsing time
 
 
+> XtsPocket2
+  --> keep BUT_ESP32 ( ifdef ARDUINO_ARCH_ESP32 )
+  --> but add another ADDTIONAL FLAG + 1 FLAG for Screen res.
 
+  --> then change only these refs.
+   BasicAr.ino:13:  Esp32Oled esp32;
+   basic.cpp:62:  extern Esp32Oled esp32;
+   host.cpp:32:  extern Esp32Oled esp32;
+   host_xts.cpp:16:  extern Esp32Oled esp32;
 
+   by class Esp32Pocketv2 w/ same signatures but # impls.
 
 
 
