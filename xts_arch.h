@@ -6,6 +6,15 @@
 #ifndef __XTS_ARCH_H__
 #define __XTS_ARCH_H__ 1
 
+#if defined(ARDUINO_ARCH_ESP32)
+ // specifically for NON-BUILTIN-OLED module
+ #define ESP32PCKv2 1
+ #warning "You choosed ESP32 Xts-uBasic Pocket Version 2 !"
+#endif
+
+
+
+
 #if defined(__MK66FX1M0__)
 // Teensy 3.6
   #define ARCH_TYPE "Teensy 3.6"
@@ -101,14 +110,22 @@
   #define EEPROM_END (2*1024)-1
   #define SPEED 1000
 #elif defined(ARDUINO_ARCH_ESP32)
-  // ESP32 + Oled Board
-  // from mackerhawk as example
-  #define ARCH_TYPE "ESP32-Oled Board"
+  // ESP32 Boards
   #define BUT_TEENSY 1
   #define BUT_ESP32 1
 
-  #include "ESP32OLED.h"
-  #define BUILTIN_LCD 1
+  #ifdef ESP32PCKv2
+    // DOIT ESP32 DEVKIT V1 board
+    #define ARCH_TYPE "ESP32-DevKit Board"
+    #include "ESP32_Pocketv2.h"
+    #define BUILTIN_LCD 1
+  #else
+    // ESP32 + Oled Board
+    // from mackerhawk as example
+    #define ARCH_TYPE "ESP32-Oled Board"
+    #include "ESP32OLED.h"
+    #define BUILTIN_LCD 1
+  #endif
 
   #define BUZZER_PIN -1
   

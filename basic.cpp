@@ -59,7 +59,11 @@
   //#include "xts_teensy.h"
 
 #ifdef BUT_ESP32
-  extern Esp32Oled esp32;
+ #ifdef ESP32PCKv2
+    extern Esp32Pocketv2 esp32;
+ #else
+   extern Esp32Oled esp32;
+ #endif
 #endif
 
   #ifndef COMPUTER

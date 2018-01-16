@@ -57,10 +57,17 @@ Sprites
          DRAWIMG 1, 10, 100
           --> just to avoid StringFIleName parsing time
 
+________________________________
+< DOIT ESP32 DEVKIT V1 board
+#define LED 2
+
 
 > XtsPocket2
   --> keep BUT_ESP32 ( ifdef ARDUINO_ARCH_ESP32 )
   --> but add another ADDTIONAL FLAG + 1 FLAG for Screen res.
+
+  --> just make a copy of ESP32OLED.h
+      ESP32_Pocketv2.h
 
   --> then change only these refs.
    BasicAr.ino:13:  Esp32Oled esp32;
@@ -70,6 +77,24 @@ Sprites
 
    by class Esp32Pocketv2 w/ same signatures but # impls.
 
+  --> Screen driver : ST7735S
+    160x128
+    128x128
+    >> https://github.com/adafruit/Adafruit-ST7735-Library
+
+       get 2 source code (.cpp & .h) then rename as
+       dev_screen_Adafruit_ST7735.xxx
+
+       add a #ifdef ESP32PCKv2 @ begining of the .cpp to limit compilation
+        in ArduinoIDE
+        -> this will not work .....
+
+       add : #elif defined(ARDUINO_ARCH_ESP32)
+                #include <pgmspace.h>
+       in .h if needed
+
+       see : https://github.com/adafruit/Adafruit-ST7735-Library/blob/master/examples/graphicstest/graphicstest.ino
+       for GFX API test
 
 
 __

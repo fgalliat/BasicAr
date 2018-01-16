@@ -10,7 +10,11 @@
 #include "xts_arch.h"
 
 #ifdef BUT_ESP32
+ #ifdef ESP32PCKv2
+   Esp32Pocketv2 esp32;
+ #else
   Esp32Oled esp32;
+ #endif
   void noTone(int pin) { esp32.noTone(); }
   void tone(int pin, int freq, int duration) { esp32.tone(freq,duration); }
 #endif
