@@ -41,9 +41,12 @@ inline uint16_t swapcolor(uint16_t x) {
   static uint8_t mySPCR;
 #endif
 
+// #define _USED_HEIGHT ST7735_TFTHEIGHT_160
+#define _USED_HEIGHT ST7735_TFTHEIGHT_128
+
 // Constructor when using software SPI.  All output pins are configurable.
 Adafruit_ST7735::Adafruit_ST7735(int8_t cs, int8_t dc, int8_t sid, int8_t sclk, int8_t rst) 
-  : Adafruit_GFX(ST7735_TFTWIDTH_128, ST7735_TFTHEIGHT_160)
+  : Adafruit_GFX(ST7735_TFTWIDTH_128, _USED_HEIGHT)
 {
   _cs   = cs;
   _dc   = dc;
@@ -56,7 +59,7 @@ Adafruit_ST7735::Adafruit_ST7735(int8_t cs, int8_t dc, int8_t sid, int8_t sclk, 
 // Constructor when using hardware SPI.  Faster, but must use SPI pins
 // specific to each board type (e.g. 11,13 for Uno, 51,52 for Mega, etc.)
 Adafruit_ST7735::Adafruit_ST7735(int8_t cs, int8_t dc, int8_t rst) 
-  : Adafruit_GFX(ST7735_TFTWIDTH_128, ST7735_TFTHEIGHT_160) {
+  : Adafruit_GFX(ST7735_TFTWIDTH_128, _USED_HEIGHT) {
   _cs   = cs;
   _dc   = dc;
   _rst  = rst;

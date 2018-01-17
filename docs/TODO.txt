@@ -61,6 +61,33 @@ ________________________________
 < DOIT ESP32 DEVKIT V1 board
 #define LED 2
 
+https://github.com/Bodmer/TFT_eSPI >> doesn't works
+  >>> does works @128x128 now .....
+
+
+https://www.waveshare.com/wiki/1.44inch_LCD_HAT
+
+
+https://www.waveshare.com/1.8inch-lcd-module.htm
+ > https://www.waveshare.com/wiki/File:1.8inch-LCD_Module-Code.7z
+ > w/ some fix for ESP32 board
+
+Adafruit_gfx Lib solution
+https://learn.adafruit.com/adafruit-gfx-graphics-library/overview
+https://github.com/adafruit/Adafruit-ST7735-Library
+
+1.8" waveshare 160x128 ST7735S SPI
+ PINOUT :
+ VCC    3.3v
+ GND    GND
+ DIN    MOSI (23)
+ CLK    18
+ CS     5
+ DC     15
+ RST    4
+ BL     N/C
+
+
 
 > XtsPocket2
   --> keep BUT_ESP32 ( ifdef ARDUINO_ARCH_ESP32 )

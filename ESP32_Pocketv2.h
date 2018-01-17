@@ -9,10 +9,21 @@
   #ifndef _ESP32PckV2_H
   #define _ESP32PckV2_H 1
 
-    #define DBUG_ESP32 1
+    // #define DBUG_ESP32 1
+    #define TFT_ESPI_LIB 1
 
+#ifdef TFT_ESPI_LIB
+    #include <TFT_eSPI.h> // Hardware-specific library
+
+    #define ST7735_BLACK TFT_BLACK
+    #define ST7735_WHITE TFT_WHITE
+    #define ST7735_CYAN TFT_CYAN
+    #define ST7735_BLUE TFT_BLUE
+    #define ST7735_YELLOW TFT_YELLOW
+#else
     #include <Adafruit_GFX.h>    // Core graphics library
     #include "dev_screen_Adafruit_ST7735.h"
+#endif
     #include <SPI.h>
 
     /*
@@ -26,18 +37,30 @@
 
     // =========== GPIO =========
 
-    // TODO : check these Screen PINS !!
+    // -- SPI SCreen
+    #define TFT_MISO 19
+    #define TFT_MOSI 23
+    #define TFT_SCLK 18
+    #define TFT_CS    5  // Chip select control pin
+    #define TFT_DC    15  // Data Command control pin
+    #define TFT_RST   4  // Reset pin (could connect to RST pin)
 
-    // For the breakout, you can use any 2 or 3 pins
-    // These pins will also work for the 1.8" TFT shield
-    #define TFT_CS     10
-    #define TFT_RST    9  // you can also connect this to the Arduino reset
-                          // in which case, set this #define pin to -1!
-    #define TFT_DC 8
+    #define TFT_SID TFT_MOSI
+    #define TFT_CLK TFT_SCLK
+
+
     // ________________________
 
-    #define BTN1 16
-    #define BTN2 14
+    //#define BTN1 16
+    //#define BTN2 14
+    #define BTN1 26
+    #define BTN2 25
+
+    // digital joyPad
+    #define BTN_LEFT  32
+    #define BTN_RIGHT 33 
+    // BEWARE w/ 34 & 35
+
 
     // #define AXIS_INV 1
     #ifndef AXIS_INV
@@ -56,35 +79,58 @@
     #define BUZ_channel 0
     #define BUZ_resolution 8
 
-    // NEVER DO that mistake !!!!!
-    // static SSD1306 _oled_display(0x3C, 5, 4);
-    // static int _oled_ttyY=0;
 
+    // DblBuff
+    // 128x128x2 = 32768 (Cf uint16 colors)
+    // #define SOFT_DBL_BUFF 1
+    
 
     class Esp32Pocketv2Screen {
         private:
+            #ifdef TFT_ESPI_LIB
+             TFT_eSPI* _oled_display;
+            #else
             Adafruit_ST7735* _oled_display;
+            #endif
             int _oled_ttyY = 0;
             uint16_t drawColor = ST7735_WHITE;
+
+            #ifdef SOFT_DBL_BUFF
+                // 32KB !!!!!
+                uint16_t dblBuff[ 128 * 128 ];
+            #endif
+
         public:
             Esp32Pocketv2Screen() {
             }
             ~Esp32Pocketv2Screen() {}
 
             void init() {
-                // TODO : check for MOSI 11 / CLK 13 pins.....
+
+                #ifdef SOFT_DBL_BUFF
+                 for(int i=0; i < 128*128; i++) {
+                     dblBuff[ i ] = i%2==0 ? ST7735_CYAN : ST7735_BLUE;
+                 }
+                #endif
+
+                #ifdef TFT_ESPI_LIB
+                _oled_display = new TFT_eSPI();
+                _oled_display->init();
+                #else
                 _oled_display = new Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
-
                 // Use this initializer if you're using a 1.8" TFT
-                _oled_display->initR(INITR_BLACKTAB);   // initialize a ST7735S chip, black tab
-
+//                _oled_display->initR(INITR_BLACKTAB);   // initialize a ST7735S chip, black tab
                 // Use this initializer (uncomment) if you're using a 1.44" TFT
-                //_oled_display->initR(INITR_144GREENTAB);   // initialize a ST7735S chip, black tab
+                _oled_display->initR(INITR_144GREENTAB);   // initialize a ST7735S chip, black tab
+                #endif
+
+
+                _oled_display->setRotation(1+2); // LANDSCAPE
 
                 _oled_display->fillScreen(ST7735_BLACK);
 
                 _oled_display->setTextColor(drawColor);
-                _oled_display->setTextSize(1);
+                _oled_display->setTextSize(0);
             }
 
             void blitt() {
@@ -122,7 +168,7 @@
             void setColor(int color) {
                 //_oled_display->setColor(color==1?WHITE:BLACK);
                 drawColor = color==1 ? ST7735_WHITE : ST7735_BLACK;
-                _oled_display->setTextColor( drawColor );
+                // _oled_display->setTextColor( drawColor );
             }
 
             void setPixel(int x,int y) {
@@ -131,29 +177,47 @@
 
             void drawImg(int x,int y, int width, int height, unsigned char* picBuff) {
                 unsigned char c;
+                _oled_display->fillScreen( ST7735_BLACK );
+
                 for (int yy = 0; yy < height; yy++) {
                     for (int xx = 0; xx < width; xx++) {
                         c = (picBuff[(yy * (width / 8)) + (xx / 8)] >> (7 - ((xx) % 8))) % 2;
                         if (c == 0x00) {
-                            setColor(BLACK);
-                            setPixel(x + xx, y + yy);
+                            // //setColor(BLACK);
+                            // //setPixel(x + xx, y + yy);
+                            // _oled_display->drawPixel(x + xx, y + yy, ST7735_BLACK);
                         }
                         else {
-                            setColor(WHITE);
-                            setPixel(x + xx, y + yy);
+                            // setColor(WHITE);
+                            // setPixel(x + xx, y + yy);
+                            _oled_display->drawPixel(x + xx, y + yy, ST7735_WHITE);
                         }
                     }
                 }
             }
 
-            // slow impl.
             // but supports gray
             void drawRect(int x,int y, int width, int height, int color, int mode) {
                 unsigned char c; int cpt = 0;
 
-                if ( color == 0 ) { setColor(BLACK); }
-                else if ( color == 1 ) { setColor(WHITE); }
+                // if ( color == 0 ) { setColor(BLACK); }
+                // else if ( color == 1 ) { setColor(WHITE); }
 
+    uint16_t _color = ST7735_BLACK;
+    if ( color == 1 ) { _color = ST7735_WHITE; }
+    else if ( color == 2 ) { _color = ST7735_CYAN; } // light grayshade
+    else if ( color == 3 ) { _color = ST7735_BLUE; } // dark grayshade
+
+    else if ( color == 4 ) { _color = ST7735_YELLOW; } // very dark grayshade
+
+if ( mode == 0 ) {
+    _oled_display->drawRect(x,y,width,height, _color);
+} else {
+    _oled_display->fillRect(x,y,width,height, _color);
+}
+
+
+/*
                 for (int yy = 0; yy < height; yy++) {
                     for (int xx = 0; xx < width; xx++) {
                         
@@ -170,15 +234,21 @@
                             else          setColor(BLACK);
                         }
 
-                        setPixel(x + xx, y + yy);
+                        //setPixel(x + xx, y + yy);
+                        _oled_display->drawPixel(x + xx, y + yy, drawColor);
                         cpt++;
                     }
                 }
+*/
             }
 
             void clear() {
                 _oled_ttyY = 0;
-                _oled_display->fillScreen( ST7735_BLACK );
+                #ifdef SOFT_DBL_BUFF
+                  _oled_display->drawRGBBitmap(0,0, dblBuff, 128, 128);
+                #else
+                  _oled_display->fillScreen( ST7735_BLACK );
+                #endif
             }
     };
 
@@ -309,6 +379,11 @@
             pinMode( BTN1, INPUT_PULLUP );
             pinMode( BTN2, INPUT_PULLUP );
 
+#if defined(BTN_LEFT) and defined(BTN_RIGHT)
+            pinMode( BTN_LEFT, INPUT_PULLUP );
+            pinMode( BTN_RIGHT, INPUT_PULLUP );
+#endif
+
             pinMode( X_AXIS, INPUT );
             pinMode( Y_AXIS, INPUT );
 
@@ -347,25 +422,34 @@
         }
 
         int readPadXaxis() {
-            int v = analogRead( X_AXIS );
-            // Serial.print("x:");Serial.println(v);
-            if ( v <= 800 ) { return 1; }
-            // VALUES CHANGED since use LIPO Battery cell
-            // else if ( v >= 2800 ) { return -1; }
-            else if ( v >= 2200 ) { return -1; }
-            else { v = 0; }
+            // int v = analogRead( X_AXIS );
+            // // Serial.print("x:");Serial.println(v);
+            // if ( v <= 800 ) { return 1; }
+            // // VALUES CHANGED since use LIPO Battery cell
+            // // else if ( v >= 2800 ) { return -1; }
+            // else if ( v >= 2200 ) { return -1; }
+            // else { v = 0; }
+            int v = 0;
+
+#if defined(BTN_LEFT) and defined(BTN_RIGHT)
+  // digital joypad
+  if ( digitalRead( BTN_LEFT ) == LOW ) return -1;
+  if ( digitalRead( BTN_RIGHT ) == LOW ) return 1;
+#endif
+
             return v;
         }
 
         int readPadYaxis() {
-            // BEWARE w/ LiPo battery cell voltage...
-            int v = analogRead( Y_AXIS );
-            //Serial.print("y:");Serial.println(v);
-            if ( v <= 800 ) { return -1; }
-            // VALUES CHANGED since use LIPO Battery cell
-            // else if ( v >= 2800 ) { return 1; }
-            else if ( v >= 2200 ) { return 1; }
-            else { v = 0; }
+            // // BEWARE w/ LiPo battery cell voltage...
+            // int v = analogRead( Y_AXIS );
+            // //Serial.print("y:");Serial.println(v);
+            // if ( v <= 800 ) { return -1; }
+            // // VALUES CHANGED since use LIPO Battery cell
+            // // else if ( v >= 2800 ) { return 1; }
+            // else if ( v >= 2200 ) { return 1; }
+            // else { v = 0; }
+            int v = 0;
             return v;
         }
 
