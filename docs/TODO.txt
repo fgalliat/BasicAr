@@ -61,8 +61,14 @@ ________________________________
 < DOIT ESP32 DEVKIT V1 board
 #define LED 2
 
-https://github.com/Bodmer/TFT_eSPI >> doesn't works
+remove whole Adafruit ST7735 lib & code
+keep only TFT_eSPI lib & code
+remove whole dblBuff code try
+
+
+https://github.com/Bodmer/TFT_eSPI 
   >>> does works @128x128 now .....
+  >>> & much fatser than Adafruit lib !!!!
 
 
 https://www.waveshare.com/wiki/1.44inch_LCD_HAT

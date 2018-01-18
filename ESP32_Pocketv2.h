@@ -61,11 +61,13 @@
       static uint8_t scrActionBuff[ DBL_BUFF_ACTION_SIZE * DBL_BUFF_ACTION_MAX ];
       static int scrActionCursor = 0;
 
-      // +8 is arbitrary safety measure
+      // +8 is arbitrary safety measure (based on 128px screen width)
       // both must be < 256
       #define DBL_BUFF_TEXT_MAX_LEN (21+8)
       #define DBL_BUFF_TEXT_MAX 30
       static uint8_t scrTextBuff[ DBL_BUFF_TEXT_MAX_LEN * DBL_BUFF_TEXT_MAX ];
+      // beware to not overflow it .....
+      // later : add a % op to prevent it .... 
       static int scrTextCursor = 0;
 
       
