@@ -87,6 +87,8 @@
 
       static void _scr_blitt(TFT_eSPI* _oled_display);
 
+      // DRAWING ACTIONS FIFO
+
       // BEWARE : for lines   w => x2 // h => y2
       //              circles w => radius
       //              text    w => scrTextCursor // h => strlen()
