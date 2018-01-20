@@ -10,23 +10,26 @@
   #define _ESP32PckV2_H 1
 
     // #define DBUG_ESP32 1
-    #define TFT_ESPI_LIB 1
 
-#ifdef TFT_ESPI_LIB
+    // TFT_eSPI Lib is pretty faster than Adafruit one
+    
+    // need to be defined in TFT_eSPI too (User_Setup.h)
+    // for 160x128 Screens
+    #define MY_160 1
+
     #include <TFT_eSPI.h> // Hardware-specific library
 
-    #define ROTATE_SCREEN 0
-    //#define ROTATE_SCREEN 2
+    #ifdef MY_160
+      #define ROTATE_SCREEN 0
+    #else
+      #define ROTATE_SCREEN 2
+    #endif
 
     #define ST7735_BLACK TFT_BLACK
     #define ST7735_WHITE TFT_WHITE
     #define ST7735_CYAN TFT_CYAN
     #define ST7735_BLUE TFT_BLUE
     #define ST7735_YELLOW TFT_YELLOW
-#else
-    #include <Adafruit_GFX.h>    // Core graphics library
-    #include "dev_screen_Adafruit_ST7735.h"
-#endif
     #include <SPI.h>
 
     /*
@@ -52,7 +55,7 @@
     #define TFT_CLK TFT_SCLK
 
     #define DBL_BUFF_ACTION 1
-    #ifdef DBL_BUFF_ACTION and defined (TFT_ESPI_LIB)
+    #ifdef DBL_BUFF_ACTION
 
       #define TFT_CLR_BLACK TFT_BLACK
       #define TFT_CLR_WHITE TFT_WHITE
@@ -119,11 +122,7 @@
 
     class Esp32Pocketv2Screen {
         private:
-            #ifdef TFT_ESPI_LIB
-             TFT_eSPI* _oled_display;
-            #else
-            Adafruit_ST7735* _oled_display;
-            #endif
+            TFT_eSPI* _oled_display;
             int _oled_ttyY = 0;
             uint16_t drawColor = ST7735_WHITE;
 
@@ -260,17 +259,8 @@
             ~Esp32Pocketv2Screen() {}
 
             void init() {
-                #ifdef TFT_ESPI_LIB
                 _oled_display = new TFT_eSPI();
                 _oled_display->init();
-                #else
-                _oled_display = new Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
-                // Use this initializer if you're using a 1.8" TFT
-//                _oled_display->initR(INITR_BLACKTAB);   // initialize a ST7735S chip, black tab
-                // Use this initializer (uncomment) if you're using a 1.44" TFT
-                _oled_display->initR(INITR_144GREENTAB);   // initialize a ST7735S chip, black tab
-                #endif
-
 
                 _oled_display->setRotation(1+ROTATE_SCREEN); // LANDSCAPE
 
