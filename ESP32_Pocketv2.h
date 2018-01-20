@@ -54,127 +54,30 @@
       #define TFT_CLR_BLACK TFT_BLACK
       #define TFT_CLR_WHITE TFT_WHITE
 
+
       // type(1) + bounds(4) + color(2), mode(1)
-      // 800Bytes action buffer
-      #define DBL_BUFF_ACTION_MAX 100
+      // 1600Bytes action buffer
+      #define DBL_BUFF_ACTION_MAX 200
       #define DBL_BUFF_ACTION_SIZE (1 + 4 + 2 + 1)
-      static uint8_t scrActionBuff[ DBL_BUFF_ACTION_SIZE * DBL_BUFF_ACTION_MAX ];
-      static int scrActionCursor = 0;
 
       // +8 is arbitrary safety measure (based on 128px screen width)
       // both must be < 256
       #define DBL_BUFF_TEXT_MAX_LEN (21+8)
       #define DBL_BUFF_TEXT_MAX 30
-      static uint8_t scrTextBuff[ DBL_BUFF_TEXT_MAX_LEN * DBL_BUFF_TEXT_MAX ];
-      // beware to not overflow it .....
-      // later : add a % op to prevent it .... 
-      static int scrTextCursor = 0;
+
 
       
       // bpp isn't stored as action because of size of its datas
-      #define ACT_CLS    0x00
-      #define ACT_PIXEL  0x01
-      #define ACT_LINE   0x02 
-      #define ACT_CIRCLE 0x03
-      #define ACT_RECT   0x04
-      #define ACT_TEXT   0x05
+      #define ACT_CLS    0x01
+      #define ACT_PIXEL  0x02
+      #define ACT_LINE   0x03 
+      #define ACT_CIRCLE 0x04
+      #define ACT_RECT   0x05
+      #define ACT_TEXT   0x06
+      #define ACT_BPP    0x07
 
       #define ACT_MODE_DRAW 0x00
       #define ACT_MODE_FILL 0x01
-
-
-      // TO MOVE inside screen code
-
-      static void _scr_blitt(TFT_eSPI* _oled_display);
-
-      // DRAWING ACTIONS FIFO
-
-      // BEWARE : for lines   w => x2 // h => y2
-      //              circles w => radius
-      //              text    w => scrTextCursor // h => strlen()
-      static void _scr_pushScreenAction(TFT_eSPI* _oled_display, uint8_t type, uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, uint8_t mode ) {
-          if ( scrActionCursor >= DBL_BUFF_ACTION_MAX ) { _scr_blitt(_oled_display); }
-          int addr = scrActionCursor * DBL_BUFF_ACTION_SIZE;
-          scrActionBuff[ addr+0 ] = type;
-
-          scrActionBuff[ addr+1 ] = x;
-          scrActionBuff[ addr+2 ] = y;
-          scrActionBuff[ addr+3 ] = w;
-          scrActionBuff[ addr+4 ] = h;
-
-          scrActionBuff[ addr+5 ] = color / 256;
-          scrActionBuff[ addr+6 ] = color % 256;
-
-          scrActionBuff[ addr+7 ] = mode;
-
-          scrActionCursor++;
-      }
-
-      static void _scr_pushScreenText(TFT_eSPI* _oled_display, uint8_t x, uint8_t y, char* str, uint16_t color ) {
-          int txtAddr = scrTextCursor * DBL_BUFF_TEXT_MAX_LEN;
-
-          int len = strlen( str );
-          if ( len >= DBL_BUFF_TEXT_MAX_LEN ) { len = DBL_BUFF_TEXT_MAX_LEN; }
-          int i=0;
-          for(; i < len; i++ ) {
-            scrTextBuff[txtAddr+i] = str[i];
-          }
-          for(; i < DBL_BUFF_TEXT_MAX_LEN; i++ ) {
-              scrTextBuff[txtAddr+i] = 0x00;
-          }
-
-          _scr_pushScreenAction( _oled_display, ACT_TEXT, x, y, scrTextCursor, len, color, 0 );
-          scrTextCursor++;
-      }
-
-      static void _doScreenAction( TFT_eSPI* _oled_display, int actionCursor ) {
-          if (actionCursor < 0) { return; }
-          int addr = (actionCursor) * DBL_BUFF_ACTION_SIZE;
-
-          int type = scrActionBuff[ addr+0 ];
-
-          int x    = scrActionBuff[ addr+1 ];
-          int y    = scrActionBuff[ addr+2 ];
-          int w    = scrActionBuff[ addr+3 ];
-          int h    = scrActionBuff[ addr+4 ];
-
-          uint16_t color = (scrActionBuff[ addr+5 ] * 256 ) + scrActionBuff[ addr+6 ];
-
-          int mode = scrActionBuff[ addr+7 ];
-
-          if ( type == ACT_CLS ) { _oled_display->fillScreen( TFT_CLR_BLACK ); }
-          else if ( type == ACT_PIXEL ) { _oled_display->drawPixel( x, y, color ); }
-          else if ( type == ACT_LINE ) { 
-              // !!! lines   w => x2 // h => y2
-              _oled_display->drawLine( x, y, w, h, color ); }
-          else if ( type == ACT_CIRCLE ) { 
-              // !!! circles w => radius
-              if ( mode == ACT_MODE_DRAW ) _oled_display->drawCircle( x, y, w, color ); 
-              else                         _oled_display->fillCircle( x, y, w, color ); 
-          }
-          else if ( type == ACT_RECT ) { 
-              if ( mode == ACT_MODE_DRAW ) _oled_display->drawRect( x, y, w, h, color ); 
-              else                         _oled_display->fillRect( x, y, w, h, color ); 
-          } 
-          else if ( type == ACT_TEXT ) {
-              char str[ h+1 ];
-              int txtAddr = w * DBL_BUFF_TEXT_MAX_LEN;
-              for(int i=0; i < h; i++) { str[i] = scrTextBuff[txtAddr+i]; }
-
-              //_oled_display->setTextColor(color);
-              _oled_display->setCursor(x, y);
-              _oled_display->print(str);
-          }
-
-      }
-
-      static void _scr_blitt(TFT_eSPI* _oled_display) {
-          for(int i=0; i < scrActionCursor; i++ ) {
-              _doScreenAction( _oled_display, i );
-          }
-          scrActionCursor = 0;
-          scrTextCursor = 0;
-      }
 
     #endif
 
@@ -210,10 +113,6 @@
     #define BUZ_resolution 8
 
 
-    // DblBuff
-    // 128x128x2 = 32768 (Cf uint16 colors)
-    // #define SOFT_DBL_BUFF 1
-    
 
     class Esp32Pocketv2Screen {
         private:
@@ -225,9 +124,131 @@
             int _oled_ttyY = 0;
             uint16_t drawColor = ST7735_WHITE;
 
-            #ifdef SOFT_DBL_BUFF
-                // 32KB !!!!!
-                uint16_t dblBuff[ 128 * 128 ];
+// ______________________________________________
+            #ifdef DBL_BUFF_ACTION
+
+      uint8_t bppBuff[1024];
+
+      uint8_t scrActionBuff[ DBL_BUFF_ACTION_SIZE * DBL_BUFF_ACTION_MAX ];
+      int scrActionCursor = 0;
+
+      uint8_t scrTextBuff[ DBL_BUFF_TEXT_MAX_LEN * DBL_BUFF_TEXT_MAX ];
+      // beware to not overflow it .....
+      // later : add a % op to prevent it .... 
+      int scrTextCursor = 0;
+
+
+      //void _scr_blitt(TFT_eSPI* _oled_display);
+
+      // DRAWING ACTIONS FIFO
+
+      // BEWARE : for lines   w => x2 // h => y2
+      //              circles w => radius
+      //              text    w => scrTextCursor // h => strlen()
+      void _scr_pushScreenAction(TFT_eSPI* _oled_display, uint8_t type, uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, uint8_t mode ) {
+          if ( scrActionCursor >= DBL_BUFF_ACTION_MAX ) { _scr_blitt(_oled_display); }
+          int addr = scrActionCursor * DBL_BUFF_ACTION_SIZE;
+          scrActionBuff[ addr+0 ] = type;
+
+          scrActionBuff[ addr+1 ] = x;
+          scrActionBuff[ addr+2 ] = y;
+          scrActionBuff[ addr+3 ] = w;
+          scrActionBuff[ addr+4 ] = h;
+
+          scrActionBuff[ addr+5 ] = color / 256;
+          scrActionBuff[ addr+6 ] = color % 256;
+
+          scrActionBuff[ addr+7 ] = mode;
+
+          scrActionCursor++;
+      }
+
+      void _scr_pushScreenText(TFT_eSPI* _oled_display, uint8_t x, uint8_t y, char* str, uint16_t color ) {
+          int txtAddr = scrTextCursor * DBL_BUFF_TEXT_MAX_LEN;
+
+          int len = strlen( str );
+          if ( len >= DBL_BUFF_TEXT_MAX_LEN ) { len = DBL_BUFF_TEXT_MAX_LEN; }
+          int i=0;
+          for(; i < len; i++ ) {
+            scrTextBuff[txtAddr+i] = str[i];
+          }
+          for(; i < DBL_BUFF_TEXT_MAX_LEN; i++ ) {
+              scrTextBuff[txtAddr+i] = 0x00;
+          }
+
+          _scr_pushScreenAction( _oled_display, ACT_TEXT, x, y, scrTextCursor, len, color, 0 );
+          scrTextCursor++;
+      }
+
+      void _doScreenAction( TFT_eSPI* _oled_display, int actionCursor ) {
+          if (actionCursor < 0) { actionCursor = 0; }
+          int addr = (actionCursor) * DBL_BUFF_ACTION_SIZE;
+
+          int type = scrActionBuff[ addr+0 ];
+
+          int x    = scrActionBuff[ addr+1 ];
+          int y    = scrActionBuff[ addr+2 ];
+          int w    = scrActionBuff[ addr+3 ];
+          int h    = scrActionBuff[ addr+4 ];
+
+          uint16_t color = (uint16_t)((uint16_t)scrActionBuff[ addr+5 ] * 256 ) + scrActionBuff[ addr+6 ];
+
+          int mode = scrActionBuff[ addr+7 ];
+
+          if ( type == ACT_CLS ) { 
+            //_oled_ttyY = 0;
+            _oled_display->fillScreen( TFT_BLACK );
+          }
+          else if ( type == ACT_PIXEL ) { _oled_display->drawPixel( x, y, color ); }
+          else if ( type == ACT_LINE ) { 
+              // !!! lines   w => x2 // h => y2
+              _oled_display->drawLine( x, y, w, h, color ); }
+          else if ( type == ACT_CIRCLE ) { 
+              // !!! circles w => radius
+              if ( mode == ACT_MODE_DRAW ) _oled_display->drawCircle( x, y, w, color ); 
+              else                         _oled_display->fillCircle( x, y, w, color ); 
+          }
+          else if ( type == ACT_RECT ) { 
+              if ( mode == ACT_MODE_DRAW ) _oled_display->drawRect( x, y, w, h, color ); 
+              else                         _oled_display->fillRect( x, y, w, h, color ); 
+          } 
+          else if ( type == ACT_TEXT ) {
+              char str[ h+1 ];
+              int txtAddr = w * DBL_BUFF_TEXT_MAX_LEN;
+              for(int i=0; i < h; i++) { str[i] = scrTextBuff[txtAddr+i]; }
+              str[h]=0;
+
+              //_oled_display->setTextColor(color);
+              _oled_display->setCursor(x, y);
+              _oled_display->print(str);
+          }
+          else if ( type == ACT_BPP ) {
+              unsigned char c;
+                _oled_display->fillScreen( TFT_CLR_BLACK );
+                int width = 128;
+                int height = 64;
+                for (int yy = 0; yy < height; yy++) {
+                    for (int xx = 0; xx < width; xx++) {
+                        c = (bppBuff[(yy * (width / 8)) + (xx / 8)] >> (7 - ((xx) % 8))) % 2;
+                        if (c == 0x01) {
+                            _oled_display->drawPixel(x + xx, y + yy, TFT_CLR_WHITE);
+                        }
+                    }
+                }
+          }
+
+      }
+
+      void _scr_blitt(TFT_eSPI* _oled_display) {
+          int len = scrActionCursor;
+          scrActionCursor = 0;
+          for(int i=0; i < len; i++ ) {
+              _doScreenAction( _oled_display, i );
+          }
+          scrActionCursor = 0;
+          scrTextCursor = 0;
+      }
+
             #endif
 
         public:
@@ -236,13 +257,6 @@
             ~Esp32Pocketv2Screen() {}
 
             void init() {
-
-                #ifdef SOFT_DBL_BUFF
-                 for(int i=0; i < 128*128; i++) {
-                     dblBuff[ i ] = i%2==0 ? ST7735_CYAN : ST7735_BLUE;
-                 }
-                #endif
-
                 #ifdef TFT_ESPI_LIB
                 _oled_display = new TFT_eSPI();
                 _oled_display->init();
@@ -323,8 +337,14 @@
             }
 
 
-            // NOT PSEUDO-DBL BUFFERIZED
             void drawImg(int x,int y, int width, int height, unsigned char* picBuff) {
+
+                #ifdef DBL_BUFF_ACTION
+                 memcpy(bppBuff, picBuff, 1024);
+                 _scr_pushScreenAction(_oled_display, ACT_BPP,0x00, 0x00, 0x00, 0x00, TFT_CLR_WHITE, ACT_MODE_FILL);
+                 return;
+                #endif
+
                 unsigned char c;
                 _oled_display->fillScreen( ST7735_BLACK );
 
@@ -360,7 +380,7 @@
     else if ( color == 4 ) { _color = ST7735_YELLOW; } // very dark grayshade
 
 #ifdef DBL_BUFF_ACTION
-  _scr_pushScreenAction(_oled_display, ACT_RECT,x, y, width, height, color, mode == 0 ? ACT_MODE_DRAW : ACT_MODE_FILL);
+  _scr_pushScreenAction(_oled_display, ACT_RECT,x, y, width, height, _color, mode == 0 ? ACT_MODE_DRAW : ACT_MODE_FILL);
 #else
   if ( mode == 0 ) {
     _oled_display->drawRect(x,y,width,height, _color);
@@ -395,17 +415,15 @@
             }
 
             void clear() {
-                _oled_ttyY = 0;
-                #ifdef SOFT_DBL_BUFF
-                  _oled_display->drawRGBBitmap(0,0, dblBuff, 128, 128);
-                #else
+                
 
 #ifdef DBL_BUFF_ACTION
+  _oled_ttyY = 0; // BEWARE W/ACTTION BUFFER
   _scr_pushScreenAction(_oled_display, ACT_CLS,0, 0, 0, 0, ST7735_BLACK, ACT_MODE_FILL);
 #else
+                  _oled_ttyY = 0;
                   _oled_display->fillScreen( ST7735_BLACK );
 #endif
-                #endif
             }
     };
 
