@@ -15,6 +15,9 @@
 #ifdef TFT_ESPI_LIB
     #include <TFT_eSPI.h> // Hardware-specific library
 
+    #define ROTATE_SCREEN 0
+    //#define ROTATE_SCREEN 2
+
     #define ST7735_BLACK TFT_BLACK
     #define ST7735_WHITE TFT_WHITE
     #define ST7735_CYAN TFT_CYAN
@@ -97,11 +100,11 @@
 
     // #define AXIS_INV 1
     #ifndef AXIS_INV
-        #define X_AXIS 39
-        #define Y_AXIS 36
-    #else
         #define X_AXIS 36
         #define Y_AXIS 39
+    #else
+        #define X_AXIS 39
+        #define Y_AXIS 36
     #endif
 
     //#define LED1 25
@@ -269,7 +272,7 @@
                 #endif
 
 
-                _oled_display->setRotation(1+2); // LANDSCAPE
+                _oled_display->setRotation(1+ROTATE_SCREEN); // LANDSCAPE
 
                 _oled_display->fillScreen(ST7735_BLACK);
 
@@ -597,34 +600,28 @@
         }
 
         int readPadXaxis() {
-            // int v = analogRead( X_AXIS );
-            // // Serial.print("x:");Serial.println(v);
-            // if ( v <= 800 ) { return 1; }
-            // // VALUES CHANGED since use LIPO Battery cell
-            // // else if ( v >= 2800 ) { return -1; }
-            // else if ( v >= 2200 ) { return -1; }
-            // else { v = 0; }
-            int v = 0;
-
 #if defined(BTN_LEFT) and defined(BTN_RIGHT)
   // digital joypad
   if ( digitalRead( BTN_LEFT ) == LOW ) return -1;
   if ( digitalRead( BTN_RIGHT ) == LOW ) return 1;
 #endif
 
+            int v = analogRead( X_AXIS );
+            // Serial.print("x:");Serial.println(v);
+            if ( v <= 800 ) { return -1; }
+            else if ( v >= 2800 ) { return 1; }
+            else { v = 0; }
+
             return v;
         }
 
         int readPadYaxis() {
-            // // BEWARE w/ LiPo battery cell voltage...
-            // int v = analogRead( Y_AXIS );
-            // //Serial.print("y:");Serial.println(v);
-            // if ( v <= 800 ) { return -1; }
-            // // VALUES CHANGED since use LIPO Battery cell
-            // // else if ( v >= 2800 ) { return 1; }
-            // else if ( v >= 2200 ) { return 1; }
-            // else { v = 0; }
-            int v = 0;
+            int v = analogRead( Y_AXIS );
+            //Serial.print("y:");Serial.println(v);
+            if ( v <= 800 ) { return -1; }
+            else if ( v >= 2800 ) { return 1; }
+            else { v = 0; }
+      
             return v;
         }
 
