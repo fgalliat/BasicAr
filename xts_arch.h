@@ -118,7 +118,11 @@
     // DOIT ESP32 DEVKIT V1 board
     #define ARCH_TYPE "ESP32-DevKit Board"
     #include "ESP32_Pocketv2.h"
+    
     #define BUILTIN_LCD 1
+
+    // MP3 DFPlayer module
+    #define BOARD_SND 1
   #else
     // ESP32 + Oled Board
     // from mackerhawk as example
@@ -145,7 +149,7 @@
   // lcd(128*64) / 8(1bpp)
   #define PICTURE_BUFF_SIZE (1*1024)
 
-  #define RAM_END (256*1024)-1
+  #define RAM_END (288*1024)-1
   #define EEPROM_END (4*1024)-1
   #define SPEED 240
 #else

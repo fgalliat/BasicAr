@@ -28,8 +28,9 @@ extern volatile bool isWriting;
       public:
           void begin(int dataPin, int irqPin) {
 
+            // no more .... / done in Basicar.ino now
             // "Retour Chariot" + 115200bps
-            Serial.begin(115200);
+            //Serial.begin(115200);
             //while( !Serial ) { delay(200); } // beware with that !!!
 
             this->lastTime = millis();

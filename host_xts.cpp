@@ -303,6 +303,12 @@ void setupHardware() {
 
  #ifdef BUT_ESP32
    //esp32.setup();
+
+   // TODO : better than that !!!!
+   #ifdef BOARD_SND
+     setupSoundDFPlayer();
+   #endif
+
    return;
  #endif
 

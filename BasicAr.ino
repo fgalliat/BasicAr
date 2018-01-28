@@ -11,6 +11,13 @@
 
 #ifdef BUT_ESP32
  #ifdef ESP32PCKv2
+   #include "HardwareSerial.h"
+   HardwareSerial Serial2(2);
+
+    // https://github.com/jdollar/espsoftwareserial/
+    //#include "SoftwareSerial.h"
+    //SoftwareSerial MyUART1(12,13);
+
    Esp32Pocketv2 esp32;
  #else
   Esp32Oled esp32;
@@ -157,6 +164,9 @@ bool addAutorunFlag = false;
 
 void setup() {
 
+    // "Retour Chariot" + 115200bps
+    Serial.begin(115200);
+
 #ifdef BUT_ESP32
    esp32.setup();
    STORAGE_OK = true;
@@ -177,9 +187,7 @@ void setup() {
         // setScreenSize( SER_TEXT_WIDTH, SER_TEXT_HEIGHT );
     #endif
 
-#ifndef BUT_ESP32
     setupHardware();
-#endif
 
     // TO REMOVE...
     keyboard.begin(DataPin, IRQpin);
