@@ -11,12 +11,35 @@
 
     // #define DBUG_ESP32 1
 
-    // TFT_eSPI Lib is pretty faster than Adafruit one
     
     // need to be defined in TFT_eSPI too (User_Setup.h)
     // for 160x128 Screens
     #define MY_160 1
 
+    #define COLOR_SCREEN 1
+    #define COLOR_64K    1
+
+    // use the Lexibook Junior JG1010 Hacked Console cross-pad
+    // 3 out / 2 in PINS
+    #define USE_JG1010_PAD 1
+
+    #ifdef USE_JG1010_PAD
+      #define JG1010_PAD_OUT_P1 13
+      #define JG1010_PAD_OUT_P2 12
+      #define JG1010_PAD_OUT_P4 14
+      // beware to not wire as INPUT_PULLUP @ same time
+      #define JG1010_PAD_IN_P3 32
+      #define JG1010_PAD_IN_P5 33
+    #endif
+
+    // digital joyPad
+    #define BTN_LEFT  32
+    #define BTN_RIGHT 33 
+    // BEWARE w/ 34 & 35
+
+    // ==============================
+
+    // TFT_eSPI Lib is pretty faster than Adafruit one
     #include <TFT_eSPI.h> // Hardware-specific library
 
     #ifdef MY_160
@@ -93,12 +116,10 @@
     //#define BTN1 16
     //#define BTN2 14
     #define BTN1 26
+    // BEWARE 25 is used as LED on XtsPocket v1
     #define BTN2 25
 
-    // digital joyPad
-    #define BTN_LEFT  32
-    #define BTN_RIGHT 33 
-    // BEWARE w/ 34 & 35
+
 
 
     // #define AXIS_INV 1
@@ -114,10 +135,64 @@
     // builtin led
     #define LED1 2
 
-    #define BUZZER1 12
+    //#define BUZZER1 12
+    #define BUZZER1 27
     #define BUZ_channel 0
     #define BUZ_resolution 8
 
+    #ifdef USE_JG1010_PAD
+    class Esp32Pocketv2JG1010DigitalPad {
+        private:
+        public:
+          Esp32Pocketv2JG1010DigitalPad() {
+          }
+          ~Esp32Pocketv2JG1010DigitalPad() {
+          }
+          void initGPIO() {
+              pinMode( JG1010_PAD_OUT_P1, OUTPUT );
+              pinMode( JG1010_PAD_OUT_P2, OUTPUT );
+              pinMode( JG1010_PAD_OUT_P4, OUTPUT );
+
+              // BEWARE : not PULLUP inputs as usual
+              pinMode( JG1010_PAD_IN_P3, INPUT );
+              pinMode( JG1010_PAD_IN_P5, INPUT );
+
+              digitalWrite( JG1010_PAD_OUT_P1, LOW );
+              digitalWrite( JG1010_PAD_OUT_P2, LOW );
+              digitalWrite( JG1010_PAD_OUT_P4, LOW );
+          }
+          bool readLeft() {
+              digitalWrite( JG1010_PAD_OUT_P1, HIGH );
+              bool result = digitalRead( JG1010_PAD_IN_P3 ) == HIGH;
+              digitalWrite( JG1010_PAD_OUT_P1, LOW );
+              return result;
+          }
+          bool readRight() {
+              digitalWrite( JG1010_PAD_OUT_P2, HIGH );
+              bool result = digitalRead( JG1010_PAD_IN_P3 ) == HIGH;
+              digitalWrite( JG1010_PAD_OUT_P2, LOW );
+              return result;
+          }
+          bool readUp() {
+              digitalWrite( JG1010_PAD_OUT_P4, HIGH );
+              bool result = digitalRead( JG1010_PAD_IN_P3 ) == HIGH;
+              digitalWrite( JG1010_PAD_OUT_P4, LOW );
+              return result;
+          }
+          bool readDown() {
+              digitalWrite( JG1010_PAD_OUT_P1, HIGH );
+              bool result = digitalRead( JG1010_PAD_IN_P5 ) == HIGH;
+              digitalWrite( JG1010_PAD_OUT_P1, LOW );
+              return result;
+          }
+          bool readTriggerB() {
+              digitalWrite( JG1010_PAD_OUT_P4, HIGH );
+              bool result = digitalRead( JG1010_PAD_IN_P5 ) == HIGH;
+              digitalWrite( JG1010_PAD_OUT_P4, LOW );
+              return result;
+          }
+    };
+    #endif
 
 
     class Esp32Pocketv2Screen {
@@ -507,6 +582,9 @@
         private:
           Esp32Pocketv2Screen* screen = new Esp32Pocketv2Screen();
           Esp32Pocketv2Fs* fs = new Esp32Pocketv2Fs();
+          #ifdef USE_JG1010_PAD
+           Esp32Pocketv2JG1010DigitalPad* digiCross = new Esp32Pocketv2JG1010DigitalPad();
+          #endif
         public:
         Esp32Pocketv2() {
         }
@@ -519,6 +597,9 @@
             this->initBuzzer();
             this->initLCD();
             this->initFS();
+            #ifdef USE_JG1010_PAD
+             this->digiCross->initGPIO();
+            #endif
         }
         // === FileSystem ===
         void initFS() {
@@ -547,7 +628,9 @@
             pinMode( BTN1, INPUT_PULLUP );
             pinMode( BTN2, INPUT_PULLUP );
 
-#if defined(BTN_LEFT) and defined(BTN_RIGHT)
+#ifdef USE_JG1010_PAD
+  // done in setup
+#elif defined(BTN_LEFT) and defined(BTN_RIGHT)
             pinMode( BTN_LEFT, INPUT_PULLUP );
             pinMode( BTN_RIGHT, INPUT_PULLUP );
 #endif
@@ -590,7 +673,11 @@
         }
 
         int readPadXaxis() {
-#if defined(BTN_LEFT) and defined(BTN_RIGHT)
+#ifdef USE_JG1010_PAD
+  // maybe slow !!!
+  if ( this->digiCross->readLeft() ) return -1;
+  if ( this->digiCross->readRight() ) return  1;
+#elif defined(BTN_LEFT) and defined(BTN_RIGHT)
   // digital joypad
   if ( digitalRead( BTN_LEFT ) == LOW ) return -1;
   if ( digitalRead( BTN_RIGHT ) == LOW ) return 1;
@@ -606,6 +693,11 @@
         }
 
         int readPadYaxis() {
+#ifdef USE_JG1010_PAD
+  // maybe slow !!!
+  if ( this->digiCross->readUp() ) return -1;
+  if ( this->digiCross->readDown() ) return  1;
+#endif
             int v = analogRead( Y_AXIS );
             //Serial.print("y:");Serial.println(v);
             if ( v <= 800 ) { return -1; }
