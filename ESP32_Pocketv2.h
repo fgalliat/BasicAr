@@ -72,7 +72,9 @@
     #define TFT_SCLK 18
     #define TFT_CS    5  // Chip select control pin
     #define TFT_DC    15  // Data Command control pin
-    #define TFT_RST   4  // Reset pin (could connect to RST pin)
+    // #define TFT_RST   4  // Reset pin (could connect to RST pin)
+    // connected to EN pin
+    #define TFT_RST   -1    // 4 is now used as TX2 ('cause pin labeled TX2 doesn't send anything)
 
     #define TFT_SID TFT_MOSI
     #define TFT_CLK TFT_SCLK
@@ -118,8 +120,6 @@
     #define BTN1 26
     // BEWARE 25 is used as LED on XtsPocket v1
     #define BTN2 25
-
-
 
 
     // #define AXIS_INV 1

@@ -12,7 +12,8 @@
 #ifdef BUT_ESP32
  #ifdef ESP32PCKv2
    #include "HardwareSerial.h"
-   HardwareSerial Serial2(2);
+   //HardwareSerial Serial2(2);
+   HardwareSerial Serial2(UART2_NUM);
 
     // https://github.com/jdollar/espsoftwareserial/
     //#include "SoftwareSerial.h"

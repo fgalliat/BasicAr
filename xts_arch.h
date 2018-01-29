@@ -119,6 +119,13 @@
     #define ARCH_TYPE "ESP32-DevKit Board"
     #include "ESP32_Pocketv2.h"
     
+      /// BE SURE TO USE SAME GND side as 3.3 is !!!!!!
+      // #define UART2_NUM 2
+      #define UART2_RX 16
+      // #define UART2_TX 17
+      #define UART2_NUM 1
+      #define UART2_TX 4 // BEWARE : used as SCREEN RST pin
+
     #define BUILTIN_LCD 1
 
     // MP3 DFPlayer module

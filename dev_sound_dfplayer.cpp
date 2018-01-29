@@ -39,7 +39,7 @@
     _DBUG("Setting up MP3 module\n");
 
     #ifdef ESP32PCKv2
-      mp3Serial.begin(9600, SERIAL_8N1, -1, -1, false);
+      mp3Serial.begin(9600, SERIAL_8N1, UART2_RX, UART2_TX, false);
     #else
       mp3Serial.begin(9600);
     #endif
