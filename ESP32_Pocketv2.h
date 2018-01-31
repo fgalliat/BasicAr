@@ -23,20 +23,6 @@
     // 3 out / 2 in PINS
     #define USE_JG1010_PAD 1
 
-    #ifdef USE_JG1010_PAD
-      #define JG1010_PAD_OUT_P1 13
-      #define JG1010_PAD_OUT_P2 12
-      #define JG1010_PAD_OUT_P4 14
-      // beware to not wire as INPUT_PULLUP @ same time
-      #define JG1010_PAD_IN_P3 32
-      #define JG1010_PAD_IN_P5 33
-    #endif
-
-    // digital joyPad
-    #define BTN_LEFT  32
-    #define BTN_RIGHT 33 
-    // BEWARE w/ 34 & 35
-
     // ==============================
 
     // TFT_eSPI Lib is pretty faster than Adafruit one
@@ -131,6 +117,27 @@
         #define Y_AXIS 36
     #endif
 
+    #ifdef USE_JG1010_PAD
+      // #define JG1010_PAD_OUT_P1 13 // cause it's SPIMOSI
+      // #define JG1010_PAD_OUT_P2 12 // cause it's SPIMISO
+      // #define JG1010_PAD_OUT_P4 14 // 'cause it's SPICLK (resets when DIR) 
+      #define JG1010_PAD_OUT_P1 19
+      #define JG1010_PAD_OUT_P2 21 // SDA condamned ;(
+      #define JG1010_PAD_OUT_P4 22 // SCL condamned ;(
+      // beware to not wire as INPUT_PULLUP @ same time
+    //   #define JG1010_PAD_IN_P3 32
+    //   #define JG1010_PAD_IN_P5 33
+      #define JG1010_PAD_IN_P3 36
+      #define JG1010_PAD_IN_P5 39 // analog pad pins
+    #endif
+
+    // digital joyPad
+    //#define BTN_LEFT  32
+    //#define BTN_RIGHT 33 
+    // BEWARE w/ 34 & 35
+
+    #define DBUG_PAD(a) { Serial.println(a); }
+
     //#define LED1 25
     // builtin led
     #define LED1 2
@@ -143,6 +150,11 @@
     #ifdef USE_JG1010_PAD
     class Esp32Pocketv2JG1010DigitalPad {
         private:
+          bool left  = false;
+          bool right = false;
+          bool up    = false;
+          bool down  = false;
+          bool btnB  = false;
         public:
           Esp32Pocketv2JG1010DigitalPad() {
           }
@@ -160,36 +172,89 @@
               digitalWrite( JG1010_PAD_OUT_P1, LOW );
               digitalWrite( JG1010_PAD_OUT_P2, LOW );
               digitalWrite( JG1010_PAD_OUT_P4, LOW );
+
+              
           }
-          bool readLeft() {
-              digitalWrite( JG1010_PAD_OUT_P1, HIGH );
-              bool result = digitalRead( JG1010_PAD_IN_P3 ) == HIGH;
+
+          void poll() {
+              int result = 0;
+
+              /* /!\ BEWARE : delay() in ISR makes 
+              *  PLAY5K strange delays
+              *  try to use yeld() instead
+              */
+
+              // a bit tricky ....
+              pinMode( JG1010_PAD_IN_P3, INPUT );
+              pinMode( JG1010_PAD_IN_P5, INPUT );
               digitalWrite( JG1010_PAD_OUT_P1, LOW );
-              return result;
+              digitalWrite( JG1010_PAD_OUT_P2, LOW );
+              digitalWrite( JG1010_PAD_OUT_P4, LOW );
+              digitalWrite( JG1010_PAD_IN_P3, LOW );
+              digitalWrite( JG1010_PAD_IN_P5, LOW );
+            //   delay(5);
+
+              left = false;
+              right = false;
+              up = false;
+              down = false;
+              btnB = false;
+
+              #define PAD_CONTACT_3 4070
+              #define PAD_CONTACT_5 4070
+              #define READ_DELAY 5
+
+              digitalWrite( JG1010_PAD_OUT_P1, HIGH );
+            //   delay(READ_DELAY);
+              result = analogRead( JG1010_PAD_IN_P3 );
+              left = result >= PAD_CONTACT_3;
+              result = analogRead( JG1010_PAD_IN_P5 );
+              down = result >= PAD_CONTACT_5;
+              digitalWrite( JG1010_PAD_OUT_P1, LOW );
+            //   delay(READ_DELAY);
+
+
+              digitalWrite( JG1010_PAD_OUT_P2, HIGH );
+            //   delay(READ_DELAY);
+              result = analogRead( JG1010_PAD_IN_P3 );
+              //Serial.println(result);
+              right = result >= PAD_CONTACT_3;
+              digitalWrite( JG1010_PAD_OUT_P2, LOW );
+            //   delay(READ_DELAY);
+
+              digitalWrite( JG1010_PAD_OUT_P4, HIGH );
+            //   delay(READ_DELAY);
+              result = analogRead( JG1010_PAD_IN_P3 );
+              up = result >= PAD_CONTACT_3;
+              // Serial.print(result); Serial.print(" ");
+              result = analogRead( JG1010_PAD_IN_P5 );
+              btnB = result >= PAD_CONTACT_5;
+              digitalWrite( JG1010_PAD_OUT_P4, LOW );
+            //   delay(READ_DELAY);
+              // Serial.println(result);
+
+              if (left) { DBUG_PAD("[LEFT]"); }
+              if (right) { DBUG_PAD("[RIGHT]"); }
+              if (up) { DBUG_PAD("[UP]"); }
+              if (down) { DBUG_PAD("[DOWN]"); }
+              if (btnB) { DBUG_PAD("[B]"); }
+
+          }
+
+          bool readLeft() {
+              return left;
           }
           bool readRight() {
-              digitalWrite( JG1010_PAD_OUT_P2, HIGH );
-              bool result = digitalRead( JG1010_PAD_IN_P3 ) == HIGH;
-              digitalWrite( JG1010_PAD_OUT_P2, LOW );
-              return result;
+              return right;
           }
           bool readUp() {
-              digitalWrite( JG1010_PAD_OUT_P4, HIGH );
-              bool result = digitalRead( JG1010_PAD_IN_P3 ) == HIGH;
-              digitalWrite( JG1010_PAD_OUT_P4, LOW );
-              return result;
+              return up;
           }
           bool readDown() {
-              digitalWrite( JG1010_PAD_OUT_P1, HIGH );
-              bool result = digitalRead( JG1010_PAD_IN_P5 ) == HIGH;
-              digitalWrite( JG1010_PAD_OUT_P1, LOW );
-              return result;
+              return down;
           }
           bool readTriggerB() {
-              digitalWrite( JG1010_PAD_OUT_P4, HIGH );
-              bool result = digitalRead( JG1010_PAD_IN_P5 ) == HIGH;
-              digitalWrite( JG1010_PAD_OUT_P4, LOW );
-              return result;
+              return btnB;
           }
     };
     #endif
@@ -578,6 +643,9 @@
           }
     };
 
+    // dirty ...
+    static void IRAM_ATTR _doISR();
+
     class Esp32Pocketv2 {
         private:
           Esp32Pocketv2Screen* screen = new Esp32Pocketv2Screen();
@@ -600,7 +668,39 @@
             #ifdef USE_JG1010_PAD
              this->digiCross->initGPIO();
             #endif
+            this->initISR();
         }
+        // === IRQ emulation =
+
+        void initISR() {
+            /* create a hardware timer */
+            hw_timer_t * timer = NULL;
+
+            /* Use 1st timer of 4 */
+            /* 1 tick take 1/(80MHZ/80) = 1us so we set divider 80 and count up */
+            timer = timerBegin(0, 80, true);
+
+            /* Attach onTimer function to our timer */
+            timerAttachInterrupt(timer, &(_doISR), true);
+
+            /* Set alarm to call onTimer function every second 1 tick is 1us
+            => 1 second is 1000000us */
+            /* Repeat the alarm (third parameter) */
+            uint64_t tVal = 1000000;
+            tVal = 50000; // 50millis
+            tVal = 100000; // 100 millis
+            timerAlarmWrite(timer, tVal, true);
+
+            /* Start an alarm */
+            timerAlarmEnable(timer);
+        }
+
+        void poll() {
+            #ifdef USE_JG1010_PAD
+              this->digiCross->poll();
+            #endif
+        }
+
         // === FileSystem ===
         void initFS() {
             fs->init();
@@ -628,16 +728,18 @@
             pinMode( BTN1, INPUT_PULLUP );
             pinMode( BTN2, INPUT_PULLUP );
 
-#ifdef USE_JG1010_PAD
-  // done in setup
-#elif defined(BTN_LEFT) and defined(BTN_RIGHT)
-            pinMode( BTN_LEFT, INPUT_PULLUP );
-            pinMode( BTN_RIGHT, INPUT_PULLUP );
-#endif
+// #ifdef USE_JG1010_PAD
+//   // done in setup
+// #elif defined(BTN_LEFT) and defined(BTN_RIGHT)
+//             pinMode( BTN_LEFT, INPUT_PULLUP );
+//             pinMode( BTN_RIGHT, INPUT_PULLUP );
+// #endif
 
+#ifdef USE_JG1010_PAD
+#else
             pinMode( X_AXIS, INPUT );
             pinMode( Y_AXIS, INPUT );
-
+#endif
             pinMode( LED1, OUTPUT );
             digitalWrite(LED1, LOW); 
         }
@@ -662,7 +764,7 @@
             if ( btnID == 0 ) {
                 // TODO : better canonicalize
                 bool b1 = BTN1 > -1 && digitalRead( BTN1 ) == LOW;
-                bool b2 = BTN2 > -1 &&digitalRead( BTN2 ) == LOW;
+                bool b2 = BTN2 > -1 && digitalRead( BTN2 ) == LOW;
                 return (b1 ? 1 : 0) + (b2 ? 2 : 0);
             } else if (btnID == 1 && BTN1 > -1) {
                 return digitalRead( BTN1 ) == LOW ? 1 : 0;
@@ -677,11 +779,12 @@
   // maybe slow !!!
   if ( this->digiCross->readLeft() ) return -1;
   if ( this->digiCross->readRight() ) return  1;
-#elif defined(BTN_LEFT) and defined(BTN_RIGHT)
-  // digital joypad
-  if ( digitalRead( BTN_LEFT ) == LOW ) return -1;
-  if ( digitalRead( BTN_RIGHT ) == LOW ) return 1;
-#endif
+  return 0;
+// #elif defined(BTN_LEFT) and defined(BTN_RIGHT)
+//   // digital joypad
+//   if ( digitalRead( BTN_LEFT ) == LOW ) return -1;
+//   if ( digitalRead( BTN_RIGHT ) == LOW ) return 1;
+#else
 
             int v = analogRead( X_AXIS );
             // Serial.print("x:");Serial.println(v);
@@ -690,21 +793,23 @@
             else { v = 0; }
 
             return v;
+#endif
         }
 
         int readPadYaxis() {
 #ifdef USE_JG1010_PAD
   // maybe slow !!!
-  if ( this->digiCross->readUp() ) return -1;
-  if ( this->digiCross->readDown() ) return  1;
-#endif
+  if ( this->digiCross->readUp() ) return 1;
+  if ( this->digiCross->readDown() ) return -1;
+  return 0;
+#else
             int v = analogRead( Y_AXIS );
             //Serial.print("y:");Serial.println(v);
             if ( v <= 800 ) { return -1; }
             else if ( v >= 2800 ) { return 1; }
             else { v = 0; }
-      
             return v;
+#endif
         }
 
 
@@ -748,6 +853,13 @@
         }
 
     };
+
+    extern Esp32Pocketv2 esp32;
+    static void IRAM_ATTR _doISR() {
+        #ifdef USE_JG1010_PAD
+            esp32.poll();
+        #endif
+    }
 
   #endif
 

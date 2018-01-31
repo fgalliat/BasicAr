@@ -55,32 +55,28 @@ class _Serial
     int lastKC = -1;
 
   public:
-    void begin(int speed)
-    {
+    void begin(int speed) {
         WINDOW *w = initscr();
         cbreak();
         noecho();
         nodelay(w, TRUE); // prevent getch() from blocking !!!!!!
     }
 
-    int available()
-    {
+    int available() {
 
-        PC_ISR();
+        PC_ISR(); // by computer available() call
 
         lastKC = getch(); // ncurses version
         return lastKC > -1 ? 1 : 0;
     }
 
-    int read()
-    {
+    int read() {
         int ret = lastKC;
         lastKC = -1;
         return ret;
     }
 
-    void _printAt(int x, int y, char *str)
-    {
+    void _printAt(int x, int y, char *str) {
         mvprintw(y, x, str);
     }
 

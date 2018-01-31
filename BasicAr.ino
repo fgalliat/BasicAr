@@ -434,7 +434,7 @@ void xts_serialEvent() {
             }
         }
 
-PC_ISR();
+PC_ISR(); // by SDL call
 
         delay( 10 );
     }
