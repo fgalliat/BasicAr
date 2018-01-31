@@ -1305,7 +1305,7 @@ void _serializeTokens(unsigned char *p, char* destLine) {
           p++;
           // host_outputInt(*(long*)p);
           static char tmp[15];
-          sprintf( tmp, "%d", *(long*)p ); 
+          sprintf( tmp, "%d", (int)( *(long*)p ) ); 
           strcat( destLine, tmp );
           destLine+=strlen(tmp); // BEWARE !!!!+ optim 
           p+=4;

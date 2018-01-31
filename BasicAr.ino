@@ -1,9 +1,11 @@
 /*******************
 * Xtase - fgalliat : fgalliat@gmail.com @Sept2017
-* redesigned for XtsuBasic board
+* redesigned for XtsuBasic boards & XtsuPocket boards
 *
 * Based on robin edwards work - (https://github.com/robinhedwards/ArduinoBASIC)
 *
+* if compile errors : (see error_log_win.txt)
+* @01/31/2018 arduino ide 1.8.5 & esp32 core under Win10
 *******************/
 
 // Teensy's doesn't supports FS (SD, SDFat) & PROGMEM routines
