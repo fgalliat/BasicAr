@@ -15,7 +15,7 @@ ADDITIONAL INPUTS
 DRAWPCT "toto", x, y -- to draw a 16b bitmap
    --> header : monochrome bitmap / color bitmap / vector drawing
                 width / height
-
+                raster / vector shapes
 
 DATAF "titi", "A$", "B", "C", "D$", "E"
   reads titi.BAD (1 line for row count (arrays DIM) / the rest is CSV-like)
