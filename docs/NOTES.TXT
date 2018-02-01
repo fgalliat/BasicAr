@@ -1,16 +1,49 @@
 git clone git@github.com:fgalliat/BasicAr.git
 
 
+
+=================================================================
+Xts uPocket V2
+
+ADDITIONAL INPUTS
+ pin 33 as INPUT_PULLUP for [A] BTN (has to put one of the btn pin to GND)
+ pin 32 as INPUT        for MP3_READY interupt line (DFPlayer mini) 
+
+ then allow to read these pins in BASIC in order to make NEXTable MP3 Player PRGM
+
+
+DRAWPCT "toto", x, y -- to draw a 16b bitmap
+   --> header : monochrome bitmap / color bitmap / vector drawing
+                width / height
+
+
+DATAF "titi", "A$", "B", "C", "D$", "E"
+  reads titi.BAD (1 line for row count (arrays DIM) / the rest is CSV-like)
+  then feeds typed arrays ~like DATA cmd does
+
+  [3
+  [# optionally remark line, can be col. names (not counted)
+  [Rolph;20;10;Barbarian;1
+  [Mula;15;15;Elf;2
+  [Grumph;50;10;Dragon;3
+
+  currently : DIRARRAY uses the following code :
+
+        #define MAX_FILE_IN_ARRAY 128
+        if ( ! xts_createArray("DIR$", 1, MAX_FILE_IN_ARRAY) ) {
+          host_outputString("Could not create DIR$");
+          return false;
+        }
+
+
+=================================================================
+
+
 les Teensy ne supportent pas bien le PROGMEM et une grande consomation memoire
 il est impossible de faire cohabiter les PROGMEM pgm_read... et l'utilisation de SD.h ou SdFat.h
 du moins avec mon code de compatibilité
 
 1) remettre un marqueur vierge et des fonctions vides pour l'acces aux datas (pour pouvoir les refaire marcher avec un Arduino)
-2) remettre le code du reset de la MCU pour le teensy (in progress) (DONE)
-3) separer les FS_SUPPORT en mode SDFAT ou non
-
-
-LOCATE , LED, .. could goes into : parseTwoIntCmd()
 
 =================================================================
 
