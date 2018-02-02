@@ -20,10 +20,10 @@ BTN(1) On     D26
     6  Up
     7  Down
     
-    8  Trigger A <-- (have to wire gnd & signal pins + have to read in BASIC)
+    8  Trigger A D32
     9  Trigger B
 
-   10  MP3 BUSY ??????
+   10  MP3 BUSY ?????? D36?
 
 LIGHT6 for small screens (swap between text & map)
 QUENZAR
