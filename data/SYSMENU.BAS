@@ -3,7 +3,7 @@
 20 CLS
 30 ? "   -= ESP MENU =-"
 40 ' FOR L = 1 TO 3 : LOCATE 0,L+2 : ? " " : NEXT L
-50 LOCATE 0,I+1 : ? ">"
+50 LOCATE 0,I+1 : ? ">";
 100 LOCATE 2,2 : ? "Raycast";
 110 LOCATE 2,3 : ? "Hard Test";
 120 LOCATE 2,4 : ? "Monkey";
