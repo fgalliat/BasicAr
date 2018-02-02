@@ -11,17 +11,17 @@ ADDITIONAL INPUTS
 
  then allow to read these pins in BASIC in order to make NEXTable MP3 Player PRGM
 
-BTN(1) On
-    2  Sound
-    3  Pause  <-- (have to wire signal as INPUT_PULLUP)
+BTN(1) On     D26
+    2  Sound  D25
+    3  Pause  D33
 
     4  Left
     5  Right
     6  Up
     7  Down
     
-    8  Trigger A <-- (have to wire gnd & signal pins)
-    9  Trigger B <-- (already wired -by digiCross- : just have to read in BASIC)
+    8  Trigger A <-- (have to wire gnd & signal pins + have to read in BASIC)
+    9  Trigger B
 
    10  MP3 BUSY ??????
 

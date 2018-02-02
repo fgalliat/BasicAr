@@ -217,6 +217,17 @@ int xts_buttonRead(int btnNum) {
   else if ( btnNum == 5 ) { return esp32.readPadXaxis() > 0 ? 1 : 0; }
   else if ( btnNum == 6 ) { return esp32.readPadYaxis() > 0 ? 1 : 0; }
   else if ( btnNum == 7 ) { return esp32.readPadYaxis() < 0 ? 1 : 0; }
+
+  #ifdef ESP32PCKv2
+  // Trigger A
+  else if ( btnNum == 8 ) { return esp32.readBtn(8); }
+  // Trigger B
+  else if ( btnNum == 9 ) { return esp32.readBtn(9); }
+
+  // TODO : A + MP3
+
+  #endif
+
 #endif
 
   return 0;

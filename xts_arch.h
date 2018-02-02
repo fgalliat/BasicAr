@@ -146,7 +146,7 @@
 
   #define BTN1_PIN BTN1
   #define BTN2_PIN BTN2
-  #define BTN3_PIN -1
+  #define BTN3_PIN BTN3
 
   #define FS_SUPPORT 1 // TODO remove comment
   #define ESP32_FS 1

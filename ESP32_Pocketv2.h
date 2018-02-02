@@ -101,11 +101,14 @@
 
     // ________________________
 
-    //#define BTN1 16
-    //#define BTN2 14
+    // driven by xtase_fct.h
     #define BTN1 26
     // BEWARE 25 is used as LED on XtsPocket v1
     #define BTN2 25
+    #define BTN3 33
+    #ifdef USE_JG1010_PAD
+     #define BTN_TRIGGER_A 32
+    #endif
 
 
     // #define AXIS_INV 1
@@ -727,15 +730,10 @@
         void initGPIO() {
             pinMode( BTN1, INPUT_PULLUP );
             pinMode( BTN2, INPUT_PULLUP );
-
-// #ifdef USE_JG1010_PAD
-//   // done in setup
-// #elif defined(BTN_LEFT) and defined(BTN_RIGHT)
-//             pinMode( BTN_LEFT, INPUT_PULLUP );
-//             pinMode( BTN_RIGHT, INPUT_PULLUP );
-// #endif
+            pinMode( BTN3, INPUT_PULLUP );
 
 #ifdef USE_JG1010_PAD
+            pinMode( BTN_TRIGGER_A, INPUT_PULLUP );
 #else
             pinMode( X_AXIS, INPUT );
             pinMode( Y_AXIS, INPUT );
@@ -755,22 +753,36 @@
 
         // ==== Inputs =====
 
+        // not used by external @ this time : see xtase_fct.h
         int readBtns() {
             return readBtn(0);
         }
 
+        // not used by external @ this time : see xtase_fct.h
         int readBtn(int btnID) {
             // TODO : include pad state as btn
             if ( btnID == 0 ) {
                 // TODO : better canonicalize
                 bool b1 = BTN1 > -1 && digitalRead( BTN1 ) == LOW;
                 bool b2 = BTN2 > -1 && digitalRead( BTN2 ) == LOW;
-                return (b1 ? 1 : 0) + (b2 ? 2 : 0);
+                bool b3 = BTN3 > -1 && digitalRead( BTN3 ) == LOW;
+                return (b1 ? 1 : 0) + (b2 ? 2 : 0) + (b3 ? 4 : 0);
             } else if (btnID == 1 && BTN1 > -1) {
                 return digitalRead( BTN1 ) == LOW ? 1 : 0;
             } else if (btnID == 2 && BTN2 > -1) {
                 return digitalRead( BTN2 ) == LOW ? 1 : 0;
+            } else if (btnID == 3 && BTN3 > -1) {
+                return digitalRead( BTN3 ) == LOW ? 1 : 0;
+            } 
+            #ifdef USE_JG1010_PAD
+            else if (btnID == 8 && BTN_TRIGGER_A > -1) {
+                return digitalRead( BTN_TRIGGER_A ) == LOW ? 1 : 0;
             }
+            else if (btnID == 9) {
+                return this->digiCross->readTriggerB() ? 1 : 0;
+            }
+            #endif
+
             return 0;
         }
 
