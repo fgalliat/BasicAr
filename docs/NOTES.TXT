@@ -13,19 +13,23 @@ ADDITIONAL INPUTS
 
 BTN(1) On
     2  Sound
-    3  Pause  <-- (have to wire gnd & signal pins)
+    3  Pause  <-- (have to wire signal as INPUT_PULLUP)
+
     4  Left
     5  Right
     6  Up
     7  Down
-    8  Trigger A <--
-    9  Trigger B <--
+    
+    8  Trigger A <-- (have to wire gnd & signal pins)
+    9  Trigger B <-- (already wired -by digiCross- : just have to read in BASIC)
+
+   10  MP3 BUSY ??????
 
 LIGHT6 for small screens (swap between text & map)
 QUENZAR
 
 DRAWPCT "toto", x, y -- to draw a 16b bitmap
-   --> header : monochrome bitmap / color bitmap / vector drawing
+   --> header : monochrome bitmap / indexed bitmap / color bitmap / vector drawing
                 width / height
                 raster / vector shapes
 
