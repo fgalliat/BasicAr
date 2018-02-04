@@ -781,7 +781,7 @@
 
             else if (btnID == 10 && BTN_TRIGGER_MP3_BUSY > -1) {
                 int v = digitalRead( BTN_TRIGGER_MP3_BUSY );
-                Serial.print("BUSY ");Serial.println(v);
+                // Serial.print("BUSY ");Serial.println(v);
                 return v == 0 ? 1 : 0;
             }
 
