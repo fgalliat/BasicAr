@@ -223,9 +223,8 @@ int xts_buttonRead(int btnNum) {
   else if ( btnNum == 8 ) { return esp32.readBtn(8); }
   // Trigger B
   else if ( btnNum == 9 ) { return esp32.readBtn(9); }
-
-  // TODO : A + MP3
-
+  // MP3 BUSY
+  else if ( btnNum == 10 ) { return esp32.readBtn(10); }
   #endif
 
 #endif

@@ -106,10 +106,14 @@
     // BEWARE 25 is used as LED on XtsPocket v1
     #define BTN2 25
     #define BTN3 33
+
     #ifdef USE_JG1010_PAD
      #define BTN_TRIGGER_A 32
     #endif
 
+    // the DFPlayer MP3 BUSY LINE
+    // BEWARE : INPUT but NOT PULLUP
+    #define BTN_TRIGGER_MP3_BUSY 35
 
     // #define AXIS_INV 1
     #ifndef AXIS_INV
@@ -134,10 +138,6 @@
       #define JG1010_PAD_IN_P5 39 // analog pad pins
     #endif
 
-    // digital joyPad
-    //#define BTN_LEFT  32
-    //#define BTN_RIGHT 33 
-    // BEWARE w/ 34 & 35
 
     #define DBUG_PAD(a) { Serial.println(a); }
 
@@ -175,8 +175,6 @@
               digitalWrite( JG1010_PAD_OUT_P1, LOW );
               digitalWrite( JG1010_PAD_OUT_P2, LOW );
               digitalWrite( JG1010_PAD_OUT_P4, LOW );
-
-              
           }
 
           void poll() {
@@ -195,7 +193,6 @@
               digitalWrite( JG1010_PAD_OUT_P4, LOW );
               digitalWrite( JG1010_PAD_IN_P3, LOW );
               digitalWrite( JG1010_PAD_IN_P5, LOW );
-            //   delay(5);
 
               left = false;
               right = false;
@@ -208,39 +205,32 @@
               #define READ_DELAY 5
 
               digitalWrite( JG1010_PAD_OUT_P1, HIGH );
-            //   delay(READ_DELAY);
               result = analogRead( JG1010_PAD_IN_P3 );
               left = result >= PAD_CONTACT_3;
               result = analogRead( JG1010_PAD_IN_P5 );
               down = result >= PAD_CONTACT_5;
               digitalWrite( JG1010_PAD_OUT_P1, LOW );
-            //   delay(READ_DELAY);
-
 
               digitalWrite( JG1010_PAD_OUT_P2, HIGH );
-            //   delay(READ_DELAY);
               result = analogRead( JG1010_PAD_IN_P3 );
               //Serial.println(result);
               right = result >= PAD_CONTACT_3;
               digitalWrite( JG1010_PAD_OUT_P2, LOW );
-            //   delay(READ_DELAY);
 
               digitalWrite( JG1010_PAD_OUT_P4, HIGH );
-            //   delay(READ_DELAY);
               result = analogRead( JG1010_PAD_IN_P3 );
               up = result >= PAD_CONTACT_3;
               // Serial.print(result); Serial.print(" ");
               result = analogRead( JG1010_PAD_IN_P5 );
               btnB = result >= PAD_CONTACT_5;
               digitalWrite( JG1010_PAD_OUT_P4, LOW );
-            //   delay(READ_DELAY);
               // Serial.println(result);
 
-              if (left) { DBUG_PAD("[LEFT]"); }
-              if (right) { DBUG_PAD("[RIGHT]"); }
-              if (up) { DBUG_PAD("[UP]"); }
-              if (down) { DBUG_PAD("[DOWN]"); }
-              if (btnB) { DBUG_PAD("[B]"); }
+            //   if (left) { DBUG_PAD("[LEFT]"); }
+            //   if (right) { DBUG_PAD("[RIGHT]"); }
+            //   if (up) { DBUG_PAD("[UP]"); }
+            //   if (down) { DBUG_PAD("[DOWN]"); }
+            //   if (btnB) { DBUG_PAD("[B]"); }
 
           }
 
@@ -738,6 +728,12 @@
             pinMode( X_AXIS, INPUT );
             pinMode( Y_AXIS, INPUT );
 #endif
+
+#ifdef BTN_TRIGGER_MP3_BUSY
+            // BEWARE : NOT PULLUP
+            pinMode( BTN_TRIGGER_MP3_BUSY, INPUT );
+#endif
+
             pinMode( LED1, OUTPUT );
             digitalWrite(LED1, LOW); 
         }
@@ -782,6 +778,12 @@
                 return this->digiCross->readTriggerB() ? 1 : 0;
             }
             #endif
+
+            else if (btnID == 10 && BTN_TRIGGER_MP3_BUSY > -1) {
+                int v = digitalRead( BTN_TRIGGER_MP3_BUSY );
+                Serial.print("BUSY ");Serial.println(v);
+                return v == 0 ? 1 : 0;
+            }
 
             return 0;
         }

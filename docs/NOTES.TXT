@@ -23,7 +23,7 @@ BTN(1) On     D26
     8  Trigger A D32
     9  Trigger B
 
-   10  MP3 BUSY ?????? D36?
+   10  MP3 BUSY  D35
 
 LIGHT6 for small screens (swap between text & map)
 QUENZAR
