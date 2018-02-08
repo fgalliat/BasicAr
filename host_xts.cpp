@@ -1051,7 +1051,7 @@ bool drawBPPfile(char* filename) {
         // can't use createArray because it use expr stack
         #define MAX_FILE_IN_ARRAY 128
         if ( ! xts_createArray("DIR$", 1, MAX_FILE_IN_ARRAY) ) {
-          host_outputString("Could not create DIR$");
+          host_outputString("Could not create DIR$\n");
           return false;
         }
       }

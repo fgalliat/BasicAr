@@ -16,11 +16,6 @@
    #include "HardwareSerial.h"
    //HardwareSerial Serial2(2);
    HardwareSerial Serial2(UART2_NUM);
-
-    // https://github.com/jdollar/espsoftwareserial/
-    //#include "SoftwareSerial.h"
-    //SoftwareSerial MyUART1(12,13);
-
    Esp32Pocketv2 esp32;
  #else
   Esp32Oled esp32;

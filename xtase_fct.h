@@ -841,12 +841,6 @@ int xts_exec_cmd() {
     if (val & _ERROR_MASK) return val;
   }
   
-  // TODO : @ least 1 param
-  // else {
-  //   // @ least 1 param
-  //   return ERROR_BAD_PARAMETER;
-  // }
-
   if ( executeMode ) {
       if ( argc > 0 ) {
         if ( strcmp( args[0], "MP3" ) == 0 ) {
@@ -892,6 +886,289 @@ int xts_exec_cmd() {
 }
 
 
+
+// ===================================================================
+
+#ifdef NIMPORTEQUOI
+
+  // _________ TODO ______________________
+  bool fopenTextFile(char* filename) {
+    #ifdef ESP32PCKv2
+      return esp32.getFs()->openCurrentTextFile( filename );
+    #else 
+      host_outputString("fopenTextFile() NYI");
+    #endif
+  }
+  
+  char* freadTextLine() {
+    #ifdef ESP32PCKv2
+      return esp32.getFs()->readCurrentTextLine();
+    #else 
+      host_outputString("freadTextLine() NYI");
+      return null;
+    #endif
+  }
+
+  void fcloseFile() {
+    #ifdef ESP32PCKv2
+      esp32.getFs()->closeCurrentTextFile();
+    #else 
+      host_outputString("fopenTextFile() NYI");
+    #endif
+  }
+  // _________ TODO ______________________
+
+  // remember to free() result ....
+  char* str_trim(char* str) {
+    if ( str == NULL ) { return NULL; }
+    int start = 0, stop = strlen( str )-1;
+
+    for(int i=0; i <= stop; i++) {
+      if ( str[ i ] > 32 ) {
+        start = i;
+        break;
+      }
+    }
+
+    if ( start == stop ) { char* empty = (char*)malloc(0+1); empty[0]=0x00; return empty; }
+
+    for(int i=stop; i >= 0; i--) {
+      if ( str[ i ] > 32 ) {
+        stop = i;
+        break;
+      }
+    }
+
+    // printf("start=%d stop=%d \n", start, stop);
+
+    char* result = (char*)malloc( (stop-start) +1);
+    int cpt=0;
+    for(int i=start; i <= stop; i++) {
+      result[cpt++] = str[i];
+    }
+    result[ cpt ] = 0x00;
+
+    return result;
+  }
+
+
+  char* nextSplit( char* remaining, int fullLen, char delim, bool treatEscapes ) {
+    // reads remaining, fill w/ 0x00 readed chars then copy those to result; 
+    int start = -1, stop = -1;
+    //DBUG("1");
+    for(int i=0; i < fullLen; i++) {
+      if ( remaining[i] == 0x00 ) { continue; }
+      if ( start == -1 ) { start = i; }
+
+      if ( remaining[i] == '\\' && i+1 < fullLen && remaining[i+1] == delim && treatEscapes ) {
+        i++;
+        continue;
+      }
+
+      if ( remaining[i] == delim ) {
+        stop = i+1;
+        break;
+      }
+    }
+    // reached end of line ?
+    if ( start == -1 ) { return NULL; }
+
+    //DBUG("2");
+    if ( stop == -1 ) { stop = fullLen; }
+    //printf("start=%d stop=%d \n", start, stop);
+
+    // TODO : check '<= 0' instead of '< 0'
+    if ( stop - start <= 0 ) { /*DBUG("eject 3");*/ return NULL; }
+    else {
+      //DBUG("4");
+
+      char* result = (char*)malloc( stop-start-1+1 );
+
+      //DBUG("5");
+      //printf("start=%d stop=%d \n", start, stop);
+
+      int cpt=0;
+      for(int i=start; i <= stop; i++) {
+        //printf(" 5.1 > %d [%c] \n", i, remaining[i]);
+
+        if ( remaining[i] == '\\' && i+1 < fullLen && remaining[i+1] == delim && treatEscapes ) {
+          // nothing
+          //DBUG(" 5.2");
+        } else if ( remaining[i] == delim && i == stop-1 ) {
+          //DBUG(" 5.3");
+          remaining[i] = 0x00; // erase readed chars
+          break;
+        } else {
+          //DBUG(" 5.4");
+          result[ cpt++ ] = remaining[i]; 
+        }
+        //DBUG(" 5.5");
+        remaining[i] = 0x00; // erase readed chars
+        //DBUG(" 5.6");
+      }
+
+      //DBUG("6");
+      result[ cpt ] = 0x00;
+
+      //DBUG("7");
+
+      return result;
+    }
+
+    //DBUG("eject 8");
+
+    return NULL;
+  }
+
+
+// DATAF "TOTO", "SZ", "A$", "HP", "FO", "DE"
+// reads "TOTO.BAD" from Fs
+// feeds "SZ" with nb of lines
+// feeds args given array names with line content
+// ~~ CSV content
+int xts_dataf_cmd() {
+  getNextToken();
+  
+  const int MAX_ARGS = 12; // <file>, <sizeVar>, <10 arrays>
+  char* args[MAX_ARGS]; // string args
+  int   argc = 0;
+
+  int val = -1;
+  while (curToken != TOKEN_EOL && curToken != TOKEN_CMD_SEP) {
+    val = parseExpression();
+    //if (val & _ERROR_MASK) return val;
+    if (val & _ERROR_MASK) break;
+
+    // STRING 1st arg is optional
+    if (_IS_TYPE_STR(val)) {
+      if ( executeMode && argc < MAX_ARGS) {
+        char* tt = stackPopStr();
+        int stlen = strlen(tt);
+        char* tmp = (char*)malloc( stlen+1 ); // BEWARE w/ free()
+        for(int i=0; i < stlen; i++) { tmp[i] = charUpCase( tt[i] ); }
+        tmp[ stlen ] = 0x00;
+        args[argc++] = tmp;
+      }
+    } else {
+      return ERROR_BAD_PARAMETER;
+    }
+
+    if ( curToken == TOKEN_COMMA ) {
+      getNextToken();
+    }
+  }
+
+  if ( !executeMode ) {
+    if (val & _ERROR_MASK) return val;
+  }
+  
+  if ( executeMode ) {
+      if ( argc >= 2 ) {
+        // args[0] => filename str INPUT
+        // args[1] => rowCount int OUTPUT
+        // 10 useable typed arrays
+
+        // DATAF "TOTO", "SZ", "A$", "HP", "FO", "DE"
+
+        // [3
+        // [# optionally remmark line, can be col. names (not counted)
+        // [Rolph;20;20;15
+        // [Mula;15;15;20
+        // [Grumph;50;10;30
+
+        fopenTextFile( autocomplete_fileExt(args[0], ".BAD") );
+
+        char* line; int cpt=0,total=-1;
+        while( (line = freadTextLine()) != NULL ) {
+          line = str_trim( line );
+
+          if ( strlen(line) == 0 || line[0] == '#' ) {
+            continue;
+          }
+
+          if ( total == -1 ) {
+            // RowCount line
+
+            total = atoi(line);
+            cpt = 1;
+
+            storeNumVariable(args[1], (float) total)
+
+            for(int i=2; i < argc; i++) {
+              bool isStrArray = args[i][ strlen(args[i]-1) ] == '$';
+
+              if ( ! xts_createArray( args[i] , isStrArray ? 1 : 0, total) ) {
+                host_outputString("Could not create ");
+                host_outputString( args[i] );
+                host_outputString(" column\n");
+                fcloseFile();
+                return ERROR_OUT_OF_MEMORY;
+              }
+            }
+
+          } else {
+            // regular line
+
+            char* remaining = copyOf( line );
+            int fullLen = strlen( remaining );
+
+            for(int i=2; i < argc; i++) {
+              bool isStrArray = args[i][ strlen(args[i]-1) ] == '$';
+              bool col_ok = false;
+
+              // HAVE TO make my own split() routine
+              // able to escape '\;' sequence
+              char* token = nextSplit( remaining, fullLen, ';', true );
+
+              if ( isStrArray ) {
+                float val = atof( token );
+                // seems to push to given array
+                col_ok = setNumArrayElem(args[i], val) != ERROR_NONE;
+              } else {
+                col_ok = xts_setStrArrayElem( args[i], (cpt+1), token ) != ERROR_NONE;
+              } 
+
+              if ( !col_ok ) {
+                host_outputString("Could not fill ");
+                host_outputString( args[i] );
+                host_outputString(" column @");
+                host_outputString( cpt );
+                host_outputString("\n");
+
+                if (token != NULL) free( token );
+                free( line );
+
+                fcloseFile();
+                return ERROR_IN_VAL_INPUT;
+              }
+
+              if (token != NULL) free(token);
+            }
+
+            cpt++;
+            free( line );
+            if ( cpt > total ) {
+              host_outputString("file truncated !");
+              break;
+            }
+          }
+
+        }
+
+        fcloseFile();
+
+      } // end of argc > 0
+      else {
+        // missing args
+        return ERROR_BAD_PARAMETER;
+      }
+
+  } // execMode
+
+  return 0;
+}
+
+#endif
 
 // ===================================================================
 

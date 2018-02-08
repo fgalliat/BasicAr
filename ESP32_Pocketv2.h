@@ -555,6 +555,7 @@
 
     class Esp32Pocketv2Fs {
         private:
+          File currentFile;
         public:
           Esp32Pocketv2Fs() {}
           ~Esp32Pocketv2Fs() {}
@@ -621,6 +622,40 @@
 
             return lineNb;
           }
+
+          // ================================
+          // WORKS on a CURRENT file .....
+
+          bool openCurrentTextFile(char* filename) {
+            this->currentFile = SPIFFS.open(filename, "r");
+            if ( !this->currentFile ) { return false; }
+          }
+
+          void closeCurrentTextFile() {
+            if ( this->currentFile == NULL ) { return; }
+            this->currentFile.close();
+          }
+
+          // slow impl !!!!!!!
+          char* readCurrentTextLine() {
+            int MAX_LINE_LEN = 128; // TO CHECK
+            char* line = (char*)malloc( MAX_LINE_LEN );
+            memset(line, 0x00, MAX_LINE_LEN);
+
+            int cpt = 0;
+            for( int i=0; i < MAX_LINE_LEN; i++ ) {
+                char ch = (char)f.read();
+                if ( ch == -1 )   { break; }
+                if ( ch == '\r' ) { continue; }
+                if ( ch == '\n' ) { break; }
+
+                line[cpt++] = ch;
+            }
+
+            return line;
+          }
+
+          // ================================
 
           // listDir("/") -> returns nb of file
           int listDir(char* dirName, void (*callback)(char*) ) {

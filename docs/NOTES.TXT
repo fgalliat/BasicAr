@@ -5,6 +5,7 @@ git clone git@github.com:fgalliat/BasicAr.git
 =================================================================
 Xts uPocket V2
 
+_________________________
 ADDITIONAL INPUTS
  pin 33 as INPUT_PULLUP for [A] BTN (has to put one of the btn pin to GND)
  pin 32 as INPUT        for MP3_READY interupt line (DFPlayer mini) 
@@ -24,6 +25,7 @@ BTN(1) On     D26
     9  Trigger B
 
    10  MP3 BUSY  D35
+_________________________
 
 LIGHT6 for small screens (swap between text & map)
 QUENZAR
@@ -36,7 +38,7 @@ DRAWPCT "toto", x, y -- to draw a 16b bitmap
 DATAF "titi", "A$", "B", "C", "D$", "E"
   reads titi.BAD (1 line for row count (arrays DIM) / the rest is CSV-like)
   then feeds typed arrays ~like DATA cmd does
-
+-see xtase_fct.h-
   [3
   [# optionally remark line, can be col. names (not counted)
   [Rolph;20;10;Barbarian;1
