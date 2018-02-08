@@ -35,6 +35,7 @@ DRAWPCT "toto", x, y -- to draw a 16b bitmap
                 width / height
                 raster / vector shapes
 
+___________ written : have to test !!!!!
 DATAF "titi", "A$", "B", "C", "D$", "E"
   reads titi.BAD (1 line for row count (arrays DIM) / the rest is CSV-like)
   then feeds typed arrays ~like DATA cmd does
@@ -44,14 +45,7 @@ DATAF "titi", "A$", "B", "C", "D$", "E"
   [Rolph;20;10;Barbarian;1
   [Mula;15;15;Elf;2
   [Grumph;50;10;Dragon;3
-
-  currently : DIRARRAY uses the following code :
-
-        #define MAX_FILE_IN_ARRAY 128
-        if ( ! xts_createArray("DIR$", 1, MAX_FILE_IN_ARRAY) ) {
-          host_outputString("Could not create DIR$");
-          return false;
-        }
+___________ written : have to test !!!!!
 
 
 =================================================================

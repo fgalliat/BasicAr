@@ -891,7 +891,15 @@ int xts_exec_cmd() {
 
 #define NIMPORTEQUOI 1
 
-#ifdef NIMPORTEQUOI
+#ifndef NIMPORTEQUOI
+
+int xts_dataf_cmd() {
+  host_outputString("DATAF cmd NYI !\n");
+  host_showBuffer();
+  return ERROR_BAD_PARAMETER;
+}
+
+#else 
 
   // _________ TODO ______________________
   bool fopenTextFile(char* filename) {

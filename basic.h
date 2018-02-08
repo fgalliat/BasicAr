@@ -164,8 +164,10 @@
 
     #define TOKEN_RECT             103 // RECT x,y,w,h,color,mode
     #define TOKEN_BLITT            104 // set the screen blitt mode (0,1,2)
+
+    #define TOKEN_DATAF            105 // feeds some typed arrays w/ pseudo CSV content (file.BAD)
     
-    #define TOKEN_LASTONE TOKEN_BLITT
+    #define TOKEN_LASTONE TOKEN_DATAF
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT

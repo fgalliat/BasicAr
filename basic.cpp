@@ -229,6 +229,8 @@ TokenTableEntry tokenTable[] = {
     {"RECT",  6}, // rect x,y,w,h[,color[,mode]]
     {"BLITT", 1}, // {0,1,2}
 
+    {"DATAF", TKN_FMT_POST},  // DATAF "<file>","<sizeVar>","<ARRAY_VAR>"[,"<ARRAY_VAR>","<ARRAY_VAR>"...]
+
 };
 
 
@@ -2442,6 +2444,7 @@ int parseStmts()
             case TOKEN_DIRARRAY: ret = xts_fs_dir(true); break;
 
             case TOKEN_EXT_EXEC: ret = xts_exec_cmd(); break;
+            case TOKEN_DATAF: ret = xts_dataf_cmd(); break;
 
             case TOKEN_BLITT : ret = xts_blittMode(); break;
             case TOKEN_RECT  : ret = xts_dispRect(); break;
