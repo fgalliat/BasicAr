@@ -644,7 +644,7 @@
 
             int cpt = 0;
             for( int i=0; i < MAX_LINE_LEN; i++ ) {
-                char ch = (char)f.read();
+                char ch = (char)this->currentFile.read();
                 if ( ch == -1 )   { break; }
                 if ( ch == '\r' ) { continue; }
                 if ( ch == '\n' ) { break; }

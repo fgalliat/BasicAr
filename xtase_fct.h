@@ -889,6 +889,8 @@ int xts_exec_cmd() {
 
 // ===================================================================
 
+#define NIMPORTEQUOI 1
+
 #ifdef NIMPORTEQUOI
 
   // _________ TODO ______________________
@@ -896,7 +898,7 @@ int xts_exec_cmd() {
     #ifdef ESP32PCKv2
       return esp32.getFs()->openCurrentTextFile( filename );
     #else 
-      host_outputString("fopenTextFile() NYI");
+      host_outputString( "fopenTextFile() NYI");
     #endif
   }
   
@@ -913,7 +915,7 @@ int xts_exec_cmd() {
     #ifdef ESP32PCKv2
       esp32.getFs()->closeCurrentTextFile();
     #else 
-      host_outputString("fopenTextFile() NYI");
+      host_outputString("fcloseTextFile() NYI");
     #endif
   }
   // _________ TODO ______________________
@@ -1020,6 +1022,9 @@ int xts_exec_cmd() {
     return NULL;
   }
 
+extern int storeNumVariable(char* name, float val);
+extern int setNumArrayElem(char* name, float val);
+extern char* autocomplete_fileExt(char*, const char* defExt);
 
 // DATAF "TOTO", "SZ", "A$", "HP", "FO", "DE"
 // reads "TOTO.BAD" from Fs
@@ -1076,11 +1081,17 @@ int xts_dataf_cmd() {
         // [Mula;15;15;20
         // [Grumph;50;10;30
 
-        fopenTextFile( autocomplete_fileExt(args[0], ".BAD") );
+        if ( ! fopenTextFile( autocomplete_fileExt(args[0], ".BAD") ) ) {
+          host_outputString("Failed to open file\n");
+          host_showBuffer();
 
-        char* line; int cpt=0,total=-1;
-        while( (line = freadTextLine()) != NULL ) {
-          line = str_trim( line );
+          return ERROR_VARIABLE_NOT_FOUND;
+        }
+
+        char* line, *oline; int cpt=0,total=-1;
+        while( (oline = freadTextLine()) != NULL ) {
+          line = str_trim( oline );
+          free(oline);
 
           if ( strlen(line) == 0 || line[0] == '#' ) {
             continue;
@@ -1092,7 +1103,7 @@ int xts_dataf_cmd() {
             total = atoi(line);
             cpt = 1;
 
-            storeNumVariable(args[1], (float) total)
+            storeNumVariable(args[1], (float) total);
 
             for(int i=2; i < argc; i++) {
               bool isStrArray = args[i][ strlen(args[i]-1) ] == '$';
@@ -1101,6 +1112,9 @@ int xts_dataf_cmd() {
                 host_outputString("Could not create ");
                 host_outputString( args[i] );
                 host_outputString(" column\n");
+                host_showBuffer();
+
+                free(line);
                 fcloseFile();
                 return ERROR_OUT_OF_MEMORY;
               }
@@ -1109,7 +1123,8 @@ int xts_dataf_cmd() {
           } else {
             // regular line
 
-            char* remaining = copyOf( line );
+            //char* remaining = copyOf( line );
+            char* remaining = line;
             int fullLen = strlen( remaining );
 
             for(int i=2; i < argc; i++) {
@@ -1132,8 +1147,9 @@ int xts_dataf_cmd() {
                 host_outputString("Could not fill ");
                 host_outputString( args[i] );
                 host_outputString(" column @");
-                host_outputString( cpt );
+                host_outputInt( cpt );
                 host_outputString("\n");
+                host_showBuffer();
 
                 if (token != NULL) free( token );
                 free( line );
@@ -1155,6 +1171,7 @@ int xts_dataf_cmd() {
 
         }
 
+        free(line);
         fcloseFile();
 
       } // end of argc > 0
