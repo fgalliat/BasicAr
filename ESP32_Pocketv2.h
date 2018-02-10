@@ -104,11 +104,15 @@
     // driven by xtase_fct.h
     #define BTN1 26
     // BEWARE 25 is used as LED on XtsPocket v1
-    #define BTN2 25
+    // Oups mis-wired BT2 & TR-A !!
+    // #define BTN2 25
+    #define BTN2 32
     #define BTN3 33
 
     #ifdef USE_JG1010_PAD
-     #define BTN_TRIGGER_A 32
+     // Oups mis-wired BT2 & TR-A !!
+     // #define BTN_TRIGGER_A 32
+     #define BTN_TRIGGER_A 25
     #endif
 
     // the DFPlayer MP3 BUSY LINE
