@@ -886,6 +886,10 @@ int xts_exec_cmd() {
               telnet.connectWifi();
             } else if ( strcmp( args[1], "DISCONNECT" ) == 0 ) {
               telnet.disconnectWifi();
+            } else if ( strcmp( args[1], "SRVSTART" ) == 0 ) {
+              telnet.open();
+            } else if ( strcmp( args[1], "SRVSTOP" ) == 0 ) {
+              telnet.close();
             }
             else {
               free( args[0] );
