@@ -300,7 +300,28 @@ void loop() {
 
         // get a line from the user
         MODE_EDITOR = true;
-        char *input = host_readLine();
+        #ifdef ESP32_WIFI_SUPPORT
+
+            if ( telnet.isServerStarted() ) {
+                telnet.runServerTick();
+            }
+
+            char *input = NULL; 
+            if ( telnet.isClientConnected() ) {
+                telnet.print("> ");
+                while( ( input = telnet.readLine() ) == NULL ) { delay(150); }
+                if ( strcmp( input, "/quit" ) == 0) { telnet.print("Bye \n"); telnet.close(); }
+                else {
+                    telnet.print(line);
+                    telnet.print("\n");
+                }
+            } else {
+                input = host_readLine();
+            }
+
+        #else
+            char *input = host_readLine();
+        #endif
         MODE_EDITOR = false;
 
         // special editor commands

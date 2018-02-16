@@ -23,7 +23,8 @@
      char lineRead[MAX_LINE_LEN+1];
 
      // ==========================
-     WiFiMulti wifiMulti;
+     //WiFiMulti wifiMulti;
+     WiFiMulti* wifiMulti;
      //WiFiServer server(23);
      WiFiServer* server;
      WiFiClient serverClients[MAX_SRV_CLIENTS];
@@ -49,6 +50,9 @@
           DBUG("missing /SSID.TXT is missing !!\n");
           return false;
         }
+
+        if (wifiMulti == NULL) wifiMulti = new WiFiMulti(); 
+
         char* line, *line2;
         while( (line = esp32.getFs()->readCurrentTextLine() ) != NULL ) {
           // trim TODO + file sanity check
@@ -56,14 +60,14 @@
           //DBUG( line ); DBUG( "=>" );
           DBUG( "Registering SSID : " );DBUG( line );DBUG( "\n" ); 
           line2 = esp32.getFs()->readCurrentTextLine();
-          wifiMulti.addAP( (const char*)line, (const char*)line2);
+          wifiMulti->addAP( (const char*)line, (const char*)line2);
           // DBUG( line2 ); DBUG( "\n" );
         }
         esp32.getFs()->closeCurrentTextFile();
 
         DBUG("Connecting Wifi \n");
         for (int loops = 10; loops > 0; loops--) {
-          if (wifiMulti.run() == WL_CONNECTED) {
+          if (wifiMulti->run() == WL_CONNECTED) {
             DBUG("WiFi connected \n");
             DBUG("IP address: ");
             DBUG(WiFi.localIP());
@@ -75,7 +79,7 @@
             delay(1000);
           }
         }
-        if (wifiMulti.run() != WL_CONNECTED) {
+        if (wifiMulti->run() != WL_CONNECTED) {
           DBUG("WiFi connect failed\n");
           delay(1000);
           //ESP.restart();
@@ -123,7 +127,7 @@
 
         uint8_t i;
 
-        if (wifiMulti.run() == WL_CONNECTED) {
+        if (wifiMulti->run() == WL_CONNECTED) {
           //check if there are any new clients
           if (server->hasClient()){
             for(i = 0; i < MAX_SRV_CLIENTS; i++){
