@@ -15,8 +15,9 @@
 
   class Esp32WifiServer {
     private:
-     bool isWifiConnected = false;
-     bool isClientConnected = false;
+     bool _isWifiConnected = false;
+     bool _isServerStarted = false;
+     bool _isClientConnected = false;
 
      // ==========================
      WiFiMulti wifiMulti;
@@ -31,9 +32,13 @@
       }
       ~Esp32WifiServer() {}
 
-      // connect to wifi & open telnet server
+      bool isServerStarted() { return _isServerStarted; }
+
+      // connect to wifi 
       // reads SSIDs & PASSs from SPIFF FS
-      bool open() {
+      bool connectWifi() {
+        this->_isWifiConnected = false;
+
         bool ok = esp32.getFs()->openCurrentTextFile("/SSID.TXT");
         if ( !ok ) {
           DBUG("missing /SSID.TXT is missing !!\n");
@@ -43,12 +48,11 @@
         while( (line = esp32.getFs()->readCurrentTextLine() ) != NULL ) {
           // trim TODO + file sanity check
           if ( strlen(line) == 0 ) { break; }
-          DBUG( line );
-          DBUG( "=>" );
+          //DBUG( line ); DBUG( "=>" );
+          DBUG( "Registering SSID : " );DBUG( line );DBUG( "\n" ); 
           line2 = esp32.getFs()->readCurrentTextLine();
           wifiMulti.addAP( (const char*)line, (const char*)line2);
-          DBUG( line2 );
-          DBUG( "\n" );
+          // DBUG( line2 ); DBUG( "\n" );
         }
         esp32.getFs()->closeCurrentTextFile();
 
@@ -73,12 +77,71 @@
           return false;
         }
 
+        this->_isWifiConnected = true;
+        return true;
+      }
+
+      void disconnectWifi() {
+        this->_isWifiConnected = false;
+        WiFi.disconnect();
+      }
+
+      // open telnet server
+      bool open() {
+        if ( !this->_isWifiConnected ) {
+          DBUG("NOT CONNECTED TO WIFI\n");
+          return false;
+        }
+        if ( this->_isServerStarted ) {
+          DBUG("SERVER ALREADY STARTED\n");
+          return false;
+        }
+        this->_isServerStarted = false;
+
         server->begin();
         server->setNoDelay(true);
 
         DBUG("Ready! Use 'telnet ");
         DBUG(WiFi.localIP());
         DBUG(" 23' to connect\n");
+
+        this->_isServerStarted = true;
+      }
+
+      bool runServerTick() {
+        if ( !( this->_isWifiConnected && this->_isServerStarted ) ) {
+          return false;
+        }
+
+        uint8_t i;
+
+        if (wifiMulti.run() == WL_CONNECTED) {
+          //check if there are any new clients
+          if (server->hasClient()){
+            for(i = 0; i < MAX_SRV_CLIENTS; i++){
+              //find free/disconnected spot
+              if (!serverClients[i] || !serverClients[i].connected()){
+                if(serverClients[i]) serverClients[i].stop();
+                serverClients[i] = server->available();
+                if (!serverClients[i]) Serial.println("available broken");
+                DBUG("New client: ");
+                DBUG(i); DBUG(' ');
+                DBUG(serverClients[i].remoteIP()); DBUG('\n');
+                break;
+              }
+            }
+            if (i >= MAX_SRV_CLIENTS) {
+              //no free/disconnected spot so reject
+              server->available().stop();
+            }
+          }
+        } else {
+          DBUG("WiFi not connected!");
+          for(i = 0; i < MAX_SRV_CLIENTS; i++) {
+            if (serverClients[i]) serverClients[i].stop();
+          }
+          // delay(1000);
+        }
 
         return true;
       }

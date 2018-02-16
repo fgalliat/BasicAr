@@ -46,12 +46,19 @@ void loop() {
 
         DBUG("begin\n");
 
-        telnet.open();
+        if ( !telnet.isServerStarted() ) {
+            if ( telnet.connectWifi() ) {
+                telnet.open();
+            }
+        }
 
+
+        while ( true ) { 
+            telnet.runServerTick();
+            delay(250); 
+        }
 
         DBUG("end\n");
-
-        while ( true ) { delay(100); }
     }
     delay(250);
 }
