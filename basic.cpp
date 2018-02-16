@@ -61,9 +61,18 @@
 #ifdef BUT_ESP32
  #ifdef ESP32PCKv2
     extern Esp32Pocketv2 esp32;
+
+ #ifdef ESP32_WIFI_SUPPORT
+     #define DBUG(a) { Serial.print(a); }
+     #include "Esp32WifiServer.h"
+     extern Esp32WifiServer telnet;
+     #undef DBUG
+ #endif
+
  #else
    extern Esp32Oled esp32;
  #endif
+
 #endif
 
   #ifndef COMPUTER

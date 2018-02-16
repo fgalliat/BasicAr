@@ -18,9 +18,6 @@
    HardwareSerial Serial2(UART2_NUM);
    Esp32Pocketv2 esp32;
 
-
-   #define ESP32_WIFI_SUPPORT
-
    #ifdef ESP32_WIFI_SUPPORT
      #define DBUG(a) { Serial.print(a); }
      #include "Esp32WifiServer.h"

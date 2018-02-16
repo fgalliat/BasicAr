@@ -31,7 +31,7 @@
 
     public:
       Esp32WifiServer() {
-        server = new WiFiServer(23);
+        
       }
       ~Esp32WifiServer() {}
 
@@ -93,6 +93,8 @@
 
       // open telnet server
       bool open() {
+        if (server == NULL) server = new WiFiServer(23);
+        
         if ( !this->_isWifiConnected ) {
           DBUG("NOT CONNECTED TO WIFI\n");
           return false;

@@ -130,6 +130,9 @@
 
     // MP3 DFPlayer module
     #define BOARD_SND 1
+
+    // Wifi support for Esp32
+    #define ESP32_WIFI_SUPPORT 1
   #else
     // ESP32 + Oled Board
     // from mackerhawk as example

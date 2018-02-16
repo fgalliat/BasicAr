@@ -13,6 +13,11 @@
   #include "computer.h"
 #endif
 
+#ifdef ESP32_WIFI_SUPPORT
+  extern Esp32WifiServer telnet;
+#endif
+
+
 #include "xts_io.h"
 extern int OUTPUT_DEVICE;
 extern int GFX_DEVICE;
@@ -873,7 +878,25 @@ int xts_exec_cmd() {
             }
             free( args[1] );
           } // end of argc > 1
-        } else {
+        } 
+        #ifdef ESP32_WIFI_SUPPORT
+        else if ( strcmp( args[0], "WIFI" ) == 0 ) {
+          if ( argc > 1 ) {
+            if ( strcmp( args[1], "CONNECT" ) == 0 ) {
+              telnet.connectWifi();
+            } else if ( strcmp( args[1], "DISCONNECT" ) == 0 ) {
+              telnet.disconnectWifi();
+            }
+            else {
+              free( args[0] );
+              free( args[1] );
+              return ERROR_BAD_PARAMETER;
+            }
+            free( args[1] );
+          } // end of argc > 1
+        } 
+        #endif
+        else {
           free( args[0] );
           return ERROR_BAD_PARAMETER;
         }
