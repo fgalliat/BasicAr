@@ -32,9 +32,15 @@
 
     public:
       Esp32WifiServer() {
-        
+        _isWifiConnected = false;
+        _isServerStarted = false;
+        _isClientConnected = false;
       }
-      ~Esp32WifiServer() {}
+      ~Esp32WifiServer() {
+        _isWifiConnected = false;
+        _isServerStarted = false;
+        _isClientConnected = false;
+      }
 
       bool isWifiConnected()   { return _isWifiConnected; }
       bool isServerStarted()   { return _isServerStarted; }

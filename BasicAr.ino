@@ -265,6 +265,8 @@ int doRun() {
 bool MODE_EDITOR = false;
 bool systemHalted = false;
 
+bool wasNot = true;
+
 void loop() {
     int ret = ERROR_NONE;
 
@@ -302,19 +304,31 @@ void loop() {
         MODE_EDITOR = true;
         #ifdef ESP32_WIFI_SUPPORT
 
+            char *input = NULL; 
             if ( telnet.isServerStarted() ) {
                 telnet.runServerTick();
-            }
 
-            char *input = NULL; 
-            if ( telnet.isClientConnected() ) {
-                telnet.print("> ");
-                while( ( input = telnet.readLine() ) == NULL ) { delay(150); }
-                if ( strcmp( input, "/quit" ) == 0) { telnet.print("Bye \n"); telnet.close(); }
-                else {
-                    telnet.print(line);
-                    telnet.print("\n");
+                if ( telnet.isClientConnected() ) {
+
+                    if (wasNot) {
+                        wasNot = false;
+                        telnet.print("> Please press Enter");    
+                        while( ( input = telnet.readLine() ) == NULL ) { delay(150); }
+                    }
+
+                    telnet.print("> ");
+                    while( ( input = telnet.readLine() ) == NULL ) { delay(150); }
+                    if ( strcmp( input, "/quit" ) == 0) { wasNot = true; telnet.print("Bye \n"); telnet.close(); }
+                    else {
+                        telnet.print(input);
+                        telnet.print("\n");
+                    }
+                } else {
+                    delay(500);
+                    // BEWARE !!!!!!!
+                    return;
                 }
+
             } else {
                 input = host_readLine();
             }
