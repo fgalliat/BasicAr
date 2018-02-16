@@ -931,7 +931,8 @@ int xts_dataf_cmd() {
   // remember to free() result ....
   char* str_trim(char* str) {
     if ( str == NULL ) { return NULL; }
-    int start = 0, stop = strlen( str )-1;
+    //int start = 0, stop = strlen( str )-1;
+    int start = 0, stop = strlen( str );
 
     for(int i=0; i <= stop; i++) {
       if ( str[ i ] > 32 ) {
@@ -1097,80 +1098,100 @@ int xts_dataf_cmd() {
         }
 
         char* line, *oline; int cpt=0,total=-1;
+        //Serial.println("DATAF 1");
         while( (oline = freadTextLine()) != NULL ) {
+          //Serial.println("DATAF 2");
           line = str_trim( oline );
+          //Serial.println("DATAF 3");
           free(oline);
+          //Serial.println("DATAF 4");
 
           if ( strlen(line) == 0 || line[0] == '#' ) {
             continue;
           }
+
+          //Serial.println("DATAF 5");
+          Serial.println( line );
 
           if ( total == -1 ) {
             // RowCount line
 
             total = atoi(line);
             cpt = 1;
+            Serial.print("DATAF 6 Row Count : "); Serial.println(total);
 
             storeNumVariable(args[1], (float) total);
+            //Serial.println("DATAF 7");
 
             for(int i=2; i < argc; i++) {
-              bool isStrArray = args[i][ strlen(args[i]-1) ] == '$';
+              int llen = strlen(args[i]);
+              bool isStrArray = llen > 0 && args[i][ llen-1 ] == '$';
 
               if ( ! xts_createArray( args[i] , isStrArray ? 1 : 0, total) ) {
                 host_outputString("Could not create ");
                 host_outputString( args[i] );
                 host_outputString(" column\n");
                 host_showBuffer();
-
+Serial.println("DATAF 8");
                 free(line);
+Serial.println("DATAF 9");
                 fcloseFile();
+Serial.println("DATAF 10");
                 return ERROR_OUT_OF_MEMORY;
               }
             }
-
+Serial.println("DATAF 11");
           } else {
             // regular line
 
             //char* remaining = copyOf( line );
             char* remaining = line;
             int fullLen = strlen( remaining );
-
+Serial.println("DATAF 12");
             for(int i=2; i < argc; i++) {
-              bool isStrArray = args[i][ strlen(args[i]-1) ] == '$';
+              int llen = strlen(args[i]);
+              bool isStrArray = llen > 0 && args[i][ llen-1 ] == '$';
               bool col_ok = false;
-
+Serial.print("DATAF 13 >");Serial.print(args[i]);Serial.println("<");
               // HAVE TO make my own split() routine
               // able to escape '\;' sequence
               char* token = nextSplit( remaining, fullLen, ';', true );
-
-              if ( isStrArray ) {
+Serial.print("DATAF 14 >");Serial.print(token);Serial.println("<");
+              if ( !isStrArray ) {
                 float val = atof( token );
                 // seems to push to given array
-                col_ok = setNumArrayElem(args[i], val) != ERROR_NONE;
+                col_ok = setNumArrayElem(args[i], val) == ERROR_NONE;
               } else {
-                col_ok = xts_setStrArrayElem( args[i], (cpt+1), token ) != ERROR_NONE;
+                col_ok = xts_setStrArrayElem( args[i], cpt, token ) == ERROR_NONE;
               } 
+Serial.println("DATAF 15");
 
               if ( !col_ok ) {
                 host_outputString("Could not fill ");
                 host_outputString( args[i] );
-                host_outputString(" column @");
+                host_outputString(" column @row=");
                 host_outputInt( cpt );
                 host_outputString("\n");
                 host_showBuffer();
 
-                if (token != NULL) free( token );
-                free( line );
+Serial.println("DATAF 16");
+                // if (token != NULL) free( token );
+Serial.println("DATAF 17");
+                // free( line );
+Serial.println("DATAF 18");
 
                 fcloseFile();
+Serial.println("DATAF 19");
                 return ERROR_IN_VAL_INPUT;
               }
-
-              if (token != NULL) free(token);
+Serial.println("DATAF 20");
+              //if (token != NULL) free(token);
+Serial.println("DATAF 21");
             }
-
+Serial.println("DATAF 22");
             cpt++;
-            free( line );
+            //if (line != NULL) free( line );
+Serial.println("DATAF 23");
             if ( cpt > total ) {
               host_outputString("file truncated !");
               break;
@@ -1178,10 +1199,11 @@ int xts_dataf_cmd() {
           }
 
         }
-
-        free(line);
+Serial.println("DATAF 24");
+        //if (line != NULL) free(line);
+Serial.println("DATAF 25");
         fcloseFile();
-
+Serial.println("DATAF 26");
       } // end of argc > 0
       else {
         // missing args

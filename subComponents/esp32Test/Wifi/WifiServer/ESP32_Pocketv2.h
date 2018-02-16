@@ -631,10 +631,11 @@
           // ================================
           // WORKS on a CURRENT file .....
 
-          bool openCurrentTextFile(char* filename) {
-              Serial.println("opening");
+          bool openCurrentTextFile(char* filename, bool readMode = true) {
+            Serial.println("opening");
             this->currentFileValid = false;
-            this->currentFile = SPIFFS.open(filename, "r");
+            if ( !SPIFFS.exists(filename) ) { return false; }
+            this->currentFile = SPIFFS.open(filename, readMode ? "r" : "w");
             if ( !this->currentFile ) { Serial.println("failed"); return false; }
             this->currentFileValid = true;
             Serial.println("opened");
