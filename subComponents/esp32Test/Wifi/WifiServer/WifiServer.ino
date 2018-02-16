@@ -39,6 +39,8 @@ void setup() {
     DBUG("done\n");
 }
 
+bool wasNot = true;
+
 void loop() {
     if ( true ) {
     //if ( btn() ) {
@@ -55,6 +57,27 @@ void loop() {
 
         while ( true ) { 
             telnet.runServerTick();
+
+            if ( telnet.isClientConnected() ) {
+
+                if (wasNot) {
+                    telnet.print("Hi, Please press Enter Key...\n");
+                    wasNot = false;
+                }
+
+                char* line = telnet.readLine();
+                if ( line != NULL ) {
+                    DBUG("Ya typed >>");DBUG(line);DBUG("<<\n");
+
+                    if ( strcmp(line, "/quit") == 0 ) {
+                        telnet.print("OK Bye\n");
+                        wasNot = true;
+                        telnet.close();
+                        telnet.disconnectWifi();
+                    }
+                }
+            }
+
             delay(250); 
         }
 
