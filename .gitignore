@@ -8,3 +8,4 @@ basic
 **/bin
 subComponents/RPIDisplay/realPI
 preferences.txt
+data/SSID.TXT
