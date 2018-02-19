@@ -1,0 +1,26 @@
+5 ' @ this time esp require a blank line
+10 I = 1
+20 CLS
+30 ? " -= ESP WIFI MENU =-"
+50 LOCATE 0,I+1 : ? ">";
+100 LOCATE 2,2 : ? "Connect";
+110 LOCATE 2,3 : ? "Disconnect";
+120 LOCATE 2,4 : ? "Start SRV";
+125 LOCATE 2,5 : ? "---------";
+128 LOCATE 2,6 : ? "SysMENU";
+130 LOCATE 2,7 : ? "Exit";
+200 A$=INKEY$ : CH = 0
+210 IF A$="r" OR BTN(6) THEN I = I - 1 : CH = 1
+220 IF A$="c" OR BTN(7) THEN I = I + 1 : CH = 1
+230 IF A$=" " OR BTN(1) THEN CH = 1: DELAY 300 : GOTO 1000
+300 IF I < 1 THEN I = 6
+310 IF I > 6 THEN I = 1
+600 IF CH = 1 THEN DELAY 200 : GOTO 20
+610 DELAY 10 : GOTO 200
+1000 IF I = 6 THEN STOP
+1003 IF I = 5 THEN CHAIN "SYSMENU"
+1005 IF I = 4 THEN ? "...."
+1010 IF I = 3 THEN EXEC "WIFI","SRVSTART"
+1020 IF I = 2 THEN EXEC "WIFI","DISCONNECT"
+1030 IF I = 1 THEN EXEC "WIFI","CONNECT"
+2000 GOTO 10
