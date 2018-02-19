@@ -63,10 +63,17 @@
     extern Esp32Pocketv2 esp32;
 
  #ifdef ESP32_WIFI_SUPPORT
-     #define DBUG(a) { Serial.print(a); }
+     extern void host_outputString(char* str);
+     extern int host_outputInt(long v);
+
+     #define DBUG(a) { Serial.print(a); host_outputString(a); }
+     #define DBUGi(a) { Serial.print(a); host_outputInt(a); }
+
      #include "Esp32WifiServer.h"
      extern Esp32WifiServer telnet;
+     
      #undef DBUG
+     #undef DBUGi
  #endif
 
  #else

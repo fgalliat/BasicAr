@@ -1374,8 +1374,38 @@ void saveAsciiBas(char* filename) {
   autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
 
   #ifdef ESP32_FS
-    host_outputString("SAVE NYI for esp32\n");
+    esp32.getFs()->remove(SDentryName);
+    esp32.getFs()->openCurrentTextFile(SDentryName, false);
+
+    char lineNumStr[7];
+
+    cleanCodeLine();
+    unsigned char *p = &mem[0];
+    while (p < &mem[sysPROGEND]) {
+        uint16_t lineNum = *(uint16_t*)(p+2);
+        // file.print(lineNum);
+        // file.print(" ");
+
+        sprintf(lineNumStr, "%d ", lineNum);
+        esp32.getFs()->writeCurrentTextLine(lineNumStr);
+
+        _serializeTokens(p+4, codeLine);
+        //file.print(codeLine);
+        esp32.getFs()->writeCurrentTextLine(codeLine);
+        cleanCodeLine();
+
+        //file.print("\n");
+        esp32.getFs()->writeCurrentTextLine("\n");
+        p+= *(uint16_t *)p;
+    }
+    //file.flush();
+
+        
+    host_outputString( "-EOF-\n" );
     host_showBuffer();
+
+    esp32.getFs()->closeCurrentTextFile();
+
   #else
     // SFATLIB mode -> have to switch for regular SD lib
     sd.remove( SDentryName );

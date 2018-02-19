@@ -570,9 +570,16 @@
             //bool ff = SPIFFS.format();
           }
 
+          void remove(char* filename) {
+            if (!SPIFFS.exists(filename) ) { return; }  
+            SPIFFS.remove(filename);
+          }
+
           // filename = "/toto.txt"
           // returns nb of bytes readed
           int readBinFile(char* filename, uint8_t* dest, int maxLen) {
+            if (!SPIFFS.exists(filename) ) { return -1; }
+
             File f = SPIFFS.open(filename, "r");
             if ( !f ) { return -1; }
             int readed = f.readBytes( (char*)dest, maxLen);
@@ -584,6 +591,8 @@
           // returns nb of lines readed
           // callbacked lines does not contains trailing '\n'
           int readTextFile(char* filename, void (*callback)(char*) ) {
+            if (!SPIFFS.exists(filename) ) { return -1; }
+
             File f = SPIFFS.open(filename, "r");
             if ( !f ) { return -1; }
             int lineNb = 0;
@@ -648,6 +657,13 @@
             this->currentFile.close();
             this->currentFileValid = false;
             Serial.println("closed");
+          }
+        
+          // have to provide "\n" @ end of line
+          void writeCurrentTextLine(char* line) {
+              int len = strlen( line );
+              this->currentFile.write( (uint8_t*)line, len );
+              this->currentFile.flush();
           }
 
           // slow impl !!!!!!!

@@ -76,12 +76,21 @@
           if (wifiMulti->run() == WL_CONNECTED) {
             DBUG("WiFi connected \n");
             DBUG("IP address: ");
-            DBUG(WiFi.localIP());
+            
+            //DBUG(WiFi.localIP());
+            // BEWARE HERE !!!!!!!!!!!!!!!
+            char ip[15+1];
+            memset(ip, 0x00, 15+1);
+            String str = WiFi.localIP().toString();
+            str.toCharArray( ip, str.length() );
+            // BEWARE HERE !!!!!!!!!!!!!!!
+            DBUG((char*)ip);
+
             DBUG("\n");
             break;
           }
           else {
-            DBUG(loops); DBUG("\n");
+            DBUGi(loops); DBUG("\n");
             delay(1000);
           }
         }
@@ -120,7 +129,17 @@
         server->setNoDelay(true);
 
         DBUG("Ready! Use 'telnet ");
-        DBUG(WiFi.localIP());
+
+        //DBUG(WiFi.localIP());
+        // BEWARE HERE !!!!!!!!!!!!!!!
+        char ip[15+1];
+        memset(ip, 0x00, 15+1);
+        String str = WiFi.localIP().toString();
+        str.toCharArray( ip, str.length() );
+        // BEWARE HERE !!!!!!!!!!!!!!!
+        DBUG((char*)ip);
+
+
         DBUG(" 23' to connect\n");
 
         this->_isServerStarted = true;
@@ -143,8 +162,16 @@
                 serverClients[i] = server->available();
                 if (!serverClients[i]) Serial.println("available broken");
                 DBUG("New client: ");
-                DBUG(i); DBUG(' ');
-                DBUG(serverClients[i].remoteIP()); DBUG('\n');
+                DBUGi(i); DBUG(" ");
+
+                // BEWARE HERE !!!!!!!!!!!!!!!
+                char ip[15+1];
+                memset(ip, 0x00, 15+1);
+                String str = serverClients[i].remoteIP().toString();
+                str.toCharArray( ip, str.length() );
+                // BEWARE HERE !!!!!!!!!!!!!!!
+
+                DBUG( (char*)ip ); DBUG("\n");
                 this->_isClientConnected = true;
                 break;
               }
