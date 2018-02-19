@@ -79,10 +79,11 @@
             
             //DBUG(WiFi.localIP());
             // BEWARE HERE !!!!!!!!!!!!!!!
-            char ip[15+1];
-            memset(ip, 0x00, 15+1);
             String str = WiFi.localIP().toString();
-            str.toCharArray( ip, str.length() );
+            int lstr = str.length();
+            char ip[lstr+1];
+            memset(ip, 0x00, lstr+1);
+            str.toCharArray( ip, lstr+1 );
             // BEWARE HERE !!!!!!!!!!!!!!!
             DBUG((char*)ip);
 
@@ -132,10 +133,11 @@
 
         //DBUG(WiFi.localIP());
         // BEWARE HERE !!!!!!!!!!!!!!!
-        char ip[15+1];
-        memset(ip, 0x00, 15+1);
         String str = WiFi.localIP().toString();
-        str.toCharArray( ip, str.length() );
+        int lstr = str.length();
+        char ip[lstr+1];
+        memset(ip, 0x00, lstr+1);
+        str.toCharArray( ip, lstr+1 );
         // BEWARE HERE !!!!!!!!!!!!!!!
         DBUG((char*)ip);
 
@@ -165,10 +167,11 @@
                 DBUGi(i); DBUG(" ");
 
                 // BEWARE HERE !!!!!!!!!!!!!!!
-                char ip[15+1];
-                memset(ip, 0x00, 15+1);
                 String str = serverClients[i].remoteIP().toString();
-                str.toCharArray( ip, str.length() );
+                int lstr = str.length();
+                char ip[lstr+1];
+                memset(ip, 0x00, lstr+1);
+                str.toCharArray( ip, lstr+1 );
                 // BEWARE HERE !!!!!!!!!!!!!!!
 
                 DBUG( (char*)ip ); DBUG("\n");
