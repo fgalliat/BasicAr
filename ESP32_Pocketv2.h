@@ -559,7 +559,7 @@
 
     class Esp32Pocketv2Fs {
         private:
-          File currentFile;
+          File* currentFile = NULL;
           bool currentFileValid = false;
         public:
           Esp32Pocketv2Fs() {}
@@ -568,11 +568,46 @@
           void init() {
             SPIFFS.begin();
             //bool ff = SPIFFS.format();
+
+/*
+if (!SPIFFS.exists("/formatComplete.txt") && !SPIFFS.exists("/AUTORUN.BAS")) {
+    Serial.println("Please wait 30 secs for SPIFFS to be formatted");
+    SPIFFS.format();
+    Serial.println("Spiffs formatted");
+   
+
+    File _f = SPIFFS.open("/AUTORUN.BAS", "w");
+    _f.println("1 ' blank line");
+    _f.println("10 ? \"Coucou\" ");
+    _f.close();
+
+    File f = SPIFFS.open("/formatComplete.txt", "w");
+    if (!f) {
+        Serial.println("file open failed");
+    } else {
+        f.println("Format Complete");
+    }
+    f.close();
+
+    while(true) { delay(250); }
+  } else {
+    Serial.println("SPIFFS is formatted. Moving along...");
+  }
+*/
+
+
+
+          }
+
+          // BEWARE !!!!!!
+          void format() {
+            bool ff = SPIFFS.format();
           }
 
           void remove(char* filename) {
-            if (!SPIFFS.exists(filename) ) { return; }  
+            // if (!SPIFFS.exists(filename) ) { return; }  
             SPIFFS.remove(filename);
+            delay(100);
           }
 
           // filename = "/toto.txt"
@@ -591,10 +626,10 @@
           // returns nb of lines readed
           // callbacked lines does not contains trailing '\n'
           int readTextFile(char* filename, void (*callback)(char*) ) {
-            if (!SPIFFS.exists(filename) ) { return -1; }
+            if (!SPIFFS.exists(filename) ) { return 0; }
 
             File f = SPIFFS.open(filename, "r");
-            if ( !f ) { return -1; }
+            if ( !f ) { return 0; }
             int lineNb = 0;
             // BEWARE w/ these values
             char buff[256];
@@ -641,11 +676,21 @@
           // WORKS on a CURRENT file .....
 
           bool openCurrentTextFile(char* filename, bool readMode = true) {
-            Serial.println("opening");
+            if ( filename == NULL ) { Serial.print("CAN'T OPEN NULL FILE\n"); return false; }
+            Serial.print("opening "); Serial.println(filename);
             this->currentFileValid = false;
             if ( readMode && !SPIFFS.exists(filename) ) { return false; }
-            this->currentFile = SPIFFS.open(filename, readMode ? "r" : "w");
-            if ( !this->currentFile ) { Serial.println("failed"); return false; }
+            delay(100);
+            //this->currentFile = NULL; // free ?
+            Serial.println("RIGHT HERE");
+            File f = SPIFFS.open(filename, readMode ? "r" : "w");
+            Serial.println("RIGHT NOW");
+            if ( !f ) { Serial.println("failed"); return false; }
+            this->currentFile = &( f );
+            delay(100);
+            f.seek(0);
+            if ( this->currentFile == NULL ) { Serial.println("failed"); return false; }
+            Serial.println("RIGHT ...");
             this->currentFileValid = true;
             Serial.println("opened");
             return true;
@@ -654,16 +699,17 @@
           void closeCurrentTextFile() {
               Serial.println("closing");
             if ( !this->currentFileValid ) { return; }
-            this->currentFile.close();
+            this->currentFile->close();
             this->currentFileValid = false;
             Serial.println("closed");
           }
         
           // have to provide "\n" @ end of line
           void writeCurrentTextLine(char* line) {
+              if ( line == NULL ) { Serial.print("CANT WRITE NULL LINE\n"); return; }
               int len = strlen( line );
-              this->currentFile.write( (uint8_t*)line, len );
-              this->currentFile.flush();
+              this->currentFile->write( (uint8_t*)line, len );
+              this->currentFile->flush();
           }
 
           // slow impl !!!!!!!
@@ -680,11 +726,11 @@
             int cpt = 0;
             for( int i=0; i < MAX_LINE_LEN; i++ ) {
 
-                if ( !this->currentFile.available() ) {
+                if ( !this->currentFile->available() ) {
                     break;
                 }
 
-                char ch = (char)this->currentFile.read();
+                char ch = (char)this->currentFile->read();
                 if ( ch == -1 )   { break; }
                 if ( ch == '\r' ) { continue; }
                 if ( ch == '\n' ) { break; }
@@ -723,12 +769,20 @@
           #ifdef USE_JG1010_PAD
            Esp32Pocketv2JG1010DigitalPad* digiCross = new Esp32Pocketv2JG1010DigitalPad();
           #endif
+          bool _isISR_LOCKED = false;
+
         public:
+
         Esp32Pocketv2() {
         }
 
         ~Esp32Pocketv2() {
         }
+
+        bool isISR_LOCKED() { return _isISR_LOCKED; }
+
+        void lockISR() { _isISR_LOCKED = true; }
+        void unlockISR() { _isISR_LOCKED = false; }
 
         void setup() {
             this->initGPIO();
@@ -947,6 +1001,7 @@
 
     extern Esp32Pocketv2 esp32;
     static void IRAM_ATTR _doISR() {
+        if ( esp32.isISR_LOCKED() ) { return; }
         #ifdef USE_JG1010_PAD
             esp32.poll();
         #endif

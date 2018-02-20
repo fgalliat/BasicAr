@@ -879,6 +879,21 @@ int xts_exec_cmd() {
             free( args[1] );
           } // end of argc > 1
         } 
+        #ifdef BUT_ESP32
+        else if ( strcmp( args[0], "FS" ) == 0 ) {
+          if ( argc > 1 ) {
+            if ( strcmp( args[1], "FORMAT" ) == 0 ) {
+              esp32.getFs()->format();
+            } 
+            else {
+              free( args[0] );
+              free( args[1] );
+              return ERROR_BAD_PARAMETER;
+            }
+            free( args[1] );
+          } // end of argc > 1
+        } 
+        #endif
         #ifdef ESP32_WIFI_SUPPORT
         else if ( strcmp( args[0], "WIFI" ) == 0 ) {
           if ( argc > 1 ) {

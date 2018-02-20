@@ -183,7 +183,7 @@ void setup() {
 #ifdef BUT_ESP32
    esp32.setup();
    STORAGE_OK = true;
-   addAutorunFlag = true;
+   // addAutorunFlag = true;
 #endif
 
     // BUZZER_MUTE = true;
@@ -250,7 +250,7 @@ void setup() {
         if ( !BUZZER_MUTE ) { host_startupTone(); }
     }
 #else
-    addAutorunFlag = true;
+    // addAutorunFlag = true;
 #endif
 
 }

@@ -998,7 +998,9 @@ bool drawBPPfile(char* filename) {
         return;
       }
 
+      esp32.lockISR();
       int cpt = esp32.getFs()->listDir("/", esp_ls_callback);
+      esp32.unlockISR();
 
       host_outputString("nb files : ");
       host_outputInt( cpt );
@@ -1374,8 +1376,20 @@ void saveAsciiBas(char* filename) {
   autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
 
   #ifdef ESP32_FS
+
+    esp32.lockISR();
+
+    Serial.println("clean");
     esp32.getFs()->remove(SDentryName);
-    esp32.getFs()->openCurrentTextFile(SDentryName, false);
+    Serial.println("open");
+    //esp32.getFs()->openCurrentTextFile(SDentryName, false);
+    //esp32.getFs()->writeCurrentTextLine("1 ' blank\n");
+
+    File f = SPIFFS.open(SDentryName, "w");
+    if ( !f ) { Serial.println("NOT ACCESSIBLE"); esp32.unlockISR(); return; }
+    Serial.println("seek");
+    f.seek(0);
+    Serial.println("seeked");
 
     char lineNumStr[7];
 
@@ -1387,24 +1401,33 @@ void saveAsciiBas(char* filename) {
         // file.print(" ");
 
         sprintf(lineNumStr, "%d ", lineNum);
-        esp32.getFs()->writeCurrentTextLine(lineNumStr);
+        f.print(lineNumStr);
 
         _serializeTokens(p+4, codeLine);
-        //file.print(codeLine);
-        esp32.getFs()->writeCurrentTextLine(codeLine);
+        f.print(codeLine);
+        //esp32.getFs()->writeCurrentTextLine(codeLine);
         cleanCodeLine();
 
-        //file.print("\n");
-        esp32.getFs()->writeCurrentTextLine("\n");
+        f.print("\r\n");
+        //esp32.getFs()->writeCurrentTextLine("\n");
         p+= *(uint16_t *)p;
+        f.flush();
+        Serial.println("line");
     }
-    //file.flush();
+    f.print("\r\n");
+    f.flush();
+    Serial.println("flushed");
+    f.close();
+    esp32.unlockISR();
+
+    Serial.println("closed");
+    //esp32.getFs()->writeCurrentTextLine("\n");
 
         
     host_outputString( "-EOF-\n" );
     host_showBuffer();
 
-    esp32.getFs()->closeCurrentTextFile();
+    //esp32.getFs()->closeCurrentTextFile();
 
   #else
     // SFATLIB mode -> have to switch for regular SD lib
