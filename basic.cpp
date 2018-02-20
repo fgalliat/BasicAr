@@ -206,7 +206,7 @@ TokenTableEntry tokenTable[] = {
 
     {"DELAY",TKN_FMT_POST}, // to sleep MCU
 
-    {"CONSOLE", 0}, // change current I/O console ==> TODO : add args to select devices
+    {"CONSOLE", 0|TKN_FMT_POST}, // change current I/O console ==> TODO : add args to select devices
 
     {"LLIST",TKN_FMT_POST}, // to dump current/fromSD PRGM to Serial console
 
@@ -216,10 +216,10 @@ TokenTableEntry tokenTable[] = {
 
     {"CHAIN",TKN_FMT_POST}, // to load then execute a program
 
-    {"CIRCLE", 3},
-    {"LINE", 4},
-    {"PSET", 2},    // switch ON a pixel
-    {"PRESET", 2},  // switch OFF a pixel
+    {"CIRCLE", 3|TKN_FMT_POST},
+    {"LINE", 4|TKN_FMT_POST},
+    {"PSET", 2|TKN_FMT_POST},    // switch ON a pixel
+    {"PRESET", 2|TKN_FMT_POST},  // switch OFF a pixel
 
     {"STRING$", 2|TKN_RET_TYPE_STR},  // repeat x times CHR$(y)
     {"UPPER$", 1|TKN_ARG1_TYPE_STR|TKN_RET_TYPE_STR},   // returns upper str
@@ -242,8 +242,8 @@ TokenTableEntry tokenTable[] = {
     {"SQRT", 1}, // numeric function
     {"POW",  2},
 
-    {"RECT",  6}, // rect x,y,w,h[,color[,mode]]
-    {"BLITT", 1}, // {0,1,2}
+    {"RECT",  6|TKN_FMT_POST}, // rect x,y,w,h[,color[,mode]]
+    {"BLITT", 1|TKN_FMT_POST}, // {0,1,2}
 
     {"DATAF", TKN_FMT_POST},  // DATAF "<file>","<sizeVar>","<ARRAY_VAR>"[,"<ARRAY_VAR>","<ARRAY_VAR>"...]
 
