@@ -1189,6 +1189,8 @@ bool drawBPPfile(char* filename) {
   #ifdef ESP32_FS
     void loadCallback(char* codeLine) {
 
+      if ( codeLine == NULL ) { Serial.println("CANT HANDLE NULL LINES"); return; }
+
       //Serial.print(">> ");Serial.println(codeLine);
 
       // interpret line
@@ -1223,7 +1225,9 @@ bool drawBPPfile(char* filename) {
     cleanCodeLine();
     memset( tokenBuf, 0x00, TOKEN_BUF_SIZE );
 
+    esp32.lockISR();
     esp32.getFs()->readTextFile(SDentryName, loadCallback);
+    esp32.unlockISR();
 
     host_outputString( "-EOF-\n" );
     host_showBuffer();
