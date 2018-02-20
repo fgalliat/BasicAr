@@ -250,7 +250,7 @@ void setup() {
         if ( !BUZZER_MUTE ) { host_startupTone(); }
     }
 #else
-    // addAutorunFlag = true;
+    addAutorunFlag = true;
 #endif
 
 }
