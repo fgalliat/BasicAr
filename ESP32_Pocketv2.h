@@ -875,13 +875,13 @@ return __myLine;
           // ================================
 
           // listDir("/") -> returns nb of file
-          int listDir(char* dirName, void (*callback)(char*) ) {
+          int listDir(char* dirName, void (*callback)(char*,uint32_t) ) {
             File dir = SPIFFS.open("/");
             File entry;
             int entryNb = 0;
             while( (entry = dir.openNextFile() ) ) {
                 if ( entry.isDirectory() ) { continue; }
-                callback( (char*)entry.name() );
+                callback( (char*)entry.name(), entry.size() );
                 entryNb++;
             }
             return entryNb;

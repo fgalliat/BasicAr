@@ -992,9 +992,11 @@ bool drawBPPfile(char* filename) {
 
   #ifdef ESP32_FS
 
-    void esp_ls_callback(char* entry) {
+    void esp_ls_callback(char* entry,uint32_t size) {
       host_outputString(entry);
-      host_outputString("\n");
+      host_outputString(" (");
+      host_outputInt(size);
+      host_outputString(")\n");
       host_showBuffer();
     }
 
@@ -1242,13 +1244,10 @@ bool drawBPPfile(char* filename) {
     } else {
       char* codeLine; int cpt = 0;
       while( (codeLine = esp32.getFs()->readCurrentTextLine() ) != NULL ) {
-        if ( strlen(codeLine) == 0 ) { break; }
-        //loadCallback( codeLine );
-        //host_outputString( codeLine );
-        //host_outputString( "\n" );
-        Serial.println( codeLine );
-        //Serial.println(cpt++);
-        //Serial.print( strlen(codeLine) ); Serial.print(" "); Serial.println( (int)codeLine[0] );
+        //if ( strlen(codeLine) == 0 ) { break; }
+
+        loadCallback( codeLine );
+        //Serial.println( codeLine );
       }
       esp32.getFs()->closeCurrentTextFile();
     }

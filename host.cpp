@@ -381,7 +381,10 @@ void host_showBuffer() {
         for (int y=0; y<SCREEN_HEIGHT; y++) {
             if ( SCREEN_LOCKER ) { return; }
 
-            if (lineDirty[y] || (inputMode && y==curY)) {
+            // BEWARE : removed since 21/02/2018 
+            //if (lineDirty[y] || (inputMode && y==curY)) {
+            if (lineDirty[y] ) {
+
                 //display.setCursor(0,y);
 
 #if defined(BUT_ESP32)
