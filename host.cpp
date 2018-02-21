@@ -321,6 +321,11 @@ void host_moveCursor(int x, int y) {
 
 int dirtyCOunter = 0;
 
+#ifdef BUT_ESP32
+  int lastScreenWidth = -1;
+  char* espScreenline = NULL;
+#endif
+
 void host_showBuffer() {
   if ( SCREEN_LOCKER ) { return; }
 
@@ -381,14 +386,20 @@ void host_showBuffer() {
 
 #if defined(BUT_ESP32)
  // TODO : BETTER
- char line[SCREEN_WIDTH+1];
- for (int x=0; x<SCREEN_WIDTH; x++) {
-   char c = screenBuffer[y*SCREEN_WIDTH+x];
-   if (c<32) c = ' ';
-   line[x] = c;
+ if ( lastScreenWidth != SCREEN_WIDTH ) {
+     if ( espScreenline != NULL ) { free(espScreenline); }
+     espScreenline = (char*)malloc( SCREEN_WIDTH+1 );
+     lastScreenWidth = SCREEN_WIDTH;
  }
- line[SCREEN_WIDTH] = 0x00;
- esp32.getScreen()->drawString( 0, y*8, line );
+ char c;
+ for (int x=0; x<SCREEN_WIDTH; x++) {
+   c = screenBuffer[y*SCREEN_WIDTH+x];
+   if (c<32) c = ' ';
+   espScreenline[x] = c;
+ }
+ espScreenline[SCREEN_WIDTH] = 0x00;
+ //esp32.getScreen()->drawString( 0, y*8, espScreenline );
+ Serial.println( espScreenline );
 #else
                 display.setCursor(0,y*8);
                 display.setTextColor( BLACK );

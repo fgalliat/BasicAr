@@ -193,20 +193,20 @@ void setup() {
     setConsoles(OUT_DEV_SERIAL, -1, -1);
     SCREEN_LOCKER = false;
 
+    //#ifdef BUILTIN_LCD and not defined(LCD_LOCKED)
     #ifdef BUILTIN_LCD
         setConsoles(OUT_DEV_LCD_MINI, -1, -1);
     #else
-        // OUTPUT_DEVICE = OUT_DEV_SERIAL;
-        // setScreenSize( SER_TEXT_WIDTH, SER_TEXT_HEIGHT );
+        OUTPUT_DEVICE = OUT_DEV_SERIAL;
+        setScreenSize( SER_TEXT_WIDTH, SER_TEXT_HEIGHT );
     #endif
 
     setupHardware();
 
     // TO REMOVE...
     keyboard.begin(DataPin, IRQpin);
-    //oled.ssd1306_init(SSD1306_SWITCHCAPVCC);
 
-    reset();
+    reset(); // resets the BASIC mem
 
 #ifndef BUT_ESP32
     host_init(BUZZER_PIN);
@@ -226,12 +226,6 @@ void setup() {
     #ifdef FS_SUPPORT
       if ( STORAGE_OK ) { host_outputString("SD : OK.\n"); }
       else              { host_outputString("SD : FAILED.\n"); }
-
-    //   #ifdef USE_SDFAT_LIB
-    //     host_outputString("SD : MODE FAT\n");
-    //   #else
-    //     host_outputString("SD : MODE LEG\n");
-    //   #endif
     #endif
 
     host_showBuffer();

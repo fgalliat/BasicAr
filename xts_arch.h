@@ -119,6 +119,9 @@
     #define ARCH_TYPE "ESP32-DevKit Board"
     #include "ESP32_Pocketv2.h"
     
+#define LCD_LOCKED 1
+
+
       /// BE SURE TO USE SAME GND side as 3.3 is !!!!!!
       // #define UART2_NUM 2
       #define UART2_RX 16

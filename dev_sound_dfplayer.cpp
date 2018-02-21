@@ -30,8 +30,8 @@
 
   // BEWARE : no trailing '\n' added
   void _DBUG(const char* str) {
-    host_outputString((char*)str);
-    host_showBuffer();
+    // host_outputString((char*)str);
+    // host_showBuffer();
     Serial.print(str);
   }  
 

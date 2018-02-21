@@ -40,7 +40,8 @@
     SdFile dirFile;
   #elif defined(ESP32_FS)
     // +1 for leading '/'
-    char SDentryName[13+1];
+    //char SDentryName[13+1];
+    char* SDentryName = NULL;
   #elif defined(USE_FS_LEGACY)
     char SDentryName[13];
     // ex. regular computer
@@ -66,25 +67,31 @@
   // BEWARE : uses & modifies : SDentryName[]
   // ex. autocomplete_fileExt(filename, ".BAS") => SDentryName[] contains full file-name
   // assumes that ext is stricly 3 char long
+  // + 1 for leading '/'
   char* autocomplete_fileExt(char* filename, const char* defFileExt) {
+    if ( SDentryName == NULL ) {
+      SDentryName = (char*)malloc(13+1);
+    }
     int flen = strlen(filename);
     memset(SDentryName, 0x00, 8+1+3+1+1); // 13+1 char long
-    memcpy(SDentryName, "/", 1);
-    //strcat(SDentryName, filename );
+    SDentryName[0] = '/';
     int l = strlen( filename );
     char ch;
+    bool foundAPoint = false;
     for(int i=0; i < l; i++) {
       ch = filename[i];
       if ( ch >= 'a' && ch <= 'z' ) {
         ch = ch - 'a' + 'A';
+      } else if ( ch == '.' ) {
+        foundAPoint = true;
       }
       SDentryName[1+i] = ch;
     }
-    if ( flen < 4 || filename[ flen-3 ] != '.' ) {
+    if ( !foundAPoint ) {
       strcat( SDentryName, defFileExt );
     }
     Serial.println( SDentryName );
-    return SDentryName;
+    return (char*)SDentryName;
   }
 #else
   char* autocomplete_fileExt(char* filename, const char* defFileExt) {
@@ -1226,7 +1233,25 @@ bool drawBPPfile(char* filename) {
     memset( tokenBuf, 0x00, TOKEN_BUF_SIZE );
 
     esp32.lockISR();
-    esp32.getFs()->readTextFile(SDentryName, loadCallback);
+    //esp32.getFs()->readTextFile(SDentryName, loadCallback);
+    bool ok = esp32.getFs()->openCurrentTextFile( SDentryName );
+    if ( !ok ) {
+      Serial.println( "-FAILED-" );
+      host_outputString( "-FAILED-\n" );
+      host_showBuffer();
+    } else {
+      char* codeLine; int cpt = 0;
+      while( (codeLine = esp32.getFs()->readCurrentTextLine() ) != NULL ) {
+        if ( strlen(codeLine) == 0 ) { break; }
+        //loadCallback( codeLine );
+        //host_outputString( codeLine );
+        //host_outputString( "\n" );
+        Serial.println( codeLine );
+        //Serial.println(cpt++);
+        //Serial.print( strlen(codeLine) ); Serial.print(" "); Serial.println( (int)codeLine[0] );
+      }
+      esp32.getFs()->closeCurrentTextFile();
+    }
     esp32.unlockISR();
 
     host_outputString( "-EOF-\n" );
@@ -1553,8 +1578,7 @@ void deleteBasFile(char* filename) {
   autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
 
   #ifdef ESP32_FS
-    host_outputString("DEL NYI for esp32\n");
-    host_showBuffer();
+    esp32.getFs()->remove( SDentryName );
   #else
     // SFATLIB mode -> have to switch for regular SD lib
     sd.remove( SDentryName );

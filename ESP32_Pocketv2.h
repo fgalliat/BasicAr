@@ -319,6 +319,8 @@
           scrTextCursor++;
       }
 
+        char _myStr[256+1];
+
       void _doScreenAction( TFT_eSPI* _oled_display, int actionCursor ) {
           if (actionCursor < 0) { actionCursor = 0; }
           int addr = (actionCursor) * DBL_BUFF_ACTION_SIZE;
@@ -352,14 +354,17 @@
               else                         _oled_display->fillRect( x, y, w, h, color ); 
           } 
           else if ( type == ACT_TEXT ) {
-              char str[ h+1 ];
+              //char str[ h+1 ];
+              if ( h > 256 ) { h = 256; }
+              memset(_myStr, 0x00, h+1);
               int txtAddr = w * DBL_BUFF_TEXT_MAX_LEN;
-              for(int i=0; i < h; i++) { str[i] = scrTextBuff[txtAddr+i]; }
-              str[h]=0;
+              for(int i=0; i < h; i++) { _myStr[i] = scrTextBuff[txtAddr+i]; }
+              _myStr[h]=0;
 
               //_oled_display->setTextColor(color);
               _oled_display->setCursor(x, y);
-              _oled_display->print(str);
+              //_oled_display->print(_myStr);
+              Serial.print(_myStr);
           }
           else if ( type == ACT_BPP ) {
               unsigned char c;
@@ -559,7 +564,9 @@
 
     class Esp32Pocketv2Fs {
         private:
-          File* currentFile = NULL;
+        //   File* currentFile = NULL;
+          File currentFile;
+          //int currentFileSeek = 0;
           bool currentFileValid = false;
         public:
           Esp32Pocketv2Fs() {}
@@ -601,7 +608,9 @@ if (!SPIFFS.exists("/formatComplete.txt") && !SPIFFS.exists("/AUTORUN.BAS")) {
 
           // BEWARE !!!!!!
           void format() {
+            Serial.println("Formating");
             bool ff = SPIFFS.format();
+            Serial.println("Formated");
           }
 
           void remove(char* filename) {
@@ -626,10 +635,19 @@ if (!SPIFFS.exists("/formatComplete.txt") && !SPIFFS.exists("/AUTORUN.BAS")) {
           // returns nb of lines readed
           // callbacked lines does not contains trailing '\n'
           int readTextFile(char* filename, void (*callback)(char*) ) {
-            if (!SPIFFS.exists(filename) ) { return 0; }
+
+            if ( filename == NULL ) {
+                Serial.println("NULL filename !!!!");
+                return -1;
+            }
+            else {
+                Serial.print("TRY TO OPEN : ");Serial.println(filename);
+            }
+
+            if (!SPIFFS.exists(filename) ) { Serial.print("NOT EXISTS : ");Serial.println(filename); return -1; }
 
             File f = SPIFFS.open(filename, "r");
-            if ( !f ) { return 0; }
+            if ( !f ) { Serial.print("FAILED : ");Serial.println(filename); return -1; }
             int lineNb = 0;
             // BEWARE w/ these values
             char buff[256];
@@ -651,6 +669,7 @@ if (!SPIFFS.exists("/formatComplete.txt") && !SPIFFS.exists("/AUTORUN.BAS")) {
                 }
                 
                 if ( pending ) {
+                    Serial.println( line );
                     callback( line );
                     
                     lineNb++;
@@ -683,13 +702,18 @@ if (!SPIFFS.exists("/formatComplete.txt") && !SPIFFS.exists("/AUTORUN.BAS")) {
             delay(100);
             //this->currentFile = NULL; // free ?
             Serial.println("RIGHT HERE");
-            File f = SPIFFS.open(filename, readMode ? "r" : "w");
+            this->currentFile = SPIFFS.open(filename, readMode ? "r" : "w");
+            // File f = SPIFFS.open(filename, readMode ? "r" : "w");
             Serial.println("RIGHT NOW");
-            if ( !f ) { Serial.println("failed"); return false; }
-            this->currentFile = &( f );
+            // if ( !f ) { Serial.println("failed"); return false; }
+            if ( !currentFile ) { Serial.println("failed"); return false; }
+
+    currentFile.seek(0);
+
+            // this->currentFile = &( f );
             delay(100);
-            f.seek(0);
-            if ( this->currentFile == NULL ) { Serial.println("failed"); return false; }
+            // if (!readMode) this->currentFile->seek(0);
+            // if ( this->currentFile == NULL ) { Serial.println("failed"); return false; }
             Serial.println("RIGHT ...");
             this->currentFileValid = true;
             Serial.println("opened");
@@ -697,10 +721,13 @@ if (!SPIFFS.exists("/formatComplete.txt") && !SPIFFS.exists("/AUTORUN.BAS")) {
           }
 
           void closeCurrentTextFile() {
-              Serial.println("closing");
-            if ( !this->currentFileValid ) { return; }
-            this->currentFile->close();
-            this->currentFileValid = false;
+            Serial.println("closing");
+            // if ( this->currentFileValid && this->currentFile != NULL ) {
+            if ( this->currentFileValid ) {
+                // this->currentFile->close();
+                currentFile.close();
+                this->currentFileValid = false;
+            }
             Serial.println("closed");
           }
         
@@ -708,39 +735,141 @@ if (!SPIFFS.exists("/formatComplete.txt") && !SPIFFS.exists("/AUTORUN.BAS")) {
           void writeCurrentTextLine(char* line) {
               if ( line == NULL ) { Serial.print("CANT WRITE NULL LINE\n"); return; }
               int len = strlen( line );
-              this->currentFile->write( (uint8_t*)line, len );
-              this->currentFile->flush();
+            //   this->currentFile->write( (uint8_t*)line, len );
+            //   this->currentFile->flush();
+              currentFile.write( (uint8_t*)line, len );
+              currentFile.flush();
           }
 
           // slow impl !!!!!!!
+          char __myLine[256+1];
+          char __myKeepLine[256+1];
+          int start = 0; int lastAv = -1;
+
+#ifndef min
+ #define min(a,b) (a < b ? a : b)
+#endif
+
           char* readCurrentTextLine() {
             //   Serial.println("readLine.1");
 
-            // TODO see for single line instance allocation !!!!!!!
-            int MAX_LINE_LEN = 128; // TO CHECK
-            char* line = (char*)malloc( MAX_LINE_LEN+1 );
-            memset(line, 0x00, MAX_LINE_LEN +1);
+//s.reserve(200);
 
-            // Serial.println("readLine.2");
+String s=this->currentFile.readStringUntil('\n');
+//Serial.println( s.length() ); Serial.print( ' ' ); Serial.println( s );
+if ( s == NULL ) { return NULL; }
 
-            int cpt = 0;
-            for( int i=0; i < MAX_LINE_LEN; i++ ) {
+int MAX_LINE_LEN = 256;
+            memset(__myLine, 0x00, MAX_LINE_LEN +1);
 
-                if ( !this->currentFile->available() ) {
-                    break;
-                }
+s.toCharArray(__myLine, s.length()+1);
+return __myLine;
 
-                char ch = (char)this->currentFile->read();
-                if ( ch == -1 )   { break; }
-                if ( ch == '\r' ) { continue; }
-                if ( ch == '\n' ) { break; }
+// s=this->currentFile->readStringUntil('\n');
+// if ( s == NULL ) { return NULL; }
+// Serial.println( s.length() ); Serial.print( ' ' ); Serial.println( s );
+// s=this->currentFile->readStringUntil('\n');
+// if ( s == NULL ) { return NULL; }
+// Serial.println( s.length() ); Serial.print( ' ' ); Serial.println( s );
+// return NULL;
 
-                line[cpt++] = ch;
-                //Serial.println("readLine.3");
-            }
 
-// Serial.println("readLine.4");
-            return line;
+
+
+            
+
+//             if ( start > 0 ) {
+//                 int cpt = 0, i;
+//                 int end = min( MAX_LINE_LEN, lastAv);
+//                 for(i=start; i < end ; i++) {
+//                     char ch = __myKeepLine[i];
+//                     if ( ch == 255 ) { break; }
+//                     if ( ch == '\r' ) { continue; }
+//                     if ( ch == '\n' ) { break; }
+//                     __myLine[cpt++] = ch;
+//                 }
+//                 start = i+1;
+//                 if ( start >= end ) { start = 0; }
+//                 return __myLine;
+//             }
+
+//             memset(__myKeepLine, 0x00, MAX_LINE_LEN +1);
+
+//             //int av = this->currentFile.available();
+//             int av = 1024; // call to available distord the result ?????
+//             lastAv = av;
+
+//             Serial.print("readLine.2 "); Serial.println( av );
+//             if ( av  <= 0 ) {
+//                 return NULL;
+//             }
+            
+//             int howMany = min(MAX_LINE_LEN, av);
+//             Serial.print("reading bytes : ");Serial.println(howMany);
+//             char localChs[ howMany ]; // else readBytes always returns 0 bytes ??????
+//             //int kk = this->currentFile.readBytes( __myKeepLine,howMany );
+//             int kk = this->currentFile.readBytes( localChs,MAX_LINE_LEN );
+//             for(int i=0; i < kk; i++) { __myKeepLine[i] = localChs[i]; } // else readBytes always returns 0 bytes ??????
+
+// start = 0;
+
+// int cpt = 0, i;
+//                 //int end = min( MAX_LINE_LEN, lastAv);
+//                 int end = kk;
+//                 Serial.print("readed bytes : ");Serial.println(kk);
+//                 for(i=start; i < end ; i++) {
+//                     char ch = __myKeepLine[i];
+
+// Serial.print( (int)ch ); Serial.print(' ');
+
+//                     if ( ch == 255 ) { break; }
+//                     if ( ch == '\r' ) { continue; }
+//                     if ( ch == '\n' ) { break; }
+//                     __myLine[cpt++] = ch;
+//                 }
+//                 start = i+1;
+//                 if ( start >= end ) { start = 0; }
+
+
+// //             int cpt = 0, ch; //char chs[1];
+// //             for( int i=0; i < min(MAX_LINE_LEN, av); i++ ) {
+
+// //                 // // if ( !this->currentFile->available() ) {
+// //                 // if ( this->currentFile.available() <= 0) {
+// //                 //     break;
+// //                 // }
+
+// //                 // read() always returns -1
+// //                 // must use readBytes(...)
+
+// //                 //char ch = (char)this->currentFile->read();
+// //                 //ch = this->currentFile.read();
+// //                 // this->currentFile.readBytes( chs,1 );
+// //                 // ch = (int)chs[0];
+// //                 // currentFileSeek++;
+// //                 // this->currentFile.seek(currentFileSeek);
+// // ch = (int)chs[i];
+// // currentFileSeek++;
+
+
+// //                 Serial.print( (int)ch ); Serial.print( ' ' );
+
+// //                 //if ( ch == -1 )   { break; }
+// //                 if ( ch == 255 )   { break; }
+
+// //                 if ( ch == '\r' ) { continue; }
+// //                 if ( ch == '\n' ) { break; }
+
+// //                 //Serial.print( (char)ch );
+
+// //                 __myLine[cpt++] = (char)ch;
+// //             } 
+//             // if ( cpt > 0 && __myLine[cpt-1] == '\r' ) { __myLine[cpt-1] = 0x00; }
+//             // __myLine[cpt] = 0x00;
+
+//  Serial.println("readLine.4 > "); Serial.println( strlen( __myLine ) );
+// //  Serial.println(_myLine);
+//             return __myLine;
           }
 
           // ================================

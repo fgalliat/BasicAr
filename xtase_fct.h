@@ -883,7 +883,9 @@ int xts_exec_cmd() {
         else if ( strcmp( args[0], "FS" ) == 0 ) {
           if ( argc > 1 ) {
             if ( strcmp( args[1], "FORMAT" ) == 0 ) {
+              esp32.lockISR();
               esp32.getFs()->format();
+              esp32.unlockISR();
             } 
             else {
               free( args[0] );
