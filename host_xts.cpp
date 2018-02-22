@@ -1245,7 +1245,7 @@ bool drawBPPfile(char* filename) {
       char* codeLine; int cpt = 0;
       while( (codeLine = esp32.getFs()->readCurrentTextLine() ) != NULL ) {
         //if ( strlen(codeLine) == 0 ) { break; }
-
+Serial.println( codeLine );
         loadCallback( codeLine );
         //Serial.println( codeLine );
       }

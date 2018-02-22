@@ -29,6 +29,7 @@
      WiFiServer* server;
      WiFiClient serverClients[MAX_SRV_CLIENTS];
 
+     bool APmode = false;
 
     public:
       Esp32WifiServer() {
@@ -49,6 +50,7 @@
       // connect to wifi 
       // reads SSIDs & PASSs from SPIFF FS
       bool connectWifi() {
+        this->APmode = false;
         this->_isWifiConnected = false;
 
         bool ok = esp32.getFs()->openCurrentTextFile("/SSID.TXT");
@@ -106,6 +108,38 @@
         return true;
       }
 
+      // start as an AP
+      bool startAP() {
+        esp32.lockISR();
+
+        this->APmode = true;
+        this->_isWifiConnected = false;
+
+        WiFi.softAP("Xts-uPocket#1", "1234567890");
+
+
+        DBUG("Started Wifi AP \n");
+        DBUG("WiFi connected \n");
+        DBUG("IP address: ");
+        
+        //DBUG(WiFi.localIP());
+        // BEWARE HERE !!!!!!!!!!!!!!!
+        String str = WiFi.softAPIP().toString();
+        int lstr = str.length();
+        char ip[lstr+1];
+        memset(ip, 0x00, lstr+1);
+        str.toCharArray( ip, lstr+1 );
+        // BEWARE HERE !!!!!!!!!!!!!!!
+        DBUG((char*)ip);
+
+        DBUG("\n");
+
+        esp32.unlockISR();
+
+        this->_isWifiConnected = true;
+        return true;
+      }
+
       void disconnectWifi() {
         this->_isWifiConnected = false;
         WiFi.disconnect();
@@ -131,9 +165,15 @@
 
         DBUG("Ready! Use 'telnet ");
 
-        //DBUG(WiFi.localIP());
         // BEWARE HERE !!!!!!!!!!!!!!!
-        String str = WiFi.localIP().toString();
+        String str;
+
+        if ( APmode ) {
+          str = WiFi.softAPIP().toString();
+        } else {
+          str = WiFi.localIP().toString();
+        }
+
         int lstr = str.length();
         char ip[lstr+1];
         memset(ip, 0x00, lstr+1);
@@ -154,7 +194,7 @@
 
         uint8_t i;
 
-        if (wifiMulti->run() == WL_CONNECTED) {
+        if (this->APmode || (wifiMulti != NULL && wifiMulti->run() == WL_CONNECTED) )  {
           //check if there are any new clients
           if (server->hasClient()){
             for(i = 0; i < MAX_SRV_CLIENTS; i++){
@@ -262,6 +302,51 @@
             delay(1);
           }
         }
+      }
+
+      // from telnet client to ESP32
+      void uploadFile() {
+        char* filename = NULL;
+        char* filesize = NULL;
+        DBUG("WAITING...\n");
+
+        while( (filename = readLine() ) == NULL ) { delay(250); }
+        char _filename[13+1]; memset(_filename, 0x00, 13+1);
+        int i=1,e=0;
+        if ( filename[0] != '/' ) { _filename[e++] = '/'; i=0; }
+        for(; i < strlen(filename); i++) {
+            char ch = filename[i];
+            if (ch >= 'a' && ch <= 'z') { ch = ch - 'a'+'A'; }
+            _filename[e++] = ch;
+        }
+
+        while( (filesize = readLine() ) == NULL ) { delay(250); }
+        int bytesToRead = atoi( filesize );
+        if ( bytesToRead < 0 ) {
+          DBUG("BAD filesize : ");DBUG(filesize);DBUG("\n");
+          return;
+        }
+        DBUG("filesize : ");DBUGi(bytesToRead);DBUG("\n");
+
+
+        esp32.lockISR();
+        esp32.getFs()->openCurrentTextFile( _filename, false );
+
+        int cpt = 0;  char buff[32]; int read;
+        while( cpt < bytesToRead ) {
+          while(serverClients[0].available()) { 
+            //int ch = serverClients[0].read();
+            read = serverClients[0].readBytes(buff, 32);
+            esp32.getFs()->writeCurrentTextBytes( buff, read );
+            cpt+=read;
+          }
+          delay(100);
+        }
+
+
+        esp32.getFs()->closeCurrentTextFile();
+        esp32.unlockISR();
+        DBUG("Upload finished");
       }
 
   };

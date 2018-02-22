@@ -708,8 +708,49 @@ if (!SPIFFS.exists("/formatComplete.txt") && !SPIFFS.exists("/AUTORUN.BAS")) {
             // if ( !f ) { Serial.println("failed"); return false; }
             if ( !currentFile ) { Serial.println("failed"); return false; }
 
+if (readMode) {
     currentFile.seek(0);
 
+// UTF BOM
+
+// UTF-8 	                EF BB BF
+// UTF-16 Big Endian 	    FE FF
+// UTF-16 Little Endian 	FF FE
+// UTF-32 Big Endian 	    00 00 FE FF
+// UTF-32 Little Endian 	FF FE 00 00
+
+char chs[4];
+// currentFile.readBytes( chs, 2 );
+// char ch1 = chs[0];
+//      if ( ch1 == 0xEF ) { currentFile.readBytes( chs, 1 ); }
+// else if ( ch1 == 0xFE ) {  }
+// else if ( ch1 == 0xFF ) {  } // beware of UTF32 little endian ....
+// else if ( ch1 == 0x00 ) { currentFile.readBytes( chs, 2 ); }
+
+// LOOK AT : https://github.com/espressif/arduino-esp32/issues/1022
+//
+// make a telnet (sta mode) -> spiffs ????
+
+
+// String s=this->currentFile.readStringUntil('1');
+
+// int hasSome = currentFile.readBytes( chs, 1 );
+// if ( hasSome > 0 ) {
+//     Serial.println("Looking for BOM");
+//     while ( (hasSome = currentFile.readBytes( chs, 1 ) ) > 0 ) {
+//         if ( chs[0] >= '0' ) {
+//             break;
+//         }
+//     }
+//     Serial.println("Finished reading BOM");
+// } else {
+//     Serial.println("Did not find any BOM");
+// }
+
+
+} else {
+    currentFile.seek(0);
+}
             // this->currentFile = &( f );
             delay(100);
             // if (!readMode) this->currentFile->seek(0);
@@ -725,12 +766,23 @@ if (!SPIFFS.exists("/formatComplete.txt") && !SPIFFS.exists("/AUTORUN.BAS")) {
             // if ( this->currentFileValid && this->currentFile != NULL ) {
             if ( this->currentFileValid ) {
                 // this->currentFile->close();
+                currentFile.flush();
                 currentFile.close();
                 this->currentFileValid = false;
             }
             Serial.println("closed");
           }
         
+          void writeCurrentTextByte(char b) {
+              currentFile.write( (uint8_t*)b, 1 );
+              //currentFile.flush();
+          }
+
+          void writeCurrentTextBytes(char* b, int len) {
+              currentFile.write( (uint8_t*)b, len );
+              currentFile.flush();
+          }
+
           // have to provide "\n" @ end of line
           void writeCurrentTextLine(char* line) {
               if ( line == NULL ) { Serial.print("CANT WRITE NULL LINE\n"); return; }
