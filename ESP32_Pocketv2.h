@@ -263,6 +263,9 @@
             int _oled_ttyY = 0;
             uint16_t drawColor = ST7735_WHITE;
 
+            uint16_t screenOffsetX = 0; // MY_160
+            uint16_t screenOffsetY = 0;
+
 // ______________________________________________
             #ifdef DBL_BUFF_ACTION
 
@@ -340,18 +343,18 @@
             //_oled_ttyY = 0;
             _oled_display->fillScreen( TFT_BLACK );
           }
-          else if ( type == ACT_PIXEL ) { _oled_display->drawPixel( x, y, color ); }
+          else if ( type == ACT_PIXEL ) { _oled_display->drawPixel( screenOffsetX+x, screenOffsetY+y, color ); }
           else if ( type == ACT_LINE ) { 
               // !!! lines   w => x2 // h => y2
-              _oled_display->drawLine( x, y, w, h, color ); }
+              _oled_display->drawLine( screenOffsetX+x, screenOffsetY+y, screenOffsetX+w, screenOffsetY+h, color ); }
           else if ( type == ACT_CIRCLE ) { 
               // !!! circles w => radius
-              if ( mode == ACT_MODE_DRAW ) _oled_display->drawCircle( x, y, w, color ); 
-              else                         _oled_display->fillCircle( x, y, w, color ); 
+              if ( mode == ACT_MODE_DRAW ) _oled_display->drawCircle( screenOffsetX+x, screenOffsetY+y, w, color ); 
+              else                         _oled_display->fillCircle( screenOffsetX+x, screenOffsetY+y, w, color ); 
           }
           else if ( type == ACT_RECT ) { 
-              if ( mode == ACT_MODE_DRAW ) _oled_display->drawRect( x, y, w, h, color ); 
-              else                         _oled_display->fillRect( x, y, w, h, color ); 
+              if ( mode == ACT_MODE_DRAW ) _oled_display->drawRect( screenOffsetX+x, screenOffsetY+y, w, h, color ); 
+              else                         _oled_display->fillRect( screenOffsetX+x, screenOffsetY+y, w, h, color ); 
           } 
           else if ( type == ACT_TEXT ) {
               //char str[ h+1 ];
@@ -362,9 +365,21 @@
               _myStr[h]=0;
 
               //_oled_display->setTextColor(color);
-              _oled_display->setCursor(x, y);
-              //_oled_display->print(_myStr);
-              Serial.print(_myStr);
+              _oled_display->setCursor(screenOffsetX+x, screenOffsetY+y);
+
+              #ifdef LCD_LOCKED
+                Serial.print(_myStr);
+              #else
+                // there is a bug w/ that impl....
+                //_oled_display->print(_myStr);
+
+                int l = strlen( _myStr );
+                for(int i=0; i < l; i++) { 
+                    if ( _myStr[i] < ' ') { _myStr[i] = ' '; }
+                    else if ( _myStr[i] >= (char)127 ) { _myStr[i] = ' '; } // that made ESP crash by LoadProhibed
+                    _oled_display->write( _myStr[i] ); 
+                }
+              #endif
           }
           else if ( type == ACT_BPP ) {
               unsigned char c;
@@ -375,7 +390,7 @@
                     for (int xx = 0; xx < width; xx++) {
                         c = (bppBuff[(yy * (width / 8)) + (xx / 8)] >> (7 - ((xx) % 8))) % 2;
                         if (c == 0x01) {
-                            _oled_display->drawPixel(x + xx, y + yy, TFT_CLR_WHITE);
+                            _oled_display->drawPixel(screenOffsetX+x + xx, screenOffsetY+y + yy, TFT_CLR_WHITE);
                         }
                     }
                 }
@@ -397,6 +412,13 @@
 
         public:
             Esp32Pocketv2Screen() {
+                #ifdef MY_160
+                  screenOffsetX = (160 - 128) / 2;
+                #else
+                  screenOffsetX = (160 - 128) / 2;
+                #endif
+
+                screenOffsetY = (128 - 64) / 2;
             }
             ~Esp32Pocketv2Screen() {}
 

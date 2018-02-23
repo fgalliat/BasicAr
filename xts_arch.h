@@ -117,9 +117,10 @@
   #ifdef ESP32PCKv2
     // DOIT ESP32 DEVKIT V1 board
     #define ARCH_TYPE "ESP32-DevKit Board"
+
+//#define LCD_LOCKED 1
+
     #include "ESP32_Pocketv2.h"
-    
-#define LCD_LOCKED 1
 
 
       /// BE SURE TO USE SAME GND side as 3.3 is !!!!!!

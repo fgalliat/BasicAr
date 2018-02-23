@@ -401,8 +401,8 @@ void host_showBuffer() {
    espScreenline[x] = c;
  }
  espScreenline[SCREEN_WIDTH] = 0x00;
- //esp32.getScreen()->drawString( 0, y*8, espScreenline );
- Serial.println( espScreenline );
+ esp32.getScreen()->drawString( 0, y*8, espScreenline );
+ //Serial.println( espScreenline );
 #else
                 display.setCursor(0,y*8);
                 display.setTextColor( BLACK );
