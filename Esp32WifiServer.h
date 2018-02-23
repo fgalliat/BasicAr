@@ -343,9 +343,11 @@
           delay(100);
         }
 
-
         esp32.getFs()->closeCurrentTextFile();
         esp32.unlockISR();
+
+        serverClients[0].println("-EOF-");
+
         DBUG("Upload finished");
       }
 
