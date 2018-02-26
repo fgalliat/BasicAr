@@ -827,7 +827,7 @@ char chs[4];
           char* readCurrentTextLine() {
             //   Serial.println("readLine.1");
 
-//s.reserve(200);
+// BEWARE w/ '\r'
 
 String s=this->currentFile.readStringUntil('\n');
 //Serial.println( s.length() ); Serial.print( ' ' ); Serial.println( s );
@@ -839,18 +839,6 @@ int MAX_LINE_LEN = 256;
 s.toCharArray(__myLine, s.length()+1);
 return __myLine;
 
-// s=this->currentFile->readStringUntil('\n');
-// if ( s == NULL ) { return NULL; }
-// Serial.println( s.length() ); Serial.print( ' ' ); Serial.println( s );
-// s=this->currentFile->readStringUntil('\n');
-// if ( s == NULL ) { return NULL; }
-// Serial.println( s.length() ); Serial.print( ' ' ); Serial.println( s );
-// return NULL;
-
-
-
-
-            
 
 //             if ( start > 0 ) {
 //                 int cpt = 0, i;
