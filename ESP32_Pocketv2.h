@@ -39,6 +39,28 @@
     #define ST7735_CYAN TFT_CYAN
     #define ST7735_BLUE TFT_BLUE
     #define ST7735_YELLOW TFT_YELLOW
+
+    // color565(uint8_t r, uint8_t g, uint8_t b)
+    /*
+    uint16_t TFT_eSPI::color565(uint8_t r, uint8_t g, uint8_t b)
+{
+  return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
+}
+
+
+
+** Function name:           pushImage
+** Description:             plot 16 bit colour sprite or image onto TFT
+void TFT_eSPI::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint16_t *data)
+
+    */
+
+    #define CLR_BLACK       TFT_BLACK
+    #define CLR_WHITE       TFT_WHITE
+    #define CLR_LIGHTGREY   TFT_LIGHTGREY
+    #define CLR_GREY        0x8410 /* 128,128,128 */
+    #define CLR_DARKGREY    TFT_DARKGREY
+
     #include <SPI.h>
 
     /*
