@@ -993,9 +993,6 @@ int xts_setStrArrayElem(char *name, int index, char* value) {
 
 //XX-EXPERIMENTAL-XX
 int xts_setNumArrayElem(char *name, int index, float value) {
-    // string is top of the stack
-    // each index and number of dimensions on the calculator stack
-
     // keep the current stack position, since we can't overwrite the value string
     int oldSTACKEND = sysSTACKEND;
 
@@ -1004,7 +1001,7 @@ int xts_setNumArrayElem(char *name, int index, float value) {
     //char *newValPtr = value;
     int newValLen = sizeof(float);//strlen(newValPtr);
 
-    unsigned char *p = findVariable(name, VAR_TYPE_STR_ARRAY);
+    unsigned char *p = findVariable(name, VAR_TYPE_NUM_ARRAY);
     unsigned char *p1 = p;	// so we can correct the length when done
     if (p == NULL)
         return ERROR_VARIABLE_NOT_FOUND;
