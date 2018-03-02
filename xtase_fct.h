@@ -428,6 +428,29 @@ int xts_dispBPP() {
   return 0;
 }
 
+int xts_dispPCT() {
+  getNextToken();
+
+  int val = parseExpression();
+  if (val & _ERROR_MASK) return val;
+  if (!_IS_TYPE_STR(val))
+      return _ERROR_EXPR_EXPECTED_STR;
+
+      
+  if ( executeMode ) {
+    int y = stackPopNum();
+    int x = stackPopNum();
+    char* pictStr = stackPopStr();
+    if ( drawPCTfile( pictStr, x, y ) ) {
+      return 0;
+    } else {
+      return ERROR_UNEXPECTED_TOKEN;
+    }
+  }
+
+  return 0;
+}
+
 // BEWARE : PC emulation has not
 // indirect blitt !!!
 int xts_blittMode() {
@@ -1208,7 +1231,7 @@ Serial.print("DATAF 14 >");Serial.print(token);Serial.println("<");
               if ( !isStrArray ) {
                 float val = atof( token );
                 // seems to push to given array
-                col_ok = setNumArrayElem(args[i], val) == ERROR_NONE;
+                col_ok = xts_setNumArrayElem( args[i], cpt, val ) == ERROR_NONE;
               } else {
                 col_ok = xts_setStrArrayElem( args[i], cpt, token ) == ERROR_NONE;
               } 

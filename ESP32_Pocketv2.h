@@ -17,7 +17,7 @@
     #define MY_160 1
 
     #define COLOR_SCREEN 1
-    #define COLOR_64K    1
+
 
     // use the Lexibook Junior JG1010 Hacked Console cross-pad
     // 3 out / 2 in PINS
@@ -30,8 +30,12 @@
 
     #ifdef MY_160
       #define ROTATE_SCREEN 2
+      #define TFT_WIDTH 160
+      #define TFT_HEIGHT 128 
     #else
       #define ROTATE_SCREEN 2
+      #define TFT_WIDTH 128
+      #define TFT_HEIGHT 128
     #endif
 
     #define ST7735_BLACK TFT_BLACK
@@ -74,7 +78,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint16_t 
 
     // =========== GPIO =========
 
-    // -- SPI SCreen
+    // -- SPI SCreen - values to copy in TFT_eSPI/User_Select.h
     #define TFT_MISO 19
     #define TFT_MOSI 23
     #define TFT_SCLK 18
@@ -114,9 +118,12 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint16_t 
       #define ACT_RECT   0x05
       #define ACT_TEXT   0x06
       #define ACT_BPP    0x07
+      #define ACT_PCT    0x08
 
       #define ACT_MODE_DRAW 0x00
       #define ACT_MODE_FILL 0x01
+
+      #define ACT_MODE_PCT_64K 0x01
 
     #endif
 
@@ -291,7 +298,12 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint16_t 
 // ______________________________________________
             #ifdef DBL_BUFF_ACTION
 
-      uint8_t bppBuff[1024];
+      uint8_t bppBuff[1024]; // (for 128x64 1bpp)
+
+      #ifdef COLOR_64K
+       // BEWARE : this is uint16_t -> 40960 bytes (for 160x128)
+       uint16_t pct64KBuff[ TFT_WIDTH * TFT_HEIGHT ];
+      #endif
 
       uint8_t scrActionBuff[ DBL_BUFF_ACTION_SIZE * DBL_BUFF_ACTION_MAX ];
       int scrActionCursor = 0;
@@ -416,6 +428,17 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint16_t 
                         }
                     }
                 }
+          } 
+          else if ( type == ACT_PCT ) {
+              if ( mode == ACT_MODE_PCT_64K ) {
+                #ifdef COLOR_64K
+                _oled_display->pushImage( x, y, w, h, pct64KBuff);
+                #else
+                _oled_display->print( "NO COLOR 64K !" ); 
+                #endif
+              } else {
+                _oled_display->print( "PCT MODE NOT HANDLED !" ); 
+              }
           }
 
       }
@@ -544,6 +567,27 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint16_t 
                 }
             }
 
+            void drawPct(int x, int y, unsigned char* picFileBuff) {
+                int mode = -1, w=-1, h=-1;
+                if ( strncmp( (const char*) picFileBuff, "64K", 3) == 0 ) {
+                    mode = ACT_MODE_PCT_64K;
+                    w = ((int)picFileBuff[3]*256) + ((int)picFileBuff[4]);
+                    h = ((int)picFileBuff[5]*256) + ((int)picFileBuff[6]);
+                }
+
+                #ifdef DBL_BUFF_ACTION
+                #ifdef COLOR_64K
+                 //memcpy(bppBuff, picBuff, 1024);
+                 for(int i=0; i < w *h; i++) { 
+                     pct64KBuff[i] = ((uint16_t)picFileBuff[7+(i*2)+0]*256)+picFileBuff[7+(i*2)+1]; 
+                 }
+                 // BEWARE if img is smaller than buff array
+                 _scr_pushScreenAction(_oled_display, ACT_PCT, x, y, (uint8_t)w, (uint8_t)h, TFT_CLR_WHITE, mode);
+                 return;
+                #endif
+                #endif
+            }
+
             // but supports gray
             void drawRect(int x,int y, int width, int height, int color, int mode) {
                 unsigned char c; int cpt = 0;
@@ -645,9 +689,6 @@ if (!SPIFFS.exists("/formatComplete.txt") && !SPIFFS.exists("/AUTORUN.BAS")) {
     Serial.println("SPIFFS is formatted. Moving along...");
   }
 */
-
-
-
           }
 
           // BEWARE !!!!!!
@@ -752,49 +793,18 @@ if (!SPIFFS.exists("/formatComplete.txt") && !SPIFFS.exists("/AUTORUN.BAS")) {
             // if ( !f ) { Serial.println("failed"); return false; }
             if ( !currentFile ) { Serial.println("failed"); return false; }
 
-if (readMode) {
-    currentFile.seek(0);
+            if (readMode) {
+                currentFile.seek(0);
+                // UTF BOM(s)
+                // UTF-8 	                EF BB BF
+                // UTF-16 Big Endian 	    FE FF
+                // UTF-16 Little Endian 	FF FE
+                // UTF-32 Big Endian 	    00 00 FE FF
+                // UTF-32 Little Endian 	FF FE 00 00
+            } else {
+                currentFile.seek(0);
+            }
 
-// UTF BOM
-
-// UTF-8 	                EF BB BF
-// UTF-16 Big Endian 	    FE FF
-// UTF-16 Little Endian 	FF FE
-// UTF-32 Big Endian 	    00 00 FE FF
-// UTF-32 Little Endian 	FF FE 00 00
-
-char chs[4];
-// currentFile.readBytes( chs, 2 );
-// char ch1 = chs[0];
-//      if ( ch1 == 0xEF ) { currentFile.readBytes( chs, 1 ); }
-// else if ( ch1 == 0xFE ) {  }
-// else if ( ch1 == 0xFF ) {  } // beware of UTF32 little endian ....
-// else if ( ch1 == 0x00 ) { currentFile.readBytes( chs, 2 ); }
-
-// LOOK AT : https://github.com/espressif/arduino-esp32/issues/1022
-//
-// make a telnet (sta mode) -> spiffs ????
-
-
-// String s=this->currentFile.readStringUntil('1');
-
-// int hasSome = currentFile.readBytes( chs, 1 );
-// if ( hasSome > 0 ) {
-//     Serial.println("Looking for BOM");
-//     while ( (hasSome = currentFile.readBytes( chs, 1 ) ) > 0 ) {
-//         if ( chs[0] >= '0' ) {
-//             break;
-//         }
-//     }
-//     Serial.println("Finished reading BOM");
-// } else {
-//     Serial.println("Did not find any BOM");
-// }
-
-
-} else {
-    currentFile.seek(0);
-}
             // this->currentFile = &( f );
             delay(100);
             // if (!readMode) this->currentFile->seek(0);
@@ -849,111 +859,43 @@ char chs[4];
           char* readCurrentTextLine() {
             //   Serial.println("readLine.1");
 
+/*
 // BEWARE w/ '\r'
-
 String s=this->currentFile.readStringUntil('\n');
 //Serial.println( s.length() ); Serial.print( ' ' ); Serial.println( s );
 if ( s == NULL ) { return NULL; }
 
 int MAX_LINE_LEN = 256;
-            memset(__myLine, 0x00, MAX_LINE_LEN +1);
+memset(__myLine, 0x00, MAX_LINE_LEN +1);
 
 s.toCharArray(__myLine, s.length()+1);
 return __myLine;
+*/
+
+// TO BE TESTED ..
 
 
-//             if ( start > 0 ) {
-//                 int cpt = 0, i;
-//                 int end = min( MAX_LINE_LEN, lastAv);
-//                 for(i=start; i < end ; i++) {
-//                     char ch = __myKeepLine[i];
-//                     if ( ch == 255 ) { break; }
-//                     if ( ch == '\r' ) { continue; }
-//                     if ( ch == '\n' ) { break; }
-//                     __myLine[cpt++] = ch;
-//                 }
-//                 start = i+1;
-//                 if ( start >= end ) { start = 0; }
-//                 return __myLine;
-//             }
+int MAX_LINE_LEN = 256;
+memset(__myLine, 0x00, MAX_LINE_LEN +1);
 
-//             memset(__myKeepLine, 0x00, MAX_LINE_LEN +1);
-
-//             //int av = this->currentFile.available();
-//             int av = 1024; // call to available distord the result ?????
-//             lastAv = av;
-
-//             Serial.print("readLine.2 "); Serial.println( av );
-//             if ( av  <= 0 ) {
-//                 return NULL;
-//             }
-            
-//             int howMany = min(MAX_LINE_LEN, av);
-//             Serial.print("reading bytes : ");Serial.println(howMany);
-//             char localChs[ howMany ]; // else readBytes always returns 0 bytes ??????
-//             //int kk = this->currentFile.readBytes( __myKeepLine,howMany );
-//             int kk = this->currentFile.readBytes( localChs,MAX_LINE_LEN );
-//             for(int i=0; i < kk; i++) { __myKeepLine[i] = localChs[i]; } // else readBytes always returns 0 bytes ??????
-
-// start = 0;
-
-// int cpt = 0, i;
-//                 //int end = min( MAX_LINE_LEN, lastAv);
-//                 int end = kk;
-//                 Serial.print("readed bytes : ");Serial.println(kk);
-//                 for(i=start; i < end ; i++) {
-//                     char ch = __myKeepLine[i];
-
-// Serial.print( (int)ch ); Serial.print(' ');
-
-//                     if ( ch == 255 ) { break; }
-//                     if ( ch == '\r' ) { continue; }
-//                     if ( ch == '\n' ) { break; }
-//                     __myLine[cpt++] = ch;
-//                 }
-//                 start = i+1;
-//                 if ( start >= end ) { start = 0; }
+if ( this->currentFile.available() <= 0 ) {
+    return NULL;
+    //return __myLine;
+}
 
 
-// //             int cpt = 0, ch; //char chs[1];
-// //             for( int i=0; i < min(MAX_LINE_LEN, av); i++ ) {
+int ch, cpt=0;
+for(int i=0; i < MAX_LINE_LEN; i++) {
+    if ( this->currentFile.available() <= 0 ) { break; }
+    ch = this->currentFile.read();
+    if ( ch == -1 )   { break;    }
+    if ( ch == '\r' ) { continue; }
+    if ( ch == '\n' ) { break;    }
+    __myLine[ cpt++ ] = (char)ch;
+}
 
-// //                 // // if ( !this->currentFile->available() ) {
-// //                 // if ( this->currentFile.available() <= 0) {
-// //                 //     break;
-// //                 // }
+return __myLine;
 
-// //                 // read() always returns -1
-// //                 // must use readBytes(...)
-
-// //                 //char ch = (char)this->currentFile->read();
-// //                 //ch = this->currentFile.read();
-// //                 // this->currentFile.readBytes( chs,1 );
-// //                 // ch = (int)chs[0];
-// //                 // currentFileSeek++;
-// //                 // this->currentFile.seek(currentFileSeek);
-// // ch = (int)chs[i];
-// // currentFileSeek++;
-
-
-// //                 Serial.print( (int)ch ); Serial.print( ' ' );
-
-// //                 //if ( ch == -1 )   { break; }
-// //                 if ( ch == 255 )   { break; }
-
-// //                 if ( ch == '\r' ) { continue; }
-// //                 if ( ch == '\n' ) { break; }
-
-// //                 //Serial.print( (char)ch );
-
-// //                 __myLine[cpt++] = (char)ch;
-// //             } 
-//             // if ( cpt > 0 && __myLine[cpt-1] == '\r' ) { __myLine[cpt-1] = 0x00; }
-//             // __myLine[cpt] = 0x00;
-
-//  Serial.println("readLine.4 > "); Serial.println( strlen( __myLine ) );
-// //  Serial.println(_myLine);
-//             return __myLine;
           }
 
           // ================================

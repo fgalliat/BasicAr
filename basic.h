@@ -166,6 +166,8 @@
     #define TOKEN_BLITT            104 // set the screen blitt mode (0,1,2)
 
     #define TOKEN_DATAF            105 // feeds some typed arrays w/ pseudo CSV content (file.BAD)
+
+    #define TOKEN_DRAWPCT          106 // draws a color picture if supported
     
     #define TOKEN_LASTONE TOKEN_DATAF
 #else
@@ -279,6 +281,7 @@ int processInput(unsigned char *tokenBuf);
 // ========== Xtase ext functions ========
 int xts_createArray(char *name, int isString, int dimension);
 int xts_setStrArrayElem(char *name, int index, char* value);
+int xts_setNumArrayElem(char *name, int index, float value);
 
 #endif
 

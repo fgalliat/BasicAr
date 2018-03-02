@@ -247,6 +247,8 @@ TokenTableEntry tokenTable[] = {
 
     {"DATAF", TKN_FMT_POST},  // DATAF "<file>","<sizeVar>","<ARRAY_VAR>"[,"<ARRAY_VAR>","<ARRAY_VAR>"...]
 
+    {"DRAWPCT",3|TKN_ARG1_TYPE_STR|TKN_FMT_POST}, // DRAWPCT "TEST",0,0
+
 };
 
 
@@ -985,6 +987,53 @@ int xts_setStrArrayElem(char *name, int index, char* value) {
     memmove(&mem[sysVARSTART - bytesNeeded], &mem[sysVARSTART], p - &mem[sysVARSTART]);
     // copy in the new value
     strcpy((char*)(p - bytesNeeded), newValPtr);
+    sysVARSTART -= bytesNeeded;
+    return ERROR_NONE;
+}
+
+//XX-EXPERIMENTAL-XX
+int xts_setNumArrayElem(char *name, int index, float value) {
+    // string is top of the stack
+    // each index and number of dimensions on the calculator stack
+
+    // keep the current stack position, since we can't overwrite the value string
+    int oldSTACKEND = sysSTACKEND;
+
+    // how long is the new value?
+    // char *newValPtr = stackPopStr();
+    //char *newValPtr = value;
+    int newValLen = sizeof(float);//strlen(newValPtr);
+
+    unsigned char *p = findVariable(name, VAR_TYPE_STR_ARRAY);
+    unsigned char *p1 = p;	// so we can correct the length when done
+    if (p == NULL)
+        return ERROR_VARIABLE_NOT_FOUND;
+
+    p += 3 + strlen(name) + 1;
+    
+    int offset;
+    //int ret = _getArrayElemOffset(&p, &offset);
+    int ret = xts_getArrayElemOffset(&p, &offset, index);
+    if (ret) return ret;
+    
+    p += sizeof(float)*offset;
+
+    // Xtase mod
+    int addr = &(p[0]) - &(mem[0]);
+    
+    int oldValLen = sizeof(float);
+    int bytesNeeded = newValLen - oldValLen;
+    // check if we've got enough room for the new value
+    if (sysVARSTART - bytesNeeded < oldSTACKEND)
+        return 0;	// out of memory
+
+    // correct the length of the variable
+    *(uint16_t*)p1 += bytesNeeded;
+    memmove(&mem[sysVARSTART - bytesNeeded], &mem[sysVARSTART], p - &mem[sysVARSTART]);
+    
+    // copy in the new value
+    copyFloatToBytes( mem, addr,value );
+
     sysVARSTART -= bytesNeeded;
     return ERROR_NONE;
 }
@@ -2451,6 +2500,8 @@ int parseStmts()
             case TOKEN_LLIST: ret = xts_llist(); break;
 
             case TOKEN_DRAWBPP: ret = xts_dispBPP(); break;
+            case TOKEN_DRAWPCT: ret = xts_dispPCT(); break;
+
             case TOKEN_CIRCLE : ret = xts_dispCircle(); break;
             case TOKEN_LINE   : ret = xts_dispLine(); break;
             case TOKEN_PSET   : ret = xts_pset(); break;

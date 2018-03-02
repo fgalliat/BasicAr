@@ -120,8 +120,10 @@
 
 //#define LCD_LOCKED 1
 
-    #include "ESP32_Pocketv2.h"
 
+
+    // #define COLOR_64K    1
+    #define COLOR_PICTURE_BUFF_SIZE (((160*128)*2)+7)
 
       /// BE SURE TO USE SAME GND side as 3.3 is !!!!!!
       // #define UART2_NUM 2
@@ -137,6 +139,9 @@
 
     // Wifi support for Esp32
     #define ESP32_WIFI_SUPPORT 1
+
+    #include "ESP32_Pocketv2.h"
+
   #else
     // ESP32 + Oled Board
     // from mackerhawk as example

@@ -1,6 +1,7 @@
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.PrintStream;
 
 import javax.imageio.ImageIO;
@@ -30,8 +31,9 @@ public class EspColorTransform {
 
 
         System.out.println(outFname);
-        PrintStream fout = System.out;
+        PrintStream fout = new PrintStream( new FileOutputStream(new File("./data", outFname)) );
         if ( mode == MODE_64K ) {
+            // 40967 bytes for 160x128px 64K file -> 7 bytes header (64K + WW + HH)
             fout.print("64K");
 
             BufferedImage img = ImageIO.read(f);
@@ -71,13 +73,17 @@ public class EspColorTransform {
                         System.out.println( Integer.toHexString(c64k) );
                     }
 
-                    // fout.write
+                    fout.write( c64k / 256 );
+                    fout.write( c64k % 256 );
 
                     cpt++;
                 }
             }
-
+            
         }
+
+        fout.flush();
+        fout.close();
 
     }
 

@@ -112,6 +112,9 @@ char codeLine[ASCII_CODELINE_SIZE]; // !! if enought !! (BEWARE : LIGHT4.BAS)
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 unsigned char audiobuff[AUDIO_BUFF_SIZE];       // T5K & T53 file buffer
 unsigned char picturebuff[PICTURE_BUFF_SIZE];   // BPP file buffer
+#ifdef COLOR_64K
+  unsigned char color_picturebuff[PICTURE_BUFF_SIZE];  // PCT file buffer
+#endif
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
