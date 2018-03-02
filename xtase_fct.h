@@ -1174,7 +1174,7 @@ int xts_dataf_cmd() {
           //Serial.println("DATAF 2");
           line = str_trim( oline );
           //Serial.println("DATAF 3");
-          free(oline);
+          // free(oline); ---> make crash .....
           //Serial.println("DATAF 4");
 
           if ( strlen(line) == 0 || line[0] == '#' ) {
@@ -1222,7 +1222,7 @@ Serial.println("DATAF 12");
             for(int i=2; i < argc; i++) {
               int llen = strlen(args[i]);
               bool isStrArray = llen > 0 && args[i][ llen-1 ] == '$';
-              bool col_ok = false;
+              bool col_ok = false; int err=ERROR_NONE;
 Serial.print("DATAF 13 >");Serial.print(args[i]);Serial.println("<");
               // HAVE TO make my own split() routine
               // able to escape '\;' sequence
@@ -1230,10 +1230,10 @@ Serial.print("DATAF 13 >");Serial.print(args[i]);Serial.println("<");
 Serial.print("DATAF 14 >");Serial.print(token);Serial.println("<");
               if ( !isStrArray ) {
                 float val = atof( token );
-                // seems to push to given array
-                col_ok = xts_setNumArrayElem( args[i], cpt, val ) == ERROR_NONE;
+                Serial.print("DATAF 14bis >");Serial.print(val);Serial.println("<");
+                col_ok = (err= xts_setNumArrayElem( args[i], cpt, val )) == ERROR_NONE;
               } else {
-                col_ok = xts_setStrArrayElem( args[i], cpt, token ) == ERROR_NONE;
+                col_ok = (err= xts_setStrArrayElem( args[i], cpt, token )) == ERROR_NONE;
               } 
 Serial.println("DATAF 15");
 
@@ -1242,6 +1242,8 @@ Serial.println("DATAF 15");
                 host_outputString( args[i] );
                 host_outputString(" column @row=");
                 host_outputInt( cpt );
+                host_outputString(" cause : ");
+                host_outputInt( err );
                 host_outputString("\n");
                 host_showBuffer();
 

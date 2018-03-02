@@ -53,8 +53,10 @@
         this->APmode = false;
         this->_isWifiConnected = false;
 
+        esp32.lockISR();
         bool ok = esp32.getFs()->openCurrentTextFile("/SSID.TXT");
         if ( !ok ) {
+          esp32.unlockISR();
           DBUG("missing /SSID.TXT is missing !!\n");
           return false;
         }
@@ -68,10 +70,11 @@
           //DBUG( line ); DBUG( "=>" );
           DBUG( "Registering SSID : " );DBUG( line );DBUG( "\n" ); 
           line2 = esp32.getFs()->readCurrentTextLine();
+          //DBUG( line2 ); DBUG( "\n" );
           wifiMulti->addAP( (const char*)line, (const char*)line2);
-          // DBUG( line2 ); DBUG( "\n" );
         }
         esp32.getFs()->closeCurrentTextFile();
+        esp32.unlockISR();
 
         DBUG("Connecting Wifi \n");
         for (int loops = 10; loops > 0; loops--) {
