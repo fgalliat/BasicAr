@@ -169,7 +169,7 @@
 
     #define TOKEN_DRAWPCT          106 // draws a color picture if supported
     
-    #define TOKEN_LASTONE TOKEN_DATAF
+    #define TOKEN_LASTONE TOKEN_DRAWPCT
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT

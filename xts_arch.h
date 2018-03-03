@@ -122,7 +122,7 @@
 
 
 
-    // #define COLOR_64K    1
+    #define COLOR_64K    1
     #define COLOR_PICTURE_BUFF_SIZE (((160*128)*2)+7)
 
       /// BE SURE TO USE SAME GND side as 3.3 is !!!!!!

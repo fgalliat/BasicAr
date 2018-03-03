@@ -125,11 +125,6 @@ void cleanAudioBuff() { memset(audiobuff, 0x00, AUDIO_BUFF_SIZE); }
 extern unsigned char picturebuff[];
 void cleanPictureBuff() { memset(picturebuff, 0x00, PICTURE_BUFF_SIZE); } 
 
-#ifdef COLOR_64K
-extern unsigned char color_picturebuff[];
-void color_cleanPictureBuff() { memset(color_picturebuff, 0x00, COLOR_PICTURE_BUFF_SIZE); } 
-#endif
-
 extern int curToken;
 
 // ============ Tmp Compatibility Code ===============
@@ -998,39 +993,55 @@ bool drawPCTfile(char* filename, int x, int y) {
   }
 
   autocomplete_fileExt(filename, ".PCT");
-  
-  #if defined(FS_SUPPORT)  and defined( COLOR_64K )
-    #if defined(ESP32_FS)
-      int n = esp32.getFs()->readBinFile(SDentryName, color_picturebuff, COLOR_PICTURE_BUFF_SIZE);
-      if ( n <= 0 ) { 
-        host_outputString("ERR : File not ready\n");
-        return false;
-      } /* else if (n != COLOR_PICTURE_BUFF_SIZE) {
-        host_outputString("ERR : File not valid\n");
-        host_outputInt( n );
-        host_outputString(" bytes read\n");
-        return false;
-      } */
-    #endif
-  #endif
 
 
-  // do something w/ these bytes ...
-  if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
-    #if defined(BUILTIN_LCD) and defined( COLOR_64K )
-      #ifdef BUT_ESP32
-        //esp32.getScreen()->clear();
-        esp32.getScreen()->drawPct(x, y, color_picturebuff);
+#if defined(ESP32PCKv2) and defined(COLOR_64K) 
+  esp32.lockISR();
+        // int n = esp32.getFs()->readBinFile(SDentryName, color_picturebuff, COLOR_PICTURE_BUFF_SIZE);
+        esp32.getScreen()->drawPctFile(x, y, SDentryName);
         if ( isGfxAutoBlitt() ) esp32.getScreen()->blitt();
-      #else
-        host_outputString("no ESP32\n");
-        return false;
-      #endif
-    #else
-      host_outputString("no LCD\n");
-      return false;
-    #endif
-  }
+  esp32.unlockISR();
+#else
+  host_outputString("ERR : can't draw that\n");
+#endif
+
+
+  // #if defined(FS_SUPPORT)  and defined( COLOR_64K )
+  //   #if defined(ESP32_FS)
+  //     esp32.lockISR();
+  //     int n = esp32.getFs()->readBinFile(SDentryName, color_picturebuff, COLOR_PICTURE_BUFF_SIZE);
+  //     esp32.unlockISR();
+  //     if ( n <= 0 ) { 
+  //       host_outputString("ERR : File not ready\n");
+  //       return false;
+  //     } /* else if (n != COLOR_PICTURE_BUFF_SIZE) {
+  //       host_outputString("ERR : File not valid\n");
+  //       host_outputInt( n );
+  //       host_outputString(" bytes read\n");
+  //       return false;
+  //     } */
+  //   #endif
+  // #endif
+
+
+  // // do something w/ these bytes ...
+  // if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
+  //   #if defined(BUILTIN_LCD) and defined( COLOR_64K )
+  //     #ifdef BUT_ESP32
+  //       esp32.lockISR();
+  //       //esp32.getScreen()->clear();
+  //       esp32.getScreen()->drawPct(x, y, color_picturebuff);
+  //       if ( isGfxAutoBlitt() ) esp32.getScreen()->blitt();
+  //       esp32.unlockISR();
+  //     #else
+  //       host_outputString("no ESP32\n");
+  //       return false;
+  //     #endif
+  //   #else
+  //     host_outputString("no LCD\n");
+  //     return false;
+  //   #endif
+  // }
 
 return true;
 }

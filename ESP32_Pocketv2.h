@@ -11,13 +11,15 @@
 
     // #define DBUG_ESP32 1
 
+#ifdef COLOR_64K
+extern unsigned short color_picturebuff[];
+#endif
     
     // need to be defined in TFT_eSPI too (User_Setup.h)
     // for 160x128 Screens
     #define MY_160 1
 
     #define COLOR_SCREEN 1
-
 
     // use the Lexibook Junior JG1010 Hacked Console cross-pad
     // 3 out / 2 in PINS
@@ -302,7 +304,8 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint16_t 
 
       #ifdef COLOR_64K
        // BEWARE : this is uint16_t -> 40960 bytes (for 160x128)
-       uint16_t pct64KBuff[ TFT_WIDTH * TFT_HEIGHT ];
+       //uint16_t pct64KBuff[ TFT_WIDTH * TFT_HEIGHT ];
+       uint16_t* pct64KBuff = NULL;
       #endif
 
       uint8_t scrActionBuff[ DBL_BUFF_ACTION_SIZE * DBL_BUFF_ACTION_MAX ];
@@ -432,7 +435,9 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint16_t 
           else if ( type == ACT_PCT ) {
               if ( mode == ACT_MODE_PCT_64K ) {
                 #ifdef COLOR_64K
-                _oled_display->pushImage( x, y, w, h, pct64KBuff);
+                if ( pct64KBuff != NULL ) {
+                    _oled_display->pushImage( x, y, w, h, pct64KBuff);
+                }
                 #else
                 _oled_display->print( "NO COLOR 64K !" ); 
                 #endif
@@ -567,25 +572,116 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint16_t 
                 }
             }
 
+            bool drawPctFile(int x, int y, char* filename) {
+                if (!SPIFFS.exists(filename) ) { return false; }
+
+long t0,t1;
+t0 = millis();
+
+                File f = SPIFFS.open(filename, "r");
+                if ( !f ) { return -1; }
+
+                char header[7];
+                int readed = f.readBytes( (char*)header, 7);
+
+                 int mode = -1, w=-1, h=-1;
+//Serial.println("A.1");
+                if ( header[0] == '6' && header[1] == '4' && header[2] == 'K' ) {
+                    mode = ACT_MODE_PCT_64K;
+                    w = ((int)header[3]*256) + ((int)header[4]);
+                    h = ((int)header[5]*256) + ((int)header[6]);
+                }
+Serial.print("A.2 "); Serial.print(w); Serial.print('x');Serial.print(h);Serial.println("");
+
+int yy = 0;
+while( true ) { 
+    // BEWARE : @ this time : h need to be 128
+                readed = f.readBytes( (char*)color_picturebuff, w*h*2/8);
+//Serial.print("A.2 bis"); Serial.print(readed); Serial.print(" of ");Serial.print(w*h*2);Serial.println("");
+
+                f.close();
+//Serial.println("A.3");
+                _oled_display->pushRect(x, y+yy, w, 128/8, color_picturebuff);
+//Serial.println("A.4");
+
+yy += 128/8;
+if ( yy + (128/8) > h ) { break; }
+}
+Serial.println("A.5");
+
+t1 = millis();
+Serial.print(t1-t0);Serial.println("msec");
+
+                return true;                
+            }
+
+
+
             void drawPct(int x, int y, unsigned char* picFileBuff) {
-                int mode = -1, w=-1, h=-1;
-                if ( strncmp( (const char*) picFileBuff, "64K", 3) == 0 ) {
+
+
+// not using actionBuff !!!!
+
+                 int mode = -1, w=-1, h=-1;
+Serial.println("A.1");
+                if ( picFileBuff[0] == '6' && picFileBuff[1] == '4' && picFileBuff[2] == 'K' ) {
                     mode = ACT_MODE_PCT_64K;
                     w = ((int)picFileBuff[3]*256) + ((int)picFileBuff[4]);
                     h = ((int)picFileBuff[5]*256) + ((int)picFileBuff[6]);
                 }
 
-                #ifdef DBL_BUFF_ACTION
-                #ifdef COLOR_64K
-                 //memcpy(bppBuff, picBuff, 1024);
-                 for(int i=0; i < w *h; i++) { 
-                     pct64KBuff[i] = ((uint16_t)picFileBuff[7+(i*2)+0]*256)+picFileBuff[7+(i*2)+1]; 
-                 }
-                 // BEWARE if img is smaller than buff array
-                 _scr_pushScreenAction(_oled_display, ACT_PCT, x, y, (uint8_t)w, (uint8_t)h, TFT_CLR_WHITE, mode);
-                 return;
-                #endif
-                #endif
+Serial.println("A.2 "); Serial.print(w); Serial.print('x');Serial.print(h);Serial.println("");
+
+int hh = 4;
+
+uint16_t picture[ w * hh ];
+Serial.println("A.2 bis");
+
+for(int i=0; i < (w*h*2); i++) {
+    picFileBuff[i] = picFileBuff[i+7];
+}
+
+Serial.println("A.2 ter");
+
+for(int i=0; i < (w*hh); i++) {
+    picture[i] = ((uint16_t)picFileBuff[(i*2)+0]) + ((uint16_t)picFileBuff[(i*2)+1]);
+}
+
+Serial.println("A.3");
+//_oled_display->pushImage(x, y, w, h, (uint16_t*) picFileBuff);
+//_oled_display->pushImage(x, y, w, hh, picture);
+_oled_display->pushRect(x, y, w, hh, picture);
+Serial.println("A.4");
+
+
+//                 #ifdef DBL_BUFF_ACTION
+//                 #ifdef COLOR_64K
+//                  //memcpy(bppBuff, picBuff, 1024);
+
+// #define REDUCE_MOD 1
+// /*
+//                  if ( pct64KBuff == NULL ) {
+//                      Serial.println("INIT OF PCT64KBUFF"); Serial.flush();
+//                      pct64KBuff = ( uint16_t* )malloc( sizeof(uint16_t*) * TFT_WIDTH * TFT_HEIGHT / REDUCE_MOD );
+//                      Serial.println("DONE"); Serial.flush();
+//                  } else {
+//                      Serial.println("PCT64KBUFF AREADY INIT !"); Serial.flush();
+//                  }
+// */                 
+
+// pct64KBuff = (uint16_t*)picFileBuff;
+
+// Serial.println("A.3");
+//                  for(int i=0; i < w *h/REDUCE_MOD; i++) { 
+//                      pct64KBuff[i] = ((uint16_t)picFileBuff[7+(i*2)+0]*256)+picFileBuff[7+(i*2)+1]; 
+//                  }
+// Serial.println("A.4");
+//                  // BEWARE if img is smaller than buff array
+//                  _scr_pushScreenAction(_oled_display, ACT_PCT, x, y, (uint8_t)w, (uint8_t)h/REDUCE_MOD, TFT_CLR_WHITE, mode);
+// Serial.println("A.5");
+//                  return;
+//                 #endif
+//                 #endif
             }
 
             // but supports gray
@@ -849,8 +945,6 @@ if (!SPIFFS.exists("/formatComplete.txt") && !SPIFFS.exists("/AUTORUN.BAS")) {
 
           // slow impl !!!!!!!
           char __myLine[256+1];
-          char __myKeepLine[256+1];
-          int start = 0; int lastAv = -1;
 
 #ifndef min
  #define min(a,b) (a < b ? a : b)
@@ -858,44 +952,24 @@ if (!SPIFFS.exists("/formatComplete.txt") && !SPIFFS.exists("/AUTORUN.BAS")) {
 
           char* readCurrentTextLine() {
             //   Serial.println("readLine.1");
+            int MAX_LINE_LEN = 256;
+            memset(__myLine, 0x00, MAX_LINE_LEN +1);
 
-/*
-// BEWARE w/ '\r'
-String s=this->currentFile.readStringUntil('\n');
-//Serial.println( s.length() ); Serial.print( ' ' ); Serial.println( s );
-if ( s == NULL ) { return NULL; }
+            if ( this->currentFile.available() <= 0 ) {
+                return NULL;
+            }
 
-int MAX_LINE_LEN = 256;
-memset(__myLine, 0x00, MAX_LINE_LEN +1);
+            int ch, cpt=0;
+            for(int i=0; i < MAX_LINE_LEN; i++) {
+                if ( this->currentFile.available() <= 0 ) { break; }
+                ch = this->currentFile.read();
+                if ( ch == -1 )   { break;    }
+                if ( ch == '\r' ) { continue; }
+                if ( ch == '\n' ) { break;    }
+                __myLine[ cpt++ ] = (char)ch;
+            }
 
-s.toCharArray(__myLine, s.length()+1);
-return __myLine;
-*/
-
-// TO BE TESTED ..
-
-
-int MAX_LINE_LEN = 256;
-memset(__myLine, 0x00, MAX_LINE_LEN +1);
-
-if ( this->currentFile.available() <= 0 ) {
-    return NULL;
-    //return __myLine;
-}
-
-
-int ch, cpt=0;
-for(int i=0; i < MAX_LINE_LEN; i++) {
-    if ( this->currentFile.available() <= 0 ) { break; }
-    ch = this->currentFile.read();
-    if ( ch == -1 )   { break;    }
-    if ( ch == '\r' ) { continue; }
-    if ( ch == '\n' ) { break;    }
-    __myLine[ cpt++ ] = (char)ch;
-}
-
-return __myLine;
-
+            return __myLine;
           }
 
           // ================================

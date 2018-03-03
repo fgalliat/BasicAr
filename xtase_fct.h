@@ -438,8 +438,9 @@ int xts_dispPCT() {
 
       
   if ( executeMode ) {
-    int y = stackPopNum();
-    int x = stackPopNum();
+    //int y = stackPopNum();
+    //int x = stackPopNum();
+    int x = 0, y = 0;
     char* pictStr = stackPopStr();
     if ( drawPCTfile( pictStr, x, y ) ) {
       return 0;
