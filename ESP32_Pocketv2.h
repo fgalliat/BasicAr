@@ -572,6 +572,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, uint32_t w, uint32_t h, uint16_t 
                 }
             }
 
+            // not buffered
             bool drawPctFile(int x, int y, char* filename) {
                 if (!SPIFFS.exists(filename) ) { return false; }
 
@@ -616,7 +617,7 @@ Serial.print(t1-t0);Serial.println("msec");
             }
 
 
-
+            // fails !!!!!!!
             void drawPct(int x, int y, unsigned char* picFileBuff) {
 
 
@@ -693,10 +694,9 @@ Serial.println("A.4");
 
     uint16_t _color = ST7735_BLACK;
     if ( color == 1 ) { _color = ST7735_WHITE; }
-    else if ( color == 2 ) { _color = ST7735_CYAN; } // light grayshade
-    else if ( color == 3 ) { _color = ST7735_BLUE; } // dark grayshade
-
-    else if ( color == 4 ) { _color = ST7735_YELLOW; } // very dark grayshade
+    else if ( color == 2 ) { _color = CLR_DARKGREY; }
+    else if ( color == 3 ) { _color = CLR_GREY; }
+    else if ( color == 4 ) { _color = CLR_LIGHTGREY; }
 
 #ifdef DBL_BUFF_ACTION
   _scr_pushScreenAction(_oled_display, ACT_RECT,x, y, width, height, _color, mode == 0 ? ACT_MODE_DRAW : ACT_MODE_FILL);

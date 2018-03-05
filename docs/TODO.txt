@@ -4,13 +4,16 @@ upgraded to 32KB of RAM (beware w/ Teensy 3.2 64KB total)
 
 ---------------------------------------------------------------
 
+DATAU -> url GET a ~csv/DATA response by wifi
+
+---------------------------------------------------------------
+
 DRAWPCT "test">>, 0, 0 << add these 2 args
  \___ xtase_fct.h  ==> DONE
 
 SSID.TXT -> doesn't work anymore -> works now
 DATAF works now
 OpenCurrentTextFile works better now
-
 
 ---------------------------------------------------------------
 
