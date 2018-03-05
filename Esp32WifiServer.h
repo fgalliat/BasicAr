@@ -61,17 +61,22 @@
           return false;
         }
 
-        if (wifiMulti == NULL) wifiMulti = new WiFiMulti(); 
+        if (wifiMulti == NULL) { wifiMulti = new WiFiMulti(); }
 
-        char* line, *line2;
+        //char* line, *line2; // leads to the same pointer
+        char* line;
+        char ssid[128],key[128];
         while( (line = esp32.getFs()->readCurrentTextLine() ) != NULL ) {
           // trim TODO + file sanity check
           if ( strlen(line) == 0 ) { break; }
-          //DBUG( line ); DBUG( "=>" );
-          DBUG( "Registering SSID : " );DBUG( line );DBUG( "\n" ); 
-          line2 = esp32.getFs()->readCurrentTextLine();
-          //DBUG( line2 ); DBUG( "\n" );
-          wifiMulti->addAP( (const char*)line, (const char*)line2);
+          memcpy(ssid, line, strlen(line));
+          ssid[strlen(line)] = 0x00;
+          DBUG( "Registering SSID : " );DBUG( ssid );DBUG( "\n" ); 
+          line = esp32.getFs()->readCurrentTextLine();
+          memcpy(key, line, strlen(line));
+          key[strlen(line)] = 0x00;
+          //DBUG( key ); DBUG( "\n" );
+          wifiMulti->addAP( (const char*)ssid, (const char*)key);
         }
         esp32.getFs()->closeCurrentTextFile();
         esp32.unlockISR();
