@@ -436,11 +436,19 @@ int xts_dispPCT() {
   if (!_IS_TYPE_STR(val))
       return _ERROR_EXPR_EXPECTED_STR;
 
+  getNextToken();
+  val = expectNumber();  // X1
+  if (val) return val;	// error
+  
+  getNextToken();
+  val = expectNumber();  // Y1
+  if (val) return val;	// error
+
       
   if ( executeMode ) {
-    //int y = stackPopNum();
-    //int x = stackPopNum();
-    int x = 0, y = 0;
+    int y = stackPopNum();
+    int x = stackPopNum();
+    //int x = 0, y = 0;
     char* pictStr = stackPopStr();
     if ( drawPCTfile( pictStr, x, y ) ) {
       return 0;
