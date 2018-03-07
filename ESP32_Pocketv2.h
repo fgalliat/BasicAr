@@ -600,7 +600,6 @@ while( true ) {
                 readed = f.readBytes( (char*)color_picturebuff, w*h*2/8);
 //Serial.print("A.2 bis"); Serial.print(readed); Serial.print(" of ");Serial.print(w*h*2);Serial.println("");
 
-                f.close();
 //Serial.println("A.3");
                 _oled_display->pushRect(x, y+yy, w, 128/8, color_picturebuff);
 //Serial.println("A.4");
@@ -608,6 +607,7 @@ while( true ) {
 yy += 128/8;
 if ( yy + (128/8) > h ) { break; }
 }
+                f.close();
 Serial.println("A.5");
 
 t1 = millis();
