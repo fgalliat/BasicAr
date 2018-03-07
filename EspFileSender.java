@@ -59,7 +59,7 @@ public class EspFileSender {
         System.out.println("-EOT-");
     }
 
-    public void sendSomething(String entryName, String ip) throws Exception {
+    public void sendSomething(String entryName, String ip, boolean autoClose) throws Exception {
         Socket sk = new Socket(ip, 23);
         out = new PrintStream( sk.getOutputStream() );
         in = new BufferedReader(new InputStreamReader(sk.getInputStream()));
@@ -70,7 +70,7 @@ public class EspFileSender {
         } else {
             sendFile(entryName);
         }
-        sayBye();
+        if (autoClose) sayBye();
         Zzz(500);
         sk.close();
     }
@@ -83,14 +83,16 @@ public class EspFileSender {
         // "192.168.4.1" -> if APmode
         String ip = "192.168.4.1";
         String whatToSend = "./data/";
+        boolean autoClose = true;
         if ( args != null && args.length >= 1 ) { whatToSend = args[0]; }
         if ( args != null && args.length >= 2 ) { ip = args[1]; }
+        if ( args != null && args.length >= 3 ) { autoClose = false; }
 
         if ( ip.equals("192.168.4.1") ) {
             System.out.println("Be sure to be on right ESP-AP");
         }
 
-        new EspFileSender().sendSomething(whatToSend, ip);
+        new EspFileSender().sendSomething(whatToSend, ip, autoClose);
     }
 
 
