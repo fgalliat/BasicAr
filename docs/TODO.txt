@@ -3,8 +3,53 @@
 upgraded to 32KB of RAM (beware w/ Teensy 3.2 64KB total)
 
 ---------------------------------------------------------------
+5v 1800mAh slim silver (fully charged)
+12:50
+  wifi STA mode
+13:00 
+  wifi telnet connected on 192.168.1.18
+13:02
+  write + save + run "JUKE.BAS" w/ loop + btn read
+
+---------------------------------------------------------------
 
 DATAU -> url GET a ~csv/DATA response by wifi
+
+MIN, MAX to impl.
+
+SCROLL LEFT TEXT banneer
+
+distinct "/quit" "/kill" & conn. end from telnet server (only /kill stops the server)
+
+---------------------------------------------------------------
+
+// draws MP3Player GUI
+//                                                                   123456789012345678901
+cls : drawpct "mp3_gui",0,0 : locate 0,0 : ? "01"; : locate 0,7 : ? "Xtase is proud to ..";
+
+drawpct "TEST", 0, 0
+
+10 MSG$ = "Xtase is proud to present you XtsMP3Player..."
+20 I = 1 
+30 GOSUB 1000
+35 ? " Enter " : INPUT A$
+40 IF A$ <> "" THEN STOP
+50 GOTO 30
+70 ' -------------
+1000 ' SCROLL TEXT TO LEFT
+1020 ' I = 1
+1022 L = LEN(MSG$)
+1025 ' C = MIN(I+19, L) - I : IF C <= 0 THEN I=1 : GOTO 10
+1030 C = I+19
+1040 IF C > L THEN C=L+1
+1045 C = C - I
+1047 IF C <= 0 THEN I = 1 : GOTO 1030
+1050 LOCATE 0,7
+1060 ? MID$( MSG$, I, C );
+1070 I = I + 1
+1080 RETURN
+
+
 
 ---------------------------------------------------------------
 
