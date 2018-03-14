@@ -817,6 +817,16 @@ float xts_pow(float arg0, float arg1) {
   return ret;
 }
 
+float xts_min(float arg0, float arg1) {
+  float ret = arg0 < arg1 ? arg0 : arg1;
+  return ret;
+}
+
+float xts_max(float arg0, float arg1) {
+  float ret = arg0 > arg1 ? arg0 : arg1;
+  return ret;
+}
+
 
 // ===================================================================
 // === Extended Commands

@@ -249,6 +249,9 @@ TokenTableEntry tokenTable[] = {
 
     {"DRAWPCT",3|TKN_ARG1_TYPE_STR|TKN_FMT_POST}, // DRAWPCT "TEST",0,0
 
+    {"MIN",  2}, // numeric fcts
+    {"MAX",  2}, // numeric fcts
+
 };
 
 
@@ -1579,6 +1582,16 @@ int parseFnCallExpr() {
             tmp  = (int)stackPopNum(); // powNum
             if (!stackPushNum(xts_pow( tmp, tmp2 ))) return ERROR_OUT_OF_MEMORY;
             break;
+        case TOKEN_MIN:
+            tmp2 = (int)stackPopNum(); // inv. order powValue
+            tmp  = (int)stackPopNum(); // powNum
+            if (!stackPushNum(xts_min( tmp, tmp2 ))) return ERROR_OUT_OF_MEMORY;
+            break;
+        case TOKEN_MAX:
+            tmp2 = (int)stackPopNum(); // inv. order powValue
+            tmp  = (int)stackPopNum(); // powNum
+            if (!stackPushNum(xts_max( tmp, tmp2 ))) return ERROR_OUT_OF_MEMORY;
+            break;
 
 // ==============================
 
@@ -1748,6 +1761,9 @@ int parsePrimary() {
 
     case TOKEN_SQRT: // Xtase code
     case TOKEN_POW:  // Xtase code
+
+    case TOKEN_MIN:  // Xtase code
+    case TOKEN_MAX:  // Xtase code
 
         return parseFnCallExpr();
 

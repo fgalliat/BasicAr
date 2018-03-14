@@ -168,8 +168,11 @@
     #define TOKEN_DATAF            105 // feeds some typed arrays w/ pseudo CSV content (file.BAD)
 
     #define TOKEN_DRAWPCT          106 // draws a color picture if supported
+
+    #define TOKEN_MIN              107 // min(a,b)
+    #define TOKEN_MAX              108 // max(a,b)
     
-    #define TOKEN_LASTONE TOKEN_DRAWPCT
+    #define TOKEN_LASTONE TOKEN_MAX
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT
