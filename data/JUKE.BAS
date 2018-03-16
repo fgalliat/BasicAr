@@ -1,19 +1,55 @@
-1 ' blank ....
-10 cls : drawpct "mp3_gui",0,0 : MP = 1
-20 locate 0,0 : 
-25 IF MP < 10 THEN ? "0"; : locate 1,0
-30 ? MP;
-40 ' dataf "juke","sz","a$","b$"
-115 MSG$ = "...Xtase is proud to present you XtsMP3Player..." : I = 1
-130 GOSUB 1000
+1 ' Xts-uPocket V2 MP3 Player
+2 ' MP trackNum / MPUS nb of track
+5 MPUS = 0
+10 DATAF "juke","MPUS","MPNUM$","MPNAM$"
+20 cls : drawpct "mp3_gui",0,0 : MP = 1 : VOL = 20 : PAU = 1 : PLY = 0 : PLF = 0
+30 GOSUB 800  : ' display track num
+90 MSG$ = "...Xtase is proud to present you XtsMP3Player..." : I = 1
+100 ' === main display loop ===
+130 GOSUB 1000 : ' display main baneer
 135 BT = BTN(0)
 140 IF BT = 4 THEN STOP : ' 3rd btn
-150 IF (BTN(5) == 1) THEN MP = MP + 1 : DELAY 150
-160 IF (BTN(4) == 1 AND MP > 1) THEN MP = MP - 1 : DELAY 150
+145 IF BT = 1 THEN GOSUB 500 : ' 1st btn
+147 ' 4 left / 5 right / 6 up / 7 down
+150 IF (BTN(5) = 1 AND MP < MPUS) THEN MP = MP + 1 : GOSUB 700 : DELAY 150
+160 IF (BTN(4) = 1 AND MP > 1)    THEN MP = MP - 1 : GOSUB 700 : DELAY 150
+170 IF (BTN(6) = 1 AND VOL < 40)  THEN VOL = VOL + 5 : GOSUB 600 : DELAY 150
+180 IF (BTN(7) = 1 AND VOL > 0)   THEN VOL = VOL - 5 : GOSUB 600 : DELAY 150
+190 PLF = BTN(10) : ' is mp3 chip playing ?
+198 ' Auto play next song when prev. finished
+200 IF PAU = 0 AND PLF = 0 AND MP < MPUS THEN MP = MP + 1 : GOSUB 700 : GOSUB 640
 250 DELAY 90
-260 GOTO 130
-600 ' -------------
-1000 ' SCROLL TEXT TO LEFT
+260 GOTO 100
+500 ' main btn behavior (sub)
+510 IF PAU = 1 THEN PAU = 0 : GOSUB 640 : GOTO 530
+520 IF PAU = 0 THEN PAU = 1 : GOSUB 680
+530 DELAY 150
+590 RETURN
+600 ' SET VOLUME (sub)
+610 EXEC "MP3","VOL", VOL
+620 RETURN
+640 ' PLAY (sub)
+650 EXEC "MP3","PLAY", MP
+655 PLY = 1
+660 RETURN
+680 ' PAUSE (sub)
+690 EXEC "MP3","PAUSE"
+692 PLY = 0
+695 RETURN
+700 ' CHANGE TRACK NUM  (sub)
+710 GOSUB 800  : ' display track num
+720 RETURN
+800 ' DISPLAY TRACK NUM (sub)
+805 RECT 0,0,14,8,0,1
+810 IF MPUS > 0 THEN GOTO 870 : ' else file not loaded
+820 locate 0,0 : ' legacy trackNum disp
+830 IF MP < 10 THEN ? "0"; : locate 1,0
+840 ? MP;
+850 RETURN
+870 locate 0,0 : ? MPNUM$(MP); : ' valued trackNum
+880 MSG$ = MPNAM$( MP ) + "   " : I = 1 : ' set baneer as trkName
+890 RETURN
+1000 ' SCROLL TEXT TO LEFT (sub)
 1020 ' I = 1
 1022 L = LEN(MSG$)
 1025 ' C = MIN(I+19, L) - I : IF C <= 0 THEN I=1 : GOTO 10
