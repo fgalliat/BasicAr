@@ -1,0 +1,14 @@
+@01/31/2018 arduino ide 1.8.5 & esp32 core under Win10
+
+basic.cpp:2127: error: 'end' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+operation on 'tuneStream' may be undefined [-Werror=sequence-point]
+
+
+modify :
+C:\Program Files (x86)\Arduino\hardware\espressif\esp32\platform.txt
+change :
+compiler.cpp.flags=-std=gnu++11 -fno-exceptions -Os -g3 -Wpointer-arith -fexceptions -fstack-protector -ffunction-sections -fdata-sections -fstrict-volatile-bitfields -mlongcalls -nostdlib {compiler.warning_flags} -Wno-error=unused-function -Wno-error=unused-but-set-variable -Wno-error=unused-variable -Wno-error=deprecated-declarations -Wno-unused-parameter -Wno-sign-compare -fno-rtti -MMD -c
+
+to :
+compiler.cpp.flags=-std=gnu++11 -fno-exceptions -Os -g3 -Wreturn-type -Wsequence-point -Wmaybe-uninitialized -Wpointer-arith -fexceptions -fstack-protector -ffunction-sections -fdata-sections -fstrict-volatile-bitfields -mlongcalls -nostdlib {compiler.warning_flags} -Wno-error=unused-function -Wno-error=unused-but-set-variable -Wno-error=unused-variable -Wno-error=deprecated-declarations -Wno-unused-parameter -Wno-sign-compare -fno-rtti -MMD -c
+

@@ -144,8 +144,8 @@
                             }
                         }
 
-                        if ( color == 2 ) { 
-                            c = cpt%2; 
+                        if ( color >= 2 ) { 
+                            c = cpt % color; 
                             if ( c == 1 ) _oled_display->setColor(WHITE);
                             else          _oled_display->setColor(BLACK);
                         }

@@ -6,6 +6,15 @@
 #ifndef __XTS_ARCH_H__
 #define __XTS_ARCH_H__ 1
 
+#if defined(ARDUINO_ARCH_ESP32)
+ // specifically for NON-BUILTIN-OLED module
+ #define ESP32PCKv2 1
+ #warning "You choosed ESP32 Xts-uBasic Pocket Version 2 !"
+#endif
+
+
+
+
 #if defined(__MK66FX1M0__)
 // Teensy 3.6
   #define ARCH_TYPE "Teensy 3.6"
@@ -101,14 +110,45 @@
   #define EEPROM_END (2*1024)-1
   #define SPEED 1000
 #elif defined(ARDUINO_ARCH_ESP32)
-  // ESP32 + Oled Board
-  // from mackerhawk as example
-  #define ARCH_TYPE "ESP32-Oled Board"
+  // ESP32 Boards
   #define BUT_TEENSY 1
   #define BUT_ESP32 1
 
-  #include "ESP32OLED.h"
-  #define BUILTIN_LCD 1
+  #ifdef ESP32PCKv2
+    // DOIT ESP32 DEVKIT V1 board
+    #define ARCH_TYPE "ESP32-DevKit Board"
+
+//#define LCD_LOCKED 1
+
+
+
+    #define COLOR_64K    1
+    #define COLOR_PICTURE_BUFF_SIZE (((160*128)*2)+7)
+
+      /// BE SURE TO USE SAME GND side as 3.3 is !!!!!!
+      // #define UART2_NUM 2
+      #define UART2_RX 16
+      // #define UART2_TX 17
+      #define UART2_NUM 1
+      #define UART2_TX 4 // BEWARE : used as SCREEN RST pin
+
+    #define BUILTIN_LCD 1
+
+    // MP3 DFPlayer module
+    #define BOARD_SND 1
+
+    // Wifi support for Esp32
+    #define ESP32_WIFI_SUPPORT 1
+
+    #include "ESP32_Pocketv2.h"
+
+  #else
+    // ESP32 + Oled Board
+    // from mackerhawk as example
+    #define ARCH_TYPE "ESP32-Oled Board"
+    #include "ESP32OLED.h"
+    #define BUILTIN_LCD 1
+  #endif
 
   #define BUZZER_PIN -1
   
@@ -118,7 +158,7 @@
 
   #define BTN1_PIN BTN1
   #define BTN2_PIN BTN2
-  #define BTN3_PIN -1
+  #define BTN3_PIN BTN3
 
   #define FS_SUPPORT 1 // TODO remove comment
   #define ESP32_FS 1
@@ -128,7 +168,7 @@
   // lcd(128*64) / 8(1bpp)
   #define PICTURE_BUFF_SIZE (1*1024)
 
-  #define RAM_END (256*1024)-1
+  #define RAM_END (288*1024)-1
   #define EEPROM_END (4*1024)-1
   #define SPEED 240
 #else

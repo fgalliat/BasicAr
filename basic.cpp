@@ -59,7 +59,27 @@
   //#include "xts_teensy.h"
 
 #ifdef BUT_ESP32
-  extern Esp32Oled esp32;
+ #ifdef ESP32PCKv2
+    extern Esp32Pocketv2 esp32;
+
+ #ifdef ESP32_WIFI_SUPPORT
+     extern void host_outputString(char* str);
+     extern int host_outputInt(long v);
+
+     #define DBUG(a) { Serial.print(a); host_outputString(a); }
+     #define DBUGi(a) { Serial.print(a); host_outputInt(a); }
+
+     #include "Esp32WifiServer.h"
+     extern Esp32WifiServer telnet;
+     
+     #undef DBUG
+     #undef DBUGi
+ #endif
+
+ #else
+   extern Esp32Oled esp32;
+ #endif
+
 #endif
 
   #ifndef COMPUTER
@@ -186,7 +206,7 @@ TokenTableEntry tokenTable[] = {
 
     {"DELAY",TKN_FMT_POST}, // to sleep MCU
 
-    {"CONSOLE", 0}, // change current I/O console ==> TODO : add args to select devices
+    {"CONSOLE", 0|TKN_FMT_POST}, // change current I/O console ==> TODO : add args to select devices
 
     {"LLIST",TKN_FMT_POST}, // to dump current/fromSD PRGM to Serial console
 
@@ -196,10 +216,10 @@ TokenTableEntry tokenTable[] = {
 
     {"CHAIN",TKN_FMT_POST}, // to load then execute a program
 
-    {"CIRCLE", 3},
-    {"LINE", 4},
-    {"PSET", 2},    // switch ON a pixel
-    {"PRESET", 2},  // switch OFF a pixel
+    {"CIRCLE", 3|TKN_FMT_POST},
+    {"LINE", 4|TKN_FMT_POST},
+    {"PSET", 2|TKN_FMT_POST},    // switch ON a pixel
+    {"PRESET", 2|TKN_FMT_POST},  // switch OFF a pixel
 
     {"STRING$", 2|TKN_RET_TYPE_STR},  // repeat x times CHR$(y)
     {"UPPER$", 1|TKN_ARG1_TYPE_STR|TKN_RET_TYPE_STR},   // returns upper str
@@ -222,8 +242,15 @@ TokenTableEntry tokenTable[] = {
     {"SQRT", 1}, // numeric function
     {"POW",  2},
 
-    {"RECT",  6}, // rect x,y,w,h[,color[,mode]]
-    {"BLITT", 1}, // {0,1,2}
+    {"RECT",  6|TKN_FMT_POST}, // rect x,y,w,h[,color[,mode]]
+    {"BLITT", 1|TKN_FMT_POST}, // {0,1,2}
+
+    {"DATAF", TKN_FMT_POST},  // DATAF "<file>","<sizeVar>","<ARRAY_VAR>"[,"<ARRAY_VAR>","<ARRAY_VAR>"...]
+
+    {"DRAWPCT",3|TKN_ARG1_TYPE_STR|TKN_FMT_POST}, // DRAWPCT "TEST",0,0
+
+    {"MIN",  2}, // numeric fcts
+    {"MAX",  2}, // numeric fcts
 
 };
 
@@ -967,6 +994,50 @@ int xts_setStrArrayElem(char *name, int index, char* value) {
     return ERROR_NONE;
 }
 
+//XX-EXPERIMENTAL-XX
+int xts_setNumArrayElem(char *name, int index, float value) {
+    // keep the current stack position, since we can't overwrite the value string
+    int oldSTACKEND = sysSTACKEND;
+
+    // how long is the new value?
+    // char *newValPtr = stackPopStr();
+    //char *newValPtr = value;
+    int newValLen = sizeof(float);//strlen(newValPtr);
+
+    unsigned char *p = findVariable(name, VAR_TYPE_NUM_ARRAY);
+    unsigned char *p1 = p;	// so we can correct the length when done
+    if (p == NULL)
+        return ERROR_VARIABLE_NOT_FOUND;
+
+    p += 3 + strlen(name) + 1;
+    
+    int offset;
+    //int ret = _getArrayElemOffset(&p, &offset);
+    int ret = xts_getArrayElemOffset(&p, &offset, index);
+    if (ret) return ret;
+    
+    p += sizeof(float)*offset;
+
+    // Xtase mod
+    int addr = &(p[0]) - &(mem[0]);
+    
+    int oldValLen = sizeof(float);
+    int bytesNeeded = newValLen - oldValLen;
+    // check if we've got enough room for the new value
+    if (sysVARSTART - bytesNeeded < oldSTACKEND)
+        return 0;	// out of memory
+
+    // correct the length of the variable
+    *(uint16_t*)p1 += bytesNeeded;
+    memmove(&mem[sysVARSTART - bytesNeeded], &mem[sysVARSTART], p - &mem[sysVARSTART]);
+    
+    // copy in the new value
+    copyFloatToBytes( mem, addr,value );
+
+    sysVARSTART -= bytesNeeded;
+    return ERROR_NONE;
+}
+
 // =====================================================
 
 
@@ -1511,6 +1582,16 @@ int parseFnCallExpr() {
             tmp  = (int)stackPopNum(); // powNum
             if (!stackPushNum(xts_pow( tmp, tmp2 ))) return ERROR_OUT_OF_MEMORY;
             break;
+        case TOKEN_MIN:
+            tmp2 = (int)stackPopNum(); // inv. order powValue
+            tmp  = (int)stackPopNum(); // powNum
+            if (!stackPushNum(xts_min( tmp, tmp2 ))) return ERROR_OUT_OF_MEMORY;
+            break;
+        case TOKEN_MAX:
+            tmp2 = (int)stackPopNum(); // inv. order powValue
+            tmp  = (int)stackPopNum(); // powNum
+            if (!stackPushNum(xts_max( tmp, tmp2 ))) return ERROR_OUT_OF_MEMORY;
+            break;
 
 // ==============================
 
@@ -1680,6 +1761,9 @@ int parsePrimary() {
 
     case TOKEN_SQRT: // Xtase code
     case TOKEN_POW:  // Xtase code
+
+    case TOKEN_MIN:  // Xtase code
+    case TOKEN_MAX:  // Xtase code
 
         return parseFnCallExpr();
 
@@ -2429,6 +2513,8 @@ int parseStmts()
             case TOKEN_LLIST: ret = xts_llist(); break;
 
             case TOKEN_DRAWBPP: ret = xts_dispBPP(); break;
+            case TOKEN_DRAWPCT: ret = xts_dispPCT(); break;
+
             case TOKEN_CIRCLE : ret = xts_dispCircle(); break;
             case TOKEN_LINE   : ret = xts_dispLine(); break;
             case TOKEN_PSET   : ret = xts_pset(); break;
@@ -2438,6 +2524,7 @@ int parseStmts()
             case TOKEN_DIRARRAY: ret = xts_fs_dir(true); break;
 
             case TOKEN_EXT_EXEC: ret = xts_exec_cmd(); break;
+            case TOKEN_DATAF: ret = xts_dataf_cmd(); break;
 
             case TOKEN_BLITT : ret = xts_blittMode(); break;
             case TOKEN_RECT  : ret = xts_dispRect(); break;

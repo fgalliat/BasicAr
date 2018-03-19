@@ -1,16 +1,61 @@
 git clone git@github.com:fgalliat/BasicAr.git
 
 
+
+=================================================================
+Xts uPocket V2
+
+_________________________
+ADDITIONAL INPUTS
+ pin 33 as INPUT_PULLUP for [A] BTN (has to put one of the btn pin to GND)
+ pin 32 as INPUT        for MP3_READY interupt line (DFPlayer mini) 
+
+ then allow to read these pins in BASIC in order to make NEXTable MP3 Player PRGM
+
+BTN(1) On     D26
+    2  Sound  D25
+    3  Pause  D33
+
+    4  Left
+    5  Right
+    6  Up
+    7  Down
+    
+    8  Trigger A D32
+    9  Trigger B
+
+   10  MP3 BUSY  D35
+_________________________
+
+LIGHT6 for small screens (swap between text & map)
+QUENZAR
+
+DRAWPCT "toto", x, y -- to draw a 16b bitmap
+   --> header : monochrome bitmap / indexed bitmap / color bitmap / vector drawing
+                width / height
+                raster / vector shapes
+
+___________ written : have to test !!!!!
+DATAF "titi", "A$", "B", "C", "D$", "E"
+  reads titi.BAD (1 line for row count (arrays DIM) / the rest is CSV-like)
+  then feeds typed arrays ~like DATA cmd does
+-see xtase_fct.h-
+  [3
+  [# optionally remark line, can be col. names (not counted)
+  [Rolph;20;10;Barbarian;1
+  [Mula;15;15;Elf;2
+  [Grumph;50;10;Dragon;3
+___________ written : have to test !!!!!
+
+
+=================================================================
+
+
 les Teensy ne supportent pas bien le PROGMEM et une grande consomation memoire
 il est impossible de faire cohabiter les PROGMEM pgm_read... et l'utilisation de SD.h ou SdFat.h
 du moins avec mon code de compatibilité
 
 1) remettre un marqueur vierge et des fonctions vides pour l'acces aux datas (pour pouvoir les refaire marcher avec un Arduino)
-2) remettre le code du reset de la MCU pour le teensy (in progress) (DONE)
-3) separer les FS_SUPPORT en mode SDFAT ou non
-
-
-LOCATE , LED, .. could goes into : parseTwoIntCmd()
 
 =================================================================
 

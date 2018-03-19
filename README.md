@@ -10,7 +10,7 @@ The hardware driver layout isn't finished & is provided as is (coded for the Xts
  http://xtase.over-blog.com/2017/11/xts-ubasic-reborns-from-ashes.html)
 ![The XtsuBasic Computer boards](./docs/allBoards.jpg "The Xts-uBasic Computer...")
 
-## Builtin hardware :
+## Initial project builtin hardware :
  * Teensy 3.6 180MHz 256KB ram MCU
  * Buzzer
  * SSD1306 OLED 128x64 I2C Display
@@ -30,7 +30,13 @@ Already have FS, Sound & VGAText emulated (see subComponent/RPIDisplay).
 
 **Added support Esp32+Oled module // XtsPocket console**<br/>
 Running a small BASIC RayCaster..
-![My new XtsuBasic Pocket Console](./docs/pocket/xtsPocket_gallery1.jpg "The Xts-uBasic Pocket Console...")
+![My new XtsuBasic Pocket Console](/vm_mnt/devl/BASIC/BasicAr/docs/pocket/xtsPocket_gallery1.jpg "The Xts-uBasic Pocket Console...")
+
+
+
+**Added support Esp32 & SPI LCD module // XtsPocket console V2**<br/>
+Now running WIFI telnet server (AP & STA modes), MP3 module and 64K colors screen
+![My newest XtsuBasic Pocket V2 Console](/vm_mnt/devl/BASIC/BasicAr/docs/pocket/pocketV2_gallery.jpg "The Xts-uBasic Pocket V2 Console...")
 
 
 
@@ -82,8 +88,8 @@ CIRCLE x,y,r      : draw a circle
 LINE   x,y,x2,y2  : draw a line
 PSET   x,y        : switch ON a pixel
 PRESET x,y        : switch OFF a pixel
+RECT x,y,w,h,c,m  : c : 0,1,2,3 (black,white,gray, darkGray) // m : 0,1 (draw,fill)
 BLITT x           : 0 stop blitt / 1 trigger blitt / 2 auto blitt (default mode)
-RECT x,y,w,h,c,m  : c : 0,1,2 (black,white,gray) // m : 0,1 (draw,fill)
          
 BTN(x)            : function get button state
 LED [1..3], {0,1} : switch on/off a LED
@@ -106,6 +112,8 @@ COS(x)            : return cos( x in radians)
 SIN(x)            : return sin( x in radians)
 SQRT(x)           : return square-root of x
 POW(x,y)          : return x pow y
+MIN(x,y)		  : guess
+MAX(x,y)		  : guess ...
 
 EXEC "<extCmd>", "[<extArg>]" : to launch an extended command
 

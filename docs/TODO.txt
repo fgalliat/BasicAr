@@ -2,22 +2,213 @@
 
 upgraded to 32KB of RAM (beware w/ Teensy 3.2 64KB total)
 
- ... SIN is #100
+---------------------------------------------------------------
+5v 1800mAh slim silver (fully charged)
+12:50
+  wifi STA mode
+13:00 
+  wifi telnet connected on 192.168.1.18
+13:02
+  write + save + run "JUKE.BAS" w/ PCT + txt loop + btn read
+13:20
+  modified JUKE, EXTMENU, SYSMENU & test those
+13:46
+  play an MP3 + run JUKE @ same time
+13:50
+  MP3 ended / JUKE still running / batt. temp : normal
+15:40
+  still running !!!!
+16:40
+  still running !!!!
+17:40
+  still running !!!!
+18:30 batt. starts blinking ..... (not hot) stopping all
+
+---------------------------------------------------------------
+
+DATAU -> url GET a ~csv/DATA response by wifi
+
+MIN, MAX to impl.
+
+SCROLL LEFT TEXT banneer
+
+distinct "/quit" "/kill" & conn. end from telnet server (only /kill stops the server)
+
+---------------------------------------------------------------
+
+// draws MP3Player GUI
+//                                                                   123456789012345678901
+cls : drawpct "mp3_gui",0,0 : locate 0,0 : ? "01"; : locate 0,7 : ? "Xtase is proud to ..";
+
+drawpct "TEST", 0, 0
+
+10 MSG$ = "Xtase is proud to present you XtsMP3Player..."
+20 I = 1 
+30 GOSUB 1000
+35 ? " Enter " : INPUT A$
+40 IF A$ <> "" THEN STOP
+50 GOTO 30
+70 ' -------------
+1000 ' SCROLL TEXT TO LEFT
+1020 ' I = 1
+1022 L = LEN(MSG$)
+1025 ' C = MIN(I+19, L) - I : IF C <= 0 THEN I=1 : GOTO 10
+1030 C = I+19
+1040 IF C > L THEN C=L+1
+1045 C = C - I
+1047 IF C <= 0 THEN I = 1 : GOTO 1030
+1050 LOCATE 0,7
+1060 ? MID$( MSG$, I, C );
+1070 I = I + 1
+1080 RETURN
+
+
+
+---------------------------------------------------------------
+
+DRAWPCT "test">>, 0, 0 << add these 2 args
+ \___ xtase_fct.h  ==> DONE
+
+SSID.TXT -> doesn't work anymore -> works now
+DATAF works now
+OpenCurrentTextFile works better now
+
+---------------------------------------------------------------
+
+
+CIRCLE :: add 2 opt. args : color + mode
+
+SCREEN cmd {0,1,2} - TO ADD
+ 0 128x64   BW
+ 1 128x128  16 colors
+ 2 160x128  16 colors
+
+ > can have a 128x64/BW display on a 160x128 col. screen !!!
+   -> ex. Screen Offset [+ ZOOM]
+
+ > if request a too high mode Cf really used hardware
+   -> rejection message
+
+Colors mode
+ > 0 black / 1 white
+   2 gray / 3 darkgray (as in current RayCaster)
+   ... 12 other colors
+
+Sprites
+ > need more gfx format
+ BPT - Bitmap Picture 1byte -> 8 pixels
+ CPT - Color Picture  1byte -> 2 pixels
+
+ VPT - Vector Picture (to have ~compilled~ draw files)
+     - allows big disp size w/ fewer pixels
+     - vector drawed sprites ...
+
+ header contains w & h to be used as sprites
+  ---> PBM RAM storage Vs SD/SPIFFS (re)reading
+       & more in color mode
+
+  ---> can have function that direct draw from FS
+       & not using fully inMem saved img
+
+       & could register some spriteFileNames to numbers
+         EXEC "IMG", "REG", "PERSO.VPT", 1
+          --> just to avoid StringFIleName parsing time
+
+       then call drawImage #RegNum, x, y
+         DRAWIMG 1, 10, 100
+          --> just to avoid StringFIleName parsing time
+
+________________________________
+< DOIT ESP32 DEVKIT V1 board
+#define LED 2
+
+>>> TEST BUFFERING CODE on 128x128 hat
+
+>>> THEN :
+ remove whole Adafruit ST7735 lib & code
+ keep only TFT_eSPI lib & code
+ remove whole dblBuff code try
+
+
+https://github.com/Bodmer/TFT_eSPI 
+  >>> does works @128x128 now .....
+  >>> & much fatser than Adafruit lib !!!!
+
+
+https://www.waveshare.com/wiki/1.44inch_LCD_HAT
+
+
+https://www.waveshare.com/1.8inch-lcd-module.htm
+ > https://www.waveshare.com/wiki/File:1.8inch-LCD_Module-Code.7z
+ > w/ some fix for ESP32 board
+
+Adafruit_gfx Lib solution
+https://learn.adafruit.com/adafruit-gfx-graphics-library/overview
+https://github.com/adafruit/Adafruit-ST7735-Library
+
+1.8" waveshare 160x128 ST7735S SPI
+ PINOUT :
+ VCC    3.3v
+ GND    GND
+ DIN    MOSI (23)
+ CLK    18
+ CS     5
+ DC     15
+ RST    4
+ BL     N/C
+
+
+
+> XtsPocket2
+  --> keep BUT_ESP32 ( ifdef ARDUINO_ARCH_ESP32 )
+  --> but add another ADDTIONAL FLAG + 1 FLAG for Screen res.
+
+  --> just make a copy of ESP32OLED.h
+      ESP32_Pocketv2.h
+
+  --> then change only these refs.
+   BasicAr.ino:13:  Esp32Oled esp32;
+   basic.cpp:62:  extern Esp32Oled esp32;
+   host.cpp:32:  extern Esp32Oled esp32;
+   host_xts.cpp:16:  extern Esp32Oled esp32;
+
+   by class Esp32Pocketv2 w/ same signatures but # impls.
+
+  --> Screen driver : ST7735S
+    160x128
+    128x128
+    >> https://github.com/adafruit/Adafruit-ST7735-Library
+
+       get 2 source code (.cpp & .h) then rename as
+       dev_screen_Adafruit_ST7735.xxx
+
+       add a #ifdef ESP32PCKv2 @ begining of the .cpp to limit compilation
+        in ArduinoIDE
+        -> this will not work .....
+
+       add : #elif defined(ARDUINO_ARCH_ESP32)
+                #include <pgmspace.h>
+       in .h if needed
+
+       see : https://github.com/adafruit/Adafruit-ST7735-Library/blob/master/examples/graphicstest/graphicstest.ino
+       for GFX API test
+
+
 __
- 101 A = SQRT( x )
- 102 A = POW( x, y )
-__
 
- xtase_fct.h
-  ---> finish xts_blitt & xts_dispRect
-  ---> have to use it for CLS & PRINT too
+have to test an outrun-like game
+  --> lua version may be too complex...
+  --> https://codeincomplete.com/posts/javascript-racer/
+  
+try also a tetris-like game (board 10x20 -> 14x29)
+if can store some kinda sprites : try to make a VCTRBALL clone
 
+GTrus game
 
- 103 RECT x,y,w,h[,color[,mode]]
-     color 0 BLACK / 1 WHITE
-     mode  0 draw / 1 fill / 2 fill grey (1/2 pixel)
+http://basic256.blogspot.fr/ (contains a tetris clone + a lot of other examples)
+http://www.vintage-basic.net/games.html
+http://peyre.x10.mx/GWBASIC/
 
- 104 BLITT {0,1,2}
 __
  105 FOPEN "toto.txt",1,"W"
  106 FCLOSE 1 // wher '1' is the file descriptor

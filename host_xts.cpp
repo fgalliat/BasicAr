@@ -13,7 +13,11 @@
 #include "xts_io.h"
 
 #ifdef BUT_ESP32
-  extern Esp32Oled esp32;
+ #ifdef ESP32PCKv2
+    extern Esp32Pocketv2 esp32;
+ #else
+   extern Esp32Oled esp32;
+ #endif
   extern void noTone(int pin);
   extern void tone(int pin, int freq, int duration);
 #endif
@@ -36,7 +40,8 @@
     SdFile dirFile;
   #elif defined(ESP32_FS)
     // +1 for leading '/'
-    char SDentryName[13+1];
+    //char SDentryName[13+1];
+    char* SDentryName = NULL;
   #elif defined(USE_FS_LEGACY)
     char SDentryName[13];
     // ex. regular computer
@@ -62,25 +67,31 @@
   // BEWARE : uses & modifies : SDentryName[]
   // ex. autocomplete_fileExt(filename, ".BAS") => SDentryName[] contains full file-name
   // assumes that ext is stricly 3 char long
+  // + 1 for leading '/'
   char* autocomplete_fileExt(char* filename, const char* defFileExt) {
+    if ( SDentryName == NULL ) {
+      SDentryName = (char*)malloc(13+1);
+    }
     int flen = strlen(filename);
     memset(SDentryName, 0x00, 8+1+3+1+1); // 13+1 char long
-    memcpy(SDentryName, "/", 1);
-    //strcat(SDentryName, filename );
+    SDentryName[0] = '/';
     int l = strlen( filename );
     char ch;
+    bool foundAPoint = false;
     for(int i=0; i < l; i++) {
       ch = filename[i];
       if ( ch >= 'a' && ch <= 'z' ) {
         ch = ch - 'a' + 'A';
+      } else if ( ch == '.' ) {
+        foundAPoint = true;
       }
       SDentryName[1+i] = ch;
     }
-    if ( flen < 4 || filename[ flen-3 ] != '.' ) {
+    if ( !foundAPoint ) {
       strcat( SDentryName, defFileExt );
     }
     Serial.println( SDentryName );
-    return SDentryName;
+    return (char*)SDentryName;
   }
 #else
   char* autocomplete_fileExt(char* filename, const char* defFileExt) {
@@ -299,6 +310,12 @@ void setupHardware() {
 
  #ifdef BUT_ESP32
    //esp32.setup();
+
+   // TODO : better than that !!!!
+   #ifdef BOARD_SND
+     setupSoundDFPlayer();
+   #endif
+
    return;
  #endif
 
@@ -840,13 +857,24 @@ void drawRect(int x, int y, int w, int h, int color, int mode) {
       esp32.getScreen()->drawRect(x, y, w, h, color, mode);
       if ( isGfxAutoBlitt() ) esp32.getScreen()->blitt();
      #else
-      // no gray support @ this time
-      // no fill support @ this time
+      // only ~simple pseudo~ gray support @ this time
       unsigned int c = color == 0 ? BLACK : WHITE;
       display.drawLine(x, y, x+w, y, c);
       display.drawLine(x+w, y, x+w, y+h, c);
       display.drawLine(x+w, y+h, x, y+h, c);
       display.drawLine(x, y+h, x, y, c);
+
+      if ( mode == 1 ) {
+        // fill mode
+        for(int xx=0; xx <= w; xx++) {
+          if ( color >= 2 ) {
+            // pseudo gray support
+            if (xx % color != 1) { continue; }
+          }
+          display.drawLine(x+xx, y, x+xx, y+h, c);
+        }
+      }
+
       if ( isGfxAutoBlitt() ) display.display();
      #endif
     #endif
@@ -947,6 +975,76 @@ bool drawBPPfile(char* filename) {
   return true;
 }
 
+bool drawPCTfile(char* filename, int x, int y) {
+
+  #ifndef FS_SUPPORT
+    host_outputString("ERR : storage not supported\n");
+    return false;
+  #endif
+
+  if ( ! STORAGE_OK ) {
+    host_outputString("ERR : storage not ready\n");
+    return false;
+  }
+
+  if ( filename == NULL || strlen(filename) <= 0 ) { 
+    host_outputString("ERR : invalid file\n");
+    return false;
+  }
+
+  autocomplete_fileExt(filename, ".PCT");
+
+
+#if defined(ESP32PCKv2) and defined(COLOR_64K) 
+  esp32.lockISR();
+        // int n = esp32.getFs()->readBinFile(SDentryName, color_picturebuff, COLOR_PICTURE_BUFF_SIZE);
+        esp32.getScreen()->drawPctFile(x, y, SDentryName);
+        if ( isGfxAutoBlitt() ) esp32.getScreen()->blitt();
+  esp32.unlockISR();
+#else
+  host_outputString("ERR : can't draw that\n");
+#endif
+
+
+  // #if defined(FS_SUPPORT)  and defined( COLOR_64K )
+  //   #if defined(ESP32_FS)
+  //     esp32.lockISR();
+  //     int n = esp32.getFs()->readBinFile(SDentryName, color_picturebuff, COLOR_PICTURE_BUFF_SIZE);
+  //     esp32.unlockISR();
+  //     if ( n <= 0 ) { 
+  //       host_outputString("ERR : File not ready\n");
+  //       return false;
+  //     } /* else if (n != COLOR_PICTURE_BUFF_SIZE) {
+  //       host_outputString("ERR : File not valid\n");
+  //       host_outputInt( n );
+  //       host_outputString(" bytes read\n");
+  //       return false;
+  //     } */
+  //   #endif
+  // #endif
+
+
+  // // do something w/ these bytes ...
+  // if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
+  //   #if defined(BUILTIN_LCD) and defined( COLOR_64K )
+  //     #ifdef BUT_ESP32
+  //       esp32.lockISR();
+  //       //esp32.getScreen()->clear();
+  //       esp32.getScreen()->drawPct(x, y, color_picturebuff);
+  //       if ( isGfxAutoBlitt() ) esp32.getScreen()->blitt();
+  //       esp32.unlockISR();
+  //     #else
+  //       host_outputString("no ESP32\n");
+  //       return false;
+  //     #endif
+  //   #else
+  //     host_outputString("no LCD\n");
+  //     return false;
+  //   #endif
+  // }
+
+return true;
+}
 
 
 // ==============================================
@@ -964,9 +1062,11 @@ bool drawBPPfile(char* filename) {
 
   #ifdef ESP32_FS
 
-    void esp_ls_callback(char* entry) {
+    void esp_ls_callback(char* entry,uint32_t size) {
       host_outputString(entry);
-      host_outputString("\n");
+      host_outputString(" (");
+      host_outputInt(size);
+      host_outputString(")\n");
       host_showBuffer();
     }
 
@@ -977,7 +1077,9 @@ bool drawBPPfile(char* filename) {
         return;
       }
 
+      esp32.lockISR();
       int cpt = esp32.getFs()->listDir("/", esp_ls_callback);
+      esp32.unlockISR();
 
       host_outputString("nb files : ");
       host_outputInt( cpt );
@@ -1030,7 +1132,7 @@ bool drawBPPfile(char* filename) {
         // can't use createArray because it use expr stack
         #define MAX_FILE_IN_ARRAY 128
         if ( ! xts_createArray("DIR$", 1, MAX_FILE_IN_ARRAY) ) {
-          host_outputString("Could not create DIR$");
+          host_outputString("Could not create DIR$\n");
           return false;
         }
       }
@@ -1166,6 +1268,8 @@ bool drawBPPfile(char* filename) {
   #ifdef ESP32_FS
     void loadCallback(char* codeLine) {
 
+      if ( codeLine == NULL ) { Serial.println("CANT HANDLE NULL LINES"); return; }
+
       //Serial.print(">> ");Serial.println(codeLine);
 
       // interpret line
@@ -1200,7 +1304,24 @@ bool drawBPPfile(char* filename) {
     cleanCodeLine();
     memset( tokenBuf, 0x00, TOKEN_BUF_SIZE );
 
-    esp32.getFs()->readTextFile(SDentryName, loadCallback);
+    esp32.lockISR();
+    //esp32.getFs()->readTextFile(SDentryName, loadCallback);
+    bool ok = esp32.getFs()->openCurrentTextFile( SDentryName );
+    if ( !ok ) {
+      Serial.println( "-FAILED-" );
+      host_outputString( "-FAILED-\n" );
+      host_showBuffer();
+    } else {
+      char* codeLine; int cpt = 0;
+      while( (codeLine = esp32.getFs()->readCurrentTextLine() ) != NULL ) {
+        //if ( strlen(codeLine) == 0 ) { break; }
+Serial.println( codeLine );
+        loadCallback( codeLine );
+        //Serial.println( codeLine );
+      }
+      esp32.getFs()->closeCurrentTextFile();
+    }
+    esp32.unlockISR();
 
     host_outputString( "-EOF-\n" );
     host_showBuffer();
@@ -1284,7 +1405,7 @@ void _serializeTokens(unsigned char *p, char* destLine) {
           p++;
           // host_outputInt(*(long*)p);
           static char tmp[15];
-          sprintf( tmp, "%d", *(long*)p ); 
+          sprintf( tmp, "%d", (int)( *(long*)p ) ); 
           strcat( destLine, tmp );
           destLine+=strlen(tmp); // BEWARE !!!!+ optim 
           p+=4;
@@ -1353,8 +1474,59 @@ void saveAsciiBas(char* filename) {
   autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
 
   #ifdef ESP32_FS
-    host_outputString("SAVE NYI for esp32\n");
+
+    esp32.lockISR();
+
+    Serial.println("clean");
+    esp32.getFs()->remove(SDentryName);
+    Serial.println("open");
+    //esp32.getFs()->openCurrentTextFile(SDentryName, false);
+    //esp32.getFs()->writeCurrentTextLine("1 ' blank\n");
+
+    File f = SPIFFS.open(SDentryName, "w");
+    if ( !f ) { Serial.println("NOT ACCESSIBLE"); esp32.unlockISR(); return; }
+    Serial.println("seek");
+    f.seek(0);
+    Serial.println("seeked");
+
+    char lineNumStr[7];
+
+    cleanCodeLine();
+    unsigned char *p = &mem[0];
+    while (p < &mem[sysPROGEND]) {
+        uint16_t lineNum = *(uint16_t*)(p+2);
+        // file.print(lineNum);
+        // file.print(" ");
+
+        sprintf(lineNumStr, "%d ", lineNum);
+        f.print(lineNumStr);
+
+        _serializeTokens(p+4, codeLine);
+        f.print(codeLine);
+        //esp32.getFs()->writeCurrentTextLine(codeLine);
+        cleanCodeLine();
+
+        f.print("\r\n");
+        //esp32.getFs()->writeCurrentTextLine("\n");
+        p+= *(uint16_t *)p;
+        f.flush();
+        Serial.println("line");
+    }
+    f.print("\r\n");
+    f.flush();
+    Serial.println("flushed");
+    f.close();
+    esp32.unlockISR();
+
+    Serial.println("closed");
+    //esp32.getFs()->writeCurrentTextLine("\n");
+
+        
+    host_outputString( "-EOF-\n" );
     host_showBuffer();
+
+    //esp32.getFs()->closeCurrentTextFile();
+
   #else
     // SFATLIB mode -> have to switch for regular SD lib
     sd.remove( SDentryName );
@@ -1475,8 +1647,7 @@ void deleteBasFile(char* filename) {
   autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
 
   #ifdef ESP32_FS
-    host_outputString("DEL NYI for esp32\n");
-    host_showBuffer();
+    esp32.getFs()->remove( SDentryName );
   #else
     // SFATLIB mode -> have to switch for regular SD lib
     sd.remove( SDentryName );

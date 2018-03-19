@@ -1,16 +1,40 @@
 /*******************
 * Xtase - fgalliat : fgalliat@gmail.com @Sept2017
-* redesigned for XtsuBasic board
+* redesigned for XtsuBasic boards & XtsuPocket boards
 *
 * Based on robin edwards work - (https://github.com/robinhedwards/ArduinoBASIC)
 *
+* if compile errors : (see error_log_win.txt)
+* @01/31/2018 arduino ide 1.8.5 & esp32 core under Win10
 *******************/
 
 // Teensy's doesn't supports FS (SD, SDFat) & PROGMEM routines
 #include "xts_arch.h"
 
 #ifdef BUT_ESP32
+ #ifdef ESP32PCKv2
+   #include "HardwareSerial.h"
+   //HardwareSerial Serial2(2);
+   HardwareSerial Serial2(UART2_NUM);
+   Esp32Pocketv2 esp32;
+
+   #ifdef ESP32_WIFI_SUPPORT
+     extern void host_outputString(char* str);
+     extern int host_outputInt(long v);
+
+     #define DBUG(a) { Serial.print(a); host_outputString(a); }
+     #define DBUGi(a) { Serial.print(a); host_outputInt(a); }
+
+     #include "Esp32WifiServer.h"
+     Esp32WifiServer telnet;
+     #undef DBUG
+     #undef DBUGi
+   #endif
+
+
+ #else
   Esp32Oled esp32;
+ #endif
   void noTone(int pin) { esp32.noTone(); }
   void tone(int pin, int freq, int duration) { esp32.tone(freq,duration); }
 #endif
@@ -88,6 +112,10 @@ char codeLine[ASCII_CODELINE_SIZE]; // !! if enought !! (BEWARE : LIGHT4.BAS)
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 unsigned char audiobuff[AUDIO_BUFF_SIZE];       // T5K & T53 file buffer
 unsigned char picturebuff[PICTURE_BUFF_SIZE];   // BPP file buffer
+#ifdef COLOR_64K
+  //unsigned char color_picturebuff[PICTURE_BUFF_SIZE];  // PCT file buffer
+  uint16_t color_picturebuff[160*128/8];  // PCT file buffer
+#endif
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
@@ -153,10 +181,13 @@ bool addAutorunFlag = false;
 
 void setup() {
 
+    // "Retour Chariot" + 115200bps
+    Serial.begin(115200);
+
 #ifdef BUT_ESP32
    esp32.setup();
    STORAGE_OK = true;
-   addAutorunFlag = true;
+   // addAutorunFlag = true;
 #endif
 
     // BUZZER_MUTE = true;
@@ -166,22 +197,20 @@ void setup() {
     setConsoles(OUT_DEV_SERIAL, -1, -1);
     SCREEN_LOCKER = false;
 
+    //#ifdef BUILTIN_LCD and not defined(LCD_LOCKED)
     #ifdef BUILTIN_LCD
         setConsoles(OUT_DEV_LCD_MINI, -1, -1);
     #else
-        // OUTPUT_DEVICE = OUT_DEV_SERIAL;
-        // setScreenSize( SER_TEXT_WIDTH, SER_TEXT_HEIGHT );
+        OUTPUT_DEVICE = OUT_DEV_SERIAL;
+        setScreenSize( SER_TEXT_WIDTH, SER_TEXT_HEIGHT );
     #endif
 
-#ifndef BUT_ESP32
     setupHardware();
-#endif
 
     // TO REMOVE...
     keyboard.begin(DataPin, IRQpin);
-    //oled.ssd1306_init(SSD1306_SWITCHCAPVCC);
 
-    reset();
+    reset(); // resets the BASIC mem
 
 #ifndef BUT_ESP32
     host_init(BUZZER_PIN);
@@ -201,12 +230,6 @@ void setup() {
     #ifdef FS_SUPPORT
       if ( STORAGE_OK ) { host_outputString("SD : OK.\n"); }
       else              { host_outputString("SD : FAILED.\n"); }
-
-    //   #ifdef USE_SDFAT_LIB
-    //     host_outputString("SD : MODE FAT\n");
-    //   #else
-    //     host_outputString("SD : MODE LEG\n");
-    //   #endif
     #endif
 
     host_showBuffer();
@@ -246,6 +269,8 @@ int doRun() {
 bool MODE_EDITOR = false;
 bool systemHalted = false;
 
+bool wasNot = true;
+
 void loop() {
     int ret = ERROR_NONE;
 
@@ -281,7 +306,40 @@ void loop() {
 
         // get a line from the user
         MODE_EDITOR = true;
-        char *input = host_readLine();
+        #ifdef ESP32_WIFI_SUPPORT
+
+            char *input = NULL; 
+            if ( telnet.isServerStarted() ) {
+                telnet.runServerTick();
+
+                if ( telnet.isClientConnected() ) {
+
+                    if (wasNot) {
+                        wasNot = false;
+                        telnet.print("> Please press Enter");    
+                        while( ( input = telnet.readLine() ) == NULL ) { delay(150); }
+                    }
+
+                    telnet.print("> ");
+                    while( ( input = telnet.readLine() ) == NULL ) { delay(150); }
+                    if ( strcmp( input, "/quit" ) == 0) { wasNot = true; telnet.print("Bye \n"); telnet.close(); }
+                    else {
+                        telnet.print(input);
+                        telnet.print("\n");
+                    }
+                } else {
+                    delay(500);
+                    // BEWARE !!!!!!!
+                    return;
+                }
+
+            } else {
+                input = host_readLine();
+            }
+
+        #else
+            char *input = host_readLine();
+        #endif
         MODE_EDITOR = false;
 
         // special editor commands
@@ -421,7 +479,7 @@ void xts_serialEvent() {
             }
         }
 
-PC_ISR();
+PC_ISR(); // by SDL call
 
         delay( 10 );
     }

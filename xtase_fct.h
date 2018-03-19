@@ -13,6 +13,11 @@
   #include "computer.h"
 #endif
 
+#ifdef ESP32_WIFI_SUPPORT
+  extern Esp32WifiServer telnet;
+#endif
+
+
 #include "xts_io.h"
 extern int OUTPUT_DEVICE;
 extern int GFX_DEVICE;
@@ -217,6 +222,16 @@ int xts_buttonRead(int btnNum) {
   else if ( btnNum == 5 ) { return esp32.readPadXaxis() > 0 ? 1 : 0; }
   else if ( btnNum == 6 ) { return esp32.readPadYaxis() > 0 ? 1 : 0; }
   else if ( btnNum == 7 ) { return esp32.readPadYaxis() < 0 ? 1 : 0; }
+
+  #ifdef ESP32PCKv2
+  // Trigger A
+  else if ( btnNum == 8 ) { return esp32.readBtn(8); }
+  // Trigger B
+  else if ( btnNum == 9 ) { return esp32.readBtn(9); }
+  // MP3 BUSY
+  else if ( btnNum == 10 ) { return esp32.readBtn(10); }
+  #endif
+
 #endif
 
   return 0;
@@ -404,6 +419,38 @@ int xts_dispBPP() {
   if ( executeMode ) {
     char* pictStr = stackPopStr();
     if ( drawBPPfile( pictStr ) ) {
+      return 0;
+    } else {
+      return ERROR_UNEXPECTED_TOKEN;
+    }
+  }
+
+  return 0;
+}
+
+int xts_dispPCT() {
+  getNextToken();
+
+  int val = parseExpression();
+  if (val & _ERROR_MASK) return val;
+  if (!_IS_TYPE_STR(val))
+      return _ERROR_EXPR_EXPECTED_STR;
+
+  getNextToken();
+  val = expectNumber();  // X1
+  if (val) return val;	// error
+  
+  getNextToken();
+  val = expectNumber();  // Y1
+  if (val) return val;	// error
+
+      
+  if ( executeMode ) {
+    int y = stackPopNum();
+    int x = stackPopNum();
+    //int x = 0, y = 0;
+    char* pictStr = stackPopStr();
+    if ( drawPCTfile( pictStr, x, y ) ) {
       return 0;
     } else {
       return ERROR_UNEXPECTED_TOKEN;
@@ -770,6 +817,16 @@ float xts_pow(float arg0, float arg1) {
   return ret;
 }
 
+float xts_min(float arg0, float arg1) {
+  float ret = arg0 < arg1 ? arg0 : arg1;
+  return ret;
+}
+
+float xts_max(float arg0, float arg1) {
+  float ret = arg0 > arg1 ? arg0 : arg1;
+  return ret;
+}
+
 
 // ===================================================================
 // === Extended Commands
@@ -831,12 +888,6 @@ int xts_exec_cmd() {
     if (val & _ERROR_MASK) return val;
   }
   
-  // TODO : @ least 1 param
-  // else {
-  //   // @ least 1 param
-  //   return ERROR_BAD_PARAMETER;
-  // }
-
   if ( executeMode ) {
       if ( argc > 0 ) {
         if ( strcmp( args[0], "MP3" ) == 0 ) {
@@ -869,7 +920,50 @@ int xts_exec_cmd() {
             }
             free( args[1] );
           } // end of argc > 1
-        } else {
+        } 
+        #ifdef BUT_ESP32
+        else if ( strcmp( args[0], "FS" ) == 0 ) {
+          if ( argc > 1 ) {
+            if ( strcmp( args[1], "FORMAT" ) == 0 ) {
+              esp32.lockISR();
+              esp32.getFs()->format();
+              esp32.unlockISR();
+            } 
+            else {
+              free( args[0] );
+              free( args[1] );
+              return ERROR_BAD_PARAMETER;
+            }
+            free( args[1] );
+          } // end of argc > 1
+        } 
+        #endif
+        #ifdef ESP32_WIFI_SUPPORT
+        else if ( strcmp( args[0], "WIFI" ) == 0 ) {
+          if ( argc > 1 ) {
+            if ( strcmp( args[1], "CONNECT" ) == 0 ) {
+              telnet.connectWifi();
+            } else if ( strcmp( args[1], "DISCONNECT" ) == 0 ) {
+              telnet.disconnectWifi();
+            } else if ( strcmp( args[1], "STARTAP" ) == 0 ) {
+              telnet.startAP();
+            } else if ( strcmp( args[1], "SRVSTART" ) == 0 ) {
+              telnet.open();
+            } else if ( strcmp( args[1], "SRVSTOP" ) == 0 ) {
+              telnet.close();
+            } else if ( strcmp( args[1], "UPLOAD" ) == 0 ) {
+              telnet.uploadFile();
+            }
+            else {
+              free( args[0] );
+              free( args[1] );
+              return ERROR_BAD_PARAMETER;
+            }
+            free( args[1] );
+          } // end of argc > 1
+        } 
+        #endif
+        else {
           free( args[0] );
           return ERROR_BAD_PARAMETER;
         }
@@ -882,6 +976,338 @@ int xts_exec_cmd() {
 }
 
 
+
+// ===================================================================
+
+#define NIMPORTEQUOI 1
+
+#ifndef NIMPORTEQUOI
+
+int xts_dataf_cmd() {
+  host_outputString("DATAF cmd NYI !\n");
+  host_showBuffer();
+  return ERROR_BAD_PARAMETER;
+}
+
+#else 
+
+  // _________ TODO ______________________
+  bool fopenTextFile(char* filename) {
+    #ifdef ESP32PCKv2
+      return esp32.getFs()->openCurrentTextFile( filename );
+    #else 
+      host_outputString( "fopenTextFile() NYI");
+    #endif
+  }
+  
+  char* freadTextLine() {
+    #ifdef ESP32PCKv2
+      return esp32.getFs()->readCurrentTextLine();
+    #else 
+      host_outputString("freadTextLine() NYI");
+      return null;
+    #endif
+  }
+
+  void fcloseFile() {
+    #ifdef ESP32PCKv2
+      esp32.getFs()->closeCurrentTextFile();
+    #else 
+      host_outputString("fcloseTextFile() NYI");
+    #endif
+  }
+  // _________ TODO ______________________
+
+  // remember to free() result ....
+  char* str_trim(char* str) {
+    if ( str == NULL ) { return NULL; }
+    //int start = 0, stop = strlen( str )-1;
+    int start = 0, stop = strlen( str );
+
+    for(int i=0; i <= stop; i++) {
+      if ( str[ i ] > 32 ) {
+        start = i;
+        break;
+      }
+    }
+
+    if ( start == stop ) { char* empty = (char*)malloc(0+1); empty[0]=0x00; return empty; }
+
+    for(int i=stop; i >= 0; i--) {
+      if ( str[ i ] > 32 ) {
+        stop = i;
+        break;
+      }
+    }
+
+    // printf("start=%d stop=%d \n", start, stop);
+
+    char* result = (char*)malloc( (stop-start) +1);
+    int cpt=0;
+    for(int i=start; i <= stop; i++) {
+      result[cpt++] = str[i];
+    }
+    result[ cpt ] = 0x00;
+
+    return result;
+  }
+
+
+  char* nextSplit( char* remaining, int fullLen, char delim, bool treatEscapes ) {
+    // reads remaining, fill w/ 0x00 readed chars then copy those to result; 
+    int start = -1, stop = -1;
+    //DBUG("1");
+    for(int i=0; i < fullLen; i++) {
+      if ( remaining[i] == 0x00 ) { continue; }
+      if ( start == -1 ) { start = i; }
+
+      if ( remaining[i] == '\\' && i+1 < fullLen && remaining[i+1] == delim && treatEscapes ) {
+        i++;
+        continue;
+      }
+
+      if ( remaining[i] == delim ) {
+        stop = i+1;
+        break;
+      }
+    }
+    // reached end of line ?
+    if ( start == -1 ) { return NULL; }
+
+    //DBUG("2");
+    if ( stop == -1 ) { stop = fullLen; }
+    //printf("start=%d stop=%d \n", start, stop);
+
+    // TODO : check '<= 0' instead of '< 0'
+    if ( stop - start <= 0 ) { /*DBUG("eject 3");*/ return NULL; }
+    else {
+      //DBUG("4");
+
+      char* result = (char*)malloc( stop-start-1+1 );
+
+      //DBUG("5");
+      //printf("start=%d stop=%d \n", start, stop);
+
+      int cpt=0;
+      for(int i=start; i <= stop; i++) {
+        //printf(" 5.1 > %d [%c] \n", i, remaining[i]);
+
+        if ( remaining[i] == '\\' && i+1 < fullLen && remaining[i+1] == delim && treatEscapes ) {
+          // nothing
+          //DBUG(" 5.2");
+        } else if ( remaining[i] == delim && i == stop-1 ) {
+          //DBUG(" 5.3");
+          remaining[i] = 0x00; // erase readed chars
+          break;
+        } else {
+          //DBUG(" 5.4");
+          result[ cpt++ ] = remaining[i]; 
+        }
+        //DBUG(" 5.5");
+        remaining[i] = 0x00; // erase readed chars
+        //DBUG(" 5.6");
+      }
+
+      //DBUG("6");
+      result[ cpt ] = 0x00;
+
+      //DBUG("7");
+
+      return result;
+    }
+
+    //DBUG("eject 8");
+
+    return NULL;
+  }
+
+extern int storeNumVariable(char* name, float val);
+extern int setNumArrayElem(char* name, float val);
+extern char* autocomplete_fileExt(char*, const char* defExt);
+
+// DATAF "TOTO", "SZ", "A$", "HP", "FO", "DE"
+// reads "TOTO.BAD" from Fs
+// feeds "SZ" with nb of lines
+// feeds args given array names with line content
+// ~~ CSV content
+int xts_dataf_cmd() {
+  getNextToken();
+  
+  const int MAX_ARGS = 12; // <file>, <sizeVar>, <10 arrays>
+  char* args[MAX_ARGS]; // string args
+  int   argc = 0;
+
+  int val = -1;
+  while (curToken != TOKEN_EOL && curToken != TOKEN_CMD_SEP) {
+    val = parseExpression();
+    //if (val & _ERROR_MASK) return val;
+    if (val & _ERROR_MASK) break;
+
+    // STRING 1st arg is optional
+    if (_IS_TYPE_STR(val)) {
+      if ( executeMode && argc < MAX_ARGS) {
+        char* tt = stackPopStr();
+        int stlen = strlen(tt);
+        char* tmp = (char*)malloc( stlen+1 ); // BEWARE w/ free()
+        for(int i=0; i < stlen; i++) { tmp[i] = charUpCase( tt[i] ); }
+        tmp[ stlen ] = 0x00;
+        args[argc++] = tmp;
+      }
+    } else {
+      return ERROR_BAD_PARAMETER;
+    }
+
+    if ( curToken == TOKEN_COMMA ) {
+      getNextToken();
+    }
+  }
+
+  if ( !executeMode ) {
+    if (val & _ERROR_MASK) return val;
+  }
+  
+  if ( executeMode ) {
+      if ( argc >= 2 ) {
+        // args[0] => filename str INPUT
+        // args[1] => rowCount int OUTPUT
+        // 10 useable typed arrays
+
+        // DATAF "TOTO", "SZ", "A$", "HP", "FO", "DE"
+
+        // [3
+        // [# optionally remmark line, can be col. names (not counted)
+        // [Rolph;20;20;15
+        // [Mula;15;15;20
+        // [Grumph;50;10;30
+
+        if ( ! fopenTextFile( autocomplete_fileExt(args[0], ".BAD") ) ) {
+          host_outputString("Failed to open file\n");
+          host_showBuffer();
+
+          return ERROR_VARIABLE_NOT_FOUND;
+        }
+
+        char* line, *oline; int cpt=0,total=-1;
+        //Serial.println("DATAF 1");
+        while( (oline = freadTextLine()) != NULL ) {
+          //Serial.println("DATAF 2");
+          line = str_trim( oline );
+          //Serial.println("DATAF 3");
+          // free(oline); ---> make crash .....
+          //Serial.println("DATAF 4");
+
+          if ( strlen(line) == 0 || line[0] == '#' ) {
+            continue;
+          }
+
+          //Serial.println("DATAF 5");
+          Serial.println( line );
+
+          if ( total == -1 ) {
+            // RowCount line
+
+            total = atoi(line);
+            cpt = 1;
+            Serial.print("DATAF 6 Row Count : "); Serial.println(total);
+
+            storeNumVariable(args[1], (float) total);
+            //Serial.println("DATAF 7");
+
+            for(int i=2; i < argc; i++) {
+              int llen = strlen(args[i]);
+              bool isStrArray = llen > 0 && args[i][ llen-1 ] == '$';
+
+              if ( ! xts_createArray( args[i] , isStrArray ? 1 : 0, total) ) {
+                host_outputString("Could not create ");
+                host_outputString( args[i] );
+                host_outputString(" column\n");
+                host_showBuffer();
+Serial.println("DATAF 8");
+                free(line);
+Serial.println("DATAF 9");
+                fcloseFile();
+Serial.println("DATAF 10");
+                return ERROR_OUT_OF_MEMORY;
+              }
+            }
+Serial.println("DATAF 11");
+          } else {
+            // regular line
+
+            //char* remaining = copyOf( line );
+            char* remaining = line;
+            int fullLen = strlen( remaining );
+Serial.println("DATAF 12");
+            for(int i=2; i < argc; i++) {
+              int llen = strlen(args[i]);
+              bool isStrArray = llen > 0 && args[i][ llen-1 ] == '$';
+              bool col_ok = false; int err=ERROR_NONE;
+Serial.print("DATAF 13 >");Serial.print(args[i]);Serial.println("<");
+              // HAVE TO make my own split() routine
+              // able to escape '\;' sequence
+              char* token = nextSplit( remaining, fullLen, ';', true );
+Serial.print("DATAF 14 >");Serial.print(token);Serial.println("<");
+              if ( !isStrArray ) {
+                float val = atof( token );
+                Serial.print("DATAF 14bis >");Serial.print(val);Serial.println("<");
+                col_ok = (err= xts_setNumArrayElem( args[i], cpt, val )) == ERROR_NONE;
+              } else {
+                col_ok = (err= xts_setStrArrayElem( args[i], cpt, token )) == ERROR_NONE;
+              } 
+Serial.println("DATAF 15");
+
+              if ( !col_ok ) {
+                host_outputString("Could not fill ");
+                host_outputString( args[i] );
+                host_outputString(" column @row=");
+                host_outputInt( cpt );
+                host_outputString(" cause : ");
+                host_outputInt( err );
+                host_outputString("\n");
+                host_showBuffer();
+
+Serial.println("DATAF 16");
+                // if (token != NULL) free( token );
+Serial.println("DATAF 17");
+                // free( line );
+Serial.println("DATAF 18");
+
+                fcloseFile();
+Serial.println("DATAF 19");
+                return ERROR_IN_VAL_INPUT;
+              }
+Serial.println("DATAF 20");
+              //if (token != NULL) free(token);
+Serial.println("DATAF 21");
+            }
+Serial.println("DATAF 22");
+            cpt++;
+            //if (line != NULL) free( line );
+Serial.println("DATAF 23");
+            if ( cpt > total ) {
+              host_outputString("file truncated !");
+              break;
+            }
+          }
+
+        }
+Serial.println("DATAF 24");
+        //if (line != NULL) free(line);
+Serial.println("DATAF 25");
+        fcloseFile();
+Serial.println("DATAF 26");
+      } // end of argc > 0
+      else {
+        // missing args
+        return ERROR_BAD_PARAMETER;
+      }
+
+  } // execMode
+
+  return 0;
+}
+
+#endif
 
 // ===================================================================
 

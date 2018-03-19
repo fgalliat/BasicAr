@@ -7,8 +7,10 @@
 #ifndef _XTS_TEENSY_H_
 #define _XTS_TEENSY_H_ 1
 
- // define of nothing ....
- #define PROGMEM
+ #ifndef BUT_ESP32
+   // define of nothing ....
+   #define PROGMEM
+ #endif
 
 //  unsigned char pgm_read_byte_near(const void* mem_addr) {
 //     char t = *((char *) mem_addr);

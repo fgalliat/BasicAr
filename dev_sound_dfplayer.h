@@ -9,7 +9,7 @@
 #define _dev_sound_dfplayer_h_1
 
   #include "DFRobotDFPlayerMini.h"
-  #include "host.h"
+  // #include "host.h"
 
   void setupSoundDFPlayer();
 
