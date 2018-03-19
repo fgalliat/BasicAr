@@ -30,13 +30,13 @@ Already have FS, Sound & VGAText emulated (see subComponent/RPIDisplay).
 
 **Added support Esp32+Oled module // XtsPocket console**<br/>
 Running a small BASIC RayCaster..
-![My new XtsuBasic Pocket Console](/vm_mnt/devl/BASIC/BasicAr/docs/pocket/xtsPocket_gallery1.jpg "The Xts-uBasic Pocket Console...")
+![My new XtsuBasic Pocket Console](docs/pocket/xtsPocket_gallery1.jpg "The Xts-uBasic Pocket Console...")
 
 
 
 **Added support Esp32 & SPI LCD module // XtsPocket console V2**<br/>
 Now running WIFI telnet server (AP & STA modes), MP3 module and 64K colors screen
-![My newest XtsuBasic Pocket V2 Console](/vm_mnt/devl/BASIC/BasicAr/docs/pocket/pocketV2_gallery.jpg "The Xts-uBasic Pocket V2 Console...")
+![My newest XtsuBasic Pocket V2 Console](docs/pocket/pocketV2_gallery.jpg "The Xts-uBasic Pocket V2 Console...")
 
 
 
