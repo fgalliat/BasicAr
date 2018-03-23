@@ -24,15 +24,9 @@ extern unsigned short color_picturebuff[];
     #define USE_GAMEGEAR_PAD 1
 
     // ==============================
-    #ifdef ESP32_I_TFT_eSPI
-        // TFT_eSPI Lib is pretty faster than Adafruit one
-        #include <TFT_eSPI.h> // Hardware-specific library
-    #else
-        #include "SPI.h"
-        #include "Adafruit_GFX.h"
-        #include "Adafruit_ILI9341.h"
-    #endif
-    
+    #include "SPI.h"
+    #include "Adafruit_GFX.h"
+    #include "Adafruit_ILI9341.h"
 
     #ifdef MY_320
       #define ROTATE_SCREEN 0
@@ -229,11 +223,7 @@ extern unsigned short color_picturebuff[];
 
     class Esp32Pocketv3Screen {
         private:
-            #ifdef ESP32_I_TFT_eSPI
-              TFT_eSPI* _oled_display;
-            #else
-              Adafruit_ILI9341* _oled_display;
-            #endif
+            Adafruit_ILI9341* _oled_display;
             int _oled_ttyY = 0;
             uint16_t drawColor = CLR_WHITE;
 
@@ -241,20 +231,18 @@ extern unsigned short color_picturebuff[];
             uint16_t screenOffsetY = 0;
         public:
             Esp32Pocketv3Screen() {
-                screenOffsetX = (320 - 128) / 2;
+                #ifdef MY_320
+                  screenOffsetX = (320 - 128) / 2;
+                #endif
+
                 screenOffsetY = (240 - 64) / 2;
             }
 
             ~Esp32Pocketv3Screen() {}
 
             void init() {
-                #ifdef ESP32_I_TFT_eSPI
-                 _oled_display = new TFT_eSPI();
-                 _oled_display->init();
-                #else
-                  _oled_display = new Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_MOSI, TFT_CLK, TFT_RST, TFT_MISO);
-                  _oled_display->begin();
-                #endif
+                _oled_display = new Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_MOSI, TFT_CLK, TFT_RST, TFT_MISO);
+                _oled_display->begin();
 
                 _oled_display->setRotation(1+ROTATE_SCREEN); // LANDSCAPE
 
@@ -361,11 +349,8 @@ while( true ) {
 //Serial.print("A.2 bis"); Serial.print(readed); Serial.print(" of ");Serial.print(w*h*2);Serial.println("");
 
 //Serial.println("A.3");
-                #ifdef ESP32_I_TFT_eSPI
-                  _oled_display->pushRect(x, y+yy, w, 128/8, color_picturebuff);
-                #else
-                  _oled_display->drawRGBBitmap(x, y+yy, color_picturebuff, w, 128/8);
-                #endif
+                //_oled_display->pushColors(x, y+yy, w, 128/8, color_picturebuff);
+                _oled_display->drawRGBBitmap(x, y+yy, color_picturebuff, w, 128/8);
 //Serial.println("A.4");
 
 yy += 128/8;
