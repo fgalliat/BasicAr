@@ -44,7 +44,7 @@ void loop() {
   // rH = 64;
   int t0,t1;
 
-  /* w/ AdaFruit Lib for ILI9341
+  /* w/ AdaFruit Lib for ILI9341 -> 320x240 area -> 60 rect 15px large
   79602 micros
   82234 micros
   77179 micros
@@ -52,7 +52,7 @@ void loop() {
   76852 micros
   75559 micros
   */
-  /* w/ TFT_eSPI Lib setup for ILI9341
+  /* w/ TFT_eSPI Lib setup for ILI9341 -> 320x240 area
   8768 micros
   9128 micros
   8793 micros
@@ -63,6 +63,13 @@ void loop() {
   8703 micros
   */
 
+  // TODO : manager screen modes
+  //        128x64  - 2x3px shader
+  //        160x128 - could be 2x2 shader - 2x8px height
+  //        320x240 - 
+
+  // 64x3 -> 192
+  // 128x2 > 256 -> pixel shader 2x3 rectangle
 
   t0 = micros();
   //esp32.getScreen()->clear();
