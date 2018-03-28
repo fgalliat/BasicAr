@@ -15,11 +15,16 @@ const int LED_PIN = 13;
 
 // internal LED
 void int_led(bool state) {
-  digitalWrite(LED_PIN, HIGH);
+  digitalWrite(LED_PIN, state ? HIGH : LOW);
 }
 
 void led(bool state) {
   int_led(state);
+}
+
+// 0-based
+bool readGPIOBtn(int btn) {
+  return io.digitalRead(SX1509_BTN_PIN + btn) == LOW;
 }
 
 
@@ -43,7 +48,11 @@ void setup() {
   // either an INPUT, OUTPUT, INPUT_PULLUP, or ANALOG_OUTPUT
   io.pinMode(SX1509_LED_PIN, OUTPUT);
 
-  io.pinMode(SX1509_BTN_PIN, INPUT_PULLUP);
+  // setup all GPIO pullup btns
+  //io.pinMode(SX1509_BTN_PIN, INPUT_PULLUP);
+  for(int btn=0; btn < 7; btn++) {
+    io.pinMode(SX1509_BTN_PIN+btn, INPUT_PULLUP);
+  }
 
   // Blink the LED a few times before we start:
   for (int i=0; i<5; i++) {
@@ -59,8 +68,7 @@ void setup() {
 }
 
 void loop() {
-  // Use io.digitalRead() to check if an SX1509 input I/O is
-  // either LOW or HIGH.
+  /*
   if (io.digitalRead(SX1509_BTN_PIN) == LOW) {
 
     // If the button is pressed toggle the LED:
@@ -71,5 +79,25 @@ void loop() {
     while (io.digitalRead(SX1509_BTN_PIN) == LOW)
       ; // Wait for button to release
   }
+  */
+
+  for(int btn=0; btn < 7; btn++) {
+    if ( readGPIOBtn(btn) ) {
+      Serial.print('#');
+    } else {
+      Serial.print('-');
+    }
+
+    if ( btn == 3 ) {
+      Serial.print(' ');
+      Serial.print('|');
+    }
+
+    Serial.print(' ');
+  }
+  Serial.println();
+
+  delay( 300 );
+
 }
 
