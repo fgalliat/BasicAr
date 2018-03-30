@@ -1,39 +1,44 @@
 #include "HardwareSerial.h"
 
-unsigned long maxTimeout = 20; //20 mS timeOut
-int speed;
-int limit=0;
+// unsigned long maxTimeout = 20; //20 mS timeOut
+// int speed;
+// int limit=0;
 
 // #define UART_NUM 2
 // #define UART_RX 16
 // #define UART_TX 17
-#define UART_NUM 1
-#define UART_RX 16
-#define UART_TX 4 // BEWARE : used as SCREEN RST pin
+#define UART2_NUM 1
+#define UART2_RX 16
+#define UART2_TX 4 // 17 does not seems to emit (TX2 labeled pin)
 
-HardwareSerial Serial2(UART_NUM);
+#define UART3_NUM 2
+#define UART3_RX 26
+#define UART3_TX 14
 
-void setTimeOut(unsigned long n){
-  maxTimeout = n;
-}
+HardwareSerial Serial2(UART2_NUM);
+HardwareSerial Serial3(UART3_NUM);
 
-unsigned long getTimeOut(void){
-  return maxTimeout;
-}
+// void setTimeOut(unsigned long n){
+//   maxTimeout = n;
+// }
 
-int serial_read(uint8_t *dataStream, int size){
-  int count = 0;
-  unsigned long timeOut = getTimeOut() + millis(); //Actual time
+// unsigned long getTimeOut(void){
+//   return maxTimeout;
+// }
+
+// int serial_read(uint8_t *dataStream, int size){
+//   int count = 0;
+//   unsigned long timeOut = getTimeOut() + millis(); //Actual time
   
-  while((millis() < timeOut) && (count < size)){// Wait until data recived and no timeout
-    if(Serial2.available()){
-      dataStream[count]=Serial2.read();
-      count++;
-    }
-    yield();
-  }
-  return count;                                   
-}
+//   while((millis() < timeOut) && (count < size)){// Wait until data recived and no timeout
+//     if(Serial2.available()){
+//       dataStream[count]=Serial2.read();
+//       count++;
+//     }
+//     yield();
+//   }
+//   return count;                                   
+// }
 
 // void setSerial(int bus_speed, byte parity){ //TODO velocity changes hangs on
 //   speed = bus_speed;
@@ -49,7 +54,10 @@ int serial_read(uint8_t *dataStream, int size){
 
 void setup() {
   //Serial2.begin(19200, SERIAL_8N1);
-  Serial2.begin(9600, SERIAL_8N1, UART_RX, UART_TX, false);
+  Serial2.begin(9600, SERIAL_8N1, UART2_RX, UART2_TX, false);
+
+  Serial3.begin(115200, SERIAL_8N1, UART3_RX, UART3_TX, false);
+
   Serial.begin(115200, SERIAL_8N1);
   pinMode(2, OUTPUT);
 }
@@ -59,14 +67,20 @@ void loop() {
 
 // reads but not writes!!!!!!
 //Serial2.println("Hello World !!!");
-Serial2.write("Hello World !!!\n");
+Serial2.write("Hello World UART#2 !!!\n");
+Serial3.write("Hello World UART#3 !!!\n");
 
 while( true ) {
   while(Serial2.available() > 0) {
     Serial.print( (char)Serial2.read() );
   }
+  while(Serial3.available() > 0) {
+    Serial.print( (char)Serial3.read() );
+  }
   while(Serial.available() > 0) {
-    Serial2.print( (char)Serial.read() );
+    char ch = (char)Serial.read();
+    Serial2.print( ch );
+    Serial3.print( ch );
   }
 }
 
@@ -95,7 +109,7 @@ while( true ) {
   //   sprintf(p, "\n");
   //   Serial.write(cad);
   // }
-  delay(500);
+  delay(100);
 //   if(++limit >= 10){
 //     Serial.write("Software Reset\n");
 //     delay(100);
