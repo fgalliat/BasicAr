@@ -4,6 +4,14 @@
  * Xtase - fgalliat @ Mar 2018
  ***************/
 
+// __________________
+#include "GenericMCU.h"
+#include "ESP32TwinMCU1.h"
+
+GenericMCU mcu1;
+// __________________
+
+
 
 // 160 x 16 (16bpp pixels)
 unsigned short color_picturebuff[ 160 * 16 ];
