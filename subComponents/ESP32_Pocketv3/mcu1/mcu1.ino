@@ -8,7 +8,9 @@
 #include "GenericMCU.h"
 #include "ESP32TwinMCU1.h"
 
-GenericMCU mcu1;
+// just to identify main cpp sourcecode
+#define MAIN_INO_FILE 1
+GenericMCU mcu;
 // __________________
 
 
@@ -46,50 +48,53 @@ unsigned short color_picturebuff[ 160 * 16 ];
   }
 
   // ======== inner GPIO ====================
-  #define LED_PIN 2
+  // #define LED_PIN 2
   void led(bool state) {
-    digitalWrite(LED_PIN, state ? HIGH : LOW);
+    // digitalWrite(LED_PIN, state ? HIGH : LOW);
+    mcu.led(0, true);
   }
 
-  // ======== I2C SX1509 GPIO expander ======
-  #include <Wire.h> // Include the I2C library (required)
-  #include <SparkFunSX1509.h> // Include SX1509 library
+  // // ======== I2C SX1509 GPIO expander ======
+  // #include <Wire.h> // Include the I2C library (required)
+  // #include <SparkFunSX1509.h> // Include SX1509 library
 
-  SX1509 io; // Create an SX1509 object
-  #define SX1509_BTN_PIN 0 // 1st Button connected to 0 (active-low)
+  // SX1509 io; // Create an SX1509 object
+  // #define SX1509_BTN_PIN 0 // 1st Button connected to 0 (active-low)
  
-  // 0-based
-  bool readGPIOBtn(int btn) {
-    return io.digitalRead(SX1509_BTN_PIN + btn) == LOW;
-  }
+  // // 0-based
+  // bool readGPIOBtn(int btn) {
+  //   // + 8 -> cf rewiring
+  //   return io.digitalRead(SX1509_BTN_PIN + 8 + btn) == LOW;
+  // }
 
-  void setupExtGPIO() {
-    // Call io.begin(<I2C address>) to initialize the I/O
-    // expander. It'll return 1 on success, 0 on fail.
-    if (!io.begin(0x3E)) {
-      // If we failed to communicate, turn the pin 13 LED on
-      led(true);
-      while (1)
-        ; // And loop forever.
-    }
+  // void setupExtGPIO() {
+  //   // Call io.begin(<I2C address>) to initialize the I/O
+  //   // expander. It'll return 1 on success, 0 on fail.
+  //   if (!io.begin(0x3E)) {
+  //     // If we failed to communicate, turn the pin 13 LED on
+  //     led(true);
+  //     while (1)
+  //       ; // And loop forever.
+  //   }
 
-    for(int btn=0; btn < 7; btn++) {
-      io.pinMode(SX1509_BTN_PIN+btn, INPUT_PULLUP);
-    }
-  }
+  //   for(int btn=0; btn < 7; btn++) {
+  //     // + 8 -> cf rewiring
+  //     io.pinMode(SX1509_BTN_PIN + 8 + btn, INPUT_PULLUP);
+  //   }
+  // }
 
 #endif
 
 
 
 void setup() {
-  Serial.begin(115200);
+  // Serial.begin(115200);
+  // pinMode(LED_PIN, OUTPUT);
+  // digitalWrite(LED_PIN, LOW);
+  mcu.setup();
 
-  pinMode(LED_PIN, OUTPUT);
-  digitalWrite(LED_PIN, LOW);
-
-  setupExtGPIO();
-    // Blink the LED a few times before we start:
+  // setupExtGPIO();
+  // Blink the LED a few times before we start:
   for (int i=0; i<5; i++) {
     led(true);
     delay(100);
@@ -117,7 +122,8 @@ void setup() {
 
 void loop() {
   for(int btn=0; btn < 7; btn++) {
-    if ( readGPIOBtn(btn) ) {
+    //if ( readGPIOBtn(btn) ) {
+    if ( mcu.getGPIO()->btn(btn) ) {
       Serial.print('#');
     } else {
       Serial.print('-');

@@ -8,13 +8,15 @@
 * Xtase - fgalliat @ Apr. 2018
 */
 
+class GenericMCU;
+
 class GenericMCU_GPIO {
     private:
     public:
       GenericMCU_GPIO();
       ~GenericMCU_GPIO();
 
-      void setup();
+      void setup(GenericMCU* _mcu);
 
       // 0-based
       void led(uint8_t ledNum);
@@ -134,8 +136,10 @@ class GenericMCU {
       void builtinLED(bool state);
       bool builtinBTN();
 
+      void setupInternal();
       void init();
 
+      GenericMCU_GPIO* gpio = NULL;
     public:
       GenericMCU()  { init(); }
       ~GenericMCU() {}
@@ -144,7 +148,9 @@ class GenericMCU {
       void unlockISR() { lookAtISR = true; }
 
       void setup() {
-          if ( getGPIO()        != NULL ) { getGPIO()->setup();        }
+          setupInternal();
+
+          if ( getGPIO()        != NULL ) { getGPIO()->setup(this);        }
           if ( getBUZZER()      != NULL ) { getBUZZER()->setup();      }
           if ( getScreen()      != NULL ) { getScreen()->setup();      }
           if ( getFS()          != NULL ) { getFS()->setup();          }
@@ -198,7 +204,8 @@ class GenericMCU {
 
       // -====== to be decided ... =======-
 
-      GenericMCU_GPIO*         getGPIO();        // { return NULL; }
+      //GenericMCU_GPIO*         getGPIO();        // { return NULL; }
+      GenericMCU_GPIO*         getGPIO()            { return gpio; }
       GenericMCU_BUZZER*       getBUZZER();      // { return NULL; }
       GenericMCU_SCREEN*       getScreen();      // { return NULL; }
       GenericMCU_FS*           getFS();          // { return NULL; }
