@@ -123,7 +123,11 @@
 
   // ======== Screen ====================================================================
 
-  void GenericMCU_SCREEN::setup(GenericMCU* _mcu) { ; }
+  void GenericMCU_SCREEN::setup(GenericMCU* _mcu) {
+    this->ready = true;
+    _mcu->println("Temp. Screen ready !");
+  }
+
   void GenericMCU_SCREEN::print(char* str) { Serial.print(str); }
   void GenericMCU_SCREEN::print(char ch) { Serial.print(ch); }
 

@@ -46,6 +46,7 @@ class GenericMCU_FS {
       ~GenericMCU_FS() {}
 
       void setup(GenericMCU* _mcu);
+      void format();
 };
 
 class GenericMCU_SCREEN {
@@ -188,12 +189,17 @@ class GenericMCU {
           if ( getGPIO() == NULL ) { return false; }
           return getGPIO()->btn( btn-1 );
       }
-
+      // --------------------------------------
       void println(char* str) { 
           if ( getScreen() == NULL ) { Serial.println(str); }
           getScreen()->println( str );
       }
 
+      void print(char ch) { 
+          if ( getScreen() == NULL ) { Serial.print(ch); }
+          getScreen()->print( ch );
+      }
+      // --------------------------------------
       void tone(int freq, int duration) {
           if ( getBUZZER() == NULL ) { return; }
           getBUZZER()->playTone(freq, duration);
@@ -202,16 +208,16 @@ class GenericMCU {
           if ( getBUZZER() == NULL ) { return; }
           getBUZZER()->noTone();
       }
-
+      // --------------------------------------
       void delay(int millis) {
           delay(millis);
       }
-
+      // --------------------------------------
       // read system SIGNALS
       bool getSystemMenuReqState();
       bool getSystemResetReqState();
 
-      // -====== to be decided ... =======-
+      // -====== Hardware Getters =======-
 
       GenericMCU_GPIO*         getGPIO()         { return gpio; }
       GenericMCU_BUZZER*       getBUZZER()       { return buzzer; }

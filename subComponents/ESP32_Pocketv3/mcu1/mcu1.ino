@@ -17,8 +17,8 @@ GenericMCU mcu;
 
 
 
-// 160 x 16 (16bpp pixels)
-unsigned short color_picturebuff[ 160 * 16 ];
+// // 160 x 16 (16bpp pixels)
+// unsigned short color_picturebuff[ 160 * 16 ];
 
 #define ESP32PCKv3 1
 #define ESP32_I_TFT_eSPI 1
@@ -27,8 +27,8 @@ unsigned short color_picturebuff[ 160 * 16 ];
 
 
 #ifdef ESP32PCKv3
-  #include "ESP32_Pocketv3.h"
-  Esp32Pocketv3 esp32;
+  // #include "ESP32_Pocketv3.h"
+  // Esp32Pocketv3 esp32;
   
   #include "HardwareSerial.h"
   #define UART2_NUM 1
@@ -50,40 +50,9 @@ unsigned short color_picturebuff[ 160 * 16 ];
   }
 
   // ======== inner GPIO ====================
-  // #define LED_PIN 2
   void led(bool state) {
-    // digitalWrite(LED_PIN, state ? HIGH : LOW);
     mcu.led(0, true);
   }
-
-  // // ======== I2C SX1509 GPIO expander ======
-  // #include <Wire.h> // Include the I2C library (required)
-  // #include <SparkFunSX1509.h> // Include SX1509 library
-
-  // SX1509 io; // Create an SX1509 object
-  // #define SX1509_BTN_PIN 0 // 1st Button connected to 0 (active-low)
- 
-  // // 0-based
-  // bool readGPIOBtn(int btn) {
-  //   // + 8 -> cf rewiring
-  //   return io.digitalRead(SX1509_BTN_PIN + 8 + btn) == LOW;
-  // }
-
-  // void setupExtGPIO() {
-  //   // Call io.begin(<I2C address>) to initialize the I/O
-  //   // expander. It'll return 1 on success, 0 on fail.
-  //   if (!io.begin(0x3E)) {
-  //     // If we failed to communicate, turn the pin 13 LED on
-  //     led(true);
-  //     while (1)
-  //       ; // And loop forever.
-  //   }
-
-  //   for(int btn=0; btn < 7; btn++) {
-  //     // + 8 -> cf rewiring
-  //     io.pinMode(SX1509_BTN_PIN + 8 + btn, INPUT_PULLUP);
-  //   }
-  // }
 
 #endif
 
@@ -95,7 +64,6 @@ void setup() {
   // digitalWrite(LED_PIN, LOW);
   mcu.setup();
 
-  // setupExtGPIO();
   // Blink the LED a few times before we start:
   for (int i=0; i<5; i++) {
     led(true);
@@ -107,38 +75,25 @@ void setup() {
   // 2more UARTs (DFPlayer & 'other' MCU)
   setupAdditionalUARTs();
   mcuSerial.println("/READY");
-
-  esp32.setup();
-
-  // esp32.getScreen()->clear();
-
-  // esp32.getScreen()->println("Formatting.. Please Wait");
-  // esp32.getScreen()->blitt();
-  // // esp32.getFs()->format();
-  // esp32.getScreen()->println("Formatted");
-  // esp32.getScreen()->blitt();
-  
-  
-
 }
 
 void loop() {
   for(int btn=0; btn < 7; btn++) {
     //if ( readGPIOBtn(btn) ) {
     if ( mcu.getGPIO()->btn(btn) ) {
-      Serial.print('#');
+      mcu.print('#');
     } else {
-      Serial.print('-');
+      mcu.print('-');
     }
 
     if ( btn == 3 ) {
-      Serial.print(' ');
-      Serial.print('|');
+      mcu.print(' ');
+      mcu.print('|');
     }
 
-    Serial.print(' ');
+    mcu.print(' ');
   }
-  Serial.println();
+  mcu.println("");
 
   delay( 300 );
 
