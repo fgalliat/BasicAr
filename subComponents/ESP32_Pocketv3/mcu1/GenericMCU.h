@@ -191,12 +191,12 @@ class GenericMCU {
       }
       // --------------------------------------
       void println(char* str) { 
-          if ( getScreen() == NULL ) { Serial.println(str); }
+          if ( getScreen() == NULL ) { Serial.println(str); return; }
           getScreen()->println( str );
       }
 
       void print(char ch) { 
-          if ( getScreen() == NULL ) { Serial.print(ch); }
+          if ( getScreen() == NULL ) { Serial.print(ch); return; }
           getScreen()->print( ch );
       }
       // --------------------------------------
