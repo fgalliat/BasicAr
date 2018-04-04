@@ -13,8 +13,8 @@ class GenericMCU;
 class GenericMCU_GPIO {
     private:
     public:
-      GenericMCU_GPIO();
-      ~GenericMCU_GPIO();
+      GenericMCU_GPIO() {}
+      ~GenericMCU_GPIO() {}
 
       void setup(GenericMCU* _mcu);
 
