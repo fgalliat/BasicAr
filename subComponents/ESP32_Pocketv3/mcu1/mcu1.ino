@@ -51,7 +51,7 @@ GenericMCU mcu;
 
   // ======== inner GPIO ====================
   void led(bool state) {
-    mcu.led(0, true);
+    mcu.led(0, state);
   }
 
 #endif
@@ -78,22 +78,24 @@ void setup() {
 }
 
 void loop() {
-  for(int btn=0; btn < 7; btn++) {
-    //if ( readGPIOBtn(btn) ) {
-    if ( mcu.getGPIO()->btn(btn) ) {
-      mcu.print('#');
-    } else {
-      mcu.print('-');
-    }
+  if ( mcu.getGPIO()->isReady() ) {
+    for(int btn=0; btn < 7; btn++) {
+      //if ( readGPIOBtn(btn) ) {
+      if ( mcu.getGPIO()->btn(btn) ) {
+        mcu.print('#');
+      } else {
+        mcu.print('-');
+      }
 
-    if ( btn == 3 ) {
+      if ( btn == 3 ) {
+        mcu.print(' ');
+        mcu.print('|');
+      }
+
       mcu.print(' ');
-      mcu.print('|');
     }
-
-    mcu.print(' ');
+    mcu.println("");
   }
-  mcu.println("");
 
   delay( 300 );
 

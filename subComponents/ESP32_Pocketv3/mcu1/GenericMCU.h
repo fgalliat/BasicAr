@@ -18,6 +18,7 @@ class GenericMCU_GPIO {
       ~GenericMCU_GPIO() {}
 
       void setup(GenericMCU* _mcu);
+      bool isReady() { return ready; }
 
       // 0-based
       void led(uint8_t ledNum);

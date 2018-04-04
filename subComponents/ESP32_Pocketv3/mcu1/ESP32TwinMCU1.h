@@ -13,6 +13,8 @@
 
   void GenericMCU::reset() { 
     println("Reset...");
+    // if bridged to MCU#2
+    // have to reset it
     ESP.restart();
   }
 
@@ -20,6 +22,7 @@
   void GenericMCU::init() {
     gpio = new GenericMCU_GPIO();
     buzzer = new GenericMCU_BUZZER();
+    fs = new GenericMCU_FS();
   }
 
   // called by setup()
@@ -115,7 +118,14 @@
 
   // ======== FileSystem ================================================================
 
-  void GenericMCU_FS::setup(GenericMCU* _mcu) { ; }
+  #include <SPIFFS.h>
+  #include <FS.h>
+
+  void GenericMCU_FS::setup(GenericMCU* _mcu) {
+    SPIFFS.begin();
+    this->ready = true;
+    _mcu->println("FS ready !");
+  }
 
   // ======== MusicPlayer ===============================================================
 
