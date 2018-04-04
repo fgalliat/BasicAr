@@ -30,25 +30,6 @@ GenericMCU mcu;
   // #include "ESP32_Pocketv3.h"
   // Esp32Pocketv3 esp32;
   
-  #include "HardwareSerial.h"
-  #define UART2_NUM 1
-  #define UART2_RX 16
-  #define UART2_TX 4 // 17 does not seems to emit (TX2 labeled pin)
-
-  #define UART3_NUM 2
-  #define UART3_RX 26
-  #define UART3_TX 14
-
-  // the DFPlayerMini UART / HT USBHOST-HID-Keyboard
-  HardwareSerial mp3Serial(UART2_NUM);
-  // the "next" MCU UART
-  HardwareSerial mcuSerial(UART3_NUM);
-
-  void setupAdditionalUARTs() {
-    mp3Serial.begin(9600, SERIAL_8N1, UART2_RX, UART2_TX, false);
-    mcuSerial.begin(115200, SERIAL_8N1, UART3_RX, UART3_TX, false);
-  }
-
   // ======== inner GPIO ====================
   void led(bool state) {
     mcu.led(0, state);
@@ -59,9 +40,7 @@ GenericMCU mcu;
 
 
 void setup() {
-  // Serial.begin(115200);
-  // pinMode(LED_PIN, OUTPUT);
-  // digitalWrite(LED_PIN, LOW);
+  // Serial.begin(115200); // MUST NOT !!!!
   mcu.setup();
 
   // Blink the LED a few times before we start:
@@ -72,8 +51,7 @@ void setup() {
     delay(100);
   }
 
-  // 2more UARTs (DFPlayer & 'other' MCU)
-  setupAdditionalUARTs();
+  // BRIDGE UART provided by "ESP32TwinMCU1.h"
   mcuSerial.println("/READY");
 }
 

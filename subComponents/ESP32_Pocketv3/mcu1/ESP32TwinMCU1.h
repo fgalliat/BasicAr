@@ -25,17 +25,22 @@
     fs = new GenericMCU_FS(this);
   }
 
+  void setupAdditionalUARTs();
+
   // called by setup()
   void GenericMCU::setupInternal() { 
     // BEWARE w/ multiple calls
     Serial.begin(115200);
+    println("init");
 
     // Builtin GPIO
     pinMode( BUILTIN_LED, OUTPUT );
     digitalWrite(BUILTIN_LED, LOW);
     pinMode( BUILTIN_BTN, INPUT_PULLUP );
 
-    println("init...");
+    setupAdditionalUARTs();
+
+    println("init done...");
     // do what needed ...
   }
 
@@ -125,6 +130,32 @@
     SPIFFS.begin();
     this->ready = true;
     mcu->println("FS ready !");
+  }
+
+  // ======== MusicPlayer & Screen bridge UART ==========================================
+
+  #include "HardwareSerial.h"
+  #define UART2_NUM 1
+  #define UART2_RX 16
+  #define UART2_TX 4 // 17 does not seems to emit (TX2 labeled pin)
+
+  #define UART3_NUM 2
+  #define UART3_RX 26
+  #define UART3_TX 14
+
+  #ifdef MAIN_INO_FILE
+   // // the DFPlayerMini UART / HT USBHOST-HID-Keyboard
+   // HardwareSerial mp3Serial(UART2_NUM);
+
+   // the "next" MCU UART
+   HardwareSerial mcuSerial(UART3_NUM);
+  #else 
+   extern HardwareSerial mcuSerial;
+  #endif
+
+  void setupAdditionalUARTs() {
+    // mp3Serial.begin(9600, SERIAL_8N1, UART2_RX, UART2_TX, false);
+    mcuSerial.begin(115200, SERIAL_8N1, UART3_RX, UART3_TX, false);
   }
 
   // ======== MusicPlayer ===============================================================
