@@ -20,9 +20,9 @@
 
   // called by constructor
   void GenericMCU::init() {
-    gpio = new GenericMCU_GPIO();
-    buzzer = new GenericMCU_BUZZER();
-    fs = new GenericMCU_FS();
+    gpio = new GenericMCU_GPIO(this);
+    buzzer = new GenericMCU_BUZZER(this);
+    fs = new GenericMCU_FS(this);
   }
 
   // called by setup()
@@ -59,15 +59,15 @@
 
   #define SX1509_BTN_PIN 0 // 1st Button connected to 0 (active-low)
 
-  void GenericMCU_GPIO::setup(GenericMCU* _mcu) {
+  void GenericMCU_GPIO::setup() {
     // Call io.begin(<I2C address>) to initialize the I/O
     // expander. It'll return 1 on success, 0 on fail.
     if (!_ext_GPIO.begin(0x3E)) {
       // If we failed to communicate, turn the pin 13 LED on
-      _mcu->led(0,true);
+      mcu->led(0,true);
       // while (1) { ; } // And loop forever.
       this->ready = false;
-      _mcu->println("Ext GPIO not ready !");
+      mcu->println("Ext GPIO not ready !");
       return;
     }
 
@@ -78,7 +78,7 @@
     }
 
     this->ready = true;
-    _mcu->println("Ext GPIO ready !");
+    mcu->println("Ext GPIO ready !");
   }
 
   // 0-based
@@ -96,7 +96,7 @@
   #define BUZ_channel 0
   #define BUZ_resolution 8
 
-  void GenericMCU_BUZZER::setup(GenericMCU* _mcu) {
+  void GenericMCU_BUZZER::setup() {
     int freq = 2000;
     ledcSetup(BUZ_channel, freq, BUZ_resolution);
     ledcAttachPin(BUZZER1, BUZ_channel);
@@ -121,21 +121,21 @@
   #include <SPIFFS.h>
   #include <FS.h>
 
-  void GenericMCU_FS::setup(GenericMCU* _mcu) {
+  void GenericMCU_FS::setup() {
     SPIFFS.begin();
     this->ready = true;
-    _mcu->println("FS ready !");
+    mcu->println("FS ready !");
   }
 
   // ======== MusicPlayer ===============================================================
 
-  void GenericMCU_MUSIC_PLAYER::setup(GenericMCU* _mcu) { ; }
+  void GenericMCU_MUSIC_PLAYER::setup() { ; }
 
   // ======== Screen ====================================================================
 
-  void GenericMCU_SCREEN::setup(GenericMCU* _mcu) {
+  void GenericMCU_SCREEN::setup() {
     this->ready = true;
-    _mcu->println("Temp. Screen ready !");
+    mcu->println("Temp. Screen ready !");
   }
 
   void GenericMCU_SCREEN::print(char* str) { Serial.print(str); }

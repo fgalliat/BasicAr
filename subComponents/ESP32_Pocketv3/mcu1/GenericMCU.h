@@ -13,11 +13,12 @@ class GenericMCU;
 class GenericMCU_GPIO {
     private:
       bool ready = false;
+      GenericMCU* mcu = NULL;
     public:
-      GenericMCU_GPIO() {}
+      GenericMCU_GPIO(GenericMCU* mcu) { this->mcu = mcu; }
       ~GenericMCU_GPIO() {}
 
-      void setup(GenericMCU* _mcu);
+      void setup();
       bool isReady() { return ready; }
 
       // 0-based
@@ -29,11 +30,12 @@ class GenericMCU_GPIO {
 class GenericMCU_BUZZER {
     private:
       bool ready = false;
+      GenericMCU* mcu = NULL;
     public:
-      GenericMCU_BUZZER() {}
+      GenericMCU_BUZZER(GenericMCU* mcu) { this->mcu = mcu; }
       ~GenericMCU_BUZZER() {}
 
-      void setup(GenericMCU* _mcu);
+      void setup();
 
       void playTone(int freq, int duration);
       void noTone();
@@ -42,22 +44,24 @@ class GenericMCU_BUZZER {
 class GenericMCU_FS {
     private:
       bool ready = false;
+      GenericMCU* mcu = NULL;
     public:
-      GenericMCU_FS() {}
+      GenericMCU_FS(GenericMCU* mcu) { this->mcu = mcu; }
       ~GenericMCU_FS() {}
 
-      void setup(GenericMCU* _mcu);
+      void setup();
       void format();
 };
 
 class GenericMCU_SCREEN {
     private:
       bool ready = false;
+      GenericMCU* mcu = NULL;
     public:
-      GenericMCU_SCREEN() {}
+      GenericMCU_SCREEN(GenericMCU* mcu) { this->mcu = mcu; }
       ~GenericMCU_SCREEN() {}
 
-      void setup(GenericMCU* _mcu);
+      void setup();
 
       // 0 - 128x64  mono
       // 1 - 160x128 64K
@@ -115,11 +119,12 @@ class GenericMCU_SCREEN {
 class GenericMCU_MUSIC_PLAYER {
     private:
       bool ready = false;
+      GenericMCU* mcu = NULL;
     public:
-      GenericMCU_MUSIC_PLAYER();
+      GenericMCU_MUSIC_PLAYER(GenericMCU* mcu) { this->mcu = mcu; }
       ~GenericMCU_MUSIC_PLAYER();
 
-      void setup(GenericMCU* _mcu);
+      void setup();
 
       void playTrack(int trckNum);
       void pause();
@@ -161,11 +166,11 @@ class GenericMCU {
       void setup() {
           setupInternal();
 
-          if ( getGPIO()        != NULL ) { getGPIO()->setup(this);        }
-          if ( getBUZZER()      != NULL ) { getBUZZER()->setup(this);      }
-          if ( getScreen()      != NULL ) { getScreen()->setup(this);      }
-          if ( getFS()          != NULL ) { getFS()->setup(this);          }
-          if ( getMusicPlayer() != NULL ) { getMusicPlayer()->setup(this); }
+          if ( getGPIO()        != NULL ) { getGPIO()->setup();        }
+          if ( getBUZZER()      != NULL ) { getBUZZER()->setup();      }
+          if ( getScreen()      != NULL ) { getScreen()->setup();      }
+          if ( getFS()          != NULL ) { getFS()->setup();          }
+          if ( getMusicPlayer() != NULL ) { getMusicPlayer()->setup(); }
 
           setupISR();
       }
