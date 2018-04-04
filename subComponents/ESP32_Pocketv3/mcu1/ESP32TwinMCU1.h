@@ -19,6 +19,7 @@
   // called by constructor
   void GenericMCU::init() {
     gpio = new GenericMCU_GPIO();
+    buzzer = new GenericMCU_BUZZER();
   }
 
   // called by setup()
@@ -43,12 +44,7 @@
   bool GenericMCU::builtinBTN() { return digitalRead( BUILTIN_BTN ) == LOW; }
 
   
-  GenericMCU_BUZZER*       GenericMCU::getBUZZER()       { return NULL; }
-  GenericMCU_SCREEN*       GenericMCU::getScreen()       { return NULL; }
-  GenericMCU_FS*           GenericMCU::getFS()           { return NULL; }
-  GenericMCU_MUSIC_PLAYER* GenericMCU::getMusicPlayer()  { return NULL; }
-
-  // ============================================================================
+  // ======== Ext GPIO ==================================================================
   #include <Wire.h> // Include the I2C library (required)
   #include <SparkFunSX1509.h> // Include SX1509 library
 
@@ -65,8 +61,11 @@
     // expander. It'll return 1 on success, 0 on fail.
     if (!_ext_GPIO.begin(0x3E)) {
       // If we failed to communicate, turn the pin 13 LED on
-      _mcu->led(0,true); // need to be static ???
-      while (1) { ; } // And loop forever.
+      _mcu->led(0,true);
+      // while (1) { ; } // And loop forever.
+      this->ready = false;
+      _mcu->println("Ext GPIO not ready !");
+      return;
     }
 
     // BEWARE : MP3 trigger isn't PULLUP !!!
@@ -74,18 +73,57 @@
       // + 8 -> cf rewiring
       _ext_GPIO.pinMode(SX1509_BTN_PIN + 8 + btn, INPUT_PULLUP);
     }
+
+    this->ready = true;
+    _mcu->println("Ext GPIO ready !");
   }
 
   // 0-based
   void GenericMCU_GPIO::led(uint8_t ledNum) { ; }
   // 0-based
   bool GenericMCU_GPIO::btn(uint8_t btnNum) {
+    if ( !this->ready ) { return false; }
     // + 8 -> cf rewiring
     return _ext_GPIO.digitalRead(SX1509_BTN_PIN + 8 + btnNum) == LOW;
   }
 
-  // ============================================================================
+  // ======== Buzzer ====================================================================
 
+  #define BUZZER1 27
+  #define BUZ_channel 0
+  #define BUZ_resolution 8
+
+  void GenericMCU_BUZZER::setup(GenericMCU* _mcu) {
+    int freq = 2000;
+    ledcSetup(BUZ_channel, freq, BUZ_resolution);
+    ledcAttachPin(BUZZER1, BUZ_channel);
+
+    // sets the volume
+    ledcWrite(BUZ_channel, 0);
+
+    this->ready = true;
+  }
+  
+  void GenericMCU_BUZZER::playTone(int freq, int duration) {
+    ledcWrite(BUZ_channel, 125); // volume
+    ledcWriteTone(BUZ_channel, freq); // freq
+  }
+
+  void GenericMCU_BUZZER::noTone() {
+    ledcWrite(BUZ_channel, 0); // volume
+  }
+
+  // ======== FileSystem ================================================================
+
+  void GenericMCU_FS::setup(GenericMCU* _mcu) { ; }
+
+  // ======== MusicPlayer ===============================================================
+
+  void GenericMCU_MUSIC_PLAYER::setup(GenericMCU* _mcu) { ; }
+
+  // ======== Screen ====================================================================
+
+  void GenericMCU_SCREEN::setup(GenericMCU* _mcu) { ; }
   void GenericMCU_SCREEN::print(char* str) { Serial.print(str); }
   void GenericMCU_SCREEN::print(char ch) { Serial.print(ch); }
 
