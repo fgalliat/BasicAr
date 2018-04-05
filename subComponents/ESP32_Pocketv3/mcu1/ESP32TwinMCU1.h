@@ -10,13 +10,47 @@
 
   #include "ESP32TwinMCUSignals.h"
 
+  // BUILTIN GPIO
   #define BUILTIN_LED 2
   #define BUILTIN_BTN 0
+
+
+  // ======== MusicPlayer & Screen bridge UART ==========================================
+
+  #include "HardwareSerial.h"
+  #define UART2_NUM 1
+  #define UART2_RX 16
+  #define UART2_TX 4 // 17 does not seems to emit (TX2 labeled pin)
+
+  #define UART3_NUM 2
+  #define UART3_RX 26
+  #define UART3_TX 14
+
+  #ifdef MAIN_INO_FILE
+   // // the DFPlayerMini UART / HT USBHOST-HID-Keyboard
+   // HardwareSerial mp3Serial(UART2_NUM);
+
+   // the "next" MCU UART
+   HardwareSerial mcuBridge(UART3_NUM);
+  #else 
+   extern HardwareSerial mcuBridge;
+  #endif
+
+  void setupAdditionalUARTs() {
+    // mp3Serial.begin(9600, SERIAL_8N1, UART2_RX, UART2_TX, false);
+    mcuBridge.begin(115200, SERIAL_8N1, UART3_RX, UART3_TX, false);
+  }
+
+  // ===========================================================
 
   void GenericMCU::reset() { 
     println("Reset...");
     // if bridged to MCU#2
     // have to reset it
+
+    mcuBridge.write( SIG_MCU_RESET );
+    mcuBridge.flush();
+
     ESP.restart();
   }
 
@@ -29,12 +63,11 @@
     musicPlayer = new GenericMCU_MUSIC_PLAYER(this);
   }
 
-  void setupAdditionalUARTs();
-
   // called by setup()
   void GenericMCU::setupInternal() { 
     // BEWARE w/ multiple calls
     Serial.begin(115200);
+    
     println("init");
 
     // Builtin GPIO
@@ -45,7 +78,12 @@
     setupAdditionalUARTs();
 
     println("init done...");
+
+    mcuBridge.write(SIG_MCU_MASTER_SYNC);
+    mcuBridge.flush();
     // do what needed ...
+
+    println("sync done...");
   }
 
   void GenericMCU::setupISR() { 
@@ -136,32 +174,6 @@
     mcu->println("FS ready !");
   }
 
-  // ======== MusicPlayer & Screen bridge UART ==========================================
-
-  #include "HardwareSerial.h"
-  #define UART2_NUM 1
-  #define UART2_RX 16
-  #define UART2_TX 4 // 17 does not seems to emit (TX2 labeled pin)
-
-  #define UART3_NUM 2
-  #define UART3_RX 26
-  #define UART3_TX 14
-
-  #ifdef MAIN_INO_FILE
-   // // the DFPlayerMini UART / HT USBHOST-HID-Keyboard
-   // HardwareSerial mp3Serial(UART2_NUM);
-
-   // the "next" MCU UART
-   HardwareSerial mcuBridge(UART3_NUM);
-  #else 
-   extern HardwareSerial mcuBridge;
-  #endif
-
-  void setupAdditionalUARTs() {
-    // mp3Serial.begin(9600, SERIAL_8N1, UART2_RX, UART2_TX, false);
-    mcuBridge.begin(115200, SERIAL_8N1, UART3_RX, UART3_TX, false);
-  }
-
   // ======== MusicPlayer ===============================================================
   // uses Bridge
   void GenericMCU_MUSIC_PLAYER::setup() {
@@ -175,35 +187,35 @@
     uint8_t d0 = trckNum / 256; // up to 64K files
     uint8_t d1 = trckNum % 256;
 
-    mcuBridge.print( SIG_MP3_PLAY );
-    mcuBridge.print( d0 );
-    mcuBridge.print( d1 );
-    mcuBridge.println();
+    mcuBridge.write( SIG_MP3_PLAY );
+    mcuBridge.write( d0 );
+    mcuBridge.write( d1 );
+    mcuBridge.flush();
   }
 
   void GenericMCU_MUSIC_PLAYER::pause() { 
     if ( !this->ready ) { mcu->println("Music Player not ready !"); return; }
-    mcuBridge.print( SIG_MP3_PAUSE );
-    mcuBridge.println();
+    mcuBridge.write( SIG_MP3_PAUSE );
+    mcuBridge.flush();
   }
 
   void GenericMCU_MUSIC_PLAYER::next() { 
     if ( !this->ready ) { mcu->println("Music Player not ready !"); return; }
-    mcuBridge.print( SIG_MP3_NEXT );
-    mcuBridge.println();
+    mcuBridge.write( SIG_MP3_NEXT );
+    mcuBridge.flush();
   }
 
   void GenericMCU_MUSIC_PLAYER::prev() { 
     if ( !this->ready ) { mcu->println("Music Player not ready !"); return; }
-    mcuBridge.print( SIG_MP3_PREV );
-    mcuBridge.println();
+    mcuBridge.write( SIG_MP3_PREV );
+    mcuBridge.flush();
   }
 
   void GenericMCU_MUSIC_PLAYER::setVolume(uint8_t volume) { 
     if ( !this->ready ) { mcu->println("Music Player not ready !"); return; }
-    mcuBridge.print( SIG_MP3_VOL );
-    mcuBridge.print( volume );
-    mcuBridge.println();
+    mcuBridge.write( SIG_MP3_VOL );
+    mcuBridge.write( volume );
+    mcuBridge.flush();
   }
 
   bool GenericMCU_MUSIC_PLAYER::isPlaying() {
@@ -215,6 +227,7 @@
   // ======== Screen ====================================================================
   // uses Bridge
   void GenericMCU_SCREEN::setup() {
+    // HAVE TO TEST if bridge synced ...
     this->ready = true;
     mcu->println("Temp. Screen ready !");
   }
