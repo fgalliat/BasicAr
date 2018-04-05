@@ -8,6 +8,8 @@
 * Xtase - fgalliat @ Apr. 2018
 */
 
+  #include "ESP32TwinMCUSignals.h"
+
   #define BUILTIN_LED 2
   #define BUILTIN_BTN 0
 
@@ -23,6 +25,8 @@
     gpio = new GenericMCU_GPIO(this);
     buzzer = new GenericMCU_BUZZER(this);
     fs = new GenericMCU_FS(this);
+
+    musicPlayer = new GenericMCU_MUSIC_PLAYER(this);
   }
 
   void setupAdditionalUARTs();
@@ -148,22 +152,68 @@
    // HardwareSerial mp3Serial(UART2_NUM);
 
    // the "next" MCU UART
-   HardwareSerial mcuSerial(UART3_NUM);
+   HardwareSerial mcuBridge(UART3_NUM);
   #else 
-   extern HardwareSerial mcuSerial;
+   extern HardwareSerial mcuBridge;
   #endif
 
   void setupAdditionalUARTs() {
     // mp3Serial.begin(9600, SERIAL_8N1, UART2_RX, UART2_TX, false);
-    mcuSerial.begin(115200, SERIAL_8N1, UART3_RX, UART3_TX, false);
+    mcuBridge.begin(115200, SERIAL_8N1, UART3_RX, UART3_TX, false);
   }
 
   // ======== MusicPlayer ===============================================================
+  // uses Bridge
+  void GenericMCU_MUSIC_PLAYER::setup() {
+    // HAVE TO TEST if bridge synced ...
+    this->ready = true;
+  }
 
-  void GenericMCU_MUSIC_PLAYER::setup() { ; }
+  void GenericMCU_MUSIC_PLAYER::playTrack(int trckNum) { 
+    if ( !this->ready ) { mcu->println("Music Player not ready !"); return; }
+
+    uint8_t d0 = trckNum / 256; // up to 64K files
+    uint8_t d1 = trckNum % 256;
+
+    mcuBridge.print( SIG_MP3_PLAY );
+    mcuBridge.print( d0 );
+    mcuBridge.print( d1 );
+    mcuBridge.println();
+  }
+
+  void GenericMCU_MUSIC_PLAYER::pause() { 
+    if ( !this->ready ) { mcu->println("Music Player not ready !"); return; }
+    mcuBridge.print( SIG_MP3_PAUSE );
+    mcuBridge.println();
+  }
+
+  void GenericMCU_MUSIC_PLAYER::next() { 
+    if ( !this->ready ) { mcu->println("Music Player not ready !"); return; }
+    mcuBridge.print( SIG_MP3_NEXT );
+    mcuBridge.println();
+  }
+
+  void GenericMCU_MUSIC_PLAYER::prev() { 
+    if ( !this->ready ) { mcu->println("Music Player not ready !"); return; }
+    mcuBridge.print( SIG_MP3_PREV );
+    mcuBridge.println();
+  }
+
+  void GenericMCU_MUSIC_PLAYER::setVolume(uint8_t volume) { 
+    if ( !this->ready ) { mcu->println("Music Player not ready !"); return; }
+    mcuBridge.print( SIG_MP3_VOL );
+    mcuBridge.print( volume );
+    mcuBridge.println();
+  }
+
+  bool GenericMCU_MUSIC_PLAYER::isPlaying() {
+    if ( !this->ready ) { return false; }
+    // TODO : better -> leads to GPIO pin #0
+    return mcu->getGPIO()->btn( -8 );
+  }
 
   // ======== Screen ====================================================================
-
+  // uses Bridge
   void GenericMCU_SCREEN::setup() {
     this->ready = true;
     mcu->println("Temp. Screen ready !");
