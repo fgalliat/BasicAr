@@ -24,8 +24,9 @@
   #define SIG_SCR_COLOR         0x23 // Text + Shapes ?
   
   #define SIG_SCR_PRINT_CH      0x31
-  #define SIG_SCR_PRINT_NUM     0x32
-  #define SIG_SCR_PRINT_STR     0x33
+  #define SIG_SCR_PRINT_STR     0x32
+  #define SIG_SCR_PRINT_INT     0x33
+  #define SIG_SCR_PRINT_NUM     0x34
 
   #define SIG_SCR_DRAW_PIX      0x41
   #define SIG_SCR_DRAW_LINE     0x42

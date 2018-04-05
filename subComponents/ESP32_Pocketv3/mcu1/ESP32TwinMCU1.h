@@ -233,8 +233,30 @@
     mcu->println("Temp. Screen ready !");
   }
 
-  void GenericMCU_SCREEN::print(char* str) { Serial.print(str); }
-  void GenericMCU_SCREEN::print(char ch) { Serial.print(ch); }
+  void GenericMCU_SCREEN::print(char* str) { 
+    mcuBridge.write( SIG_SCR_PRINT_STR );
+    mcuBridge.print( ch );
+    mcuBridge.write( 0x00 );
+    mcuBridge.flush(); 
+  }
+
+  void GenericMCU_SCREEN::print(char ch) {
+    mcuBridge.write( SIG_SCR_PRINT_CH );
+    mcuBridge.write( ch );
+    mcuBridge.flush();
+  }
+
+  void print(int   val) {
+    mcuBridge.write( SIG_SCR_PRINT_INT );
+    mcuBridge.print( val );  // TODO : BETTER
+    mcuBridge.flush();
+  }
+
+  void print(float val) {
+    mcuBridge.write( SIG_SCR_PRINT_NUM );
+    mcuBridge.print( val );  // TODO : BETTER : use MemUtils::floatToMem()
+    mcuBridge.flush();
+  }
 
   // cursor in nbof chars (so max is 256x256)
   void GenericMCU_SCREEN::setCursor(int x, int y) {
