@@ -61,13 +61,14 @@
     fs = new GenericMCU_FS(this);
 
     musicPlayer = new GenericMCU_MUSIC_PLAYER(this);
+    screen = new GenericMCU_SCREEN(this);
   }
 
   // called by setup()
   void GenericMCU::setupInternal() { 
     // BEWARE w/ multiple calls
     Serial.begin(115200);
-    
+
     println("init");
 
     // Builtin GPIO
@@ -234,5 +235,26 @@
 
   void GenericMCU_SCREEN::print(char* str) { Serial.print(str); }
   void GenericMCU_SCREEN::print(char ch) { Serial.print(ch); }
+
+  // cursor in nbof chars (so max is 256x256)
+  void GenericMCU_SCREEN::setCursor(int x, int y) {
+    mcuBridge.write( SIG_SCR_CURSOR );
+    mcuBridge.write( x );
+    mcuBridge.write( y );
+    mcuBridge.flush();
+  }
+
+  void GenericMCU_SCREEN::setColor(uint16_t color) {
+    uint8_t d0 = color / 256; // up to 64K colors
+    uint8_t d1 = color % 256;
+
+    mcuBridge.write( SIG_SCR_COLOR );
+    mcuBridge.write( d0 );
+    mcuBridge.write( d1 );
+    mcuBridge.flush();
+  }
+
+
+
 
 #endif
