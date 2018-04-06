@@ -235,7 +235,10 @@
   // ======== MusicPlayer ===============================================================
   // uses Bridge
   void GenericMCU_MUSIC_PLAYER::setup() {
-    if ( ! __mcuBridgeReady ) { this->ready = false; return; }
+    if ( ! __mcuBridgeReady ) { 
+      mcu->println("Bridged Music Player NOT ready !");
+      this->ready = false; return; 
+    }
     this->ready = true;
   }
 
@@ -309,6 +312,7 @@
   }
 
   void GenericMCU_SCREEN::print(int   val) {
+    if ( !this->ready ) { Serial.print(val); return; }
     // in my BASIC int(s) are float(s)
     // from mem_utils.h
     const int tsize = getSizeOfFloat();
@@ -321,6 +325,7 @@
   }
 
   void GenericMCU_SCREEN::print(float val) {
+    if ( !this->ready ) { Serial.print(val); return; }
     // from mem_utils.h
     const int tsize = getSizeOfFloat();
     unsigned char memSeg[ tsize ];
@@ -333,6 +338,7 @@
 
   // cursor in nbof chars (so max is 256x256)
   void GenericMCU_SCREEN::setCursor(int x, int y) {
+    if ( !this->ready ) { return; }
     mcuBridge.write( SIG_SCR_CURSOR );
     mcuBridge.write( x );
     mcuBridge.write( y );
@@ -340,6 +346,7 @@
   }
 
   void GenericMCU_SCREEN::setColor(uint16_t color) {
+    if ( !this->ready ) { return; }
     uint8_t d0 = color / 256; // up to 64K colors
     uint8_t d1 = color % 256;
 
@@ -350,12 +357,14 @@
   }
 
   void GenericMCU_SCREEN::setMode(uint8_t mode) {
+    if ( !this->ready ) { return; }
     mcuBridge.write( SIG_SCR_MODE );
     mcuBridge.write( mode );
     mcuBridge.flush();
   }
 
   void GenericMCU_SCREEN::blitt(uint8_t mode) {
+    if ( !this->ready ) { return; }
     mcuBridge.write( SIG_SCR_BLITT );
     mcuBridge.write( mode );
     mcuBridge.flush();

@@ -17,6 +17,13 @@
 
 #include "mem_utils.h"
 
+// 0 - blitt locked
+// 1 - manual blitt request
+// 2 - auto blitt
+#define SCREEN_BLITT_LOCKED  0
+#define SCREEN_BLITT_REQUEST 1
+#define SCREEN_BLITT_AUTO    2
+
 class GenericMCU;
 
 class GenericMCU_GPIO {
@@ -77,9 +84,10 @@ class GenericMCU_SCREEN {
       // 2 - 320x240 64K
       void setMode(uint8_t mode);
 
-      // 0 - blit off
-      // 1 - manual blitt request
-      // 2 - auto blitt
+      // one of : SCREEN_BLITT_xxx
+      // BASIC no more calls doBlitt() itself
+      // it just sets the mode
+      // Screen impl. will manage it
       void blitt(uint8_t mode);
 
       // === Text routines ===
@@ -237,7 +245,7 @@ class GenericMCU {
     //       // infinite loop impl.
     //       delay(millis);
     //   }
-    
+
       // --------------------------------------
       // read system SIGNALS
       bool getSystemMenuReqState();
