@@ -259,92 +259,265 @@
   }
 
   // ======== Screen ====================================================================
-  // uses Bridge
+  
+  // TFT_eSPI Lib is pretty faster than Adafruit one
+  #include <TFT_eSPI.h> // Hardware-specific library
+
+  /* -- impl. sample --
+    uint16_t TFT_eSPI::color565(uint8_t r, uint8_t g, uint8_t b) {
+      return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
+    }
+  */
+
+    // #define ILI9341_LIGHTGREY   0xC618      /* 192, 192, 192 */
+    // #define ILI9341_DARKGREY 0x7BEF /* 128, 128, 128 */ !!!! NOT SAME VALUE !!!!
+
+  #define ROTATE_SCREEN 0
+
+    #define CLR_BLACK       ILI9341_BLACK
+    #define CLR_WHITE       ILI9341_WHITE
+    //#define CLR_LIGHTGREY   TFT_LIGHTGREY // ILI9341_BLACK, ILI9341_RED, ILI9341_CYAN
+    #define CLR_LIGHTGREY   ILI9341_RED
+    #define CLR_GREY        0x8410 /* 128,128,128 */
+    //#define CLR_DARKGREY    TFT_DARKGREY
+    #define CLR_DARKGREY    ILI9341_CYAN
+    #define CLR_PINK        ILI9341_PINK
+
+    #define BLACK 0x00
+    #define WHITE 0x01
+
+    // -- SPI SCreen - values to copy in TFT_eSPI/User_Select.h
+    #define TFT_MISO 19
+    #define TFT_MOSI 23
+    #define TFT_CLK  18
+    #define TFT_CS    5  // Chip select control pin
+    #define TFT_DC   15  // Data Command control pin
+    // connected to EN pin
+    #define TFT_RST   -1
+
+  // beware w/ that !!!
+  static TFT_eSPI* _oled_display;
+  static int _oled_ttyY = 0;
+  static uint16_t drawColor = CLR_WHITE;
+
+  static uint16_t screenOffsetX = 0; // MY_320
+  static uint16_t screenOffsetY = 0;
+
+  // TODO
+  static uint8_t __screenMode = -1;
+  static uint8_t __screenBlittMode = -1;
+
   void GenericMCU_SCREEN::setup() {
-    // if ( ! __mcuBridgeReady ) { 
-    //   mcu->println("Bridged Screen NOT ready !");
-    //   this->ready = false; return; 
-    // }
-    // this->ready = true;
-    // mcu->println("Temp. Screen ready !");
-    this->ready = false;
+    screenOffsetX = (320 - 128) / 2;
+    screenOffsetY = (240 - 64) / 2;
+
+    _oled_display = new TFT_eSPI();
+    _oled_display->init();
+
+    _oled_display->setRotation(1+ROTATE_SCREEN); // LANDSCAPE
+
+    _oled_display->fillScreen(CLR_BLACK);
+
+    _oled_display->setTextColor(drawColor);
+    _oled_display->setTextSize(0); // if doesn't work --> try (1)
+
+    setMode( SCREEN_MODE_320 );
+
+    clear();
+    blitt( SCREEN_BLITT_AUTO );
+
+    this->ready = true;
   }
+
+  // ------------------------------
+  static void __doBlitt() {
+    // SEE LATER when a screenBuffer strategy will be defined
+
+    // ESP8266 specific impl. of yield() (Cf Wifi ops & deadlocks ....) (see AdaGFX samples)
+    yield();
+  }
+
+  static void __blittIfNeeded() {
+    if ( __screenBlittMode == SCREEN_BLITT_AUTO ) {
+      __doBlitt();
+    }
+  }
+
+  static void __drawString(int x, int y, char* str) {
+      _oled_display->setCursor(x, y);
+      _oled_display->print(str);
+
+      #ifdef DBUG_ESP32
+        Serial.print( str );
+      #endif
+  }
+  // ------------------------------
 
   void GenericMCU_SCREEN::print(char* str) { 
     if ( !this->ready ) { Serial.print(str); return; }
-    // mcuBridge.write( SIG_SCR_PRINT_STR );
-    // mcuBridge.print( str );
-    // mcuBridge.write( 0x00 );
-    // mcuBridge.flush(); 
+    _oled_display->print(str);
+    __blittIfNeeded();
+
+    // ?? do I need to manage scrolling TTY ??
   }
 
   void GenericMCU_SCREEN::print(char ch) {
     if ( !this->ready ) { Serial.print(ch); return; }
-    // mcuBridge.write( SIG_SCR_PRINT_CH );
-    // mcuBridge.write( ch );
-    // mcuBridge.flush();
+    _oled_display->print(ch);
+    __blittIfNeeded();
+
+    // ?? do I need to manage scrolling TTY ??
   }
 
   void GenericMCU_SCREEN::print(int   val) {
     if ( !this->ready ) { Serial.print(val); return; }
-    // // in my BASIC int(s) are float(s)
-    // // from mem_utils.h
-    // const int tsize = getSizeOfFloat();
-    // unsigned char memSeg[ tsize ];
-    // copyFloatToBytes(memSeg, 0, (float)val);
+    _oled_display->print(val);
+    __blittIfNeeded();
 
-    // mcuBridge.write( SIG_SCR_PRINT_INT );
-    // mcuBridge.write( memSeg, tsize );
-    // mcuBridge.flush();
+    // ?? do I need to manage scrolling TTY ??
   }
 
   void GenericMCU_SCREEN::print(float val) {
     if ( !this->ready ) { Serial.print(val); return; }
-    // // from mem_utils.h
-    // const int tsize = getSizeOfFloat();
-    // unsigned char memSeg[ tsize ];
-    // copyFloatToBytes(memSeg, 0, val);
+    _oled_display->print(val);
+    __blittIfNeeded();
 
-    // mcuBridge.write( SIG_SCR_PRINT_NUM );
-    // mcuBridge.write( memSeg, tsize );
-    // mcuBridge.flush();
+    // ?? do I need to manage scrolling TTY ??
   }
 
-  // cursor in nbof chars (so max is 256x256)
+  // cursor in nb of chars (so max is 256x256)
   void GenericMCU_SCREEN::setCursor(int x, int y) {
     if ( !this->ready ) { return; }
-    // mcuBridge.write( SIG_SCR_CURSOR );
-    // mcuBridge.write( x );
-    // mcuBridge.write( y );
-    // mcuBridge.flush();
+    #define FONT_WIDTH (6+1)
+    #define FONT_HEIGHT (8)
+    _oled_display->setCursor(x*FONT_WIDTH, y*FONT_HEIGHT);
+
+    // !! TO remember if use ACTION_BUFFER !!
   }
 
   void GenericMCU_SCREEN::setColor(uint16_t color) {
     if ( !this->ready ) { return; }
-    // uint8_t d0 = color / 256; // up to 64K colors
-    // uint8_t d1 = color % 256;
+    
+    drawColor = color;
 
-    // mcuBridge.write( SIG_SCR_COLOR );
-    // mcuBridge.write( d0 );
-    // mcuBridge.write( d1 );
-    // mcuBridge.flush();
+    // !! TO remember if use ACTION_BUFFER !!
   }
 
   void GenericMCU_SCREEN::setMode(uint8_t mode) {
     if ( !this->ready ) { return; }
-    // mcuBridge.write( SIG_SCR_MODE );
-    // mcuBridge.write( mode );
-    // mcuBridge.flush();
+    
+    if ( mode == SCREEN_MODE_128 ) {
+      screenOffsetX = (320 - 128) / 2;
+      screenOffsetY = (240 - 64) / 2;
+      __screenMode = mode;
+    } else if ( mode == SCREEN_MODE_160 ) {
+      screenOffsetX = (320 - 160) / 2;
+      screenOffsetY = (240 - 128) / 2;
+      __screenMode = mode;
+    } else if ( mode == SCREEN_MODE_320 ) {
+      screenOffsetX = 0;
+      screenOffsetY = 0;
+      __screenMode = mode;
+    } 
   }
 
   void GenericMCU_SCREEN::blitt(uint8_t mode) {
     if ( !this->ready ) { return; }
-    // mcuBridge.write( SIG_SCR_BLITT );
-    // mcuBridge.write( mode );
-    // mcuBridge.flush();
+    __screenBlittMode = mode;
+    if ( mode >= SCREEN_BLITT_REQUEST ) {
+      __doBlitt();
+    }
   }
 
+  // === Picture routines ===
+  // void setPalette( uint16_t* pal, int length, int bpp=4 );
 
+  // // for coords : keeps int(s) instead of uint16_t(s) because coords could be negative during transforms
+
+  // // see if need to contains header : Cf fileWidth Vs drawWidth
+  // void drawPicture565( uint16_t* raster, int x, int y, int w=-1, int h=-1 );
+  // void drawPictureIndexed( uint8_t* raster, int x, int y, int w=-1, int h=-1, bool includesPalette=false );
+  // void drawPictureBPP( uint8_t* raster, int x, int y, int w=-1, int h=-1 );
+
+  // === Shapes routines ===
+  // 1 is always white
+  // 0 is always black
+
+  static uint16_t __getColor(uint16_t color) {
+    uint16_t usedColor = color;
+    if ( usedColor == BLACK ) { usedColor = CLR_BLACK; }
+    else if ( usedColor == WHITE ) { usedColor = CLR_WHITE; }
+    // then grey .....
+    // ..... use palette impl. !!!
+    return usedColor;
+  }
+
+  void GenericMCU_SCREEN::clear() {
+    if ( !this->ready ) { return; }
+
+    _oled_display->setCursor( screenOffsetX, screenOffsetY );
+
+    if ( __screenMode == SCREEN_MODE_128 ) {
+      _oled_display->fillRect( screenOffsetX, screenOffsetY, 128, 64, CLR_BLACK );
+    } else if ( __screenMode == SCREEN_MODE_160 ) {
+      _oled_display->fillRect( screenOffsetX, screenOffsetY, 160, 128, CLR_BLACK );
+    } else if ( __screenMode == SCREEN_MODE_128 ) {
+      _oled_display->fillScreen( CLR_BLACK );
+    } 
+
+    __blittIfNeeded();
+  }
+
+  // mode = 1 : fill // mode = 0 : draw
+  void GenericMCU_SCREEN::drawRect(int x, int y, int w, int h, uint8_t mode, uint16_t color) {
+    if ( !this->ready ) { return; }
+
+    uint16_t usedColor = __getColor(color);
+    if ( mode == 0 ) {
+      _oled_display->drawRect(x,y,w,h, usedColor);
+    } else {
+      _oled_display->fillRect(x,y,w,h, usedColor);
+    }
+
+    __blittIfNeeded();
+  }
+
+  void GenericMCU_SCREEN::drawCircle(int x, int y, int radius, uint8_t mode, uint16_t color) {
+    if ( !this->ready ) { return; }
+
+    uint16_t usedColor = __getColor(color);
+    if ( mode == 0 ) {
+      _oled_display->drawCircle(x,y,radius, usedColor);
+    } else {
+      _oled_display->fillCircle(x,y,radius, usedColor);
+    }
+
+    __blittIfNeeded();
+  }
+
+  void GenericMCU_SCREEN::drawLine(int x, int y, int x2, int y2, uint16_t color){
+    if ( !this->ready ) { return; }
+
+    //_oled_display->drawLine(x1,y1,x2,y2, drawColor);
+    uint16_t usedColor = __getColor(color);
+    _oled_display->drawLine(x,y,x2,y2, usedColor);
+
+    __blittIfNeeded();
+  }
+
+  void GenericMCU_SCREEN::drawPixel(int x, int y, uint16_t color){
+    if ( !this->ready ) { return; }
+
+    uint16_t usedColor = __getColor(color);
+    _oled_display->drawPixel(x,y, usedColor);
+
+    __blittIfNeeded();
+  }
+
+  // // see if keep that
+  // void GenericMCU_SCREEN::drawTriangle(int x, int y, int x2, int y2, int x3, int y3, uint8_t mode=0, uint16_t color=1);
+  // // see if keep that
+  // void GenericMCU_SCREEN::drawPolyline(int* x, int* y, int nbPoints);
 
 
 #endif

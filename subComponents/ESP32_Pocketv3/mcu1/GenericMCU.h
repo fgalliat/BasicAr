@@ -24,6 +24,11 @@
 #define SCREEN_BLITT_REQUEST 1
 #define SCREEN_BLITT_AUTO    2
 
+// 128x64/1 -- 160x128/64K -- 320x240/64K
+#define SCREEN_MODE_128    0
+#define SCREEN_MODE_160    1
+#define SCREEN_MODE_320    2
+
 class GenericMCU;
 
 class GenericMCU_GPIO {
@@ -90,6 +95,8 @@ class GenericMCU_SCREEN {
       // Screen impl. will manage it
       void blitt(uint8_t mode);
 
+      void clear();
+
       // === Text routines ===
       void println(char* str) {
           print(str);
@@ -131,6 +138,8 @@ class GenericMCU_SCREEN {
       // for fastDrawLine routines : impl. it INSIDE this routine
       // for convinience writing
       void drawLine(int x, int y, int x2, int y2, uint16_t color=1);
+
+      void drawPixel(int x, int y, uint16_t color=1);
 
       // see if keep that
       void drawTriangle(int x, int y, int x2, int y2, int x3, int y3, uint8_t mode=0, uint16_t color=1);

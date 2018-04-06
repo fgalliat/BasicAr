@@ -13,7 +13,7 @@
 // #define MCU_MASTER 1
 
 #include "GenericMCU.h"
-#include "ESP32TwinMCU2.h"
+#include "ESP32TwinMCU1.h"
 
 GenericMCU mcu;
 // __________________
