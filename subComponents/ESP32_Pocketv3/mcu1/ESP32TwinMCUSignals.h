@@ -22,6 +22,7 @@
   #define SIG_SCR_CLEAR         0x22
   #define SIG_SCR_CURSOR        0x22
   #define SIG_SCR_COLOR         0x23 // Text + Shapes ?
+  #define SIG_SCR_BLITT         0x24
   
   #define SIG_SCR_PRINT_CH      0x31
   #define SIG_SCR_PRINT_STR     0x32

@@ -56,6 +56,8 @@
     return result;
  }
 
+ int getSizeOfFloat() { return sizeof(float); }
+
  void copyFloatToBytes(unsigned char* memSeg, int address, float f) {
 
     // DBUG_NOLN("copyFloatToBytes "); DBUG( address );
@@ -64,7 +66,7 @@
         return;
     }
 
-    int float_tlen = sizeof(float);
+    int float_tlen = sizeof(float); // 4 bytes on Arduino
     char data[float_tlen];
     memcpy(data, &f, sizeof f);    // send data
     bool bigEndian = isBigEndian();
@@ -81,14 +83,18 @@
     // DBUG_NOLN("copyFloatToBytes "); DBUG( "END" );
  }
 
- // ex: x = mem2float(p,mem);
- float mem2float(unsigned char* cur, unsigned char* src) {
-    int addr = &(cur[0]) - &(src[0]);
-    return getFloatFromBytes(mem, addr);
- }
+ #ifdef mem
 
- // ex: x = float2mem(p,mem, 3.14);
- void float2mem(unsigned char* cur, unsigned char* src, float value) {
-    int addr = &(cur[0]) - &(src[0]);
-    copyFloatToBytes(mem, addr, value);
- }
+    // ex: x = mem2float(p,mem);
+    float mem2float(unsigned char* cur, unsigned char* src) {
+        int addr = &(cur[0]) - &(src[0]);
+        return getFloatFromBytes(mem, addr);
+    }
+
+    // ex: x = float2mem(p,mem, 3.14);
+    void float2mem(unsigned char* cur, unsigned char* src, float value) {
+        int addr = &(cur[0]) - &(src[0]);
+        copyFloatToBytes(mem, addr, value);
+    }
+
+ #endif

@@ -42,6 +42,7 @@
   }
 
   // ===========================================================
+  static bool __mcuBridgeReady = false;
 
   void GenericMCU::reset() { 
     println("Reset...");
@@ -50,6 +51,7 @@
 
     mcuBridge.write( SIG_MCU_RESET );
     mcuBridge.flush();
+    __mcuBridgeReady = false;
 
     ESP.restart();
   }
@@ -65,7 +67,7 @@
   }
 
   // called by setup()
-  void GenericMCU::setupInternal() { 
+  void GenericMCU::setupPreInternal() { 
     // BEWARE w/ multiple calls
     Serial.begin(115200);
 
@@ -79,12 +81,56 @@
     setupAdditionalUARTs();
 
     println("init done...");
+  }
 
-    mcuBridge.write(SIG_MCU_MASTER_SYNC);
-    mcuBridge.flush();
-    // do what needed ...
+  // called by setup()
+  void GenericMCU::setupPostInternal() { 
+    __mcuBridgeReady = false;
+    println("sync");
 
-    println("sync done...");
+    int t0 = millis();
+    int timeout = 3 * 1000;
+
+    #ifdef MCU_MASTER
+      const int signalToRead = SIG_MCU_SLAVE_SYNC;
+      const int signalToSend = SIG_MCU_MASTER_SYNC;
+    #else
+      const int signalToRead = SIG_MCU_MASTER_SYNC;
+      const int signalToSend = SIG_MCU_SLAVE_SYNC;
+    #endif
+
+    while(true) {
+      led(0, true);
+      if ( mcuBridge.available() > 0 ) {
+        if ( mcuBridge.read() == 0xFF ) {
+          while ( mcuBridge.available() <= 0 ) { 
+            if ( millis() - t0 >= timeout ) {
+              break;
+            }
+            yield(); 
+          }
+          if ( mcuBridge.read() == signalToRead ) {
+            __mcuBridgeReady = true;
+          }
+        }
+      }
+      if ( millis() - t0 >= timeout ) {
+        break;
+      }
+      delay(100);
+      mcuBridge.write( 0xFF );
+      mcuBridge.write( signalToSend );
+      mcuBridge.flush();
+      led(0, false);
+      delay(100);
+    }
+    led(0, false);
+
+    if ( __mcuBridgeReady ) {
+      println("sync done...");
+    } else {
+      println("sync failed...");
+    }
   }
 
   void GenericMCU::setupISR() { 
@@ -234,27 +280,40 @@
   }
 
   void GenericMCU_SCREEN::print(char* str) { 
+    if ( !__mcuBridgeReady ) { Serial.print(str); return; }
     mcuBridge.write( SIG_SCR_PRINT_STR );
-    mcuBridge.print( ch );
+    mcuBridge.print( str );
     mcuBridge.write( 0x00 );
     mcuBridge.flush(); 
   }
 
   void GenericMCU_SCREEN::print(char ch) {
+    if ( !__mcuBridgeReady ) { Serial.print(ch); return; }
     mcuBridge.write( SIG_SCR_PRINT_CH );
     mcuBridge.write( ch );
     mcuBridge.flush();
   }
 
-  void print(int   val) {
+  void GenericMCU_SCREEN::print(int   val) {
+    // in my BASIC int(s) are float(s)
+    // from mem_utils.h
+    const int tsize = getSizeOfFloat();
+    unsigned char memSeg[ tsize ];
+    copyFloatToBytes(memSeg, 0, (float)val);
+
     mcuBridge.write( SIG_SCR_PRINT_INT );
-    mcuBridge.print( val );  // TODO : BETTER
+    mcuBridge.write( memSeg, tsize );
     mcuBridge.flush();
   }
 
-  void print(float val) {
+  void GenericMCU_SCREEN::print(float val) {
+    // from mem_utils.h
+    const int tsize = getSizeOfFloat();
+    unsigned char memSeg[ tsize ];
+    copyFloatToBytes(memSeg, 0, val);
+
     mcuBridge.write( SIG_SCR_PRINT_NUM );
-    mcuBridge.print( val );  // TODO : BETTER : use MemUtils::floatToMem()
+    mcuBridge.write( memSeg, tsize );
     mcuBridge.flush();
   }
 
@@ -273,6 +332,18 @@
     mcuBridge.write( SIG_SCR_COLOR );
     mcuBridge.write( d0 );
     mcuBridge.write( d1 );
+    mcuBridge.flush();
+  }
+
+  void GenericMCU_SCREEN::setMode(uint8_t mode) {
+    mcuBridge.write( SIG_SCR_MODE );
+    mcuBridge.write( mode );
+    mcuBridge.flush();
+  }
+
+  void GenericMCU_SCREEN::blitt(uint8_t mode) {
+    mcuBridge.write( SIG_SCR_BLITT );
+    mcuBridge.write( mode );
     mcuBridge.flush();
   }
 

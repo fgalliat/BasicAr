@@ -9,6 +9,9 @@
 // just to identify main cpp sourcecode
 #define MAIN_INO_FILE 1
 
+// else is slave
+#define MCU_MASTER 1
+
 #include "GenericMCU.h"
 #include "ESP32TwinMCU1.h"
 

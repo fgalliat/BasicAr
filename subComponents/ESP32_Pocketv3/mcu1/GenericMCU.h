@@ -8,6 +8,15 @@
 * Xtase - fgalliat @ Apr. 2018
 */
 
+// TODO : better
+#ifndef MEMORY_SIZE
+ #define MEMORY_SIZE 256 * 1024
+#endif
+
+#define DBUG_NOLN(a,b) { Serial.printf( "%s %d", a, b ); }
+
+#include "mem_utils.h"
+
 class GenericMCU;
 
 class GenericMCU_GPIO {
@@ -67,6 +76,11 @@ class GenericMCU_SCREEN {
       // 1 - 160x128 64K
       // 2 - 320x240 64K
       void setMode(uint8_t mode);
+
+      // 0 - blit off
+      // 1 - manual blitt request
+      // 2 - auto blitt
+      void blitt(uint8_t mode);
 
       // === Text routines ===
       void println(char* str) {
@@ -148,8 +162,9 @@ class GenericMCU {
       void builtinLED(bool state);
       bool builtinBTN();
 
-      void setupInternal();
       void init();
+      void setupPreInternal();
+      void setupPostInternal();
 
       GenericMCU_GPIO*    gpio = NULL;
       GenericMCU_BUZZER*  buzzer = NULL;
@@ -164,7 +179,7 @@ class GenericMCU {
       void unlockISR() { lookAtISR = true; }
 
       void setup() {
-          setupInternal();
+          setupPreInternal();
 
           if ( getGPIO()        != NULL ) { getGPIO()->setup();        }
           if ( getBUZZER()      != NULL ) { getBUZZER()->setup();      }
@@ -173,6 +188,8 @@ class GenericMCU {
           if ( getMusicPlayer() != NULL ) { getMusicPlayer()->setup(); }
 
           setupISR();
+
+          setupPostInternal();
       }
 
       // soft reset the MCU
