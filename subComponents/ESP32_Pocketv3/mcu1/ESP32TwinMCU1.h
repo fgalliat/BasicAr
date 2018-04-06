@@ -81,10 +81,9 @@
     setupAdditionalUARTs();
 
     println("init done...");
-  }
 
-  // called by setup()
-  void GenericMCU::setupPostInternal() { 
+    // ===== Bridge Sync. Routine ======================
+
     __mcuBridgeReady = false;
     println("sync");
 
@@ -101,29 +100,37 @@
 
     while(true) {
       led(0, true);
+      //println(" Waiting a 1st byte");
+      //Serial.println( mcuBridge.available() );
+
       if ( mcuBridge.available() > 0 ) {
+        println(" Found a 1st byte");
+
         if ( mcuBridge.read() == 0xFF ) {
+          println(" Found the 1st byte");
+
           while ( mcuBridge.available() <= 0 ) { 
-            if ( millis() - t0 >= timeout ) {
-              break;
-            }
-            yield(); 
+            if ( millis() - t0 >= timeout ) { break; }
+            delay(10);
           }
+          if ( millis() - t0 >= timeout ) { break; }
+          println(" Found a 2nd byte");
           if ( mcuBridge.read() == signalToRead ) {
+            println(" Found the 2nd byte");
             __mcuBridgeReady = true;
           }
         }
       }
-      if ( millis() - t0 >= timeout ) {
-        break;
-      }
+      if ( millis() - t0 >= timeout ) { break; }
       delay(100);
+      println(" Send sync seq.");
       mcuBridge.write( 0xFF );
       mcuBridge.write( signalToSend );
       mcuBridge.flush();
       led(0, false);
       delay(100);
     }
+    println(" Exited");
     led(0, false);
 
     if ( __mcuBridgeReady ) {
@@ -131,6 +138,10 @@
     } else {
       println("sync failed...");
     }
+  }
+
+  // called by setup()
+  void GenericMCU::setupPostInternal() { 
   }
 
   void GenericMCU::setupISR() { 
@@ -176,7 +187,7 @@
   }
 
   // 0-based
-  void GenericMCU_GPIO::led(uint8_t ledNum) { ; }
+  void GenericMCU_GPIO::led(uint8_t ledNum, bool state) { ; }
   // 0-based
   bool GenericMCU_GPIO::btn(uint8_t btnNum) {
     if ( !this->ready ) { return false; }
@@ -224,7 +235,7 @@
   // ======== MusicPlayer ===============================================================
   // uses Bridge
   void GenericMCU_MUSIC_PLAYER::setup() {
-    // HAVE TO TEST if bridge synced ...
+    if ( ! __mcuBridgeReady ) { this->ready = false; return; }
     this->ready = true;
   }
 
@@ -274,13 +285,16 @@
   // ======== Screen ====================================================================
   // uses Bridge
   void GenericMCU_SCREEN::setup() {
-    // HAVE TO TEST if bridge synced ...
+    if ( ! __mcuBridgeReady ) { 
+      mcu->println("Bridged Screen NOT ready !");
+      this->ready = false; return; 
+    }
     this->ready = true;
     mcu->println("Temp. Screen ready !");
   }
 
   void GenericMCU_SCREEN::print(char* str) { 
-    if ( !__mcuBridgeReady ) { Serial.print(str); return; }
+    if ( !this->ready ) { Serial.print(str); return; }
     mcuBridge.write( SIG_SCR_PRINT_STR );
     mcuBridge.print( str );
     mcuBridge.write( 0x00 );
@@ -288,7 +302,7 @@
   }
 
   void GenericMCU_SCREEN::print(char ch) {
-    if ( !__mcuBridgeReady ) { Serial.print(ch); return; }
+    if ( !this->ready ) { Serial.print(ch); return; }
     mcuBridge.write( SIG_SCR_PRINT_CH );
     mcuBridge.write( ch );
     mcuBridge.flush();

@@ -31,7 +31,7 @@ class GenericMCU_GPIO {
       bool isReady() { return ready; }
 
       // 0-based
-      void led(uint8_t ledNum);
+      void led(uint8_t ledNum, bool state);
       // 0-based
       bool btn(uint8_t ledNum);
 };
@@ -202,7 +202,7 @@ class GenericMCU {
       void led(uint8_t led, bool state=true) { 
           if ( led == 0 ) { builtinLED(state); return; }
           if ( getGPIO() == NULL ) { return; }
-          getGPIO()->led( led-1 );
+          getGPIO()->led( led-1, state );
       }
 
       // 0  - internal push button
@@ -232,9 +232,12 @@ class GenericMCU {
           getBUZZER()->noTone();
       }
       // --------------------------------------
-      void delay(int millis) {
-          delay(millis);
-      }
+
+    //   void delay(int millis) {
+    //       // infinite loop impl.
+    //       delay(millis);
+    //   }
+    
       // --------------------------------------
       // read system SIGNALS
       bool getSystemMenuReqState();
