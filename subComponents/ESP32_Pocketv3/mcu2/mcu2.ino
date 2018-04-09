@@ -58,8 +58,12 @@ void setup() {
   // mcuBridge.println("/READY");
 
   mcu.getScreen()->setMode( SCREEN_MODE_320 );
+  mcu.getScreen()->setMode( SCREEN_MODE_160 );
 
 }
+
+
+int cpt = 0;
 
 void loop() {
 
@@ -73,13 +77,12 @@ void loop() {
     }
   }
 
-  int scrW = 320;
-  int scrH = 240;
+  int scrW = mcu.getScreen()->getWidth();
+  int scrH = mcu.getScreen()->getHeight();
 
   int rW = scrW / 60;
   int rH = scrH;
-  // rW = 128 / 60;
-  // rH = 64;
+  
   int t0,t1;
 
   /* w/ AdaFruit Lib for ILI9341 -> 320x240 area -> 60 rect 15px large
@@ -105,10 +108,15 @@ void loop() {
   mcu.getScreen()->clear();
   for(int i=0; i < 60; i++) {
     int uH = random(rH);
-    mcu.getScreen()->drawRect(i*rW, (240-uH)/2, rW, uH, i%5, 1); 
+    mcu.getScreen()->drawRect(i*rW, (mcu.getScreen()->getHeight()-uH)/2, rW, uH, 1, i%5); 
   }
   mcu.getScreen()->blitt( SCREEN_BLITT_AUTO );
   t1 = micros();
+
+  if ( (cpt++) % 50 == 0 ) {
+    Serial.print( (t1-t0) );
+    Serial.print(" micros\n");
+  }
 
   delay(1);
 }

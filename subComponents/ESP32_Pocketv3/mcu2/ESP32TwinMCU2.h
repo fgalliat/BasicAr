@@ -302,6 +302,8 @@
 
   static uint16_t screenOffsetX = 0; // MY_320
   static uint16_t screenOffsetY = 0;
+  static uint16_t __screenWidth = 0; // MY_320
+  static uint16_t __screenHeight = 0;
 
   // TODO
   static uint8_t __screenMode = -1;
@@ -407,14 +409,23 @@
     if ( !this->ready ) { return; }
     
     if ( mode == SCREEN_MODE_128 ) {
-      screenOffsetX = (320 - 128) / 2;
-      screenOffsetY = (240 - 64) / 2;
+      __screenWidth = 128;
+      __screenHeight = 64;
+
+      screenOffsetX = (320 - __screenWidth) / 2;
+      screenOffsetY = (240 - __screenHeight) / 2;
       __screenMode = mode;
     } else if ( mode == SCREEN_MODE_160 ) {
-      screenOffsetX = (320 - 160) / 2;
-      screenOffsetY = (240 - 128) / 2;
+      __screenWidth = 160;
+      __screenHeight = 128;
+
+      screenOffsetX = (320 - __screenWidth) / 2;
+      screenOffsetY = (240 - __screenHeight) / 2;
       __screenMode = mode;
     } else if ( mode == SCREEN_MODE_320 ) {
+      __screenWidth = 320;
+      __screenHeight = 240;
+
       screenOffsetX = 0;
       screenOffsetY = 0;
       __screenMode = mode;
@@ -450,6 +461,13 @@
     return usedColor;
   }
 
+  int GenericMCU_SCREEN::getWidth() {
+    return __screenWidth;
+  }
+  int GenericMCU_SCREEN::getHeight() {
+    return __screenHeight;
+  }
+
   void GenericMCU_SCREEN::clear() {
     if ( !this->ready ) { return; }
 
@@ -459,7 +477,7 @@
       _oled_display->fillRect( screenOffsetX, screenOffsetY, 128, 64, CLR_BLACK );
     } else if ( __screenMode == SCREEN_MODE_160 ) {
       _oled_display->fillRect( screenOffsetX, screenOffsetY, 160, 128, CLR_BLACK );
-    } else if ( __screenMode == SCREEN_MODE_128 ) {
+    } else if ( __screenMode == SCREEN_MODE_320 ) {
       _oled_display->fillScreen( CLR_BLACK );
     } 
 
@@ -472,9 +490,9 @@
 
     uint16_t usedColor = __getColor(color);
     if ( mode == 0 ) {
-      _oled_display->drawRect(x,y,w,h, usedColor);
+      _oled_display->drawRect(screenOffsetX+x,screenOffsetY+y,w,h, usedColor);
     } else {
-      _oled_display->fillRect(x,y,w,h, usedColor);
+      _oled_display->fillRect(screenOffsetX+x,screenOffsetY+y,w,h, usedColor);
     }
 
     __blittIfNeeded();

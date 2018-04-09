@@ -84,6 +84,9 @@ class GenericMCU_SCREEN {
 
       void setup();
 
+      int getWidth();
+      int getHeight();
+
       // 0 - 128x64  mono
       // 1 - 160x128 64K
       // 2 - 320x240 64K
