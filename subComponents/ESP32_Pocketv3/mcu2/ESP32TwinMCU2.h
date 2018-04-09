@@ -429,15 +429,9 @@
     }
   }
 
-  // === Picture routines ===
-  // void setPalette( uint16_t* pal, int length, int bpp=4 );
-
-  // // for coords : keeps int(s) instead of uint16_t(s) because coords could be negative during transforms
-
-  // // see if need to contains header : Cf fileWidth Vs drawWidth
-  // void drawPicture565( uint16_t* raster, int x, int y, int w=-1, int h=-1 );
-  // void drawPictureIndexed( uint8_t* raster, int x, int y, int w=-1, int h=-1, bool includesPalette=false );
-  // void drawPictureBPP( uint8_t* raster, int x, int y, int w=-1, int h=-1 );
+  uint8_t getBlittMode() {
+    return __screenBlittMode;
+  }
 
   // === Shapes routines ===
   // 1 is always white
@@ -447,7 +441,11 @@
     uint16_t usedColor = color;
     if ( usedColor == BLACK ) { usedColor = CLR_BLACK; }
     else if ( usedColor == WHITE ) { usedColor = CLR_WHITE; }
-    // then grey .....
+    else if ( usedColor == 2 ) { usedColor = CLR_LIGHTGREY; }
+    else if ( usedColor == 3 ) { usedColor = CLR_GREY; }
+    else if ( usedColor == 4 ) { usedColor = CLR_DARKGREY; }
+    else if ( usedColor == 5 ) { usedColor = CLR_PINK; }
+    // else direct color value
     // ..... use palette impl. !!!
     return usedColor;
   }
@@ -519,5 +517,14 @@
   // // see if keep that
   // void GenericMCU_SCREEN::drawPolyline(int* x, int* y, int nbPoints);
 
+  // === Picture routines ===
+  // void setPalette( uint16_t* pal, int length, int bpp=4 );
+
+  // // for coords : keeps int(s) instead of uint16_t(s) because coords could be negative during transforms
+
+  // // see if need to contains header : Cf fileWidth Vs drawWidth
+  // void drawPicture565( uint16_t* raster, int x, int y, int w=-1, int h=-1 );
+  // void drawPictureIndexed( uint8_t* raster, int x, int y, int w=-1, int h=-1, bool includesPalette=false );
+  // void drawPictureBPP( uint8_t* raster, int x, int y, int w=-1, int h=-1 );
 
 #endif

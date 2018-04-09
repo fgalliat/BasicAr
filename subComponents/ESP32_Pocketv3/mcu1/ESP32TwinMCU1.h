@@ -370,7 +370,122 @@
     mcuBridge.flush();
   }
 
+  void GenericMCU_SCREEN::clear() {
+    if ( !this->ready ) { return; }
+    mcuBridge.write( SIG_SCR_CLEAR );
+    mcuBridge.flush();
+  }
 
+  // mode = 1 : fill // mode = 0 : draw
+  void GenericMCU_SCREEN::drawRect(int x, int y, int w, int h, uint8_t mode, uint16_t color) {
+    if ( !this->ready ) { return; }
 
+    uint8_t d0 = x / 256; // up to 64K pixels
+    uint8_t d1 = x % 256;
+
+    mcuBridge.write( SIG_SCR_DRAW_RECT );
+    mcuBridge.write( d0 ); // X
+    mcuBridge.write( d1 );
+    d0 = y / 256;
+    d1 = y % 256;
+    mcuBridge.write( d0 ); // Y
+    mcuBridge.write( d1 );
+    d0 = w / 256;
+    d1 = w % 256;
+    mcuBridge.write( d0 ); // W
+    mcuBridge.write( d1 );
+    d0 = h / 256;
+    d1 = h % 256;
+    mcuBridge.write( d0 ); // H
+    mcuBridge.write( d1 );
+
+    mcuBridge.write( mode ); // MODE
+
+    d0 = color / 256; // up to 64K colors
+    d1 = color % 256;
+    mcuBridge.write( d0 ); // COLOR
+    mcuBridge.write( d1 );
+
+    mcuBridge.flush();
+  }
+
+  // mode = 1 : fill // mode = 0 : draw
+  void GenericMCU_SCREEN::drawCircle(int x, int y, int radius, uint8_t mode, uint16_t color) {
+    if ( !this->ready ) { return; }
+
+    uint8_t d0 = x / 256; // up to 64K pixels
+    uint8_t d1 = x % 256;
+
+    mcuBridge.write( SIG_SCR_DRAW_CIRCLE );
+    mcuBridge.write( d0 ); // X
+    mcuBridge.write( d1 );
+    d0 = y / 256;
+    d1 = y % 256;
+    mcuBridge.write( d0 ); // Y
+    mcuBridge.write( d1 );
+    d0 = radius / 256;
+    d1 = radius % 256;
+    mcuBridge.write( d0 ); // RADIUS
+    mcuBridge.write( d1 );
+
+    mcuBridge.write( mode ); // MODE
+
+    d0 = color / 256; // up to 64K colors
+    d1 = color % 256;
+    mcuBridge.write( d0 ); // COLOR
+    mcuBridge.write( d1 );
+
+    mcuBridge.flush();
+  }
+
+  void GenericMCU_SCREEN::drawLine(int x, int y, int x2, int y2, uint16_t color) {
+    if ( !this->ready ) { return; }
+
+    uint8_t d0 = x / 256; // up to 64K pixels
+    uint8_t d1 = x % 256;
+
+    mcuBridge.write( SIG_SCR_DRAW_CIRCLE );
+    mcuBridge.write( d0 ); // X
+    mcuBridge.write( d1 );
+    d0 = y / 256;
+    d1 = y % 256;
+    mcuBridge.write( d0 ); // Y
+    mcuBridge.write( d1 );
+    d0 = w / 256;
+    d1 = w % 256;
+    mcuBridge.write( d0 ); // W
+    mcuBridge.write( d1 );
+    d0 = h / 256;
+    d1 = h % 256;
+    mcuBridge.write( d0 ); // H
+    mcuBridge.write( d1 );
+    d0 = color / 256; // up to 64K colors
+    d1 = color % 256;
+    mcuBridge.write( d0 ); // COLOR
+    mcuBridge.write( d1 );
+
+    mcuBridge.flush();
+  }
+
+  void GenericMCU_SCREEN::drawPixel(int x, int y, uint16_t color) {
+    if ( !this->ready ) { return; }
+
+    uint8_t d0 = x / 256; // up to 64K pixels
+    uint8_t d1 = x % 256;
+
+    mcuBridge.write( SIG_SCR_DRAW_PIX );
+    mcuBridge.write( d0 ); // X
+    mcuBridge.write( d1 );
+    d0 = y / 256;
+    d1 = y % 256;
+    mcuBridge.write( d0 ); // Y
+    mcuBridge.write( d1 );
+    d0 = color / 256; // up to 64K colors
+    d1 = color % 256;
+    mcuBridge.write( d0 ); // COLOR
+    mcuBridge.write( d1 );
+
+    mcuBridge.flush();
+  }
 
 #endif

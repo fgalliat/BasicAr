@@ -20,7 +20,7 @@
 
   #define SIG_SCR_MODE          0x21
   #define SIG_SCR_CLEAR         0x22
-  #define SIG_SCR_CURSOR        0x22
+  #define SIG_SCR_CURSOR        0x22 // TTY cursor
   #define SIG_SCR_COLOR         0x23 // Text + Shapes ?
   #define SIG_SCR_BLITT         0x24
   
@@ -34,5 +34,22 @@
   #define SIG_SCR_DRAW_RECT     0x43
   #define SIG_SCR_DRAW_CIRCLE   0x44
   #define SIG_SCR_DRAW_TRIANGLE 0x45
+
+  // bytes to read per cmd
+  const static int __bridge_params[] = {
+    -1,
+    0x00, 0x00, 0x00,  // RESET
+    // --------------- PLAY, pause, next...
+    1, 0x00, 0x00, 0x00, 1,
+    // --------------- MODE, ....
+    1, 0x00, 2, 2, 1,
+    // --------------- ? CH, ....
+    1, -1, 4, 4,
+    // --------------- DRAW_PIX, ....
+    6, 10, 11, 9, -1
+
+  };
+
+
 
 #endif

@@ -55,92 +55,49 @@ void setup() {
   }
 
   // BRIDGE UART provided by "ESP32TwinMCU1.h"
-  mcuBridge.println("/READY");
+  // mcuBridge.println("/READY");
+
+  mcu.getScreen()->setMode( SCREEN_MODE_320 );
+
 }
 
 void loop() {
-  if ( mcu.getGPIO()->isReady() ) {
-    for(int btn=0; btn < 7; btn++) {
-      //if ( readGPIOBtn(btn) ) {
-      if ( mcu.getGPIO()->btn(btn) ) {
-        mcu.print('#');
-      } else {
-        mcu.print('-');
-      }
+  int scrW = 320;
+  int scrH = 240;
 
-      if ( btn == 3 ) {
-        mcu.print(' ');
-        mcu.print('|');
-      }
+  int rW = scrW / 60;
+  int rH = scrH;
+  // rW = 128 / 60;
+  // rH = 64;
+  int t0,t1;
 
-      mcu.print(' ');
-    }
-    mcu.println("");
+  /* w/ AdaFruit Lib for ILI9341 -> 320x240 area -> 60 rect 15px large
+  79602 micros
+  82234 micros
+  77179 micros
+  */
+  /* w/ TFT_eSPI Lib setup for ILI9341 -> 320x240 area
+  8768 micros
+  9128 micros
+  8793 micros
+  */
+
+  // TODO : manager screen modes
+  //        128x64  - 2x3px shader
+  //        160x128 - could be 2x2 shader - 2x8px height
+  //        320x240 - no shaders
+  // 64x3 -> 192
+  // 128x2 > 256 -> pixel shader 2x3 rectangle
+
+  t0 = micros();
+  mcu.getScreen()->blitt( SCREEN_BLITT_LOCKED );
+  mcu.getScreen()->clear();
+  for(int i=0; i < 60; i++) {
+    int uH = random(rH);
+    mcu.getScreen()->drawRect(i*rW, (240-uH)/2, rW, uH, i%5, 1); 
   }
+  mcu.getScreen()->blitt( SCREEN_BLITT_AUTO );
+  t1 = micros();
 
-  delay( 300 );
-
+  delay(1);
 }
-
-
-// // TODO : LATER : remove screen feature on MCU1
-// void ___loop() {
-
-//   int scrW = 320;
-//   int scrH = 240;
-
-
-//   int rW = scrW / 60;
-//   int rH = scrH;
-
-//   // rW = 128 / 60;
-//   // rH = 64;
-//   int t0,t1;
-
-//   /* w/ AdaFruit Lib for ILI9341 -> 320x240 area -> 60 rect 15px large
-//   79602 micros
-//   82234 micros
-//   77179 micros
-//   80767 micros
-//   76852 micros
-//   75559 micros
-//   */
-//   /* w/ TFT_eSPI Lib setup for ILI9341 -> 320x240 area
-//   8768 micros
-//   9128 micros
-//   8793 micros
-//   8829 micros
-//   9096 micros
-//   9201 micros
-//   8644 micros
-//   8703 micros
-//   */
-
-//   // TODO : manager screen modes
-//   //        128x64  - 2x3px shader
-//   //        160x128 - could be 2x2 shader - 2x8px height
-//   //        320x240 - 
-
-//   // 64x3 -> 192
-//   // 128x2 > 256 -> pixel shader 2x3 rectangle
-
-//   t0 = micros();
-//   //esp32.getScreen()->clear();
-//   //esp32.getScreen()->drawRect(0, (240-64)/2, 128, 64, 0, 1); 
-//   esp32.getScreen()->drawRect(0, (240-scrH)/2, scrW, scrH, 0, 1); 
-
-//   for(int i=0; i < 60; i++) {
-//     int uH = random(rH);
-//     esp32.getScreen()->drawRect(i*rW, (240-uH)/2, rW, uH, i%5, 1); 
-//   }
-//   t1 = micros();
-//   esp32.getScreen()->blitt();
-
-// delay(1);
-//   // delay(150);
-//   // Serial.print( (t1-t0) ); Serial.println( " micros" );
-//   // delay(1000);
-
-//     // Serial.println("Alive !");
-//     // delay(1000);
-// }

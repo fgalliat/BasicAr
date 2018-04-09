@@ -55,7 +55,7 @@ void setup() {
   }
 
   // BRIDGE UART provided by "ESP32TwinMCU1.h"
-  mcuBridge.println("/READY");
+  // mcuBridge.println("/READY");
 }
 
 void loop() {

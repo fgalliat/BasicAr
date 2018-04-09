@@ -95,6 +95,8 @@ class GenericMCU_SCREEN {
       // Screen impl. will manage it
       void blitt(uint8_t mode);
 
+      uint8_t getBlittMode();
+
       void clear();
 
       // === Text routines ===
