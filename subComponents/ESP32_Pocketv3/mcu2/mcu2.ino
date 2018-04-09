@@ -62,6 +62,17 @@ void setup() {
 }
 
 void loop() {
+
+  if ( mcuBridge.available() > 0 ) {
+    uint8_t cmd = mcuBridge.read();
+    if ( cmd > 0 && cmd <= SIG_LAST ) {
+      uint8_t nbToRead = __bridge_params[cmd];
+      // ...
+    } else {
+      mcu.println("Unknown cmd...");
+    }
+  }
+
   int scrW = 320;
   int scrH = 240;
 
