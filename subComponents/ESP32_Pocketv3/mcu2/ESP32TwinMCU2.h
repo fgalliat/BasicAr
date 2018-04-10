@@ -255,33 +255,53 @@
     }
 
     char entryName[1+8+1+3+1];
-    mcuBridge.readBytesUntil('\n', entryName, 1+8+1+3+1);
+    int readed = mcuBridge.readBytesUntil('\n', entryName, 1+8+1+3+1);
+    for (int i=readed; i < 1+8+1+3+1; i++) { entryName[i]=0x00; }
     mcu->println("writing ");mcu->println(entryName);
 
-    char entrySizeS[7+1];
-    mcuBridge.readBytesUntil('\n', entrySizeS, 7+1);
-    mcu->println("long ");mcu->println(entrySizeS);
+    char entrySizeS[11+1];
+    readed = mcuBridge.readBytesUntil('\n', entrySizeS, 7+1);
+    for (int i=readed; i < 11+1; i++) { entrySizeS[i]=0x00; }
+    //mcu->println("long ");mcu->println(entrySizeS);
     int entrySize = atoi( entrySizeS );
+    mcu->println("long ");Serial.println(entrySize);
+
+    char content[64];
 
     File f = SPIFFS.open( entryName, "w" );
-    for(int i=0; i < entrySize; i++) {
-      while( mcuBridge.available() == 0 ) { 
+
+    int total = 0;
+    readed = 0;
+
+    // for(int i=0; i < entrySize; i+=64) {
+    while(true) {
+      t0 = millis();
+      while( mcuBridge.available() <= 0 ) { 
         yield(); delay(10); 
         if ( millis() - t0 > 3000 ) {
+          Serial.print( total );
           mcu->println("timeout !");
           f.flush(); f.close();
           return;
         }
       }
-      int ch = mcuBridge.read();
-      if ( ch == -1 ) {
+      readed = mcuBridge.readBytes(content, 64);
+      if ( readed <= 0 ) {
           mcu->println("Oups !");
           f.flush(); f.close();
           return;
       }
-      f.write(ch);
+      f.write( (const uint8_t*)content, readed);
+      //mcu->print('.'); Serial.flush();
+      mcuBridge.write(0xFE); mcuBridge.flush();
+      total += readed;
+      if ( total >= entrySize ) { break; }
+
+      delay(2);
+      yield();
     }
     f.flush(); f.close();
+    mcuBridge.write(0xFF); mcuBridge.flush();
     mcu->println("DONE !");
   }
 

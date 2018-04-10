@@ -29,14 +29,14 @@ public class SerialUploader {
     }
 
     static void doUpload(String file) throws Exception {
-        final int PACKET_LENGTH = 128;
-
-        // wait for 0xFF
-        int ok = serialPort.readBytes(1)[0];
+        final int PACKET_LENGTH = 64;
 
         // upload via bridge SIGNAL
         serWrite( 0x04 );
         Zzz(200);
+
+        // wait for 0xFF -- ACK
+        int ok = serialPort.readBytes(1)[0];
 
         File f = new File(file);
         String newFentry = "/"+f.getName().toUpperCase();
@@ -44,19 +44,28 @@ public class SerialUploader {
         serPrintln( newFentry );
         Zzz(200);
         serPrintln( ""+f.length() );
-        Zzz(200);
+        Zzz(500);
 
         FileInputStream fis = new FileInputStream(f);
         byte[] buffer = new byte[ PACKET_LENGTH ];
 
-        for(int i=0; i < f.length(); i+= PACKET_LENGTH) {
+        // for(int i=0; i < f.length(); i+= PACKET_LENGTH) {
+        int total = 0;
+        while(true) { 
             int readed = fis.read(buffer);
             serWrite(buffer, readed);
-            Zzz(5);
-        }
+            total += readed;
+            if ( total >= f.length() ) { break; }
 
+            System.out.println("Waiting HandShake");
+            int ACK = serialPort.readBytes(1)[0]; // waits for 0xFE
+
+            // Zzz(15);
+        }
         fis.close();
-        Zzz(200);
+        // Zzz(200);
+        System.out.println("Waiting -EOT-");
+        int ACK = serialPort.readBytes(1)[0]; // waits for 0xFF
 
         System.out.println("-EOF-");
     } 
