@@ -11,6 +11,7 @@
   #define SIG_MCU_RESET       0x01
   #define SIG_MCU_MASTER_SYNC 0x02 // Query
   #define SIG_MCU_SLAVE_SYNC  0x03 // Answer
+  #define SIG_MCU_UPLOAD_BDG  0x04 // Upload via Bridge
 
   #define SIG_MP3_PLAY  0x11
   #define SIG_MP3_PAUSE 0x12

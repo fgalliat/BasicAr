@@ -72,6 +72,9 @@ class GenericMCU_FS {
 
       void setup();
       void format();
+
+      void uploadViaSerial();
+      void uploadViaBridge();
 };
 
 class GenericMCU_SCREEN {
@@ -83,6 +86,7 @@ class GenericMCU_SCREEN {
       ~GenericMCU_SCREEN() {}
 
       void setup();
+      void lock();
 
       int getWidth();
       int getHeight();
@@ -130,6 +134,7 @@ class GenericMCU_SCREEN {
       // for coords : keeps int(s) instead of uint16_t(s) because coords could be negative during transforms
 
       // see if need to contains header : Cf fileWidth Vs drawWidth
+      void drawPicture565( char* filename, int x, int y, int w=-1, int h=-1 );
       void drawPicture565( uint16_t* raster, int x, int y, int w=-1, int h=-1 );
       void drawPictureIndexed( uint8_t* raster, int x, int y, int w=-1, int h=-1, bool includesPalette=false );
       void drawPictureBPP( uint8_t* raster, int x, int y, int w=-1, int h=-1 );

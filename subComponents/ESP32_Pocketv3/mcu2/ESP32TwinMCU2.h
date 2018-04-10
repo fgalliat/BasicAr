@@ -201,6 +201,91 @@
     mcu->println("FS ready !");
   }
 
+  void GenericMCU_FS::uploadViaSerial() {
+    int t0 = millis();
+    while( Serial.available() == 0 ) { 
+      yield(); delay(50); 
+      if ( millis() - t0 > 3000 ) {
+        mcu->println("timeout !"); return;
+      }
+    }
+
+    char entryName[1+8+1+3+1];
+    Serial.readBytesUntil('\n', entryName, 1+8+1+3+1);
+    mcu->println("writing ");mcu->println(entryName);
+
+    char entrySizeS[7+1];
+    Serial.readBytesUntil('\n', entrySizeS, 7+1);
+    mcu->println("long ");mcu->println(entrySizeS);
+    int entrySize = atoi( entrySizeS );
+
+    File f = SPIFFS.open( entryName, "w" );
+    for(int i=0; i < entrySize; i++) {
+      while( Serial.available() == 0 ) { 
+        yield(); delay(10); 
+        if ( millis() - t0 > 3000 ) {
+          mcu->println("timeout !");
+          f.flush(); f.close();
+          return;
+        }
+      }
+      int ch = Serial.read();
+      if ( ch == -1 ) {
+          mcu->println("Oups !");
+          f.flush(); f.close();
+          return;
+      }
+      f.write(ch);
+    }
+    f.flush(); f.close();
+    mcu->println("DONE !");
+  }
+
+  void GenericMCU_FS::uploadViaBridge() {
+    mcu->getScreen()->lock();
+
+    mcuBridge.write(0xFF);
+
+    int t0 = millis();
+    while( mcuBridge.available() == 0 ) { 
+      yield(); delay(50); 
+      if ( millis() - t0 > 3000 ) {
+        mcu->println("timeout !"); return;
+      }
+    }
+
+    char entryName[1+8+1+3+1];
+    mcuBridge.readBytesUntil('\n', entryName, 1+8+1+3+1);
+    mcu->println("writing ");mcu->println(entryName);
+
+    char entrySizeS[7+1];
+    mcuBridge.readBytesUntil('\n', entrySizeS, 7+1);
+    mcu->println("long ");mcu->println(entrySizeS);
+    int entrySize = atoi( entrySizeS );
+
+    File f = SPIFFS.open( entryName, "w" );
+    for(int i=0; i < entrySize; i++) {
+      while( mcuBridge.available() == 0 ) { 
+        yield(); delay(10); 
+        if ( millis() - t0 > 3000 ) {
+          mcu->println("timeout !");
+          f.flush(); f.close();
+          return;
+        }
+      }
+      int ch = mcuBridge.read();
+      if ( ch == -1 ) {
+          mcu->println("Oups !");
+          f.flush(); f.close();
+          return;
+      }
+      f.write(ch);
+    }
+    f.flush(); f.close();
+    mcu->println("DONE !");
+  }
+
+
   // ======== MusicPlayer ===============================================================
   // uses Bridge
 
@@ -277,10 +362,9 @@
     #define CLR_BLACK       ILI9341_BLACK
     #define CLR_WHITE       ILI9341_WHITE
     //#define CLR_LIGHTGREY   TFT_LIGHTGREY // ILI9341_BLACK, ILI9341_RED, ILI9341_CYAN
-    #define CLR_LIGHTGREY   ILI9341_RED
+    #define CLR_LIGHTGREY   0xC618 /* 192x3 */
     #define CLR_GREY        0x8410 /* 128,128,128 */
-    //#define CLR_DARKGREY    TFT_DARKGREY
-    #define CLR_DARKGREY    ILI9341_CYAN
+    #define CLR_DARKGREY    0x7BEF /* ? 128x3 ? */
     #define CLR_PINK        ILI9341_PINK
 
     #define BLACK 0x00
@@ -308,6 +392,10 @@
   // TODO
   static uint8_t __screenMode = -1;
   static uint8_t __screenBlittMode = -1;
+
+  void GenericMCU_SCREEN::lock() {
+    this->ready = false;
+  }
 
   void GenericMCU_SCREEN::setup() {
     screenOffsetX = (320 - 128) / 2;
@@ -503,9 +591,9 @@
 
     uint16_t usedColor = __getColor(color);
     if ( mode == 0 ) {
-      _oled_display->drawCircle(x,y,radius, usedColor);
+      _oled_display->drawCircle(screenOffsetX+x,screenOffsetY+y,radius, usedColor);
     } else {
-      _oled_display->fillCircle(x,y,radius, usedColor);
+      _oled_display->fillCircle(screenOffsetX+x,screenOffsetY+y,radius, usedColor);
     }
 
     __blittIfNeeded();
@@ -516,7 +604,7 @@
 
     //_oled_display->drawLine(x1,y1,x2,y2, drawColor);
     uint16_t usedColor = __getColor(color);
-    _oled_display->drawLine(x,y,x2,y2, usedColor);
+    _oled_display->drawLine(screenOffsetX+x,screenOffsetY+y,screenOffsetX+x2,screenOffsetY+y2, usedColor);
 
     __blittIfNeeded();
   }
@@ -541,7 +629,71 @@
   // // for coords : keeps int(s) instead of uint16_t(s) because coords could be negative during transforms
 
   // // see if need to contains header : Cf fileWidth Vs drawWidth
-  // void drawPicture565( uint16_t* raster, int x, int y, int w=-1, int h=-1 );
+  void GenericMCU_SCREEN::drawPicture565( uint16_t* raster, int x, int y, int w, int h ) {
+    if ( !ready ) { return; }
+    __blittIfNeeded();
+  }
+
+  #ifdef MAIN_INO_FILE
+    uint16_t color_picturebuff[ 160 * 16 ];
+  #else
+    extern uint16_t color_picturebuff[];
+  #endif
+
+  // _w & _h to clip a zone...
+  void GenericMCU_SCREEN::drawPicture565( char* filename, int x, int y, int _w, int _h ) {
+    if ( !ready ) { return; }
+    uint8_t prevBlittMode = __screenBlittMode;
+    __screenBlittMode = SCREEN_BLITT_LOCKED;
+
+
+    File f = SPIFFS.open(filename, "r");
+    if ( !f ) { Serial.println("File not ready"); return; }
+
+    f.seek(0);
+
+    char header[7];
+    int readed = f.readBytes( (char*)header, 7);
+
+    int mode = -1, w=-1, h=-1;
+    if ( header[0] == '6' && header[1] == '4' && header[2] == 'K' ) {
+        // mode = ACT_MODE_PCT_64K;
+        w = ((int)header[3]*256) + ((int)header[4]);
+        h = ((int)header[5]*256) + ((int)header[6]);
+    } else {
+        Serial.println( header );
+    }
+    Serial.print("A.2 "); Serial.print(w); Serial.print('x');Serial.print(h);Serial.println("");
+
+    if( w <= 0 || h <= 0 ) {
+      f.close();
+      return;
+    }
+
+    #define MEM_RAST_HEIGHT 16
+
+    int yy = 0;
+    while( true ) { 
+      // BEWARE : @ this time : h need to be 128
+      readed = f.readBytes( (char*)color_picturebuff, w*2*MEM_RAST_HEIGHT);
+      //Serial.print("A.2 bis"); Serial.print(readed); Serial.print(" of ");Serial.print(w*h*2);Serial.println("");
+
+      //Serial.println("A.3");
+      
+      _oled_display->pushRect(screenOffsetX+x, screenOffsetY+y+yy, w, MEM_RAST_HEIGHT, color_picturebuff);
+      //Serial.println("A.4");
+
+      yy += MEM_RAST_HEIGHT;
+      if ( yy + (MEM_RAST_HEIGHT) > h ) { break; }
+    }
+
+    f.close();
+ 
+    __screenBlittMode = prevBlittMode;
+    __blittIfNeeded();
+  }
+
+
   // void drawPictureIndexed( uint8_t* raster, int x, int y, int w=-1, int h=-1, bool includesPalette=false );
   // void drawPictureBPP( uint8_t* raster, int x, int y, int w=-1, int h=-1 );
 
