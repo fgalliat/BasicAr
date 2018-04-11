@@ -58,12 +58,15 @@ void setup() {
   // mcuBridge.println("/READY");
 
   mcu.getScreen()->setMode( SCREEN_MODE_320 );
-  //mcu.getScreen()->setMode( SCREEN_MODE_160 );
+  // mcu.getScreen()->setMode( SCREEN_MODE_160 );
 
 }
 
 
 int cpt = 0;
+bool yetDrawn = false;
+
+// #define DBUG_TIME 1
 
 void loop() {
 
@@ -84,59 +87,60 @@ void loop() {
     }
   }
 
-  // int scrW = mcu.getScreen()->getWidth();
-  // int scrH = mcu.getScreen()->getHeight();
+  int scrW = mcu.getScreen()->getWidth();
+  int scrH = mcu.getScreen()->getHeight();
 
-  // int rW = scrW / 60;
-  // int rH = scrH;
+  int scrPctX = (scrW - 160)/2;
+  int scrPctY = (scrH - 128)/2;
+
+  int rW = scrW / 60;
+  int rH = scrH;
   
-  // int t0,t1;
+  int t0,t1;
 
-  // /* w/ AdaFruit Lib for ILI9341 -> 320x240 area -> 60 rect 15px large
-  // 79602 micros
-  // 82234 micros
-  // 77179 micros
-  // */
-  // /* w/ TFT_eSPI Lib setup for ILI9341 -> 320x240 area
-  // 8768 micros
-  // 9128 micros
-  // 8793 micros
-  // */
+  // TODO : manager screen modes
+  //        128x64  - 2x3px shader
+  //        160x128 - could be 2x2 shader - 2x8px height
+  //        320x240 - no shaders
+  // 64x3 -> 192
+  // 128x2 > 256 -> pixel shader 2x3 rectangle
 
-  // // TODO : manager screen modes
-  // //        128x64  - 2x3px shader
-  // //        160x128 - could be 2x2 shader - 2x8px height
-  // //        320x240 - no shaders
-  // // 64x3 -> 192
-  // // 128x2 > 256 -> pixel shader 2x3 rectangle
+  GenericMCU_SCREEN* screen = mcu.getScreen();
 
-  // GenericMCU_SCREEN* screen = mcu.getScreen();
+  t0 = micros();
+  screen->blitt( SCREEN_BLITT_LOCKED );
+  //mcu.getScreen()->clear();
+  for(int i=0; i < 60; i++) {
+    int uH = random(rH);
+    // cleaner
+    screen->drawRect(i*rW, 0, rW, mcu.getScreen()->getHeight(), 1, 0); 
+    // drawer
+    screen->drawRect(i*rW, (mcu.getScreen()->getHeight()-uH)/2, rW, uH, 1, i%5); 
+  }
+  screen->blitt( SCREEN_BLITT_AUTO );
+  t1 = micros();
 
-  // t0 = micros();
-  // screen->blitt( SCREEN_BLITT_LOCKED );
-  // //mcu.getScreen()->clear();
-  // for(int i=0; i < 60; i++) {
-  //   int uH = random(rH);
-  //   // cleaner
-  //   screen->drawRect(i*rW, 0, rW, mcu.getScreen()->getHeight(), 1, 0); 
-  //   // drawer
-  //   screen->drawRect(i*rW, (mcu.getScreen()->getHeight()-uH)/2, rW, uH, 1, i%5); 
-  // }
-  // screen->blitt( SCREEN_BLITT_AUTO );
-  // t1 = micros();
+  if ( (cpt++) % 30 == 0 ) {
+    #ifdef DBUG_TIME
+      Serial.print( (t1-t0) );
+      Serial.print(" micros\n");
+    #endif
 
-  // if ( (cpt++) % 30 == 0 ) {
-  //   Serial.print( (t1-t0) );
-  //   Serial.print(" micros\n");
-
-  //   t0 = micros();
-  //   screen->drawPicture565("/TEST.PCT", 0, 0);
-  //   //screen->drawPicture565("/SSID.TXT", 0, 0);
-  //   t1 = micros();
-  //   Serial.print( (t1-t0) );
-  //   Serial.print(" micros for Picture\n");
-  //   delay(700);
-  // }
+    t0 = micros();
+    if ( !yetDrawn ) {
+      screen->drawPicture565("/TEST.PCT", scrPctX, scrPctY);
+      yetDrawn = true;
+    } else {
+      // recall last memArea
+      screen->drawPicture565( (char*)NULL, scrPctX, scrPctY);
+    }
+    t1 = micros();
+    #ifdef DBUG_TIME
+      Serial.print( (t1-t0) );
+      Serial.print(" micros (picture)\n");
+    #endif
+    delay(700);
+  }
 
   delay(1);
 }

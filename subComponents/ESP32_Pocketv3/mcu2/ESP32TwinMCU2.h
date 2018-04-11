@@ -202,43 +202,7 @@
   }
 
   void GenericMCU_FS::uploadViaSerial() {
-    int t0 = millis();
-    while( Serial.available() == 0 ) { 
-      yield(); delay(50); 
-      if ( millis() - t0 > 3000 ) {
-        mcu->println("timeout !"); return;
-      }
-    }
-
-    char entryName[1+8+1+3+1];
-    Serial.readBytesUntil('\n', entryName, 1+8+1+3+1);
-    mcu->println("writing ");mcu->println(entryName);
-
-    char entrySizeS[7+1];
-    Serial.readBytesUntil('\n', entrySizeS, 7+1);
-    mcu->println("long ");mcu->println(entrySizeS);
-    int entrySize = atoi( entrySizeS );
-
-    File f = SPIFFS.open( entryName, "w" );
-    for(int i=0; i < entrySize; i++) {
-      while( Serial.available() == 0 ) { 
-        yield(); delay(10); 
-        if ( millis() - t0 > 3000 ) {
-          mcu->println("timeout !");
-          f.flush(); f.close();
-          return;
-        }
-      }
-      int ch = Serial.read();
-      if ( ch == -1 ) {
-          mcu->println("Oups !");
-          f.flush(); f.close();
-          return;
-      }
-      f.write(ch);
-    }
-    f.flush(); f.close();
-    mcu->println("DONE !");
+    mcu->println("NYI !");
   }
 
   static int _readBridgeLine(char* dest, int destSize, int timeout=3000) {
@@ -252,7 +216,6 @@
     int cpt = 0;
     while(true) {
       int ch = mcuBridge.read();
-
       // Serial.print(cpt);Serial.print(" ");Serial.print((char)ch);Serial.print(" ");Serial.print(ch);Serial.println("");
 
       if ( ch == -1 ) { return cpt; }
@@ -272,7 +235,7 @@
   }
 
   void GenericMCU_FS::uploadViaBridge() {
-    mcu->getScreen()->lock();
+    // mcu->getScreen()->lock();
 
     // dirties the UART input
     //mcuBridge.flush();
@@ -691,60 +654,81 @@
     __blittIfNeeded();
   }
 
+  //#define MEM_RAST_HEIGHT  16
+  #define MEM_RAST_HEIGHT  128
+  #define MEM_RAST_WIDTH   160
+  #define MEM_RAST_LEN_u16 MEM_RAST_WIDTH * MEM_RAST_HEIGHT
+  #define MEM_RAST_LEN_u8  MEM_RAST_LEN_u16 * 2
+
   #ifdef MAIN_INO_FILE
-    uint16_t color_picturebuff[ 160 * 16 ];
+    uint16_t color_picturebuff[ MEM_RAST_LEN_u16 ];
   #else
     extern uint16_t color_picturebuff[];
   #endif
 
   // _w & _h to clip a zone...
   void GenericMCU_SCREEN::drawPicture565( char* filename, int x, int y, int _w, int _h ) {
+    #define PCT_HEADER_LEN 7
+    static int w=-1, h=-1; // img size
+    static char header[PCT_HEADER_LEN];
+
+
     if ( !ready ) { return; }
     uint8_t prevBlittMode = __screenBlittMode;
     __screenBlittMode = SCREEN_BLITT_LOCKED;
 
-
-    File f = SPIFFS.open(filename, "r");
-    if ( !f ) { Serial.println("File not ready"); return; }
-
-    f.seek(0);
-
-    char header[7];
-    int readed = f.readBytes( (char*)header, 7);
-
-    int mode = -1, w=-1, h=-1;
-    if ( header[0] == '6' && header[1] == '4' && header[2] == 'K' ) {
-        // mode = ACT_MODE_PCT_64K;
-        w = ((int)header[3]*256) + ((int)header[4]);
-        h = ((int)header[5]*256) + ((int)header[6]);
-    } else {
-        Serial.println( header );
-    }
-    Serial.print("A.2 "); Serial.print(w); Serial.print('x');Serial.print(h);Serial.println("");
-
-    if( w <= 0 || h <= 0 ) {
-      f.close();
-      return;
-    }
-
-    #define MEM_RAST_HEIGHT 16
-
-    int yy = 0;
-    while( true ) { 
-      // BEWARE : @ this time : h need to be 128
-      readed = f.readBytes( (char*)color_picturebuff, w*2*MEM_RAST_HEIGHT);
-      //Serial.print("A.2 bis"); Serial.print(readed); Serial.print(" of ");Serial.print(w*h*2);Serial.println("");
-
-      //Serial.println("A.3");
+    if ( filename != NULL ) {
+      File f = SPIFFS.open(filename, "r");
+      if ( !f ) { Serial.println("File not ready"); return; }
+      int readed = f.readBytes( (char*)header, PCT_HEADER_LEN);
       
-      _oled_display->pushRect(screenOffsetX+x, screenOffsetY+y+yy, w, MEM_RAST_HEIGHT, color_picturebuff);
-      //Serial.println("A.4");
+      if ( header[0] == '6' && header[1] == '4' && header[2] == 'K' ) {
+          w = ((int)header[3]*256) + ((int)header[4]);
+          h = ((int)header[5]*256) + ((int)header[6]);
+      } else {
+          Serial.println( "Wrong PCT header" );
+          Serial.println( header );
+      }
+      // Serial.print("A.2 "); Serial.print(w); Serial.print('x');Serial.print(h);Serial.println("");
+      if( w <= 0 || h <= 0 ) {
+        f.close();
+        return;
+      }
 
-      yy += MEM_RAST_HEIGHT;
-      if ( yy + (MEM_RAST_HEIGHT) > h ) { break; }
+      int scanZoneSize = w*MEM_RAST_HEIGHT*2; // *2 -> u16
+      int startX = screenOffsetX+x;
+      int startY = screenOffsetY+y;
+
+      int yy = 0;
+      while( true ) { 
+        // BEWARE : @ this time : h need to be 128
+        readed = f.readBytes( (char*)color_picturebuff, scanZoneSize);
+        //Serial.print("A.2 bis"); Serial.print(readed); Serial.print(" of ");Serial.print(w*h*2);Serial.println("");
+
+        //_oled_display->pushRect(screenOffsetX+x, screenOffsetY+y+yy, w, MEM_RAST_HEIGHT, color_picturebuff);
+        _oled_display->pushImage(startX, startY+yy, w, MEM_RAST_HEIGHT, color_picturebuff);
+        yy += MEM_RAST_HEIGHT;
+        if ( yy + (MEM_RAST_HEIGHT) > h ) { break; }
+      }
+      f.close();
+
+
+    } else {
+      // recall last MEM_RAST area
+      int scanZoneSize = w*MEM_RAST_HEIGHT*2; // *2 -> u16
+      int startX = screenOffsetX+x;
+      int startY = screenOffsetY+y;
+      _oled_display->pushImage(startX, startY, w, MEM_RAST_HEIGHT, color_picturebuff);
     }
 
-    f.close();
+
+    // Set TFT address window to clipped image bounds
+    //_oled_display->startWrite(); // Requires start/end transaction now
+    // _oled_display->setAddrWindow(screenOffsetX+x, screenOffsetY+y, w, h);
+
+    
+    //_oled_display->endWrite();
+
  
     __screenBlittMode = prevBlittMode;
     __blittIfNeeded();
