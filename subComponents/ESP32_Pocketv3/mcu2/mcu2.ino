@@ -77,10 +77,10 @@ void loop() {
         mcu.getFS()->uploadViaBridge();
       }
 
-
-
     } else {
-      mcu.println("Unknown cmd...");
+      //mcu.println("Unknown cmd...");
+      Serial.print("Unknown cmd...");
+      Serial.println(cmd);
     }
   }
 

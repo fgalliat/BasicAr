@@ -18,8 +18,24 @@ public class SerialUploader {
         serialPort.setParams(SerialPort.BAUDRATE_115200, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
         serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
         
+        if ( args == null || args.length < 1 ) {
+            throw new Exception("missing file/dir name");
+        }
+
+        String entName = args[0];
+        File entry = new File(entName);
+
         try {
-            doUpload( args[0] );
+            if ( entry.isDirectory() ) {
+                File[] content = entry.listFiles();
+                for(File ent : content) {
+                    if ( ent.isDirectory() ) { continue; }
+                    doUpload( ent.getAbsolutePath() );
+                    Zzz(500);
+                }
+            } else {
+                doUpload( entry.getAbsolutePath() );
+            }
         } catch(Exception ex) {
             throw ex;
         } finally {
@@ -29,13 +45,22 @@ public class SerialUploader {
     }
 
     static void doUpload(String file) throws Exception {
-        final int PACKET_LENGTH = 64;
+        serialPort.purgePort( serialPort.PURGE_RXCLEAR | serialPort.PURGE_TXCLEAR );
 
+        //final int PACKET_LENGTH = 64;
+        final int PACKET_LENGTH = 32;
+
+        try {
+            serialPort.readBytes(1, 1000);
+        } catch(Exception ex) {}
+
+        System.out.println("SENT SIG UPLOAD");
         // upload via bridge SIGNAL
         serWrite( 0x04 );
         Zzz(200);
 
         // wait for 0xFF -- ACK
+        System.out.println("WAIT ACK");
         int ok = serialPort.readBytes(1)[0];
 
         File f = new File(file);
@@ -54,12 +79,18 @@ public class SerialUploader {
         while(true) { 
             int readed = fis.read(buffer);
             serWrite(buffer, readed);
+            // for(int i=0; i< readed; i++) {
+            //     serWrite(buffer[i]);
+            //     Zzz(2);
+            // }
             total += readed;
-            if ( total >= f.length() ) { break; }
-
-            System.out.println("Waiting HandShake");
+            
+            System.out.println("Waiting HandShake ("+ total +" / "+ f.length() +") => "+f.getName());
             int ACK = serialPort.readBytes(1)[0]; // waits for 0xFE
 
+            // volountary after HandShake read
+            if ( total >= f.length() ) { break; }
+            
             // Zzz(15);
         }
         fis.close();
@@ -79,7 +110,7 @@ public class SerialUploader {
     }
 
     static void serWrite(byte[] arry, int bteCount) throws Exception {
-        System.out.println(">>> BIN CONTENT ("+ bteCount +" bytes)");
+        //System.out.println(">>> BIN CONTENT ("+ bteCount +" bytes)");
 
         if ( bteCount > arry.length ) {
             bteCount = arry.length;
@@ -91,11 +122,17 @@ public class SerialUploader {
             System.arraycopy(arry, 0, used, 0, bteCount);
         }
 
-        serialPort.writeBytes( used );
+        //serialPort.writeBytes( used );
+        for(int i=0; i < bteCount; i++) {
+            serialPort.writeByte( used[i] );
+            //Zzz(2);
+        }
+        Zzz(10);
+        //serialPort.purgePort( serialPort.PURGE_RXCLEAR | serialPort.PURGE_TXCLEAR );
     }
 
     static void serWrite(int bte) throws Exception {
-        System.out.println(">>> BIN CONTENT ("+ 1 +" byte)");
+        //System.out.println(">>> BIN CONTENT ("+ 1 +" byte)");
 
         serialPort.writeByte( (byte)bte );
     }

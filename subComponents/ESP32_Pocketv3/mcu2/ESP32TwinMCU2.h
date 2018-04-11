@@ -241,39 +241,77 @@
     mcu->println("DONE !");
   }
 
-  void GenericMCU_FS::uploadViaBridge() {
-    mcu->getScreen()->lock();
-
-    mcuBridge.write(0xFF);
-
+  static int _readBridgeLine(char* dest, int destSize, int timeout=3000) {
     int t0 = millis();
     while( mcuBridge.available() == 0 ) { 
       yield(); delay(50); 
-      if ( millis() - t0 > 3000 ) {
-        mcu->println("timeout !"); return;
+      if ( millis() - t0 > timeout ) {
+        return -1;
       }
     }
+    int cpt = 0;
+    while(true) {
+      int ch = mcuBridge.read();
+
+      // Serial.print(cpt);Serial.print(" ");Serial.print((char)ch);Serial.print(" ");Serial.print(ch);Serial.println("");
+
+      if ( ch == -1 ) { return cpt; }
+      if ( ch == '\n' ) { return cpt; }
+      dest[cpt++] = (char)ch;
+
+      if ( cpt >= destSize ) { break; }
+
+      while( mcuBridge.available() == 0 ) { 
+        yield(); delay(50); 
+        if ( millis() - t0 > 3000 ) {
+          return cpt;
+        }
+      }
+    }
+    return cpt;
+  }
+
+  void GenericMCU_FS::uploadViaBridge() {
+    mcu->getScreen()->lock();
+
+    // dirties the UART input
+    //mcuBridge.flush();
+
+    mcuBridge.write(0xFF); //mcuBridge.flush();
+
+    int t0 = millis();
 
     char entryName[1+8+1+3+1];
-    int readed = mcuBridge.readBytesUntil('\n', entryName, 1+8+1+3+1);
+    int readed = _readBridgeLine(entryName, 1+8+1+3+0);
+    if ( readed < 0 ) { mcu->println("name timeout !"); return; }
+    if ( readed == 0 ) { mcu->println("name empty !"); return; }
     for (int i=readed; i < 1+8+1+3+1; i++) { entryName[i]=0x00; }
     mcu->println("writing ");mcu->println(entryName);
 
     char entrySizeS[11+1];
-    readed = mcuBridge.readBytesUntil('\n', entrySizeS, 7+1);
+    readed = _readBridgeLine(entrySizeS, 11+0);
+    if ( readed < 0 ) { mcu->println("size timeout !"); return; }
+    if ( readed == 0 ) { mcu->println("size empty !"); return; }
     for (int i=readed; i < 11+1; i++) { entrySizeS[i]=0x00; }
-    //mcu->println("long ");mcu->println(entrySizeS);
+    // mcu->println("long ");mcu->println(entrySizeS);
+    // for(int i=0; i < readed; i++) { Serial.print( (int)entrySizeS[i] ); Serial.print(", "); }
+    // Serial.println("");
+
     int entrySize = atoi( entrySizeS );
     mcu->println("long ");Serial.println(entrySize);
 
-    char content[64];
+    #define BRIDGE_UPL_PACKET_SIZE 32
+    char content[BRIDGE_UPL_PACKET_SIZE];
 
     File f = SPIFFS.open( entryName, "w" );
+    if ( !f ) {
+      mcu->println("Failed to open file !");
+      return;
+    }
 
     int total = 0;
     readed = 0;
 
-    // for(int i=0; i < entrySize; i+=64) {
     while(true) {
       t0 = millis();
       while( mcuBridge.available() <= 0 ) { 
@@ -285,7 +323,7 @@
           return;
         }
       }
-      readed = mcuBridge.readBytes(content, 64);
+      readed = mcuBridge.readBytes(content, BRIDGE_UPL_PACKET_SIZE);
       if ( readed <= 0 ) {
           mcu->println("Oups !");
           f.flush(); f.close();
@@ -293,15 +331,14 @@
       }
       f.write( (const uint8_t*)content, readed);
       //mcu->print('.'); Serial.flush();
-      mcuBridge.write(0xFE); mcuBridge.flush();
+      mcuBridge.write(0xFE); // mcuBridge.flush();
       total += readed;
       if ( total >= entrySize ) { break; }
 
-      delay(2);
-      yield();
+      delay(2); yield();
     }
     f.flush(); f.close();
-    mcuBridge.write(0xFF); mcuBridge.flush();
+    mcuBridge.write(0xFF); //mcuBridge.flush();
     mcu->println("DONE !");
   }
 
