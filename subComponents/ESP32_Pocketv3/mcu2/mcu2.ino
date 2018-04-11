@@ -66,7 +66,7 @@ void setup() {
 int cpt = 0;
 bool yetDrawn = false;
 
-// #define DBUG_TIME 1
+#define DBUG_TIME 1
 
 void loop() {
 
@@ -122,6 +122,8 @@ void loop() {
 
   if ( (cpt++) % 30 == 0 ) {
     #ifdef DBUG_TIME
+      // 80ms @ 27MKz SPI
+      // 52ms @ 40MKz SPI
       Serial.print( (t1-t0) );
       Serial.print(" micros\n");
     #endif
@@ -132,6 +134,8 @@ void loop() {
       yetDrawn = true;
     } else {
       // recall last memArea
+      // 19ms @ 27MKz SPI
+      // 9ms @ 40MKz SPI
       screen->drawPicture565( (char*)NULL, scrPctX, scrPctY);
     }
     t1 = micros();
