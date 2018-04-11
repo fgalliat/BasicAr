@@ -43,25 +43,47 @@ public class SerialCommander {
         //     catch(Exception ex2) {}
         // }
 
-        // reset the MCU
-        // serWrite( 0x01 );
+        serialPort.purgePort( serialPort.PURGE_RXCLEAR | serialPort.PURGE_TXCLEAR );
 
-        serWrite( 0x21 ); serWrite( 2 );
-// clear screen
-serWrite( 0x22 ); 
+        if ( false ) {
+            // reset the MCU
+            serWrite( 0x01 );
+            return;
+        }
 
-        // set ScreenMode :: 160x128
-        serWrite( 0x21 ); serWrite( 1 );
-        // clear screen
-        serWrite( 0x22 ); 
-        // print an int + '\n'
-        serWrite( 0x33 ); serPrintFloat( 11 ); 
-        serWrite( 0x31 ); serWrite( (int)' ' ); 
-        // print a float + '\n'
-        serWrite( 0x34 ); serPrintFloat( 3.141596f ); 
-        serWrite( 0x31 ); serWrite( (int)'\n' ); 
-        // print a string
-        serWrite( 0x32 ); serPrintln("Hello World !"); serWrite( 0x00 );
+        if ( !false ) {
+            // set ScreenMode :: 320x240
+            serWrite( 0x21 ); serWrite( 2 );
+            // clear screen
+            serWrite( 0x22 ); 
+        }
+
+        if ( false ) {
+            // set ScreenMode :: 160x128
+            serWrite( 0x21 ); serWrite( 1 );
+            // clear screen
+            serWrite( 0x22 ); 
+        }
+
+        if ( !false ) {
+            // draws a PCT file @ 0,0
+            serWrite( 0x47 ); serPrintU16(0); serPrintU16(0); serPrintln("/TEST.PCT"); serWrite( 0x00 );
+            // draws a PCT cache @ 160,0
+            serWrite( 0x47 ); serPrintU16(160); serPrintU16(0);   serWrite( 0x00 );
+            serWrite( 0x47 ); serPrintU16(0);   serPrintU16(128); serWrite( 0x00 );
+            serWrite( 0x47 ); serPrintU16(160); serPrintU16(128); serWrite( 0x00 );
+        }
+
+        if ( !false ) {
+            // print a string
+            serWrite( 0x32 ); serPrintln("Hello World !"); serWrite( 0x00 );
+            // print an int + '\n'
+            serWrite( 0x33 ); serPrintFloat( 11 ); 
+            serWrite( 0x31 ); serWrite( (int)' ' ); 
+            // print a float + '\n'
+            serWrite( 0x34 ); serPrintFloat( 3.141596f ); 
+            serWrite( 0x31 ); serWrite( (int)'\n' ); 
+        }
 
         try { serialPort.closePort(); }
         catch(Exception ex2) {}
@@ -160,6 +182,11 @@ serWrite( 0x22 );
         //System.out.println(">>> BIN CONTENT ("+ 1 +" byte)");
 
         serialPort.writeByte( (byte)bte );
+    }
+
+    static void serPrintU16(int val) throws Exception {
+        serialPort.writeByte( (byte)( val / 256 ) );
+        serialPort.writeByte( (byte)( val % 256 ) );
     }
 
     static void serPrintFloat(float val) throws Exception {

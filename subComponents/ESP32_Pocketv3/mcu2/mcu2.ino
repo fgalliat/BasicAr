@@ -69,6 +69,25 @@ bool inCmdMode = false;
 
 #define DBUG_TIME 1
 
+
+uint16_t bridge_readU16() {
+  uint8_t d0 = mcuBridge.read();
+  uint8_t d1 = mcuBridge.read();
+return ( uint16_t ) ((uint16_t)d0)*256 + ((uint16_t)d1);
+}
+
+// 0-terminated
+void bridge_readString(char* dest, int start, int max) {
+  int i = start, tmp;
+  while( true ) {
+    if ( i-start >= max ) { break; }
+    tmp = mcuBridge.read();
+    if ( tmp <= 0 ) { break; }
+    dest[i++] = tmp;
+  }
+  dest[i] = 0x00;
+}
+
 void loop() {
 
   if ( mcuBridge.available() > 0 ) {
@@ -85,7 +104,7 @@ void loop() {
       // TMP ????
       inCmdMode = true;
 
-      static int tmp;
+      static int tmp, i, x, y;
       static float tmpf;
       static char str[256+1];
       static unsigned char num[4];
@@ -124,9 +143,10 @@ void loop() {
           mcu.getScreen()->print( (char)tmp );
           break;
         case SIG_SCR_PRINT_STR:
-          // BEWARE w/ THAT
           tmp = mcuBridge.available();
-          tmp = mcuBridge.readBytes( str, tmp );
+          // BEWARE w/ THAT
+          // tmp = mcuBridge.readBytes( str, tmp );
+          bridge_readString(str, 0, 256);
           mcu.getScreen()->print(str);
           break;
         case SIG_SCR_PRINT_INT:
@@ -147,8 +167,33 @@ void loop() {
         case SIG_SCR_DRAW_RECT:
         case SIG_SCR_DRAW_CIRCLE:
         case SIG_SCR_DRAW_TRIANGLE:
+          break;
         case SIG_SCR_DRAW_BPP:
+          break;
         case SIG_SCR_DRAW_PCT:
+          x = bridge_readU16();
+          y = bridge_readU16();
+          tmp = mcuBridge.available();
+          bridge_readString(str, 0, 256);
+
+          // mcu.print( x );
+          // mcu.print( ' ' );
+          // mcu.print( y );
+          // mcu.print( '/' );
+          // // mcu.print( tmp );
+          // // mcu.print( ' ' );
+          // mcu.print( (int)strlen( str ) );
+          // mcu.print( ' ' );
+          // mcu.print( str );
+          // mcu.print( '\n' );
+
+
+          if ( strlen( str ) == 0 ) {
+            // recall last GFX area
+            mcu.getScreen()->drawPicture565((char*)NULL, x, y);
+          } else {
+            mcu.getScreen()->drawPicture565(str, x, y);
+          }
           break;
         default:
           mcu.print("NYI cmd...");
