@@ -245,9 +245,19 @@ class GenericMCU {
           getScreen()->println( str );
       }
 
+      void print(char* str) { 
+          if ( getScreen() == NULL ) { Serial.print(str); return; }
+          getScreen()->print( str );
+      }
+
       void print(char ch) { 
           if ( getScreen() == NULL ) { Serial.print(ch); return; }
           getScreen()->print( ch );
+      }
+
+      void print(int val) { 
+          if ( getScreen() == NULL ) { Serial.print(val); return; }
+          getScreen()->print( val );
       }
       // --------------------------------------
       void tone(int freq, int duration) {

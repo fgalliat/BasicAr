@@ -65,6 +65,7 @@ void setup() {
 
 int cpt = 0;
 bool yetDrawn = false;
+bool inCmdMode = false;
 
 #define DBUG_TIME 1
 
@@ -74,17 +75,82 @@ void loop() {
     uint8_t cmd = mcuBridge.read();
     if ( cmd > 0 && cmd <= SIG_LAST ) {
       uint8_t nbToRead = __bridge_params[cmd];
-      // ...
 
-      if ( cmd == SIG_MCU_UPLOAD_BDG ) {
-        mcu.getFS()->uploadViaBridge();
+      if ( nbToRead == -2 ) {
+        mcu.print("Unknown cmd...");
+        mcu.print(cmd);
+        mcu.print('\n');
+      }
+
+      // TMP ????
+      inCmdMode = true;
+
+      static int tmp;
+
+      switch(cmd) {
+        case SIG_MCU_RESET:
+          mcu.reset();
+          break;
+        case SIG_MCU_UPLOAD_BDG:
+          mcu.getFS()->uploadViaBridge();
+          break;
+        case SIG_MP3_PLAY:
+        case SIG_MP3_PAUSE:
+        case SIG_MP3_NEXT:
+        case SIG_MP3_PREV:
+        case SIG_MP3_VOL:
+          break;
+
+        case SIG_SCR_MODE:
+          tmp = mcuBridge.read();
+          if ( tmp == 0xFF ) { tmp = SCREEN_MODE_320; }
+          mcu.getScreen()->setMode( tmp );
+          break;
+
+        case SIG_SCR_CLEAR:
+          mcu.getScreen()->clear();
+          break;
+
+        case SIG_SCR_CURSOR:
+        case SIG_SCR_COLOR:
+        case SIG_SCR_BLITT:
+          break;
+
+        case SIG_SCR_PRINT_CH:
+        case SIG_SCR_PRINT_STR:
+        case SIG_SCR_PRINT_INT:
+        case SIG_SCR_PRINT_NUM:
+          break;
+        case SIG_SCR_DRAW_PIX:
+        case SIG_SCR_DRAW_LINE:
+        case SIG_SCR_DRAW_RECT:
+        case SIG_SCR_DRAW_CIRCLE:
+        case SIG_SCR_DRAW_TRIANGLE:
+        case SIG_SCR_DRAW_BPP:
+        case SIG_SCR_DRAW_PCT:
+          break;
+        default:
+          mcu.print("NYI cmd...");
+          mcu.print(cmd);
+          mcu.print('\n');
+
+          delay(500);
       }
 
     } else {
-      //mcu.println("Unknown cmd...");
-      Serial.print("Unknown cmd...");
-      Serial.println(cmd);
+      mcu.print("Invalid cmd...");
+      mcu.print(cmd);
+      mcu.print('\n');
+
+      delay(500);
     }
+  }
+
+  // temp ????
+  if ( inCmdMode ) { 
+    delay(10);
+    yield();
+    return; 
   }
 
   int scrW = mcu.getScreen()->getWidth();
@@ -133,7 +199,7 @@ void loop() {
       screen->drawPicture565("/TEST.PCT", scrPctX, scrPctY);
       yetDrawn = true;
     } else {
-      // recall last memArea
+      // recall last memArea : here 160x128
       // 19ms @ 27MKz SPI
       // 9ms @ 40MKz SPI
       screen->drawPicture565( (char*)NULL, scrPctX, scrPctY);
