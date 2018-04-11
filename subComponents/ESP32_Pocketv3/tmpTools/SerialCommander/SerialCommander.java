@@ -46,10 +46,12 @@ public class SerialCommander {
         // reset the MCU
         // serWrite( 0x01 );
 
-        // set ScreenMode
+        // set ScreenMode :: 160x128
         serWrite( 0x21 ); serWrite( 1 );
         // clear screen
         serWrite( 0x22 ); 
+        // print a string
+        serWrite( 0x32 ); serPrintln("Hello World !"); serWrite( 0x00 );
 
         try { serialPort.closePort(); }
         catch(Exception ex2) {}

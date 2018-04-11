@@ -86,6 +86,7 @@ void loop() {
       inCmdMode = true;
 
       static int tmp;
+      static char str[256+1];
 
       switch(cmd) {
         case SIG_MCU_RESET:
@@ -118,9 +119,15 @@ void loop() {
 
         case SIG_SCR_PRINT_CH:
         case SIG_SCR_PRINT_STR:
+          // BEWARE w/ THAT
+          tmp = mcuBridge.available();
+          tmp = mcuBridge.readBytes( str, tmp );
+          mcu.getScreen()->print(str);
+          break;
         case SIG_SCR_PRINT_INT:
         case SIG_SCR_PRINT_NUM:
           break;
+
         case SIG_SCR_DRAW_PIX:
         case SIG_SCR_DRAW_LINE:
         case SIG_SCR_DRAW_RECT:
