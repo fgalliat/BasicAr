@@ -86,7 +86,9 @@ void loop() {
       inCmdMode = true;
 
       static int tmp;
+      static float tmpf;
       static char str[256+1];
+      static unsigned char num[4];
 
       switch(cmd) {
         case SIG_MCU_RESET:
@@ -118,6 +120,9 @@ void loop() {
           break;
 
         case SIG_SCR_PRINT_CH:
+          tmp = mcuBridge.read();
+          mcu.getScreen()->print( (char)tmp );
+          break;
         case SIG_SCR_PRINT_STR:
           // BEWARE w/ THAT
           tmp = mcuBridge.available();
@@ -125,7 +130,16 @@ void loop() {
           mcu.getScreen()->print(str);
           break;
         case SIG_SCR_PRINT_INT:
+          tmp = mcuBridge.readBytes( num, 4 );
+          // from mem_utils.h
+          tmpf = getFloatFromBytes(num, 0);
+          mcu.getScreen()->print( (int)tmpf );
+          break;
         case SIG_SCR_PRINT_NUM:
+          tmp = mcuBridge.readBytes( num, 4 );
+          // from mem_utils.h
+          tmpf = getFloatFromBytes(num, 0);
+          mcu.getScreen()->print(tmpf);
           break;
 
         case SIG_SCR_DRAW_PIX:

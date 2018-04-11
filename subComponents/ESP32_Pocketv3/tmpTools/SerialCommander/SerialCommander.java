@@ -46,10 +46,20 @@ public class SerialCommander {
         // reset the MCU
         // serWrite( 0x01 );
 
+        serWrite( 0x21 ); serWrite( 2 );
+// clear screen
+serWrite( 0x22 ); 
+
         // set ScreenMode :: 160x128
         serWrite( 0x21 ); serWrite( 1 );
         // clear screen
         serWrite( 0x22 ); 
+        // print an int + '\n'
+        serWrite( 0x33 ); serPrintFloat( 11 ); 
+        serWrite( 0x31 ); serWrite( (int)' ' ); 
+        // print a float + '\n'
+        serWrite( 0x34 ); serPrintFloat( 3.141596f ); 
+        serWrite( 0x31 ); serWrite( (int)'\n' ); 
         // print a string
         serWrite( 0x32 ); serPrintln("Hello World !"); serWrite( 0x00 );
 
@@ -150,6 +160,21 @@ public class SerialCommander {
         //System.out.println(">>> BIN CONTENT ("+ 1 +" byte)");
 
         serialPort.writeByte( (byte)bte );
+    }
+
+    static void serPrintFloat(float val) throws Exception {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        DataOutputStream data = new DataOutputStream(baos);
+        data.writeFloat(val);
+
+        byte[] bb = baos.toByteArray();
+
+        // need to reverse endian .....
+        //serialPort.writeBytes( bb );
+        serialPort.writeByte( bb[3] );
+        serialPort.writeByte( bb[2] );
+        serialPort.writeByte( bb[1] );
+        serialPort.writeByte( bb[0] );
     }
 
 
