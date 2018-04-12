@@ -210,6 +210,12 @@ public class SerialCommander {
         serialPort.writeByte( bb[0] );
     }
 
+    static boolean bridgeFlushRX() throws Exception {
+        // 0xFE is failed .....
+        boolean ok = serialPort.readBytes(1)[0] == 0xFF;
+        return ok;
+    }
+
 
     static void Zzz(long millis) {
         try { Thread.sleep(millis); } catch(Exception ex) {}
