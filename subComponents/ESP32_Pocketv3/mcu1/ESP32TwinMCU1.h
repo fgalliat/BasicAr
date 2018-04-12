@@ -241,6 +241,14 @@
     return ok;
   }
 
+  static bool writeBridgeU16(int val) {
+    uint8_t d0 = val / 256; // up to 64K value
+    uint8_t d1 = val % 256;
+
+    mcuBridge.write( d0 );
+    mcuBridge.write( d1 );
+  }
+
   // ======== MusicPlayer ===============================================================
   // uses Bridge
   void GenericMCU_MUSIC_PLAYER::setup() {
@@ -258,8 +266,7 @@
     uint8_t d1 = trckNum % 256;
 
     mcuBridge.write( SIG_MP3_PLAY );
-    mcuBridge.write( d0 );
-    mcuBridge.write( d1 );
+    writeBridgeU16( trckNum );
     flushBridgeRX();
   }
 
@@ -356,12 +363,9 @@
 
   void GenericMCU_SCREEN::setColor(uint16_t color) {
     if ( !this->ready ) { return; }
-    uint8_t d0 = color / 256; // up to 64K colors
-    uint8_t d1 = color % 256;
 
     mcuBridge.write( SIG_SCR_COLOR );
-    mcuBridge.write( d0 );
-    mcuBridge.write( d1 );
+    writeBridgeU16( color );
     flushBridgeRX();
   }
 
@@ -389,31 +393,13 @@
   void GenericMCU_SCREEN::drawRect(int x, int y, int w, int h, uint8_t mode, uint16_t color) {
     if ( !this->ready ) { return; }
 
-    uint8_t d0 = x / 256; // up to 64K pixels
-    uint8_t d1 = x % 256;
-
     mcuBridge.write( SIG_SCR_DRAW_RECT );
-    mcuBridge.write( d0 ); // X
-    mcuBridge.write( d1 );
-    d0 = y / 256;
-    d1 = y % 256;
-    mcuBridge.write( d0 ); // Y
-    mcuBridge.write( d1 );
-    d0 = w / 256;
-    d1 = w % 256;
-    mcuBridge.write( d0 ); // W
-    mcuBridge.write( d1 );
-    d0 = h / 256;
-    d1 = h % 256;
-    mcuBridge.write( d0 ); // H
-    mcuBridge.write( d1 );
-
+    writeBridgeU16( x );
+    writeBridgeU16( y );
+    writeBridgeU16( w );
+    writeBridgeU16( h );
     mcuBridge.write( mode ); // MODE
-
-    d0 = color / 256; // up to 64K colors
-    d1 = color % 256;
-    mcuBridge.write( d0 ); // COLOR
-    mcuBridge.write( d1 );
+    writeBridgeU16( color );
 
     flushBridgeRX();
   }
@@ -426,52 +412,24 @@
     uint8_t d1 = x % 256;
 
     mcuBridge.write( SIG_SCR_DRAW_CIRCLE );
-    mcuBridge.write( d0 ); // X
-    mcuBridge.write( d1 );
-    d0 = y / 256;
-    d1 = y % 256;
-    mcuBridge.write( d0 ); // Y
-    mcuBridge.write( d1 );
-    d0 = radius / 256;
-    d1 = radius % 256;
-    mcuBridge.write( d0 ); // RADIUS
-    mcuBridge.write( d1 );
-
+    writeBridgeU16( x );
+    writeBridgeU16( y );
+    writeBridgeU16( radius );
     mcuBridge.write( mode ); // MODE
-
-    d0 = color / 256; // up to 64K colors
-    d1 = color % 256;
-    mcuBridge.write( d0 ); // COLOR
-    mcuBridge.write( d1 );
-
+    writeBridgeU16( color );
+    
     flushBridgeRX();
   }
 
   void GenericMCU_SCREEN::drawLine(int x, int y, int x2, int y2, uint16_t color) {
     if ( !this->ready ) { return; }
 
-    uint8_t d0 = x / 256; // up to 64K pixels
-    uint8_t d1 = x % 256;
-
-    mcuBridge.write( SIG_SCR_DRAW_CIRCLE );
-    mcuBridge.write( d0 ); // X
-    mcuBridge.write( d1 );
-    d0 = y / 256;
-    d1 = y % 256;
-    mcuBridge.write( d0 ); // Y
-    mcuBridge.write( d1 );
-    d0 = w / 256;
-    d1 = w % 256;
-    mcuBridge.write( d0 ); // W
-    mcuBridge.write( d1 );
-    d0 = h / 256;
-    d1 = h % 256;
-    mcuBridge.write( d0 ); // H
-    mcuBridge.write( d1 );
-    d0 = color / 256; // up to 64K colors
-    d1 = color % 256;
-    mcuBridge.write( d0 ); // COLOR
-    mcuBridge.write( d1 );
+    mcuBridge.write( SIG_SCR_DRAW_LINE );
+    writeBridgeU16( x );
+    writeBridgeU16( y );
+    writeBridgeU16( x2 );
+    writeBridgeU16( y2 );
+    writeBridgeU16( color );
 
     flushBridgeRX();
   }
@@ -483,16 +441,9 @@
     uint8_t d1 = x % 256;
 
     mcuBridge.write( SIG_SCR_DRAW_PIX );
-    mcuBridge.write( d0 ); // X
-    mcuBridge.write( d1 );
-    d0 = y / 256;
-    d1 = y % 256;
-    mcuBridge.write( d0 ); // Y
-    mcuBridge.write( d1 );
-    d0 = color / 256; // up to 64K colors
-    d1 = color % 256;
-    mcuBridge.write( d0 ); // COLOR
-    mcuBridge.write( d1 );
+    writeBridgeU16( x );
+    writeBridgeU16( y );
+    writeBridgeU16( color );
 
     flushBridgeRX();
   }
