@@ -127,7 +127,7 @@
       println(" Send sync seq.");
       mcuBridge.write( 0xFF );
       mcuBridge.write( signalToSend );
-      mcuBridge.flush();
+      //mcuBridge.flush();
       led(0, false);
       delay(100);
     }

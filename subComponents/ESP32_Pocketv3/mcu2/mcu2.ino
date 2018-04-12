@@ -88,6 +88,11 @@ void bridge_readString(char* dest, int start, int max) {
   dest[i] = 0x00;
 }
 
+void flushBridgeTX(bool ok) {
+  mcuBridge.write( ok ? 0xFF : 0xFE );
+}
+
+
 void loop() {
 
   if ( mcuBridge.available() > 0 ) {
@@ -99,6 +104,9 @@ void loop() {
         mcu.print("Unknown cmd...");
         mcu.print(cmd);
         mcu.print('\n');
+        flushBridgeTX(false);
+        delay(500);
+        return;
       }
 
       // TMP ????
@@ -211,15 +219,21 @@ void loop() {
           mcu.print(cmd);
           mcu.print('\n');
 
+          flushBridgeTX(false);
           delay(500);
+          return;
       }
+
+      flushBridgeTX(true);
 
     } else {
       mcu.print("Invalid cmd...");
       mcu.print(cmd);
       mcu.print('\n');
 
-      delay(500);
+        flushBridgeTX(false);
+        delay(500);
+        return;
     }
   }
 

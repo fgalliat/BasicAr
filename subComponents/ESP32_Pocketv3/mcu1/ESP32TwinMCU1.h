@@ -50,7 +50,7 @@
     // have to reset it
 
     mcuBridge.write( SIG_MCU_RESET );
-    mcuBridge.flush();
+    // flushBridgeRX();
     __mcuBridgeReady = false;
 
     ESP.restart();
@@ -126,7 +126,6 @@
       println(" Send sync seq.");
       mcuBridge.write( 0xFF );
       mcuBridge.write( signalToSend );
-      mcuBridge.flush();
       led(0, false);
       delay(100);
     }
@@ -232,6 +231,16 @@
     mcu->println("FS ready !");
   }
 
+  // ======== Bridge ====================================================================
+  static bool flushBridgeRX() {
+    while( mcuBridge.available() <= 0 ) {
+      delay(10); yield();
+    }
+    // 0xFE if failed
+    bool ok = mcuBridge.read() == 0xFF;
+    return ok;
+  }
+
   // ======== MusicPlayer ===============================================================
   // uses Bridge
   void GenericMCU_MUSIC_PLAYER::setup() {
@@ -251,32 +260,32 @@
     mcuBridge.write( SIG_MP3_PLAY );
     mcuBridge.write( d0 );
     mcuBridge.write( d1 );
-    mcuBridge.flush();
+    flushBridgeRX();
   }
 
   void GenericMCU_MUSIC_PLAYER::pause() { 
     if ( !this->ready ) { mcu->println("Music Player not ready !"); return; }
     mcuBridge.write( SIG_MP3_PAUSE );
-    mcuBridge.flush();
+    flushBridgeRX();
   }
 
   void GenericMCU_MUSIC_PLAYER::next() { 
     if ( !this->ready ) { mcu->println("Music Player not ready !"); return; }
     mcuBridge.write( SIG_MP3_NEXT );
-    mcuBridge.flush();
+    flushBridgeRX();
   }
 
   void GenericMCU_MUSIC_PLAYER::prev() { 
     if ( !this->ready ) { mcu->println("Music Player not ready !"); return; }
     mcuBridge.write( SIG_MP3_PREV );
-    mcuBridge.flush();
+    flushBridgeRX();
   }
 
   void GenericMCU_MUSIC_PLAYER::setVolume(uint8_t volume) { 
     if ( !this->ready ) { mcu->println("Music Player not ready !"); return; }
     mcuBridge.write( SIG_MP3_VOL );
     mcuBridge.write( volume );
-    mcuBridge.flush();
+    flushBridgeRX();
   }
 
   bool GenericMCU_MUSIC_PLAYER::isPlaying() {
@@ -301,14 +310,14 @@
     mcuBridge.write( SIG_SCR_PRINT_STR );
     mcuBridge.print( str );
     mcuBridge.write( 0x00 );
-    mcuBridge.flush(); 
+    flushBridgeRX();
   }
 
   void GenericMCU_SCREEN::print(char ch) {
     if ( !this->ready ) { Serial.print(ch); return; }
     mcuBridge.write( SIG_SCR_PRINT_CH );
     mcuBridge.write( ch );
-    mcuBridge.flush();
+    flushBridgeRX();
   }
 
   void GenericMCU_SCREEN::print(int   val) {
@@ -321,7 +330,7 @@
 
     mcuBridge.write( SIG_SCR_PRINT_INT );
     mcuBridge.write( memSeg, tsize );
-    mcuBridge.flush();
+    flushBridgeRX();
   }
 
   void GenericMCU_SCREEN::print(float val) {
@@ -333,7 +342,7 @@
 
     mcuBridge.write( SIG_SCR_PRINT_NUM );
     mcuBridge.write( memSeg, tsize );
-    mcuBridge.flush();
+    flushBridgeRX();
   }
 
   // cursor in nbof chars (so max is 256x256)
@@ -342,7 +351,7 @@
     mcuBridge.write( SIG_SCR_CURSOR );
     mcuBridge.write( x );
     mcuBridge.write( y );
-    mcuBridge.flush();
+    flushBridgeRX();
   }
 
   void GenericMCU_SCREEN::setColor(uint16_t color) {
@@ -353,27 +362,27 @@
     mcuBridge.write( SIG_SCR_COLOR );
     mcuBridge.write( d0 );
     mcuBridge.write( d1 );
-    mcuBridge.flush();
+    flushBridgeRX();
   }
 
   void GenericMCU_SCREEN::setMode(uint8_t mode) {
     if ( !this->ready ) { return; }
     mcuBridge.write( SIG_SCR_MODE );
     mcuBridge.write( mode );
-    mcuBridge.flush();
+    flushBridgeRX();
   }
 
   void GenericMCU_SCREEN::blitt(uint8_t mode) {
     if ( !this->ready ) { return; }
     mcuBridge.write( SIG_SCR_BLITT );
     mcuBridge.write( mode );
-    mcuBridge.flush();
+    flushBridgeRX();
   }
 
   void GenericMCU_SCREEN::clear() {
     if ( !this->ready ) { return; }
     mcuBridge.write( SIG_SCR_CLEAR );
-    mcuBridge.flush();
+    flushBridgeRX();
   }
 
   // mode = 1 : fill // mode = 0 : draw
@@ -406,7 +415,7 @@
     mcuBridge.write( d0 ); // COLOR
     mcuBridge.write( d1 );
 
-    mcuBridge.flush();
+    flushBridgeRX();
   }
 
   // mode = 1 : fill // mode = 0 : draw
@@ -435,7 +444,7 @@
     mcuBridge.write( d0 ); // COLOR
     mcuBridge.write( d1 );
 
-    mcuBridge.flush();
+    flushBridgeRX();
   }
 
   void GenericMCU_SCREEN::drawLine(int x, int y, int x2, int y2, uint16_t color) {
@@ -464,7 +473,7 @@
     mcuBridge.write( d0 ); // COLOR
     mcuBridge.write( d1 );
 
-    mcuBridge.flush();
+    flushBridgeRX();
   }
 
   void GenericMCU_SCREEN::drawPixel(int x, int y, uint16_t color) {
@@ -485,7 +494,7 @@
     mcuBridge.write( d0 ); // COLOR
     mcuBridge.write( d1 );
 
-    mcuBridge.flush();
+    flushBridgeRX();
   }
 
 #endif
