@@ -232,13 +232,17 @@
   }
 
   // ======== Bridge ====================================================================
-  static bool flushBridgeRX() {
+  static bool waitBridgeSIG(int valueToWait=0xFF) {
     while( mcuBridge.available() <= 0 ) {
       delay(10); yield();
     }
     // 0xFE if failed
-    bool ok = mcuBridge.read() == 0xFF;
+    bool ok = mcuBridge.read() == valueToWait;
     return ok;
+  }
+
+  static bool flushBridgeRX(int valueToWait=0xFF) {
+    return waitBridgeSIG(valueToWait);
   }
 
   static bool writeBridgeU16(int val) {
@@ -248,6 +252,60 @@
     mcuBridge.write( d0 );
     mcuBridge.write( d1 );
   }
+
+  void GenericMCU_FS::copyToBridge(char* filename) {
+    // DO NOT OUTPUT TO SCREEN
+    // DO NOT USE mcu->print(...)
+    File f = SPIFFS.open( filename, "w" );
+    if ( !f ) {
+      Serial.println("File not ready !");
+      return;
+    }
+
+    Serial.println("Upload starts");
+    mcuBridge.write( SIG_MCU_UPLOAD_BDG );
+    Serial.println(" Upload waits for ACK");
+    // just wait for an 0xFF ACK
+    waitBridgeSIG(0xFF);
+
+    Serial.println(" Upload sending filename");
+    mcuBridge.println(filename);
+    delay(200);
+
+    int fileSize = f.size(); // TODO chech that
+
+    Serial.println(" Upload sending filesize");
+    mcuBridge.println( fileSize );
+    delay(500);
+
+    #define BRIDGE_UPL_PACKET_SIZE 32
+    char content[BRIDGE_UPL_PACKET_SIZE];
+
+    int readed,total=0;
+    while(true) {
+      readed = f.readBytes( content, BRIDGE_UPL_PACKET_SIZE );
+
+      mcuBridge.write( (uint8_t*)content, readed );
+      delay(10);
+
+      total += readed;
+
+      // just wait for an 0xFE HandShake
+      Serial.println(" Upload waiting handshake");
+      waitBridgeSIG(0xFE);
+
+      if (total >= fileSize) { break; }
+    }
+
+    f.close();
+    // just wait for an 0xFF HandShake
+    Serial.println(" Upload waiting -EOF-");
+    waitBridgeSIG(0xFF);
+
+    Serial.println("Upload complete");
+    flushBridgeRX();
+  }
+
 
   // ======== MusicPlayer ===============================================================
   // uses Bridge

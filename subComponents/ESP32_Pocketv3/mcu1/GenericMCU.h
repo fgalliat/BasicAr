@@ -74,7 +74,10 @@ class GenericMCU_FS {
       void format();
 
       void uploadViaSerial();
+      // receive from bridge
       void uploadViaBridge();
+      // copy to bridge
+      void copyToBridge(char* filename);
 };
 
 class GenericMCU_SCREEN {
