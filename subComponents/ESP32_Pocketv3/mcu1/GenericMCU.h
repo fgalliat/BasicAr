@@ -137,7 +137,8 @@ class GenericMCU_SCREEN {
       void drawPicture565( char* filename, int x, int y, int w=-1, int h=-1 );
       void drawPicture565( uint16_t* raster, int x, int y, int w=-1, int h=-1 );
       void drawPictureIndexed( uint8_t* raster, int x, int y, int w=-1, int h=-1, bool includesPalette=false );
-      void drawPictureBPP( uint8_t* raster, int x, int y, int w=-1, int h=-1 );
+      void drawPictureBPP( char* filename, int x, int y );
+      void drawPictureBPP( uint8_t* raster, int x, int y );
 
       // === Shapes routines ===
       // 1 is always white

@@ -75,6 +75,12 @@ public class SerialCommander {
         }
 
         if ( !false ) {
+            // draws a BPP file @ 0,0
+            serWrite( 0x46 ); serPrintU16(160); serPrintU16(0); serPrintln("/LOTUS.BPP"); serWrite( 0x00 );
+        }
+
+
+        if ( !false ) {
             // print a string
             serWrite( 0x32 ); serPrintln("Hello World !"); serWrite( 0x00 );
             // print an int + '\n'

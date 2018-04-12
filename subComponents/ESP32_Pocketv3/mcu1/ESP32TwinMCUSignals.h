@@ -114,8 +114,8 @@
    11, // 0x43 rect
     9, // 0x44 circle
    -2, // 0x45 triangle
-   -1, // 0x45 bpp file
-   -1, // 0x45 pct file
+   -1, // 0x46 bpp file
+   -1, // 0x47 pct file
   };
 
 

@@ -169,6 +169,17 @@ void loop() {
         case SIG_SCR_DRAW_TRIANGLE:
           break;
         case SIG_SCR_DRAW_BPP:
+          // legacy not using X & Y
+          // see later ....
+          x = 0;
+          y = 0;
+          bridge_readString(str, 0, 256);
+          if ( strlen( str ) == 0 ) {
+            // recall last GFX area
+            mcu.getScreen()->drawPictureBPP((char*)NULL, x, y);
+          } else {
+            mcu.getScreen()->drawPictureBPP(str, x, y);
+          }
           break;
         case SIG_SCR_DRAW_PCT:
           x = bridge_readU16();

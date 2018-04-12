@@ -679,15 +679,15 @@
 
     if ( filename != NULL ) {
       File f = SPIFFS.open(filename, "r");
-      if ( !f ) { Serial.println("File not ready"); return; }
+      if ( !f ) { mcu->println("File not ready"); return; }
       int readed = f.readBytes( (char*)header, PCT_HEADER_LEN);
       
       if ( header[0] == '6' && header[1] == '4' && header[2] == 'K' ) {
           w = ((int)header[3]*256) + ((int)header[4]);
           h = ((int)header[5]*256) + ((int)header[6]);
       } else {
-          Serial.println( "Wrong PCT header" );
-          Serial.println( header );
+          mcu->println( "Wrong PCT header" );
+          mcu->println( header );
       }
       // Serial.print("A.2 "); Serial.print(w); Serial.print('x');Serial.print(h);Serial.println("");
       if( w <= 0 || h <= 0 ) {
@@ -734,6 +734,75 @@
     __blittIfNeeded();
   }
 
+  #ifdef MAIN_INO_FILE
+    uint8_t bpp_picturebuff[ 1024 ];
+  #else
+    extern uint8_t bpp_picturebuff[];
+  #endif
+
+  void GenericMCU_SCREEN::drawPictureBPP( char* filename, int x, int y ) {
+    if ( !ready ) { return; }
+
+    if ( filename != NULL ) {
+      File f = SPIFFS.open(filename, "r");
+      if ( !f ) { mcu->println("File not ready"); return; }
+
+      int w = 128;
+      int h = 64;
+
+      if( w <= 0 || h <= 0 ) {
+        f.close();
+        return;
+      }
+
+      int startX = screenOffsetX+x;
+      int startY = screenOffsetY+y;
+
+      int readed = f.readBytes( (char*)bpp_picturebuff, 1024);
+      this->drawPictureBPP(bpp_picturebuff, x, y);
+      f.close();
+
+    } else {
+      // recall last MEM_RAST area
+      this->drawPictureBPP(bpp_picturebuff, x, y);
+    }
+
+    __blittIfNeeded();
+  }
+
+  void GenericMCU_SCREEN::drawPictureBPP( uint8_t* raster, int x, int y ) {
+    if ( !ready ) { return; }
+
+
+    int sx = screenOffsetX + x;
+    int sy = screenOffsetY + y;
+
+    int width = 128;
+    int height = 64;
+
+    unsigned char c;
+
+    // TODO : lock blitt
+
+    // this->clear();
+
+    // TODO : impl. pixel shaders
+    this->drawRect(sx, sy, 128, 64, 1, 0);
+
+    for (int yy = 0; yy < height; yy++) {
+      for (int xx = 0; xx < width; xx++) {
+        c = (raster[(yy * (width / 8)) + (xx / 8)] >> (7 - ((xx) % 8))) % 2;
+        if (c == 0x00) {
+        }
+        else {
+            // TODO : impl. pixel shaders
+            _oled_display->drawPixel(sx+ x + xx, sy+ y + yy, CLR_WHITE);
+        }
+      }
+    }    
+
+    // NEED to blitt ??????
+  }
 
   // void drawPictureIndexed( uint8_t* raster, int x, int y, int w=-1, int h=-1, bool includesPalette=false );
   // void drawPictureBPP( uint8_t* raster, int x, int y, int w=-1, int h=-1 );
