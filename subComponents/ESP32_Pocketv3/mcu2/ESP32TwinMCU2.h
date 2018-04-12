@@ -755,9 +755,6 @@
         return;
       }
 
-      int startX = screenOffsetX+x;
-      int startY = screenOffsetY+y;
-
       int readed = f.readBytes( (char*)bpp_picturebuff, 1024);
       this->drawPictureBPP(bpp_picturebuff, x, y);
       f.close();
@@ -784,9 +781,10 @@
 
     // TODO : lock blitt
 
-    // this->clear();
 
     // TODO : impl. pixel shaders
+    
+    // this->clear();
     this->drawRect(sx, sy, 128, 64, 1, 0);
 
     for (int yy = 0; yy < height; yy++) {

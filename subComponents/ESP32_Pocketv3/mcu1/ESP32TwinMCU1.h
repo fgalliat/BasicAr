@@ -437,9 +437,6 @@
   void GenericMCU_SCREEN::drawPixel(int x, int y, uint16_t color) {
     if ( !this->ready ) { return; }
 
-    uint8_t d0 = x / 256; // up to 64K pixels
-    uint8_t d1 = x % 256;
-
     mcuBridge.write( SIG_SCR_DRAW_PIX );
     writeBridgeU16( x );
     writeBridgeU16( y );
@@ -447,5 +444,29 @@
 
     flushBridgeRX();
   }
+
+  void GenericMCU_SCREEN::drawPicture565( char* filename, int x, int y, int _w, int _h ) {
+    if ( !this->ready ) { return; }
+
+    mcuBridge.write( SIG_SCR_DRAW_PCT );
+    writeBridgeU16( x );
+    writeBridgeU16( y );
+    mcuBridge.print( filename );
+    mcuBridge.write( 0x00 );
+
+    flushBridgeRX();
+  }
+
+  void GenericMCU_SCREEN::drawPictureBPP( char* filename, int x, int y ) {
+    if ( !this->ready ) { return; }
+
+    mcuBridge.write( SIG_SCR_DRAW_BPP );
+    // legacy not using X & Y
+    mcuBridge.print( filename );
+    mcuBridge.write( 0x00 );
+
+    flushBridgeRX();
+  }
+
 
 #endif
