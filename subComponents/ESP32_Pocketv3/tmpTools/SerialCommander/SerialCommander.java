@@ -48,47 +48,63 @@ public class SerialCommander {
         if ( false ) {
             // reset the MCU
             serWrite( 0x01 );
+            bridgeFlushRX();
             return;
         }
 
         if ( !false ) {
             // set ScreenMode :: 320x240
             serWrite( 0x21 ); serWrite( 2 );
+            bridgeFlushRX();
             // clear screen
             serWrite( 0x22 ); 
+            bridgeFlushRX();
         }
 
         if ( false ) {
             // set ScreenMode :: 160x128
             serWrite( 0x21 ); serWrite( 1 );
+            bridgeFlushRX();
             // clear screen
             serWrite( 0x22 ); 
+            bridgeFlushRX();
         }
 
         if ( !false ) {
             // draws a PCT file @ 0,0
-            serWrite( 0x47 ); serPrintU16(0); serPrintU16(0); serPrintln("/TEST.PCT"); serWrite( 0x00 );
+            serWrite( 0x47 ); serPrintU16(0); serPrintU16(0); serPrint("/TEST.PCT"); serWrite( 0x00 );
+            bridgeFlushRX();
             // draws a PCT cache @ 160,0
             serWrite( 0x47 ); serPrintU16(160); serPrintU16(0);   serWrite( 0x00 );
+            bridgeFlushRX();
             serWrite( 0x47 ); serPrintU16(0);   serPrintU16(128); serWrite( 0x00 );
+            bridgeFlushRX();
             serWrite( 0x47 ); serPrintU16(160); serPrintU16(128); serWrite( 0x00 );
+            bridgeFlushRX();
         }
 
         if ( !false ) {
             // draws a BPP file @ 0,0
-            serWrite( 0x46 ); serPrintU16(160); serPrintU16(0); serPrintln("/LOTUS.BPP"); serWrite( 0x00 );
+            // serWrite( 0x46 ); serPrintU16(160); serPrintU16(0); serPrint("/LOTUS.BPP"); serWrite( 0x00 );
+            serWrite( 0x46 ); serPrintU16(160); serPrintU16(0); serPrint("/BLAST.BPP"); serWrite( 0x00 );
+            bridgeFlushRX();
         }
 
 
         if ( !false ) {
             // print a string
-            serWrite( 0x32 ); serPrintln("Hello World !"); serWrite( 0x00 );
+            serWrite( 0x32 ); serPrint("Hello World !\n"); serWrite( 0x00 );
+            bridgeFlushRX();
             // print an int + '\n'
             serWrite( 0x33 ); serPrintFloat( 11 ); 
+            bridgeFlushRX();
             serWrite( 0x31 ); serWrite( (int)' ' ); 
+            bridgeFlushRX();
             // print a float + '\n'
             serWrite( 0x34 ); serPrintFloat( 3.141596f ); 
+            bridgeFlushRX();
             serWrite( 0x31 ); serWrite( (int)'\n' ); 
+            bridgeFlushRX();
         }
 
         try { serialPort.closePort(); }
@@ -156,9 +172,14 @@ public class SerialCommander {
 
 
     static void serPrintln(String str) throws Exception {
+        String str2 = str+"\n";
+        serPrint(str2);
+    }
+
+    static void serPrint(String str) throws Exception {
         System.out.println(">>> "+str);
 
-        String str2 = str+"\n";
+        String str2 = str;
         serWrite( str2.getBytes(), str2.length() );
     }
 
@@ -211,6 +232,7 @@ public class SerialCommander {
     }
 
     static boolean bridgeFlushRX() throws Exception {
+        System.out.println("wait handshake");
         // 0xFE is failed .....
         boolean ok = serialPort.readBytes(1)[0] == 0xFF;
         return ok;

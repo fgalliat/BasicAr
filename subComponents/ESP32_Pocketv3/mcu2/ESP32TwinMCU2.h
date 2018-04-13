@@ -770,7 +770,6 @@
   void GenericMCU_SCREEN::drawPictureBPP( uint8_t* raster, int x, int y ) {
     if ( !ready ) { return; }
 
-
     int sx = screenOffsetX + x;
     int sy = screenOffsetY + y;
 
@@ -794,7 +793,7 @@
         }
         else {
             // TODO : impl. pixel shaders
-            _oled_display->drawPixel(sx+ x + xx, sy+ y + yy, CLR_WHITE);
+            _oled_display->drawPixel(sx + xx, sy + yy, CLR_WHITE);
         }
       }
     }    

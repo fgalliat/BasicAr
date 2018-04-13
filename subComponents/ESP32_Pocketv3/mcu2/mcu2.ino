@@ -81,6 +81,7 @@ void bridge_readString(char* dest, int start, int max) {
   int i = start, tmp;
   while( true ) {
     if ( i-start >= max ) { break; }
+    while( mcuBridge.available() == 0 ) { delay(5); yield(); }
     tmp = mcuBridge.read();
     if ( tmp <= 0 ) { break; }
     dest[i++] = tmp;
@@ -90,6 +91,7 @@ void bridge_readString(char* dest, int start, int max) {
 
 void flushBridgeTX(bool ok) {
   mcuBridge.write( ok ? 0xFF : 0xFE );
+  // mcuBridge.write( 'A' );
 }
 
 
@@ -177,10 +179,8 @@ void loop() {
         case SIG_SCR_DRAW_TRIANGLE:
           break;
         case SIG_SCR_DRAW_BPP:
-          // legacy not using X & Y
-          // see later ....
-          x = 0;
-          y = 0;
+          x = bridge_readU16();
+          y = bridge_readU16();
           bridge_readString(str, 0, 256);
           if ( strlen( str ) == 0 ) {
             // recall last GFX area
