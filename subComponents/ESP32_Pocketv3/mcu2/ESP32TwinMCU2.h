@@ -622,7 +622,6 @@
   void GenericMCU_SCREEN::drawLine(int x, int y, int x2, int y2, uint16_t color){
     if ( !this->ready ) { return; }
 
-    //_oled_display->drawLine(x1,y1,x2,y2, drawColor);
     uint16_t usedColor = __getColor(color);
     _oled_display->drawLine(screenOffsetX+x,screenOffsetY+y,screenOffsetX+x2,screenOffsetY+y2, usedColor);
 
@@ -660,6 +659,8 @@
   #define MEM_RAST_LEN_u16 MEM_RAST_WIDTH * MEM_RAST_HEIGHT
   #define MEM_RAST_LEN_u8  MEM_RAST_LEN_u16 * 2
 
+  #define PCT_HEADER_LEN 7
+
   #ifdef MAIN_INO_FILE
     uint16_t color_picturebuff[ MEM_RAST_LEN_u16 ];
   #else
@@ -668,7 +669,6 @@
 
   // _w & _h to clip a zone...
   void GenericMCU_SCREEN::drawPicture565( char* filename, int x, int y, int _w, int _h ) {
-    #define PCT_HEADER_LEN 7
     static int w=-1, h=-1; // img size
     static char header[PCT_HEADER_LEN];
 
@@ -802,6 +802,72 @@
   }
 
   // void drawPictureIndexed( uint8_t* raster, int x, int y, int w=-1, int h=-1, bool includesPalette=false );
-  // void drawPictureBPP( uint8_t* raster, int x, int y, int w=-1, int h=-1 );
+
+void GenericMCU_SCREEN::drawPicture565Sprite( uint16_t* raster, int dx, int dy, int dw, int dh, int sx, int sy, int sw, int sh ) {
+  int startOffset = ( sy * dw ) + sx;
+  int offset = startOffset;
+
+  dx += screenOffsetX;
+  dy += screenOffsetY;
+
+  // BEWARE : mem overflow !!!!!
+  // 32x64 seems to be the max @ this time
+  uint16_t subImage[ dw*dh ];
+
+  for(int yy=0; yy < dh; yy++) {
+    // TODO : find faster way !
+    for(int xx=0; xx < dw; xx++) {
+      subImage[(yy*dw)+xx] = color_picturebuff[offset+xx];
+    }
+    offset = ( (sy+yy) * sw ) + sx;
+  }
+  _oled_display->pushImage(dx, dy, dw, dh, subImage);
+
+}
+
+void GenericMCU_SCREEN::drawPicture565Sprite( char* filename, int dx, int dy, int dw, int dh, int sx, int sy ) {
+  static int pctW=-1, pctH=-1;
+  static char header[PCT_HEADER_LEN];
+
+  if ( sx < 0 ) { sx = 0; }
+  if ( sy < 0 ) { sy = 0; }
+
+  if ( filename != NULL ) {
+      File f = SPIFFS.open(filename, "r");
+
+      if ( !f ) { mcu->println("File not ready"); return; }
+      int readed = f.readBytes( (char*)header, PCT_HEADER_LEN);
+      
+      if ( header[0] == '6' && header[1] == '4' && header[2] == 'K' ) {
+          pctW = ((int)header[3]*256) + ((int)header[4]);
+          pctH = ((int)header[5]*256) + ((int)header[6]);
+      } else {
+          mcu->println( "Wrong PCT header" );
+          mcu->println( header );
+
+          f.close();
+          return;
+      }
+
+      // need to store the whole sprite in mem.
+      // in order that # subSprites to be recalled
+
+      int toRead = (pctW * pctH)*2; // x2 Cf U16
+
+      readed = f.readBytes( (char*)color_picturebuff, toRead);
+      f.close();
+
+      if ( dw < 0 ) { dw = pctW; }
+      if ( dh < 0 ) { dh = pctH; }
+      this->drawPicture565Sprite(color_picturebuff, dx, dy, dw, dh, sx, sy, pctW, pctH);
+
+  } else {
+      if ( dw < 0 ) { dw = pctW; }
+      if ( dh < 0 ) { dh = pctH; }
+      this->drawPicture565Sprite(color_picturebuff, dx, dy, dw, dh, sx, sy, pctW, pctH);
+  }
+  
+}
+
 
 #endif

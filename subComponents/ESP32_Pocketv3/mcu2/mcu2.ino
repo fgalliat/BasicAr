@@ -286,19 +286,33 @@ void loop() {
     #endif
 
     t0 = micros();
+    // if ( !yetDrawn ) {
+    //   screen->drawPicture565("/TEST.PCT", scrPctX, scrPctY);
+    //   yetDrawn = true;
+    // } else {
+    //   // recall last memArea : here 160x128
+    //   // 19ms @ 27MKz SPI
+    //   // 9ms @ 40MKz SPI
+    //   screen->drawPicture565( (char*)NULL, scrPctX, scrPctY);
+    // }
+
+    int spW=64, spH=32;
     if ( !yetDrawn ) {
-      screen->drawPicture565("/TEST.PCT", scrPctX, scrPctY);
+      screen->drawPicture565Sprite("/MP3_GUI.PCT", scrPctX, scrPctY, spW, spH);
       yetDrawn = true;
     } else {
-      // recall last memArea : here 160x128
-      // 19ms @ 27MKz SPI
-      // 9ms @ 40MKz SPI
-      screen->drawPicture565( (char*)NULL, scrPctX, scrPctY);
+      // recall last memArea : here 32x64
+      // 1ms @ 40MKz SPI
+      screen->drawPicture565Sprite( (char*)NULL, scrPctX, scrPctY, spW, spH);
+
+      screen->drawPicture565Sprite( (char*)NULL, scrPctX+50, scrPctY+50, spW, spH, 32);
     }
+
     t1 = micros();
     #ifdef DBUG_TIME
       Serial.print( (t1-t0) );
-      Serial.print(" micros (picture)\n");
+      // Serial.print(" micros (picture)\n");
+      Serial.print(" micros (sprite)\n");
     #endif
     delay(700);
   }

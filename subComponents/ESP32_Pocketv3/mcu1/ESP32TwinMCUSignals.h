@@ -37,6 +37,7 @@
   #define SIG_SCR_DRAW_TRIANGLE 0x45
   #define SIG_SCR_DRAW_BPP      0x46
   #define SIG_SCR_DRAW_PCT      0x47
+  #define SIG_SCR_DRAW_PCT_SPRITE 0x48
 
   #define SIG_LAST SIG_SCR_DRAW_PCT
 
@@ -116,6 +117,7 @@
    -2, // 0x45 triangle
    -1, // 0x46 bpp file
    -1, // 0x47 pct file
+   -1, // 0x48 pct sprite file
   };
 
 
