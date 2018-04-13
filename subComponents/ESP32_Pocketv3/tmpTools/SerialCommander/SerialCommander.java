@@ -45,7 +45,7 @@ public class SerialCommander {
 
         serialPort.purgePort( serialPort.PURGE_RXCLEAR | serialPort.PURGE_TXCLEAR );
 
-        if ( false ) {
+        if ( false || ( args != null && args.length > 0 ) ) {
             // reset the MCU
             serWrite( 0x01 );
             bridgeFlushRX();
