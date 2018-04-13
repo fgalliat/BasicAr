@@ -90,6 +90,23 @@ public class SerialCommander {
             bridgeFlushRX();
         }
 
+        if ( !false ) {
+            int spW = 32, spH = 32;
+            // draws a PCT sprite file @ 0,0
+            serWrite( 0x48 ); serPrintU16(0); serPrintU16(0); serPrintU16(spW); serPrintU16(spH); serPrintU16(0); serPrintU16(0); 
+            serPrint("/MP3_GUI.PCT"); serWrite( 0x00 );
+            bridgeFlushRX();
+            // draws a PCT sprite cache @ 160,0
+            serWrite( 0x48 ); serPrintU16(160); serPrintU16(0); serPrintU16(spW); serPrintU16(spH); serPrintU16(spW); serPrintU16(0); 
+            serWrite( 0x00 );
+            bridgeFlushRX();
+            serWrite( 0x48 ); serPrintU16(0);   serPrintU16(128); serPrintU16(spW); serPrintU16(spH); serPrintU16(0); serPrintU16(spH); 
+            serWrite( 0x00 );
+            bridgeFlushRX();
+            serWrite( 0x48 ); serPrintU16(160); serPrintU16(128); serPrintU16(spW); serPrintU16(spH); serPrintU16(spW); serPrintU16(spH); 
+            serWrite( 0x00 );
+            bridgeFlushRX();
+        }
 
         if ( !false ) {
             // print a string

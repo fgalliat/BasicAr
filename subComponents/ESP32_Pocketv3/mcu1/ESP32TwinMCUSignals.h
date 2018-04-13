@@ -39,7 +39,7 @@
   #define SIG_SCR_DRAW_PCT      0x47
   #define SIG_SCR_DRAW_PCT_SPRITE 0x48
 
-  #define SIG_LAST SIG_SCR_DRAW_PCT
+  #define SIG_LAST SIG_SCR_DRAW_PCT_SPRITE
 
   // bytes to read per cmd
   // -2 : nothing to read ...
