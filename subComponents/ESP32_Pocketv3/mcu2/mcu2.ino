@@ -126,13 +126,25 @@ void loop() {
         case SIG_MCU_UPLOAD_BDG:
           mcu.getFS()->uploadViaBridge();
           break;
-        case SIG_MP3_PLAY:
-        case SIG_MP3_PAUSE:
-        case SIG_MP3_NEXT:
-        case SIG_MP3_PREV:
-        case SIG_MP3_VOL:
-          break;
 
+        case SIG_MP3_PLAY:
+          tmp = bridge_readU16();
+          mcu.getMusicPlayer()->playTrack( tmp );
+          break;
+        case SIG_MP3_PAUSE:
+          mcu.getMusicPlayer()->pause();
+          break;
+        case SIG_MP3_NEXT:
+          mcu.getMusicPlayer()->next();
+          break;
+        case SIG_MP3_PREV:
+          mcu.getMusicPlayer()->prev();
+          break;
+        case SIG_MP3_VOL:
+          tmp = mcuBridge.read();
+          mcu.getMusicPlayer()->setVolume(tmp);
+          break;
+        // ===============================
         case SIG_SCR_MODE:
           tmp = mcuBridge.read();
           if ( tmp == 0xFF ) { tmp = SCREEN_MODE_320; }

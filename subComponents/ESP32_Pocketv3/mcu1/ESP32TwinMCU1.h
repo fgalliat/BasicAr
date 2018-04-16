@@ -320,9 +320,6 @@
   void GenericMCU_MUSIC_PLAYER::playTrack(int trckNum) { 
     if ( !this->ready ) { mcu->println("Music Player not ready !"); return; }
 
-    uint8_t d0 = trckNum / 256; // up to 64K files
-    uint8_t d1 = trckNum % 256;
-
     mcuBridge.write( SIG_MP3_PLAY );
     writeBridgeU16( trckNum );
     flushBridgeRX();
