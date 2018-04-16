@@ -411,7 +411,7 @@
   void GenericMCU_SCREEN::setCursor(int x, int y) {
     if ( !this->ready ) { return; }
     mcuBridge.write( SIG_SCR_CURSOR );
-    mcuBridge.write( x );
+    mcuBridge.write( x ); // in nb of chars
     mcuBridge.write( y );
     flushBridgeRX();
   }

@@ -156,8 +156,18 @@ void loop() {
           break;
 
         case SIG_SCR_CURSOR:
+          x = mcuBridge.read(); // in nb of chars
+          y = mcuBridge.read(); // in nb of chars
+          mcu.getScreen()->setCursor(x,y);
+          break;
         case SIG_SCR_COLOR:
+          tmp = bridge_readU16();
+          mcu.getScreen()->setColor(tmp);
+          break;
+
         case SIG_SCR_BLITT:
+          tmp = mcuBridge.read();
+          mcu.getScreen()->blitt(tmp);
           break;
 
         case SIG_SCR_PRINT_CH:
