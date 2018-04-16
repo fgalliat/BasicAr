@@ -307,60 +307,69 @@
 
 
   // ======== MusicPlayer ===============================================================
-  // uses Bridge
+  #include "DFRobotDFPlayerMini.h"
 
-  // ==== [ TODO SECTION ] ====
+  DFRobotDFPlayerMini myDFPlayer;
 
   void GenericMCU_MUSIC_PLAYER::setup() {
-    // if ( ! __mcuBridgeReady ) { 
-    //   mcu->println("Bridged Music Player NOT ready !");
-    //   this->ready = false; return; 
-    // }
-    // this->ready = true;
-    this->ready = false;
+    // needs up to 3secs
+    if (!myDFPlayer.begin(mp3Serial)) {
+      mcu->println("Unable to begin:\n1.Please recheck the connection!\n2.Please insert the SD card!");
+      this->ready = false;
+      // delay(500);
+      return;
+    }
+    mcu->println("DFPlayer Mini online.");
+    delay(100);
+    myDFPlayer.volume(20);  //Set volume value. From 0 to 30
+
+    this->ready = true;
   }
 
+  // from 1 to 2999
   void GenericMCU_MUSIC_PLAYER::playTrack(int trckNum) { 
     if ( !this->ready ) { mcu->println("Music Player not ready !"); return; }
 
-    // uint8_t d0 = trckNum / 256; // up to 64K files
-    // uint8_t d1 = trckNum % 256;
-
-    // mcuBridge.write( SIG_MP3_PLAY );
-    // mcuBridge.write( d0 );
-    // mcuBridge.write( d1 );
-    // mcuBridge.flush();
+    // positionate only the current file ???
+    myDFPlayer.playMp3Folder(trckNum); // plays SD:/MP3/0001.mp3 - @ least 1st song of /MP3/
+    delay(100);
+    myDFPlayer.play(trckNum); // ??????
   }
+
+  static bool __mp3Paused = false;
 
   void GenericMCU_MUSIC_PLAYER::pause() { 
     if ( !this->ready ) { mcu->println("Music Player not ready !"); return; }
-    // mcuBridge.write( SIG_MP3_PAUSE );
-    // mcuBridge.flush();
+    if ( !__mp3Paused ) {
+      myDFPlayer.pause();
+      __mp3Paused = true;
+    } else {
+      myDFPlayer.start();
+      __mp3Paused = false;
+    }
   }
 
   void GenericMCU_MUSIC_PLAYER::next() { 
     if ( !this->ready ) { mcu->println("Music Player not ready !"); return; }
-    // mcuBridge.write( SIG_MP3_NEXT );
-    // mcuBridge.flush();
+    myDFPlayer.next();
   }
 
   void GenericMCU_MUSIC_PLAYER::prev() { 
     if ( !this->ready ) { mcu->println("Music Player not ready !"); return; }
-    // mcuBridge.write( SIG_MP3_PREV );
-    // mcuBridge.flush();
+    myDFPlayer.previous();
   }
 
+  /* from 0-30 */
   void GenericMCU_MUSIC_PLAYER::setVolume(uint8_t volume) { 
     if ( !this->ready ) { mcu->println("Music Player not ready !"); return; }
-    // mcuBridge.write( SIG_MP3_VOL );
-    // mcuBridge.write( volume );
-    // mcuBridge.flush();
+    myDFPlayer.volume(volume);
   }
 
   bool GenericMCU_MUSIC_PLAYER::isPlaying() {
     if ( !this->ready ) { return false; }
-    // TODO : better -> leads to GPIO pin #0
-    // return mcu->getGPIO()->btn( -8 );
+    
+    // WIRED to #1 MCU !!!
+    return false;
   }
 
   // ======== Screen ====================================================================

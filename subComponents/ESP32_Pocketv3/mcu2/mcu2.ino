@@ -114,7 +114,7 @@ void loop() {
       // TMP ????
       inCmdMode = true;
 
-      static int tmp, i, x, y, w, h, x2, y2;
+      static int tmp, tmp2, i, x, y, w, h, x2, y2;
       static float tmpf;
       static char str[256+1];
       static unsigned char num[4];
@@ -173,9 +173,36 @@ void loop() {
           break;
 
         case SIG_SCR_DRAW_PIX:
+          x = bridge_readU16();
+          y = bridge_readU16();
+          tmp = bridge_readU16();
+          mcu.getScreen()->drawPixel(x, y, tmp);
+          break;
         case SIG_SCR_DRAW_LINE:
+          x = bridge_readU16();
+          y = bridge_readU16();
+          x2 = bridge_readU16();
+          y2 = bridge_readU16();
+          tmp = bridge_readU16();
+          mcu.getScreen()->drawLine(x, y, x2, y2, tmp);
+          break;
         case SIG_SCR_DRAW_RECT:
+          x  = bridge_readU16();
+          y  = bridge_readU16();
+          w  = bridge_readU16();
+          h  = bridge_readU16();
+          tmp2 = bridge_readU16(); // mode
+          tmp = bridge_readU16();  // color
+          mcu.getScreen()->drawRect(x, y, w, h, tmp2, tmp);
+          break;
         case SIG_SCR_DRAW_CIRCLE:
+          x  = bridge_readU16();
+          y  = bridge_readU16();
+          w  = bridge_readU16();
+          tmp2 = bridge_readU16(); // mode
+          tmp = bridge_readU16();  // color
+          mcu.getScreen()->drawCircle(x, y, w, tmp2, tmp);
+          break;
         case SIG_SCR_DRAW_TRIANGLE:
           break;
         case SIG_SCR_DRAW_BPP:

@@ -466,9 +466,6 @@
   void GenericMCU_SCREEN::drawCircle(int x, int y, int radius, uint8_t mode, uint16_t color) {
     if ( !this->ready ) { return; }
 
-    uint8_t d0 = x / 256; // up to 64K pixels
-    uint8_t d1 = x % 256;
-
     mcuBridge.write( SIG_SCR_DRAW_CIRCLE );
     writeBridgeU16( x );
     writeBridgeU16( y );
