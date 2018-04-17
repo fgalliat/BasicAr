@@ -509,6 +509,22 @@
     flushBridgeRX();
   }
 
+  void GenericMCU_SCREEN::drawPicture565Sprite( char* filename, int x, int y, int w, int h, int sx, int sy ) {
+    if ( !this->ready ) { return; }
+
+    mcuBridge.write( SIG_SCR_DRAW_PCT_SPRITE );
+    writeBridgeU16( x );
+    writeBridgeU16( y );
+    writeBridgeU16( w );
+    writeBridgeU16( h );
+    writeBridgeU16( sx );
+    writeBridgeU16( sy );
+    mcuBridge.print( filename );
+    mcuBridge.write( 0x00 );
+
+    flushBridgeRX();
+  }
+
   void GenericMCU_SCREEN::drawPictureBPP( char* filename, int x, int y ) {
     if ( !this->ready ) { return; }
 

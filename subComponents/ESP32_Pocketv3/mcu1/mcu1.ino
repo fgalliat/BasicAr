@@ -1,6 +1,10 @@
  /**************
  * Esp32 Devkit R1 Board API test
+ * 
  * Xts-uBasic Pocket v3
+ * 
+ * MCU#1
+ * 
  * Xtase - fgalliat @ Mar 2018
  ***************/
 
@@ -56,9 +60,36 @@ void setup() {
 
   // BRIDGE UART provided by "ESP32TwinMCU1.h"
   // mcuBridge.println("/READY");
+
+  
 }
 
+
+int cpt = 0;
+
 void loop() {
+
+  
+  if (cpt % 20 == 0) { mcu.getScreen()->clear(); }
+
+  int dx = (int)(random(320-64) );
+  int dy = (int)(random(240-32) );
+
+  mcu.getScreen()->drawPicture565Sprite( cpt == 0 ? (char*)"/MP3_GUI.PCT" : (char*)NULL, dx, dy, 64, 32, 0, 0);
+
+  mcu.println("Hello from #1 Bridge");
+  delay(500);
+  cpt++;
+
+  if ( mcu.btn(0) ) {
+    mcu.println("Switch to bridge");
+    __mcuBridgeReady = true;
+    mcu.getScreen()->setup();
+    cpt = 0;
+    return;
+  }
+
+
   if ( mcu.getGPIO()->isReady() ) {
     for(int btn=0; btn < 7; btn++) {
       //if ( readGPIOBtn(btn) ) {
