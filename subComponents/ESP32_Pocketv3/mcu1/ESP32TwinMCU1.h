@@ -80,12 +80,14 @@
 
     setupAdditionalUARTs();
 
-    println("init done...");
+    //println("init done...");
+    Serial.println("init done...");
 
     // ===== Bridge Sync. Routine ======================
 
     __mcuBridgeReady = false;
-    println("sync");
+    //println("sync");
+    Serial.println("sync");
 
     int t0 = millis();
     int timeout = 3 * 1000;
@@ -98,32 +100,36 @@
       const int signalToSend = SIG_MCU_SLAVE_SYNC;
     #endif
 
+    __mcuBridgeReady = false;
     while(true) {
       led(0, true);
-      //println(" Waiting a 1st byte");
-      //Serial.println( mcuBridge.available() );
+      // on MCU#1 -> use Serial.println() until 
+      // bridge is not ready
 
       if ( mcuBridge.available() > 0 ) {
-        println(" Found a 1st byte");
+        Serial.println(" Found a 1st byte");
+        t0 = millis();
 
         if ( mcuBridge.read() == 0xFF ) {
-          println(" Found the 1st byte");
+          Serial.println(" Found the 1st byte");
+          t0 = millis();
 
           while ( mcuBridge.available() <= 0 ) { 
             if ( millis() - t0 >= timeout ) { break; }
             delay(10);
           }
           if ( millis() - t0 >= timeout ) { break; }
-          println(" Found a 2nd byte");
+          Serial.println(" Found a 2nd byte");
           if ( mcuBridge.read() == signalToRead ) {
-            println(" Found the 2nd byte");
+            Serial.println(" Found the 2nd byte");
             __mcuBridgeReady = true;
+            break;
           }
         }
       }
       if ( millis() - t0 >= timeout ) { break; }
       delay(100);
-      println(" Send sync seq.");
+      Serial.println(" Send sync seq.");
       mcuBridge.write( 0xFF );
       mcuBridge.write( signalToSend );
       led(0, false);
@@ -135,7 +141,7 @@
     if ( __mcuBridgeReady ) {
       println("sync done...");
     } else {
-      println("sync failed...");
+      Serial.println("sync failed...");
     }
   }
 

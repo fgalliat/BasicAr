@@ -88,6 +88,8 @@ class GenericMCU_SCREEN {
       GenericMCU_SCREEN(GenericMCU* mcu) { this->mcu = mcu; }
       ~GenericMCU_SCREEN() {}
 
+      bool isReady() { return this->ready; }
+
       void setup();
       void lock();
 

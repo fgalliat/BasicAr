@@ -69,22 +69,24 @@ int cpt = 0;
 
 void loop() {
 
-  
-  if (cpt % 20 == 0) { mcu.getScreen()->clear(); }
+  if ( mcu.getScreen()->isReady() ) {
+    if (cpt % 20 == 0) { mcu.getScreen()->clear(); }
 
-  int dx = (int)(random(320-64) );
-  int dy = (int)(random(240-32) );
+    int dx = (int)(random(320-64) );
+    int dy = (int)(random(240-32) );
 
-  mcu.getScreen()->drawPicture565Sprite( cpt == 0 ? (char*)"/MP3_GUI.PCT" : (char*)NULL, dx, dy, 64, 32, 0, 0);
+    mcu.getScreen()->drawPicture565Sprite( cpt == 0 ? (char*)"/MP3_GUI.PCT" : (char*)NULL, dx, dy, 64, 32, 0, 0);
+  }
 
   mcu.println("Hello from #1 Bridge");
-  delay(500);
+  // delay(500); // since there is a delay(300) further
   cpt++;
 
   if ( mcu.btn(0) ) {
     mcu.println("Switch to bridge");
     __mcuBridgeReady = true;
     mcu.getScreen()->setup();
+    mcu.getMusicPlayer()->setup();
     cpt = 0;
     return;
   }

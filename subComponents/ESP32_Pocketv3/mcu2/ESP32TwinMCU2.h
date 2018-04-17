@@ -106,9 +106,11 @@
 
       if ( mcuBridge.available() > 0 ) {
         println(" Found a 1st byte");
+        t0 = millis();
 
         if ( mcuBridge.read() == 0xFF ) {
           println(" Found the 1st byte");
+          t0 = millis();
 
           while ( mcuBridge.available() <= 0 ) { 
             if ( millis() - t0 >= timeout ) { break; }
@@ -119,6 +121,7 @@
           if ( mcuBridge.read() == signalToRead ) {
             println(" Found the 2nd byte");
             __mcuBridgeReady = true;
+            break;
           }
         }
       }
