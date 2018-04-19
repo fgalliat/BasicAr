@@ -78,7 +78,9 @@ void loop() {
     mcu.getScreen()->drawPicture565Sprite( cpt == 0 ? (char*)"/MP3_GUI.PCT" : (char*)NULL, dx, dy, 64, 32, 0, 0);
   }
 
-  mcu.println("Hello from #1 Bridge");
+  if ( ! mcu.getGPIO()->isReady() ) {
+    mcu.println("Hello from #1 Bridge");
+  }
   // delay(500); // since there is a delay(300) further
   cpt++;
 
