@@ -249,6 +249,90 @@
     delay(100);
   }
 
+  #ifdef MAIN_INO_FILE
+    File currentFile;
+    bool currentFileValid = false;
+
+    char __myLine[256+1];
+
+#ifndef min
+ #define min(a,b) (a < b ? a : b)
+#endif
+
+  #endif
+
+  bool  GenericMCU_FS::openCurrentTextFile(char* filename, bool readMode) {
+    if ( filename == NULL ) { Serial.print("CAN'T OPEN NULL FILE\n"); return false; }
+    Serial.print("opening "); Serial.println(filename);
+    currentFileValid = false;
+    if ( readMode && !SPIFFS.exists(filename) ) { return false; }
+    delay(100);
+    //this->currentFile = NULL; // free ?
+    Serial.println("RIGHT HERE");
+    currentFile = SPIFFS.open(filename, readMode ? "r" : "w");
+    Serial.println("RIGHT NOW");
+    // if ( !f ) { Serial.println("failed"); return false; }
+    if ( !currentFile ) { Serial.println("failed"); return false; }
+
+    currentFile.seek(0);
+    delay(100);
+    Serial.println("RIGHT ...");
+    currentFileValid = true;
+    Serial.println("opened");
+    return true;
+  }
+
+  void  GenericMCU_FS::closeCurrentTextFile() {
+    Serial.println("closing");
+    if ( currentFileValid ) {
+        currentFile.flush();
+        currentFile.close();
+        currentFileValid = false;
+    }
+    Serial.println("closed");
+  }
+
+  // void writeCurrentTextByte(char b) {
+  //             currentFile.write( (uint8_t*)b, 1 );
+  //             //currentFile.flush();
+  //         }
+  //         void writeCurrentTextBytes(char* b, int len) {
+  //             currentFile.write( (uint8_t*)b, len );
+  //             currentFile.flush();
+  //         }
+  // // have to provide "\n" @ end of line
+  //         void writeCurrentTextLine(char* line) {
+  //             if ( line == NULL ) { Serial.print("CANT WRITE NULL LINE\n"); return; }
+  //             int len = strlen( line );
+  //           //   this->currentFile->write( (uint8_t*)line, len );
+  //           //   this->currentFile->flush();
+  //             currentFile.write( (uint8_t*)line, len );
+  //             currentFile.flush();
+  //         }
+
+  char* GenericMCU_FS::readCurrentTextLine() {
+//   Serial.println("readLine.1");
+            const int MAX_LINE_LEN = 256;
+            memset(__myLine, 0x00, MAX_LINE_LEN +1);
+
+            if ( currentFile.available() <= 0 ) {
+                return NULL;
+            }
+
+            int ch, cpt=0;
+            for(int i=0; i < MAX_LINE_LEN; i++) {
+                if ( currentFile.available() <= 0 ) { break; }
+                ch = currentFile.read();
+                if ( ch == -1 )   { break;    }
+                if ( ch == '\r' ) { continue; }
+                if ( ch == '\n' ) { break;    }
+                __myLine[ cpt++ ] = (char)ch;
+            }
+
+            return __myLine;
+  }
+
+  
 
   // ======== Bridge ====================================================================
   static bool waitBridgeSIG(int valueToWait=0xFF) {

@@ -82,6 +82,10 @@ class GenericMCU_FS {
       void format();
       void remove(char* filename);
 
+      bool openCurrentTextFile(char* filename, bool readMode=true);
+      char* readCurrentTextLine();
+      void closeCurrentTextFile();
+
       void uploadViaSerial();
       // receive from bridge
       void uploadViaBridge();

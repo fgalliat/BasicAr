@@ -242,11 +242,6 @@ void playTuneFromStorage(char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bo
 
   cleanAudioBuff();
 
-  #ifndef FS_SUPPORT
-    host_outputString("ERR : NO Storage support\n");
-  #else
-
-  // SdFile zik("monkey.t5k", O_READ);
 
   led3(true);
 
@@ -319,7 +314,7 @@ void playTuneFromStorage(char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bo
       __playTuneT53( audiobuff, btnStop );  
     }
 
-  #else
+  #elif defined(TOTO_TEENSY)
     // sdfat lib
     SdFile file;
     if (! file.open( ftuneStreamName , O_READ) ) {
@@ -351,7 +346,6 @@ void playTuneFromStorage(char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bo
     }
 
     #endif
-  #endif
   
   mcu.noTone(); // MANDATORY for ESP32Oled
  }
@@ -564,16 +558,6 @@ void drawRect(int x, int y, int w, int h, int color, int mode) {
 
 bool drawBPPfile(char* filename) {
 
-  #ifndef FS_SUPPORT
-    host_outputString("ERR : storage not supported\n");
-    return false;
-  #endif
-
-  if ( ! STORAGE_OK ) {
-    host_outputString("ERR : storage not ready\n");
-    return false;
-  }
-
   if ( filename == NULL || strlen(filename) <= 0 ) { 
     host_outputString("ERR : invalid file\n");
     return false;
@@ -603,17 +587,6 @@ bool drawBPPfile(char* filename) {
 }
 
 bool drawPCTfile(char* filename, int x, int y) {
-
-  #ifndef FS_SUPPORT
-    host_outputString("ERR : storage not supported\n");
-    return false;
-  #endif
-
-  if ( ! STORAGE_OK ) {
-    host_outputString("ERR : storage not ready\n");
-    return false;
-  }
-
   if ( filename == NULL || strlen(filename) <= 0 ) { 
     host_outputString("ERR : invalid file\n");
     return false;
@@ -621,54 +594,7 @@ bool drawPCTfile(char* filename, int x, int y) {
 
   autocomplete_fileExt(filename, ".PCT");
 
-
-#if defined(ESP32PCKv2) and defined(COLOR_64K) 
-  esp32.lockISR();
-        // int n = esp32.getFs()->readBinFile(SDentryName, color_picturebuff, COLOR_PICTURE_BUFF_SIZE);
-        esp32.getScreen()->drawPctFile(x, y, SDentryName);
-        if ( isGfxAutoBlitt() ) esp32.getScreen()->blitt();
-  esp32.unlockISR();
-#else
-  host_outputString("ERR : can't draw that\n");
-#endif
-
-
-  // #if defined(FS_SUPPORT)  and defined( COLOR_64K )
-  //   #if defined(ESP32_FS)
-  //     esp32.lockISR();
-  //     int n = esp32.getFs()->readBinFile(SDentryName, color_picturebuff, COLOR_PICTURE_BUFF_SIZE);
-  //     esp32.unlockISR();
-  //     if ( n <= 0 ) { 
-  //       host_outputString("ERR : File not ready\n");
-  //       return false;
-  //     } /* else if (n != COLOR_PICTURE_BUFF_SIZE) {
-  //       host_outputString("ERR : File not valid\n");
-  //       host_outputInt( n );
-  //       host_outputString(" bytes read\n");
-  //       return false;
-  //     } */
-  //   #endif
-  // #endif
-
-
-  // // do something w/ these bytes ...
-  // if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
-  //   #if defined(BUILTIN_LCD) and defined( COLOR_64K )
-  //     #ifdef BUT_ESP32
-  //       esp32.lockISR();
-  //       //esp32.getScreen()->clear();
-  //       esp32.getScreen()->drawPct(x, y, color_picturebuff);
-  //       if ( isGfxAutoBlitt() ) esp32.getScreen()->blitt();
-  //       esp32.unlockISR();
-  //     #else
-  //       host_outputString("no ESP32\n");
-  //       return false;
-  //     #endif
-  //   #else
-  //     host_outputString("no LCD\n");
-  //     return false;
-  //   #endif
-  // }
+  mcu.getScreen()->drawPicture565(SDentryName, x, y);
 
 return true;
 }
@@ -867,11 +793,74 @@ return true;
 
  // ==== Load/Save source code (ascii) from SDCard ====
 
- #ifndef FS_SUPPORT
-  void loadAsciiBas(char* filename) {
-    host_outputString("ERR : NO Storage support\n");
+
+  void loadCallback(char* codeLine) {
+
+    if ( codeLine == NULL ) { Serial.println("CANT HANDLE NULL LINES"); return; }
+
+    //Serial.print(">> ");Serial.println(codeLine);
+
+    // interpret line
+    int ret = tokenize((unsigned char*)codeLine, tokenBuf, TOKEN_BUF_SIZE); 
+    if (ret == 0) { ret = processInput(tokenBuf); }
+    if ( ret > 0 ) { 
+      //host_outputInt( curToken );
+      host_outputString((char *)codeLine);
+      host_outputString((char *)" ->");
+      host_outputString((char *)errorTable[ret]); 
+      host_outputString((char *)" @");
+      //host_outputInt( lineCpt );
+      host_outputInt( 999 );
+      host_outputString((char *)"\n");
+      host_showBuffer(); 
+    }
+}
+
+
+ void loadAsciiBas(char* filename) {
+  if ( !STORAGE_OK ) {
+    host_outputString("ERR : Storage not ready\n");
     host_showBuffer();
+    return;
   }
+
+  autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
+
+
+    cleanCodeLine();
+    memset( tokenBuf, 0x00, TOKEN_BUF_SIZE );
+
+    // esp32.lockISR();
+    bool ok = mcu.getFS()->openCurrentTextFile( SDentryName );
+    if ( !ok ) {
+      Serial.println( "-FAILED-" );
+      host_outputString( "-FAILED-\n" );
+      host_showBuffer();
+    } else {
+      char* codeLine; int cpt = 0;
+      while( (codeLine = mcu.getFS()->readCurrentTextLine() ) != NULL ) {
+        //if ( strlen(codeLine) == 0 ) { break; }
+Serial.println( codeLine );
+        loadCallback( codeLine );
+        //Serial.println( codeLine );
+      }
+      mcu.getFS()->closeCurrentTextFile();
+    }
+    // esp32.unlockISR();
+
+    host_outputString( "-EOF-\n" );
+    host_showBuffer();
+
+    return;
+ }
+
+
+
+ #ifndef FS_SUPPORT
+  // void loadAsciiBas(char* filename) {
+  //   host_outputString("ERR : NO Storage support\n");
+  //   host_showBuffer();
+  // }
 
   void saveAsciiBas(char* filename) {
     host_outputString("ERR : NO Storage support\n");
