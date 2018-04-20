@@ -1,6 +1,9 @@
 /***************************
 * Architectures definitions
 *
+*
+* NO MORE USED FOR NOW !!!!!!
+*
 * Xtase - fgalliat @ Sept2017
 ***************************/
 #ifndef __XTS_ARCH_H__

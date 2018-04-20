@@ -2,43 +2,61 @@
 * Xtase - fgalliat : fgalliat@gmail.com @Sept2017
 * redesigned for XtsuBasic boards & XtsuPocket boards
 *
+* redesigned @Apr2018 (for new MCU abstraction layer)
+*
 * Based on robin edwards work - (https://github.com/robinhedwards/ArduinoBASIC)
 *
 * if compile errors : (see error_log_win.txt)
 * @01/31/2018 arduino ide 1.8.5 & esp32 core under Win10
 *******************/
 
-// Teensy's doesn't supports FS (SD, SDFat) & PROGMEM routines
-#include "xts_arch.h"
 
-#ifdef BUT_ESP32
- #ifdef ESP32PCKv2
-   #include "HardwareSerial.h"
-   //HardwareSerial Serial2(2);
-   HardwareSerial Serial2(UART2_NUM);
-   Esp32Pocketv2 esp32;
+// just to identify main cpp sourcecode
+#define MAIN_INO_FILE 1
 
-   #ifdef ESP32_WIFI_SUPPORT
-     extern void host_outputString(char* str);
-     extern int host_outputInt(long v);
+#define PICTURE_BUFF_SIZE (1024)
+#define AUDIO_BUFF_SIZE (5*1024)
 
-     #define DBUG(a) { Serial.print(a); host_outputString(a); }
-     #define DBUGi(a) { Serial.print(a); host_outputInt(a); }
+#include "GenericMCU.h"
 
-     #include "Esp32WifiServer.h"
-     Esp32WifiServer telnet;
-     #undef DBUG
-     #undef DBUGi
-   #endif
+#if defined(ARDUINO_ARCH_ESP32)
+  #define BUT_ESP32 1
 
+  #define ESP32PCKv3 1
 
- #else
-  Esp32Oled esp32;
- #endif
-  void noTone(int pin) { esp32.noTone(); }
-  void tone(int pin, int freq, int duration) { esp32.tone(freq,duration); }
+  #ifdef ESP32PCKv3
+    // else is slave
+    #define MCU_MASTER 1
+    #define ESP32_I_TFT_eSPI 1
+    // need to be defined in <$lib$>/User_Setup_Select.h
+    #define ESP32_I_USE_ILI9341 1
+
+    #include "ESP32TwinMCU1.h"
+
+    #define BUILTIN_LCD 1
+    #define ARCH_TYPE "Xts_Pck V3" 
+
+// TODO : reactivate
+//     #ifdef ESP32_WIFI_SUPPORT
+//      extern void host_outputString(char* str);
+//      extern int host_outputInt(long v);
+//      #define DBUG(a) { Serial.print(a); host_outputString(a); }
+//      #define DBUGi(a) { Serial.print(a); host_outputInt(a); }
+//      #include "Esp32WifiServer.h"
+//      Esp32WifiServer telnet;
+//      #undef DBUG
+//      #undef DBUGi
+//    #endif
+
+  #endif
+
 #endif
 
+GenericMCU mcu;
+// __________________
+
+// // Teensy's doesn't supports FS (SD, SDFat) & PROGMEM routines
+// #include "xts_arch.h"
 
 extern bool STORAGE_OK;
 bool BUZZER_MUTE = false;
@@ -52,57 +70,10 @@ extern int OUTPUT_DEVICE;
 extern int GFX_DEVICE;
 extern int INPUT_DEVICE;
 
-
-#ifdef BUT_TEENSY
-    #include "desktop_devices.h"
-
-    #ifndef COMPUTER
-      #include <EEPROM.h>
-    #endif
-#else
-    #include <font.h>
-    #include <SSD1306ASCII.h>
-    // ^ - modified for faster SPI
-    #include <PS2Keyboard.h>
-    
-    #include <EEPROM.h>
-#endif
 #include "basic.h"
 #include "host.h"
 
 extern int xts_loadBas(char* optFilename=NULL);
-
-// Define in host.h if using an external EEPROM e.g. 24LC256
-// Should be connected to the I2C pins
-// SDA -> Analog Pin 4, SCL -> Analog Pin 5
-// See e.g. http://www.hobbytronics.co.uk/arduino-external-eeprom
-
-// If using an external EEPROM, you'll also have to initialise it by
-// running once with the appropriate lines enabled in setup() - see below
-
-#if EXTERNAL_EEPROM
-    #include <I2cMaster.h>
-    // Instance of class for hardware master with pullups enabled
-    TwiMaster rtc(true);
-#endif
-
-// Keyboard --- to remove !!!
-// NB Keyboard needs a seperate ground from the OLED
-const int DataPin = 8;
-const int IRQpin =  3;
-PS2Keyboard keyboard;
-
-#ifndef BUT_ESP32
- // OLED --- to remove !!!
- #define OLED_DATA 9
- #define OLED_CLK 10
- #define OLED_DC 11
- #define OLED_CS 12
- #define OLED_RST 13
- SSD1306ASCII oled(OLED_DATA, OLED_CLK, OLED_DC, OLED_RST, OLED_CS);
-#endif
-// not to include for ESP32 OLED
-
 
 // BASIC
 unsigned char mem[MEMORY_SIZE];
@@ -112,12 +83,7 @@ char codeLine[ASCII_CODELINE_SIZE]; // !! if enought !! (BEWARE : LIGHT4.BAS)
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 unsigned char audiobuff[AUDIO_BUFF_SIZE];       // T5K & T53 file buffer
 unsigned char picturebuff[PICTURE_BUFF_SIZE];   // BPP file buffer
-#ifdef COLOR_64K
-  //unsigned char color_picturebuff[PICTURE_BUFF_SIZE];  // PCT file buffer
-  uint16_t color_picturebuff[160*128/8];  // PCT file buffer
-#endif
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-
 
 
 const char welcomeStr[]  = "Arduino BASIC (Xts)";
@@ -132,9 +98,6 @@ volatile bool isWriting = false; // lock read when write
 // =========/ Serial Event /==============
 
 // WILL HAVE TO malloc(...)
-// char screenBuffer[ (const int)(SCREEN_WIDTH*SCREEN_HEIGHT) ];
-// char lineDirty[ (const int)(SCREEN_HEIGHT) ];
-
 char* screenBuffer = NULL;
 char* lineDirty = NULL;
 char* line = NULL;
@@ -181,14 +144,8 @@ bool addAutorunFlag = false;
 
 void setup() {
 
-    // "Retour Chariot" + 115200bps
-    Serial.begin(115200);
-
-#ifdef BUT_ESP32
-   esp32.setup();
-   STORAGE_OK = true;
-   // addAutorunFlag = true;
-#endif
+    mcu.setup();
+    STORAGE_OK = mcu.getFS()->isReady();
 
     // BUZZER_MUTE = true;
     // inputString.reserve(200);
@@ -197,7 +154,6 @@ void setup() {
     setConsoles(OUT_DEV_SERIAL, -1, -1);
     SCREEN_LOCKER = false;
 
-    //#ifdef BUILTIN_LCD and not defined(LCD_LOCKED)
     #ifdef BUILTIN_LCD
         setConsoles(OUT_DEV_LCD_MINI, -1, -1);
     #else
@@ -205,17 +161,9 @@ void setup() {
         setScreenSize( SER_TEXT_WIDTH, SER_TEXT_HEIGHT );
     #endif
 
-    setupHardware();
-
-    // TO REMOVE...
-    keyboard.begin(DataPin, IRQpin);
+    // setupHardware();
 
     reset(); // resets the BASIC mem
-
-#ifndef BUT_ESP32
-    host_init(BUZZER_PIN);
-#endif
-
     host_cls();
 
     //host_outputProgMemString(welcomeStr);
@@ -234,22 +182,7 @@ void setup() {
 
     host_showBuffer();
 
-    // IF USING EXTERNAL EEPROM
-    // The following line 'wipes' the external EEPROM and prepares
-    // it for use. Uncomment it, upload the sketch, then comment it back
-    // in again and upload again, if you use a new EEPROM.
-    // writeExtEEPROM(0,0); writeExtEEPROM(1,0);
-
-#ifndef BUT_ESP32
-    if (EEPROM.read(0) == MAGIC_AUTORUN_NUMBER) {
-        autorun = 1;
-    }
-    else {
-        if ( !BUZZER_MUTE ) { host_startupTone(); }
-    }
-#else
     addAutorunFlag = true;
-#endif
 
 }
 
@@ -284,30 +217,23 @@ void loop() {
         if ( addAutorunFlag ) {
           addAutorunFlag = false;
           reset();
-        //   host_outputString("autorun ?\n");
-        //   host_showBuffer();
+          const char* _input = "CHAIN \"AUTORUN\" \n";
 
-            //   if( xts_loadBas("AUTORUN") == true ) {
-            //     selfRun = true;
-            //   } ....
-            const char* _input = "CHAIN \"AUTORUN\" \n";
+          ret = tokenize((unsigned char*)_input, tokenBuf, TOKEN_BUF_SIZE); 
+          ret = processInput(tokenBuf);
+          if ( ret > 0 ) { host_outputString((char *)errorTable[ret]); host_showBuffer(); }
+          ret = ERROR_NONE;
 
-            ret = tokenize((unsigned char*)_input, tokenBuf, TOKEN_BUF_SIZE); 
-            ret = processInput(tokenBuf);
+          #ifdef BUT_ESP32 
+            ret = doRun();
             if ( ret > 0 ) { host_outputString((char *)errorTable[ret]); host_showBuffer(); }
             ret = ERROR_NONE;
-
-            #ifdef BUT_ESP32 
-             ret = doRun();
-             if ( ret > 0 ) { host_outputString((char *)errorTable[ret]); host_showBuffer(); }
-             ret = ERROR_NONE;
-            #endif
+          #endif
         }
 
         // get a line from the user
         MODE_EDITOR = true;
         #ifdef ESP32_WIFI_SUPPORT
-
             char *input = NULL; 
             if ( telnet.isServerStarted() ) {
                 telnet.runServerTick();
@@ -343,8 +269,6 @@ void loop() {
         MODE_EDITOR = false;
 
         // special editor commands
-        // Xtase modif
-        //if (input[0] == '?' && input[1] == 0) {
         if (input[0] == '*' && input[1] == 0) {
             host_outputFreeMem(sysVARSTART - sysPROGEND);
             host_showBuffer();
@@ -373,18 +297,15 @@ void loop() {
             ret = tokenize((unsigned char*)input, tokenBuf, TOKEN_BUF_SIZE); ret = processInput(tokenBuf);
             if ( ret > 0 ) { host_outputString((char *)errorTable[ret]); host_showBuffer(); }
             ret = ERROR_NONE;
-            
         }
 
-            // otherwise tokenize
-            ret = tokenize((unsigned char*)input, tokenBuf, TOKEN_BUF_SIZE);
+        // otherwise tokenize
+        ret = tokenize((unsigned char*)input, tokenBuf, TOKEN_BUF_SIZE);
 
 
-            led2( ret > 0 );
+        led2( ret > 0 );
 
-            // moa
-            host_showBuffer();
-            //delay(50);
+        host_showBuffer();
     }
     else {
         host_loadProgram();
@@ -404,10 +325,6 @@ void loop() {
 
 
         if ( selfRun ) { // for CHAIN "<...>" cmd
-            // tokenBuf[0] = TOKEN_RUN;
-            // tokenBuf[1] = 0;
-            // selfRun = false;
-            // ret = processInput(tokenBuf);
             ret = doRun();
         }
 
@@ -440,8 +357,6 @@ void loop() {
 void xts_serialEvent() {
     // //while ( isWriting ) { delay(5); Serial.print('X'); }
     // Serial.flush();
-
-
     // while (Serial.available()) {
     //   // get the new byte:
     //   char inChar = (char)Serial.read();

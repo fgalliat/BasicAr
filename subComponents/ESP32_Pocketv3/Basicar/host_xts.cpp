@@ -306,57 +306,42 @@ void setupRPISerial() {
 #endif
 
 
-void setupHardware() {
-
- #ifdef BUT_ESP32
-   //esp32.setup();
-
-   // TODO : better than that !!!!
-   #ifdef BOARD_SND
-     setupSoundDFPlayer();
-   #endif
-
-   return;
- #endif
-
-
- setupGPIO();
-
- #ifdef BUILTIN_LCD
-   setupLCD();
- #endif
-
- #ifdef BUILTIN_KBD
-   setup_kbd(); // must be done before VGASerial
- #endif
-
- #ifdef BOARD_VGA
-   setupVGASerial();
- #endif
-
- #ifdef BOARD_RPID
-   setupRPISerial();
- #endif
-
- #ifdef BOARD_SND
-   setupSoundDFPlayer();
- #endif
-
- #ifdef FS_SUPPORT
-   setupSD();
- #endif
-
- #ifdef BUT_TEENSY
-   //for Teensy 2 & 2++
-   //Timer1.initialize(350000); // 350ms 
-   //Timer1.attachInterrupt( _ISR_emul );
-
-
-  //  myTimer.begin(_ISR_emul, 150000); // 150ms
-  //  myTimer.priority( 20 ); // 0 maximum priority
-   
- #endif
-}
+// void setupHardware() {
+//  #ifdef BUT_ESP32
+//    //esp32.setup();
+//    // TODO : better than that !!!!
+//    #ifdef BOARD_SND
+//      setupSoundDFPlayer();
+//    #endif
+//    return;
+//  #endif
+//  setupGPIO();
+//  #ifdef BUILTIN_LCD
+//    setupLCD();
+//  #endif
+//  #ifdef BUILTIN_KBD
+//    setup_kbd(); // must be done before VGASerial
+//  #endif
+//  #ifdef BOARD_VGA
+//    setupVGASerial();
+//  #endif
+//  #ifdef BOARD_RPID
+//    setupRPISerial();
+//  #endif
+//  #ifdef BOARD_SND
+//    setupSoundDFPlayer();
+//  #endif
+//  #ifdef FS_SUPPORT
+//    setupSD();
+//  #endif
+//  #ifdef BUT_TEENSY
+//    //for Teensy 2 & 2++
+//    //Timer1.initialize(350000); // 350ms 
+//    //Timer1.attachInterrupt( _ISR_emul );
+//   //  myTimer.begin(_ISR_emul, 150000); // 150ms
+//   //  myTimer.priority( 20 ); // 0 maximum priority
+//  #endif
+// }
 
 #ifdef BUT_TEENSY
   void _noInterrupts() {

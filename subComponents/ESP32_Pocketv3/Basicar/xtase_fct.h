@@ -5,7 +5,6 @@
 *******************/
 
 #include "basic.h"
-//#include "host.h"
 
 #ifndef COMPUTER
   #include <Arduino.h>
@@ -210,31 +209,17 @@ int xts_delay() {
 
 // BEWARE : Simple Function
 // 1-based // 0 for read whole mask in 1 time
+// 4 left / 5 right / 6 up / 7 down / 8 L / 9 R / 10 MP3Busy
 int xts_buttonRead(int btnNum) {
   if ( btnNum == 0 ) { return (btn1() ? 1 : 0)+(btn2() ? 2 : 0)+(btn3() ? 4 : 0); }
-  else if ( btnNum == 1 ) { return btn1() ? 1 : 0; }
-  else if ( btnNum == 2 ) { return btn2() ? 1 : 0; }
-  else if ( btnNum == 3 ) { return btn3() ? 1 : 0; }
 
-#ifdef BUT_ESP32
-  // read pad as btns
-  else if ( btnNum == 4 ) { return esp32.readPadXaxis() < 0 ? 1 : 0; }
-  else if ( btnNum == 5 ) { return esp32.readPadXaxis() > 0 ? 1 : 0; }
-  else if ( btnNum == 6 ) { return esp32.readPadYaxis() > 0 ? 1 : 0; }
-  else if ( btnNum == 7 ) { return esp32.readPadYaxis() < 0 ? 1 : 0; }
+  // button mapping Hard <-> BASIC
+  // BEWARE : here, we do not read builtin btn
+  const uint8_t map[] = { -1, 5, 6, 7, 3, 4, 1, 2, -1, -1, -1 };
 
-  #ifdef ESP32PCKv2
-  // Trigger A
-  else if ( btnNum == 8 ) { return esp32.readBtn(8); }
-  // Trigger B
-  else if ( btnNum == 9 ) { return esp32.readBtn(9); }
-  // MP3 BUSY
-  else if ( btnNum == 10 ) { return esp32.readBtn(10); }
-  #endif
+  if ( btnNum < 1 || btnNum > 10 ) { return 0; }
 
-#endif
-
-  return 0;
+  return mcu.btn( map[ btnNum ] ) ? 1 : 0;
 }
 
 // == Led
@@ -251,7 +236,7 @@ int xts_led() {
     uint16_t state = (uint16_t)stackPopNum(); // 1 or 0
     uint16_t ledID = (uint16_t)stackPopNum(); // 1 based
 
-    led(ledID,state >= 1);
+    mcu.led(ledID,state >= 1);
   }
 
   return 0;
@@ -306,7 +291,8 @@ int xts_tone() {
       uint16_t note_freq = (uint16_t)stackPopNum();
 
       if ( BUZZER_MUTE ) { return 0; }
-      playNote(note_freq, duration);
+      mcu.tone(note_freq, duration);
+      mcu.noTone(); // TODO : CHECK THAT
     }
 
   return 0;    
@@ -460,8 +446,6 @@ int xts_dispPCT() {
   return 0;
 }
 
-// BEWARE : PC emulation has not
-// indirect blitt !!!
 int xts_blittMode() {
   getNextToken();
 
@@ -652,11 +636,6 @@ bool xts_chain(char* filename) {
   bool tmpExec = executeMode;
   if ( xts_loadBas(filename) == true ) {
     if ( tmpExec ) {
-      // doRunPrg();
-      // unsigned char tkb[2];
-      // tkb[0] = TOKEN_RUN;
-      // tkb[1] = 0x00;
-      // int ret = processInput( tkb );
       selfRun = true; // the only way that works : can't run inside run ...
       return true;
     }
@@ -836,11 +815,6 @@ float xts_max(float arg0, float arg1) {
 // EXEC "MP3","PAUSE"
 // @ this time : only support for String args....
 
-#ifdef BOARD_SND
-  #include "dev_sound_dfplayer.h"
-#endif
-
-
 int xts_exec_cmd() {
   getNextToken();
   
@@ -895,24 +869,15 @@ int xts_exec_cmd() {
             if ( strcmp( args[1], "PLAY" ) == 0 ) {    // ex. exec "mp3","play"
               int trackNum = 1;
               if ( argci > 0 ) { trackNum = argi[0]; } // ex. exec "mp3","play",2
-              //host_outputString("Will play #");host_outputInt(trackNum);
-              #ifdef BOARD_SND
-                snd_playTrack(trackNum);
-              #endif
+              mcu.getMusicPlayer()->playTrack(trackNum);
             } else if ( strcmp( args[1], "VOL" ) == 0 ) {    // ex. exec "mp3","vol"
               int volume = 10;
               if ( argci > 0 ) { volume = argi[0]; } // ex. exec "mp3","vol",30
-              #ifdef BOARD_SND
-                snd_setVolume(volume);
-              #endif
+              mcu.getMusicPlayer()->setVolume(volume);
             } else if ( strcmp( args[1], "PAUSE" ) == 0 ) {
-              #ifdef BOARD_SND
-                snd_pause();
-              #endif
+              mcu.getMusicPlayer()->pause();
             } else if ( strcmp( args[1], "NEXT" ) == 0 ) {
-              #ifdef BOARD_SND
-                snd_next();
-              #endif
+              mcu.getMusicPlayer()->next();
             } else {
               free( args[0] );
               free( args[1] );
@@ -921,13 +886,12 @@ int xts_exec_cmd() {
             free( args[1] );
           } // end of argc > 1
         } 
-        #ifdef BUT_ESP32
         else if ( strcmp( args[0], "FS" ) == 0 ) {
           if ( argc > 1 ) {
             if ( strcmp( args[1], "FORMAT" ) == 0 ) {
-              esp32.lockISR();
-              esp32.getFs()->format();
-              esp32.unlockISR();
+              mcu.lockISR();
+              mcu.getFS()->format();
+              mcu.unlockISR();
             } 
             else {
               free( args[0] );
@@ -937,7 +901,6 @@ int xts_exec_cmd() {
             free( args[1] );
           } // end of argc > 1
         } 
-        #endif
         #ifdef ESP32_WIFI_SUPPORT
         else if ( strcmp( args[0], "WIFI" ) == 0 ) {
           if ( argc > 1 ) {
@@ -978,18 +941,6 @@ int xts_exec_cmd() {
 
 
 // ===================================================================
-
-#define NIMPORTEQUOI 1
-
-#ifndef NIMPORTEQUOI
-
-int xts_dataf_cmd() {
-  host_outputString("DATAF cmd NYI !\n");
-  host_showBuffer();
-  return ERROR_BAD_PARAMETER;
-}
-
-#else 
 
   // _________ TODO ______________________
   bool fopenTextFile(char* filename) {
@@ -1306,8 +1257,6 @@ Serial.println("DATAF 26");
 
   return 0;
 }
-
-#endif
 
 // ===================================================================
 

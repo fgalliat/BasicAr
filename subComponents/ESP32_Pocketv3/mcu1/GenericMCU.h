@@ -70,6 +70,8 @@ class GenericMCU_FS {
       GenericMCU_FS(GenericMCU* mcu) { this->mcu = mcu; }
       ~GenericMCU_FS() {}
 
+      bool isReady() { return this->ready; }
+
       void setup();
       void format();
 
