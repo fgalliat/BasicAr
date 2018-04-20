@@ -237,6 +237,19 @@
     mcu->println("FS ready !");
   }
 
+  void GenericMCU_FS::format() {
+    Serial.println("Formating");
+    bool ff = SPIFFS.format();
+    Serial.println("Formated");
+  }
+
+  void GenericMCU_FS::remove(char* filename) {
+    // if (!SPIFFS.exists(filename) ) { return; }
+    SPIFFS.remove(filename);
+    delay(100);
+  }
+
+
   // ======== Bridge ====================================================================
   static bool waitBridgeSIG(int valueToWait=0xFF) {
     while( mcuBridge.available() <= 0 ) {

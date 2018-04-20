@@ -63,6 +63,7 @@
 // #include "mem_utils.h"
 // for mem_utils super-routines
 #define mem_routines 1
+#define ANOTHER_CPP 1
 #include "xts_arch.h"
 extern GenericMCU mcu;
 
@@ -2319,18 +2320,19 @@ int parseLoadSaveCmd() {
 #endif
         }
         else {
-            if (op == TOKEN_SAVE)
+            if (op == TOKEN_SAVE) {
 #ifdef FS_SUPPORT
   return ERROR_BAD_PARAMETER;
 #else
-                host_saveProgram(autoexec);
+                // host_saveProgram(autoexec);
 #endif
+            }
             else if (op == TOKEN_LOAD) {
 #ifdef FS_SUPPORT
   return ERROR_BAD_PARAMETER;
 #else
                 reset();
-                host_loadProgram();
+                // host_loadProgram();
 #endif
             }
             else

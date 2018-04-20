@@ -27,7 +27,14 @@
     // need to be defined in <$lib$>/User_Setup_Select.h
     #define ESP32_I_USE_ILI9341 1
 
+#ifdef MAIN_INO_FILE
     #include "ESP32TwinMCU1.h"
+#else
+  // BEWARE w/ THAT !!!!
+  #define BTN_1    5
+  #define BTN_2    6
+  #define BTN_3    7
+#endif
 
     #define BUILTIN_LCD 1
     #define ARCH_TYPE "Xts_Pck V3" 

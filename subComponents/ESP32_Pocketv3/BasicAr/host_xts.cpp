@@ -9,6 +9,7 @@
   #include "computer.h"
 #endif
 
+#define ANOTHER_CPP 1
 #include "xts_arch.h"
 extern GenericMCU mcu;
 
@@ -84,26 +85,6 @@ bool checkbreak() { return false; }
 
 // ============ Tmp Compatibility Code =============== 
 
-
-
-#ifdef BOARD_VGA
-  #include "dev_screen_VGATEXT.h"
-#endif
-
-
-#ifdef BOARD_RPID
-  #include "dev_screen_RPIGFX.h"
-#endif
-
-#ifdef BUILTIN_KBD
-  #include "dev_kbd.h"
-#endif
-
-#ifdef BOARD_SND
-  #include "dev_sound_dfplayer.h"
-#endif
-
-
  // external forward decl.
  char charUpCase(char ch);
  bool endsWith(char* str, char* what);
@@ -118,35 +99,6 @@ bool checkbreak() { return false; }
 bool STORAGE_OK = false;
 
 
-#ifdef FS_SUPPORT
-
- void setupSD() {
-   #ifdef BUT_ESP32
-     esp32.initFS();
-   #endif
-
-   #ifdef USE_SDFAT_LIB
-     if (!sd.begin()) {
-   #elif defined(ESP32_FS)
-     if (true) {
-   #else
-     if (!SD.begin(BUILTIN_SDCARD)) { // Teensy3.6 initialization
-   #endif
-        led3(true);   delay(500);
-        led3(false);  delay(500);
-        led3(true);   delay(500);
-        led3(false);  delay(500);
-       return;
-     }
-   led1(true);   delay(500);
-   led1(false);  delay(500);
- 
-   #ifdef USE_SDFAT_LIB
-     sd.chvol();
-   #endif
-   STORAGE_OK = true;
- }
-#endif // FS_SUPPORT
 
 #ifdef BUT_TEENSY
   void _noInterrupts() {

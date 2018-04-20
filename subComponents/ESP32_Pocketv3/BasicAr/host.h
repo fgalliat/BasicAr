@@ -42,6 +42,7 @@ char *host_readLine();
 char host_getKey();
 bool host_ESCPressed();
 void host_outputFreeMem(unsigned int val);
-void host_saveProgram(bool autoexec);
-void host_loadProgram();
+
+// void host_saveProgram(bool autoexec);
+// void host_loadProgram();
  

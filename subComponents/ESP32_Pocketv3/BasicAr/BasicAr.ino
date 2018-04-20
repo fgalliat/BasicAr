@@ -272,12 +272,13 @@ void loop() {
         host_showBuffer();
     }
     else {
-        host_loadProgram();
-        tokenBuf[0] = TOKEN_RUN;
-        // xts_loadTestProgram();
-        // tokenBuf[0] = TOKEN_LIST;
-        tokenBuf[1] = 0;
-        autorun = 0;
+        // legacy : was from EEPROM
+        // host_loadProgram();
+        // tokenBuf[0] = TOKEN_RUN;
+        // // xts_loadTestProgram();
+        // // tokenBuf[0] = TOKEN_LIST;
+        // tokenBuf[1] = 0;
+        // autorun = 0;
     }
 
     // execute the token buffer

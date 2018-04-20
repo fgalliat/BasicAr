@@ -11,9 +11,9 @@
 //     return (unsigned char)t;
 //   }
 
-  int isBEndian = -1;
+  static int isBEndian = -1;
 
-  bool isBigEndian(){
+  static bool isBigEndian(){
     if ( isBEndian > -1 ) { return isBEndian == 1; } 
 
     int number = 1;
@@ -25,7 +25,7 @@
  // ===================================
  // Bytes Maipulation 
 
-  float getFloatFromBytes(unsigned char* memSeg, int address) {
+  static float getFloatFromBytes(unsigned char* memSeg, int address) {
     char bytes[sizeof(float)];
 
     if ( address > MEMORY_SIZE || address < 0 ) {
@@ -56,9 +56,9 @@
     return result;
  }
 
- int getSizeOfFloat() { return sizeof(float); }
+ static int getSizeOfFloat() { return sizeof(float); }
 
- void copyFloatToBytes(unsigned char* memSeg, int address, float f) {
+ static void copyFloatToBytes(unsigned char* memSeg, int address, float f) {
 
     // DBUG_NOLN("copyFloatToBytes "); DBUG( address );
     if ( address > MEMORY_SIZE || address < 0 ) {
@@ -88,13 +88,13 @@
     extern unsigned char mem[];
 
     // ex: x = mem2float(p,mem);
-    float mem2float(unsigned char* cur, unsigned char* src) {
+    static float mem2float(unsigned char* cur, unsigned char* src) {
         int addr = &(cur[0]) - &(src[0]);
         return getFloatFromBytes(mem, addr);
     }
 
     // ex: x = float2mem(p,mem, 3.14);
-    void float2mem(unsigned char* cur, unsigned char* src, float value) {
+    static void float2mem(unsigned char* cur, unsigned char* src, float value) {
         int addr = &(cur[0]) - &(src[0]);
         copyFloatToBytes(mem, addr, value);
     }

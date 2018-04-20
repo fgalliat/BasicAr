@@ -80,6 +80,7 @@ class GenericMCU_FS {
 
       void setup();
       void format();
+      void remove(char* filename);
 
       void uploadViaSerial();
       // receive from bridge

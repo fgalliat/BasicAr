@@ -27,6 +27,7 @@ extern void host_system_menu();
   #define PS2_ENTER 13
   #define PS2_ESC 27
 
+#define ANOTHER_CPP 1
 #include "xts_arch.h"
 extern GenericMCU mcu;
 
@@ -46,7 +47,7 @@ extern bool SCREEN_LOCKER;
 #include "host.h"
 #include "basic.h"
 
-bool isWriting = false;
+extern bool isWriting;
 int BLITT_MODE = BLITT_AUTO;
 bool isGfxAutoBlitt() { return BLITT_MODE == BLITT_AUTO; }
 
