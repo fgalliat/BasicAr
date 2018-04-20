@@ -23,19 +23,12 @@ extern void host_system_menu();
   #include "computer.h"
 #endif
 
-#ifdef BUT_TEENSY
-  #include "xts_teensy.h"
-#endif
+  #define PS2_DELETE 8
+  #define PS2_ENTER 13
+  #define PS2_ESC 27
 
 #include "xts_arch.h"
-#ifdef BUT_ESP32
- #ifdef ESP32PCKv2
-    extern Esp32Pocketv2 esp32;
- #else
-   extern Esp32Oled esp32;
- #endif
-#endif
-
+extern GenericMCU mcu;
 
 #include "xts_io.h"
 int OUTPUT_DEVICE;
@@ -46,30 +39,14 @@ int INPUT_DEVICE;
 extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
 extern char* line; // one TTY line
-// char screenBuffer[SCREEN_WIDTH*SCREEN_HEIGHT];
-// char lineDirty[SCREEN_HEIGHT];
 extern char* screenBuffer;
 extern char* lineDirty;
 extern bool SCREEN_LOCKER;
 
-
- #include "desktop_devices.h"
-
- #ifndef COMPUTER
-   #include <EEPROM.h>
- #else
-   extern EEPROMClass EEPROM;
- #endif
-
-// extern SSD1306ASCII oled;
-extern PS2Keyboard keyboard;
-//   #include <SSD1306ASCII.h>
-//   #include <PS2Keyboard.h>
-
-
 #include "host.h"
 #include "basic.h"
 
+bool isWriting = false;
 int BLITT_MODE = BLITT_AUTO;
 bool isGfxAutoBlitt() { return BLITT_MODE == BLITT_AUTO; }
 
@@ -78,34 +55,6 @@ bool isGfxAutoBlitt() { return BLITT_MODE == BLITT_AUTO; }
 #include <stdlib.h> 
 
 extern bool BUZZER_MUTE;
-
-#ifdef BUILTIN_LCD
-  #if defined(BUT_ESP32)
-   // ......
-  #else
-   #ifndef COMPUTER
-   #include "dev_screen_Adafruit_SSD1306.h"
-   extern Adafruit_SSD1306 display;
-  #else 
-   //#define display _displayOLED
-  #endif
-  #endif
-#endif
-
-
-#ifdef BUILTIN_KBD
-  #include "dev_kbd.h"
-#endif
-
-#ifdef BOARD_VGA
-  #include "dev_screen_VGATEXT.h"
-#endif
-
-
-#ifdef BOARD_RPID
-  #include "dev_screen_RPIGFX.h"
-#endif
-
 
 int timer1_counter;
 
@@ -124,82 +73,67 @@ char buzPin = 0;
 const char bytesFreeStr[] = "bytes free";
 
 void initTimer() {
-
 // #ifdef BUT_TEENSY
-//   #include <avr/io.h>
-//   #include <avr/interrupt.h>
+//  // see : https://www.pjrc.com/teensy/td_timing_IntervalTimer.html
+// #else
+//     noInterrupts();           // disable all interrupts
+//     TCCR1A = 0;
+//     TCCR1B = 0;
+//     timer1_counter = 34286;   // preload timer 65536-16MHz/256/2Hz
+//     TCNT1 = timer1_counter;   // preload timer
+//     TCCR1B |= (1 << CS12);    // 256 prescaler 
+//     TIMSK1 |= (1 << TOIE1);   // enable timer overflow interrupt
+//     interrupts();             // enable all interrupts
 // #endif
-
-#ifdef BUT_TEENSY
-
- // see : https://www.pjrc.com/teensy/td_timing_IntervalTimer.html
-
-#else
-    noInterrupts();           // disable all interrupts
-    
-    TCCR1A = 0;
-    TCCR1B = 0;
-    timer1_counter = 34286;   // preload timer 65536-16MHz/256/2Hz
-    TCNT1 = timer1_counter;   // preload timer
-    TCCR1B |= (1 << CS12);    // 256 prescaler 
-    TIMSK1 |= (1 << TOIE1);   // enable timer overflow interrupt
-    
-    interrupts();             // enable all interrupts
-#endif
-    
-
 }
 
-// MOA - TO LOOK
-#ifndef BUT_TEENSY
-    ISR(TIMER1_OVF_vect)        // interrupt service routine 
-    {
-        TCNT1 = timer1_counter;   // preload timer
-        //flash = !flash;
-        _flash = !_flash;
-        redraw = 1;
-    }
-#else
+// // MOA - TO LOOK
+// #ifndef BUT_TEENSY
+//     ISR(TIMER1_OVF_vect)        // interrupt service routine 
+//     {
+//         TCNT1 = timer1_counter;   // preload timer
+//         //flash = !flash;
+//         _flash = !_flash;
+//         redraw = 1;
+//     }
+// #else
 
-extern void xts_serialEvent();
-bool firstTime = true;
+// extern void xts_serialEvent();
+// bool firstTime = true;
 
-    void _ISR_emul() // called from desktop_devices.h
-    {
+//     void _ISR_emul() // called from desktop_devices.h
+//     {
 
-        if ( firstTime ) {
-            firstTime = false;
-        } else {
-            return;
-        }
+//         if ( firstTime ) {
+//             firstTime = false;
+//         } else {
+//             return;
+//         }
 
-        xts_serialEvent();
+//         xts_serialEvent();
         
 
-        // TCNT1 = timer1_counter;   // preload timer
-        //flash = !flash;
-        _flash = !_flash;
-        redraw = 1;
+//         // TCNT1 = timer1_counter;   // preload timer
+//         //flash = !flash;
+//         _flash = !_flash;
+//         redraw = 1;
 
-        // test if inited !!!!!! 
-        // setupLCD is called before interrupt init ..
-        // display.display();
+//         // test if inited !!!!!! 
+//         // setupLCD is called before interrupt init ..
+//         // display.display();
 
-    }
-#endif
+//     }
+// #endif
 
 
-void host_init(int buzzerPin) {
-    buzPin = buzzerPin;
-    
-    //oled.clear();
-
-    if (buzPin > 0) {
-        pinMode(buzPin, OUTPUT);
-    }
-
-    initTimer();
-}
+// void host_init(int buzzerPin) {
+//     buzPin = buzzerPin;
+//     //oled.clear();
+//     if (buzPin > 0) {
+//         pinMode(buzPin, OUTPUT);
+//     }
+//     initTimer();
+// }
 
 void host_sleep(long ms) {
     delay(ms);
@@ -222,29 +156,22 @@ void host_pinMode(int pin,int mode) {
 }
 
 void host_click() {
-    #ifdef BUT_ESP32
-      esp32.tone(100, 20);
-      delay(20);
-      esp32.noTone();
-      return;
-    #endif
-    if ( buzPin <= 0 || BUZZER_MUTE) return;
-    digitalWrite(buzPin, HIGH);
-    delay(1);
-    digitalWrite(buzPin, LOW);
+    mcu.tone(100, 20);
+    delay(20);
+    mcu.noTone();
 }
 
 void host_startupTone() {
-    if ( buzPin <= 0 || BUZZER_MUTE) return;
-    for (int i=1; i<=2; i++) {
-        for (int j=0; j<50*i; j++) {
-            digitalWrite(buzPin, HIGH);
-            delay(3-i);
-            digitalWrite(buzPin, LOW);
-            delay(3-i);
-        }
-        delay(100);
-    }    
+    // if ( buzPin <= 0 || BUZZER_MUTE) return;
+    // for (int i=1; i<=2; i++) {
+    //     for (int j=0; j<50*i; j++) {
+    //         digitalWrite(buzPin, HIGH);
+    //         delay(3-i);
+    //         digitalWrite(buzPin, LOW);
+    //         delay(3-i);
+    //     }
+    //     delay(100);
+    // }    
 }
 
 void host_cls() {
@@ -255,35 +182,14 @@ void host_cls() {
     curX = 0;
     curY = 0;
 
-    #ifdef BUILTIN_LCD
-        if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
-            #if defined(BUT_ESP32)
-              esp32.getScreen()->clear();
-              if (isGfxAutoBlitt()) esp32.getScreen()->blitt();
-            #else
-              display.clearDisplay();
-              if (isGfxAutoBlitt()) display.display();
-            #endif
-        } else 
-    #endif
-
-    #ifdef BOARD_VGA
-        if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
-            vgat_cls();
-        } else 
-    #endif
-
-    #ifdef BOARD_RPID
-        if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
-            rpid_cls(); 
-        } else 
-    #endif
-
-      if ( OUTPUT_DEVICE == OUT_DEV_SERIAL ) {
-          #ifndef COMPUTER
-          Serial.print("\n\n\n\n------------\n\n\n");
-          #endif
-      }
+    if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
+        mcu.getScreen()->clear();
+    }
+    else if ( OUTPUT_DEVICE == OUT_DEV_SERIAL ) {
+        #ifndef COMPUTER
+        Serial.print("\n\n\n\n------------\n\n\n");
+        #endif
+    }
 
     isWriting = false;
 }
@@ -297,25 +203,8 @@ void host_moveCursor(int x, int y) {
     curX = x;
     curY = y; 
 
-    #ifdef BUILTIN_LCD
-        if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
-            #if defined(ARDUINO_ARCH_ESP32)
-             // Oups what TODO
-            #else
-             display.setCursor(x*6,y*8);
-            #endif
-        }
-    #endif
-    #ifdef BOARD_VGA
-        if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
-            vgat_locate(x,y);
-        }
-    #endif
-    #ifdef BOARD_RPID
-        if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
-            rpid_locate(x,y);
-        }
-    #endif
+    mcu.getScreen()->setCursor(x,y);
+
     isWriting = false;
 }
 
@@ -332,7 +221,6 @@ void host_showBuffer() {
   // en plus de la lecture de ligne ....
   if ( !LOCAL_ECHO ) { isWriting = false; return; }
 
-//#ifdef BUT_TEENSY
 #ifndef BUILTIN_LCD
 
         isWriting = true;
@@ -401,8 +289,8 @@ void host_showBuffer() {
    espScreenline[x] = c;
  }
  espScreenline[SCREEN_WIDTH] = 0x00;
- esp32.getScreen()->drawString( 0, y*8, espScreenline );
- //Serial.println( espScreenline );
+ mcu.getScreen()->setCursor(0, y);
+ mcu.getScreen()->print( espScreenline );
 #else
                 display.setCursor(0,y*8);
                 display.setTextColor( BLACK );
@@ -429,11 +317,6 @@ void host_showBuffer() {
         }
 
         // Xtase
-#ifdef BUT_ESP32
-        if (isGfxAutoBlitt()) esp32.getScreen()->blitt();
-#else
-        if (isGfxAutoBlitt()) display.display();
-#endif
     } else if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
 
         #ifdef BOARD_VGA
@@ -544,29 +427,13 @@ void scrollBuffer() {
 
     curY--;
 
-    #ifdef BUILTIN_LCD
-        if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
-            #if defined(BUT_ESP32)
-             esp32.getScreen()->clear();
-            #else
-             display.clearDisplay();
-            #endif
-            for(int i=0; i < SCREEN_HEIGHT; i++) {
-                lineDirty[i] = SCREEN_WIDTH;
-            }
-            host_showBuffer();// just a test
+    if ( OUTPUT_DEVICE == OUT_DEV_LCD_MINI ) {
+        mcu.getScreen()->clear();
+        for(int i=0; i < SCREEN_HEIGHT; i++) {
+            lineDirty[i] = SCREEN_WIDTH;
         }
-    #endif
-    #ifdef BOARD_VGA
-        if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
-            //vgat_cls();
-        }
-    #endif
-    #ifdef BOARD_RPID
-        if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
-            //vgat_cls();
-        }
-    #endif
+        host_showBuffer();// just a test
+    }
     isWriting = false;
 }
 
@@ -725,8 +592,9 @@ void host_newLine() {
     isWriting = true;
     curX = 0;
     curY++;
-    if (curY == SCREEN_HEIGHT)
+    if (curY == SCREEN_HEIGHT) {
         scrollBuffer();
+    }
     memset(screenBuffer + SCREEN_WIDTH*(curY), 32, SCREEN_WIDTH);
     
     // Optim try
@@ -751,6 +619,7 @@ void host_newLine() {
 }
 
 extern int doRun();
+extern int xts_buttonRead(int btnNum);
 
 char *host_readLine() {
     inputMode = 1;
@@ -766,19 +635,8 @@ char *host_readLine() {
     bool printable = false;
     while (!done) {
 
-        #ifdef BUILTIN_KBD
-          printable = false;
-          while (keyboard.available() || (kc = read_kbd(&printable)) > -1 ) {
-              if ( MODE_EDITOR && kc == KBD_F1 ) {
-                host_system_menu();
-                // to trigger end-of-line
-                // & execute selfRun
-                kc = PS2_ENTER;
-              }
-        #elif BUT_ESP32
-          if ( MODE_EDITOR && esp32.getSystemSignal() ) {
-            //while( esp32.getSystemSignal() ) {
-            while( !esp32.getEndSystemSignal() ) {
+          if ( MODE_EDITOR && mcu.getSystemMenuReqState() ) {
+            while( !mcu.getSystemMenuReqEnd() ) {
                 delay(100);
             }
             host_click();
@@ -791,8 +649,8 @@ char *host_readLine() {
             screenBuffer[pos++] = '\n';
             done = true;
           }
-          else if ( MODE_EDITOR && esp32.getRebootSignal() ) {
-            while( esp32.getRebootSignal() ) {
+          else if ( MODE_EDITOR && mcu.getSystemResetReqState() ) {
+            while( mcu.getSystemResetReqState() ) {
                 delay(100);
             }
             // to trigger end-of-line
@@ -802,8 +660,8 @@ char *host_readLine() {
             MCU_reset();
             done = true;
           }
-          else if ( MODE_EDITOR && esp32.readBtn(2) > 0 ) {
-            while( esp32.readBtn(2) > 0 ) {
+          else if ( MODE_EDITOR && xts_buttonRead(2) > 0 ) {
+            while( xts_buttonRead(2) > 0 ) {
                 delay(100);
             }
             // to trigger end-of-line
@@ -812,10 +670,7 @@ char *host_readLine() {
             screenBuffer[pos++] = '\n';
             done = true;
           }
-          while ( keyboard.available() ) {
-        #else
-          while (keyboard.available() ) {
-        #endif
+          while ( Serial.available() ) {
             host_click();
             // read the next key
             // Optim try
@@ -823,7 +678,7 @@ char *host_readLine() {
             //lineDirty[pos / SCREEN_WIDTH]++;
             lineDirty[pos / SCREEN_WIDTH] = pos % SCREEN_WIDTH; // Cf VGAT + Kbd display bug
             
-            char c = (kc > -1) ? kc : keyboard.read();
+            char c = (kc > -1) ? kc : Serial.read();
             if (c>=32 && c<=126) {
                 screenBuffer[pos++] = c;
                 
@@ -932,9 +787,9 @@ bool host_ESCPressed() {
           }
       }
     #elif BUT_ESP32
-      if ( esp32.getBreakSignal() ) {
-          esp32.noTone();
-          while( esp32.getBreakSignal() ) {
+      if ( mcu.getSystemBreakReqState() ) {
+          mcu.noTone();
+          while( mcu.getSystemBreakReqState() ) {
               delay(100);
           }
           return true;
@@ -943,17 +798,6 @@ bool host_ESCPressed() {
     #else
       return anyBtn();
     #endif
-
-    // while (keyboard.available()) {
-    //     // read the next key
-    //     inkeyChar = keyboard.read();
-    //     if (inkeyChar == PS2_ESC || inkeyChar == '!')
-    //         return true;
-    // }
-    //return false;
-    //host_sleep(50);
-    
-    //return anyBtn();
 }
 
 void host_outputFreeMem(unsigned int val)
@@ -965,138 +809,18 @@ void host_outputFreeMem(unsigned int val)
     host_outputString( (char*) bytesFreeStr);      
 }
 
-void host_saveProgram(bool autoexec) {
-    EEPROM.write(0, autoexec ? MAGIC_AUTORUN_NUMBER : 0x00);
-    EEPROM.write(1, sysPROGEND & 0xFF);
-    EEPROM.write(2, (sysPROGEND >> 8) & 0xFF);
-    for (int i=0; i<sysPROGEND; i++)
-        EEPROM.write(3+i, mem[i]);
-}
+// void host_saveProgram(bool autoexec) {
+//     EEPROM.write(0, autoexec ? MAGIC_AUTORUN_NUMBER : 0x00);
+//     EEPROM.write(1, sysPROGEND & 0xFF);
+//     EEPROM.write(2, (sysPROGEND >> 8) & 0xFF);
+//     for (int i=0; i<sysPROGEND; i++)
+//         EEPROM.write(3+i, mem[i]);
+// }
 
-void host_loadProgram() {
-    // skip the autorun byte
-    sysPROGEND = EEPROM.read(1) | (EEPROM.read(2) << 8);
-    for (int i=0; i<sysPROGEND; i++)
-        mem[i] = EEPROM.read(i+3);
-}
-
-#if EXTERNAL_EEPROM
-#include <I2cMaster.h>
-extern TwiMaster rtc;
-
-void writeExtEEPROM(unsigned int address, byte data) 
-{
-  if (address % 32 == 0) host_click();
-  rtc.start((EXTERNAL_EEPROM_ADDR<<1)|I2C_WRITE);
-  rtc.write((int)(address >> 8));   // MSB
-  rtc.write((int)(address & 0xFF)); // LSB
-  rtc.write(data);
-  rtc.stop();
-  delay(5);
-}
- 
-byte readExtEEPROM(unsigned int address) 
-{
-  rtc.start((EXTERNAL_EEPROM_ADDR<<1)|I2C_WRITE);
-  rtc.write((int)(address >> 8));   // MSB
-  rtc.write((int)(address & 0xFF)); // LSB
-  rtc.restart((EXTERNAL_EEPROM_ADDR<<1)|I2C_READ);
-  byte b = rtc.read(true);
-  rtc.stop();
-  return b;
-}
-
-// get the EEPROM address of a file, or the end if fileName is null
-unsigned int getExtEEPROMAddr(char *fileName) {
-    unsigned int addr = 0;
-    while (1) {
-        unsigned int len = readExtEEPROM(addr) | (readExtEEPROM(addr+1) << 8);
-        if (len == 0) break;
-        
-        if (fileName) {
-            bool found = true;
-            for (int i=0; i<=strlen(fileName); i++) {
-                if (fileName[i] != readExtEEPROM(addr+2+i)) {
-                    found = false;
-                    break;
-                }
-            }
-            if (found) return addr;
-        }
-        addr += len;
-    }
-    return fileName ? EXTERNAL_EEPROM_SIZE : addr;
-}
-
-void host_directoryExtEEPROM() {
-    unsigned int addr = 0;
-    while (1) {
-        unsigned int len = readExtEEPROM(addr) | (readExtEEPROM(addr+1) << 8);
-        if (len == 0) break;
-        int i = 0;
-        while (1) {
-            char ch = readExtEEPROM(addr+2+i);
-            if (!ch) break;
-            host_outputChar(readExtEEPROM(addr+2+i));
-            i++;
-        }
-        addr += len;
-        host_outputChar(' ');
-    }
-    host_outputFreeMem(EXTERNAL_EEPROM_SIZE - addr - 2);
-}
-
-bool host_removeExtEEPROM(char *fileName) {
-    unsigned int addr = getExtEEPROMAddr(fileName);
-    if (addr == EXTERNAL_EEPROM_SIZE) return false;
-    unsigned int len = readExtEEPROM(addr) | (readExtEEPROM(addr+1) << 8);
-    unsigned int last = getExtEEPROMAddr(NULL);
-    unsigned int count = 2 + last - (addr + len);
-    while (count--) {
-        byte b = readExtEEPROM(addr+len);
-        writeExtEEPROM(addr, b);
-        addr++;
-    }
-    return true;    
-}
-
-bool host_loadExtEEPROM(char *fileName) {
-    unsigned int addr = getExtEEPROMAddr(fileName);
-    if (addr == EXTERNAL_EEPROM_SIZE) return false;
-    // skip filename
-    addr += 2;
-    while (readExtEEPROM(addr++)) ;
-    sysPROGEND = readExtEEPROM(addr) | (readExtEEPROM(addr+1) << 8);
-    for (int i=0; i<sysPROGEND; i++)
-        mem[i] = readExtEEPROM(addr+2+i);
-}
-
-bool host_saveExtEEPROM(char *fileName) {
-    unsigned int addr = getExtEEPROMAddr(fileName);
-    if (addr != EXTERNAL_EEPROM_SIZE)
-        host_removeExtEEPROM(fileName);
-    addr = getExtEEPROMAddr(NULL);
-    unsigned int fileNameLen = strlen(fileName);
-    unsigned int len = 2 + fileNameLen + 1 + 2 + sysPROGEND;
-    if ((long)EXTERNAL_EEPROM_SIZE - addr - len - 2 < 0)
-        return false;
-    // write overall length
-    writeExtEEPROM(addr++, len & 0xFF);
-    writeExtEEPROM(addr++, (len >> 8) & 0xFF);
-    // write filename
-    for (int i=0; i<strlen(fileName); i++)
-        writeExtEEPROM(addr++, fileName[i]);
-    writeExtEEPROM(addr++, 0);
-    // write length & program    
-    writeExtEEPROM(addr++, sysPROGEND & 0xFF);
-    writeExtEEPROM(addr++, (sysPROGEND >> 8) & 0xFF);
-    for (int i=0; i<sysPROGEND; i++)
-        writeExtEEPROM(addr++, mem[i]);
-    // 0 length marks end
-    writeExtEEPROM(addr++, 0);
-    writeExtEEPROM(addr++, 0);
-    return true;
-}
-
-#endif
+// void host_loadProgram() {
+//     // skip the autorun byte
+//     sysPROGEND = EEPROM.read(1) | (EEPROM.read(2) << 8);
+//     for (int i=0; i<sysPROGEND; i++)
+//         mem[i] = EEPROM.read(i+3);
+// }
 

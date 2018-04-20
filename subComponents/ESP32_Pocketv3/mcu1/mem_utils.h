@@ -83,7 +83,9 @@
     // DBUG_NOLN("copyFloatToBytes "); DBUG( "END" );
  }
 
- #ifdef mem
+ #ifdef mem_routines
+
+    extern unsigned char mem[];
 
     // ex: x = mem2float(p,mem);
     float mem2float(unsigned char* cur, unsigned char* src) {

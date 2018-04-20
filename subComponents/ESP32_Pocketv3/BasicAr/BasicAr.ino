@@ -14,44 +14,8 @@
 // just to identify main cpp sourcecode
 #define MAIN_INO_FILE 1
 
-#define PICTURE_BUFF_SIZE (1024)
-#define AUDIO_BUFF_SIZE (5*1024)
 
-#include "GenericMCU.h"
-
-#if defined(ARDUINO_ARCH_ESP32)
-  #define BUT_ESP32 1
-
-  #define ESP32PCKv3 1
-
-  #ifdef ESP32PCKv3
-    // else is slave
-    #define MCU_MASTER 1
-    #define ESP32_I_TFT_eSPI 1
-    // need to be defined in <$lib$>/User_Setup_Select.h
-    #define ESP32_I_USE_ILI9341 1
-
-    #include "ESP32TwinMCU1.h"
-
-    #define BUILTIN_LCD 1
-    #define ARCH_TYPE "Xts_Pck V3" 
-
-// TODO : reactivate
-//     #ifdef ESP32_WIFI_SUPPORT
-//      extern void host_outputString(char* str);
-//      extern int host_outputInt(long v);
-//      #define DBUG(a) { Serial.print(a); host_outputString(a); }
-//      #define DBUGi(a) { Serial.print(a); host_outputInt(a); }
-//      #include "Esp32WifiServer.h"
-//      Esp32WifiServer telnet;
-//      #undef DBUG
-//      #undef DBUGi
-//    #endif
-
-  #endif
-
-#endif
-
+#include "xts_arch.h"
 GenericMCU mcu;
 // __________________
 

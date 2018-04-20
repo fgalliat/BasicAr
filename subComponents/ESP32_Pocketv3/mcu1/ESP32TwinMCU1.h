@@ -542,5 +542,17 @@
     flushBridgeRX();
   }
 
+  #define BTN_UP   1
+  #define BTN_DOWN 2
+
+  #define BTN_1    5
+  #define BTN_2    6
+  #define BTN_3    7
+
+  bool GenericMCU::getSystemMenuReqState()  { return this->btn( BTN_UP ) && this->btn( BTN_1 ) && this->btn( BTN_2 ); }
+  bool GenericMCU::getSystemMenuReqEnd()    { return !this->btn( BTN_UP ) && !this->btn( BTN_1 ) && !this->btn( BTN_2 ); }
+  bool GenericMCU::getSystemResetReqState() { return this->btn( BTN_DOWN ) && this->btn( BTN_1 ) && this->btn( BTN_2 ); }
+  bool GenericMCU::getSystemBreakReqState() { return this->btn( BTN_1 ) && this->btn( BTN_2 ); }
+
 
 #endif

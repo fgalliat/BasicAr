@@ -10,60 +10,16 @@
 #endif
 
 #include "xts_arch.h"
-#include "xts_io.h"
+extern GenericMCU mcu;
 
-#ifdef BUT_ESP32
- #ifdef ESP32PCKv2
-    extern Esp32Pocketv2 esp32;
- #else
-   extern Esp32Oled esp32;
- #endif
-  extern void noTone(int pin);
-  extern void tone(int pin, int freq, int duration);
-#endif
+#include "xts_io.h"
 
 #define BASIC_ASCII_FILE_EXT ".BAS"
 
-#ifdef FS_SUPPORT
-// // BEWARE : THIS IS REGULAR Arduino SD LIB
-// #include <SD.h>
-// #include <SPI.h>
-// File curFile;
+// ***********************************
+// TODO : move in GenericMCU impl.
+char* SDentryName = NULL;
 
-  #ifdef USE_SDFAT_LIB
-    char SDentryName[13];
-  // for teensy 3.6
-  // > https://github.com/greiman/SdFat-beta
-    #include "SdFat.h"
-    SdFatSdio sd;
-    SdFile file;
-    SdFile dirFile;
-  #elif defined(ESP32_FS)
-    // +1 for leading '/'
-    //char SDentryName[13+1];
-    char* SDentryName = NULL;
-  #elif defined(USE_FS_LEGACY)
-    char SDentryName[13];
-    // ex. regular computer
-    SDClass sd;
-    SdFile file;
-    SdFile dirFile;
-  #endif
-
-#ifndef ESP32_FS
-  // BEWARE : uses & modifies : SDentryName[]
-  // ex. autocomplete_fileExt(filename, ".BAS") => SDentryName[] contains full file-name
-  // assumes that ext is stricly 3 char long
-  char* autocomplete_fileExt(char* filename, const char* defFileExt) {
-    int flen = strlen(filename);
-    memset(SDentryName, 0x00, 8+1+3+1); // 13 char long
-    memcpy(SDentryName, filename, flen );
-    if ( flen < 4 || filename[ flen-3 ] != '.' ) {
-      strcat( SDentryName, defFileExt );
-    }
-    return SDentryName;
-  }
-#elif ESP32_FS
   // BEWARE : uses & modifies : SDentryName[]
   // ex. autocomplete_fileExt(filename, ".BAS") => SDentryName[] contains full file-name
   // assumes that ext is stricly 3 char long
@@ -93,15 +49,7 @@
     Serial.println( SDentryName );
     return (char*)SDentryName;
   }
-#else
-  char* autocomplete_fileExt(char* filename, const char* defFileExt) {
-    // TODO
-    Serial.println("autocomplete_fileExt NYI.");
-    return "TOTO.BAS";
-  }
-#endif
-#endif
-
+// ***********************************
 
 #include "host_xts.h"
 #include "basic.h"
@@ -200,149 +148,6 @@ bool STORAGE_OK = false;
  }
 #endif // FS_SUPPORT
 
-// ====== GPIO initialization ======
-
-void setupGPIO() {
- if ( BUZZER_PIN > -1 ) { pinMode(BUZZER_PIN, OUTPUT); digitalWrite(BUZZER_PIN, LOW);  }
-
- if ( LED1_PIN > -1 ) { pinMode(LED1_PIN, OUTPUT); digitalWrite(LED1_PIN, LOW); }
- if ( LED2_PIN > -1 ) { pinMode(LED2_PIN, OUTPUT); digitalWrite(LED2_PIN, LOW); }
- if ( LED3_PIN > -1 ) { pinMode(LED3_PIN, OUTPUT); digitalWrite(LED3_PIN, LOW); }
-
- if ( BTN1_PIN > -1 ) { pinMode(BTN1_PIN, INPUT_PULLUP); }
- if ( BTN2_PIN > -1 ) { pinMode(BTN2_PIN, INPUT_PULLUP); }
- if ( BTN3_PIN > -1 ) { pinMode(BTN3_PIN, INPUT_PULLUP); }
-}
-
-// ====== HARD initialization ======
-
-#ifdef BUILTIN_LCD
- // Teensy3.6 XtsuBasic hardware config
-
-#ifdef BUT_ESP32
-#else
-
-  #ifndef COMPUTER
-    #include <SPI.h>
-    #include <i2c_t3.h>
-    #include <Adafruit_GFX.h>
-    #include "dev_screen_Adafruit_SSD1306.h"
-  #endif
-
-  //default is 4 that is an I2C pin on t3.6
-  #define OLED_RESET 6
-  Adafruit_SSD1306 display(OLED_RESET);
-
-  #if (SSD1306_LCDHEIGHT != 64)
-  #error("Height incorrect, please fix Adafruit_SSD1306.h!");
-  #endif
-
-#endif
-
-void setupLCD() {
-
-  #ifdef BUT_ESP32
-    //esp32.initLCD();
-  #else
-    #ifndef COMPUTER
-      Wire2.begin(I2C_MASTER, 0x00, I2C_PINS_3_4, I2C_PULLUP_EXT, 400000);
-    #endif
-    display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-    display.setTextSize(1);
-    // tmp try
-    display.setTextColor(WHITE);
-    //display.setTextColor(INVERSE);
-    // tmp try
-    // avoid firware LOGO display
-    display.clearDisplay();
-    display.setCursor(0,0);
-  #endif
-  
-  #ifdef BUT_ESP32
-    esp32.getScreen()->println( "LCD Ready" );
-    esp32.getScreen()->blitt();
-  #else
-    display.println( "LCD Ready" );
-    display.display();
-  #endif
-}
-
-#endif
-
-#ifdef BOARD_VGA
-void setupVGASerial() {
-  host_outputString("Booting VGA\n");
-  setup_vgat(false);
-  //vgat_reboot(false);
-  delay(300);
-  vgat_startScreen();
-  // host_outputString("Booted VGA\n");
-  delay(200);
-}
-#endif
-
-#ifdef BOARD_RPID
-// TODO : better
-void setupRPISerial() {
-  host_outputString("Booting RPID\n");
-  setup_rpid(false);
-  //vgat_reboot(false);
-  //delay(300);
-  rpid_startScreen();
-  // host_outputString("Booted VGA\n");
-  delay(200);
-}
-#endif
-
-
-
-#ifdef BUT_TEENSY
-  //#include <TimerOne.h> // for Teensy 2 & 2++ ONLY
-
-  //IntervalTimer myTimer;
-
-  // code in host.cpp
-  extern void _ISR_emul();
-#endif
-
-
-// void setupHardware() {
-//  #ifdef BUT_ESP32
-//    //esp32.setup();
-//    // TODO : better than that !!!!
-//    #ifdef BOARD_SND
-//      setupSoundDFPlayer();
-//    #endif
-//    return;
-//  #endif
-//  setupGPIO();
-//  #ifdef BUILTIN_LCD
-//    setupLCD();
-//  #endif
-//  #ifdef BUILTIN_KBD
-//    setup_kbd(); // must be done before VGASerial
-//  #endif
-//  #ifdef BOARD_VGA
-//    setupVGASerial();
-//  #endif
-//  #ifdef BOARD_RPID
-//    setupRPISerial();
-//  #endif
-//  #ifdef BOARD_SND
-//    setupSoundDFPlayer();
-//  #endif
-//  #ifdef FS_SUPPORT
-//    setupSD();
-//  #endif
-//  #ifdef BUT_TEENSY
-//    //for Teensy 2 & 2++
-//    //Timer1.initialize(350000); // 350ms 
-//    //Timer1.attachInterrupt( _ISR_emul );
-//   //  myTimer.begin(_ISR_emul, 150000); // 150ms
-//   //  myTimer.priority( 20 ); // 0 maximum priority
-//  #endif
-// }
-
 #ifdef BUT_TEENSY
   void _noInterrupts() {
   //   myTimer.end();
@@ -358,23 +163,16 @@ void setupRPISerial() {
 
 
  // ========= Btns Sub System =======
- // as btns are plugged as INPUT_PULLUP
- // logic is inverted
- bool _btn(int pin) {
-  if ( pin > -1 ) { return digitalRead(pin) == LOW; }
-  return false;
- }
-
  bool btn1() {
-  return _btn( BTN1_PIN );
+  return mcu.btn(BTN_1);
  }
 
  bool btn2() {
-  return _btn( BTN2_PIN );
+  return mcu.btn(BTN_2);
  }
 
  bool btn3() {
-  return _btn( BTN3_PIN );
+  return mcu.btn(BTN_3);
  }
 
 bool anyBtn() { return btn1() || btn2() || btn3(); }
@@ -382,22 +180,12 @@ bool anyBtn() { return btn1() || btn2() || btn3(); }
 
  // ========= Led Sub System ========
 
-// BEWARE : 1-based
-void led(int ledID, bool state) {
-  if ( ledID >= 1 && ledID <= 3 ) {
-    if ( ledID == 1 && LED1_PIN > -1 ) { digitalWrite(LED1_PIN, state ? HIGH : LOW); }
-    if ( ledID == 2 && LED2_PIN > -1 ) { digitalWrite(LED2_PIN, state ? HIGH : LOW); }
-    if ( ledID == 3 && LED3_PIN > -1 ) { digitalWrite(LED3_PIN, state ? HIGH : LOW); }
-  }
-  // no error .... 
-}
-
-void led1(bool state) { led(1, state); }
-void led2(bool state) { led(2, state); }
-void led3(bool state) { led(3, state); }
+void led1(bool state) { mcu.led(1, state); }
+void led2(bool state) { mcu.led(2, state); }
+void led3(bool state) { mcu.led(3, state); }
 
 void activityLed(bool state) {
-  led(1, state);
+  mcu.led(1, state);
 }
 
  // ======= Sound Sub System =======
@@ -413,7 +201,7 @@ void activityLed(bool state) {
 //  };
 
 extern bool BUZZER_MUTE;
-#define BUZZER BUZZER_PIN
+
 
 void playNote(int note_freq, int duration) {
   if ( BUZZER_MUTE ) { return; }
@@ -427,14 +215,14 @@ void playNote(int note_freq, int duration) {
     note_freq = 0;
   }
 
-  noTone(BUZZER_PIN);
-  tone(BUZZER_PIN, note_freq, duration*50);
+  mcu.noTone();
+  mcu.tone( note_freq, duration*50 );
   delay(duration*50);
-  noTone(BUZZER_PIN); // MANDATORY for ESP32Oled
+  mcu.noTone(); // MANDATORY for ESP32Oled
 }
 
 void playTuneString(char* strTune) {
-  noTone(BUZZER_PIN);
+  mcu.noTone();
 
   int defDuration = 200;
   int slen = strlen( strTune );
@@ -477,11 +265,11 @@ void playTuneString(char* strTune) {
         break;
     }
 
-   if (!BUZZER_MUTE) tone(BUZZER, pitch, defDuration);
+   if (!BUZZER_MUTE) mcu.tone(pitch, defDuration);
    delay(defDuration);
 
   }
-  noTone(BUZZER_PIN); // MANDATORY for ESP32Oled
+  mcu.noTone(); // MANDATORY for ESP32Oled
 } // end of playTuneStreamSTring
 
 
@@ -613,12 +401,12 @@ void playTuneFromStorage(char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bo
     #endif
   #endif
   
-  noTone(BUZZER_PIN); // MANDATORY for ESP32Oled
+  mcu.noTone(); // MANDATORY for ESP32Oled
  }
  
 // where tuneStream is the audio buffer content
 void __playTune(unsigned char* tuneStream, bool btnStop = false) {
-  noTone(BUZZER_PIN);
+  mcu.noTone();
 
   short nbNotes = (*tuneStream++ << 8) | (*tuneStream++);
   char songname[16];
@@ -653,7 +441,7 @@ void __playTune(unsigned char* tuneStream, bool btnStop = false) {
     short duration = (*tuneStream++ << 8) | (*tuneStream++);
     // note 0 -> silence
     if ( note > 0 ) {
-      if (!BUZZER_MUTE) tone(BUZZER, notes[ note-1 ], duration);
+      if (!BUZZER_MUTE) mcu.tone(notes[ note-1 ], duration);
 
       // just a try
       led2( note > 30 );
@@ -667,7 +455,7 @@ void __playTune(unsigned char* tuneStream, bool btnStop = false) {
     int pauseBetweenNotes = duration * tempo;
     delay(pauseBetweenNotes);
     // stop the tone playing:
-    noTone(BUZZER);
+    mcu.noTone();
 
     if (btnStop && anyBtn() ) {
       led2(false);
@@ -691,7 +479,7 @@ void __playTune(unsigned char* tuneStream, bool btnStop = false) {
  // T53 Format
  // where tuneStream is the audio buffer content
 void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
-  noTone(BUZZER_PIN);
+  mcu.noTone();
   
   short nbNotes = (*tuneStream++ << 8) | (*tuneStream++);
   char songname[16];
@@ -726,12 +514,12 @@ void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
     
     // note 0 -> silence
     if ( note > 0 ) {
-      if (!BUZZER_MUTE) tone(BUZZER, note, duration);
+      if (!BUZZER_MUTE) mcu.tone(note, duration);
     }
 
     delay(wait*tempo);
     // stop the tone playing:
-    noTone(BUZZER);
+    mcu.noTone();
 
     if (btnStop && anyBtn() ) {
       return;
@@ -764,13 +552,9 @@ void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
 // manually triggered
 void draw_blitt() {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
-    #ifdef BUILTIN_LCD
-     #ifdef BUT_ESP32
-      esp32.getScreen()->blitt();
-     #else
-      display.display();
-     #endif
-    #endif
+
+    mcu.getScreen()->blitt( SCREEN_BLITT_AUTO ); // TODO : CHECK THAT
+
   } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
     #ifdef BOARD_RPID
     #endif
@@ -779,15 +563,7 @@ void draw_blitt() {
 
 void drawLine(int x1, int y1, int x2, int y2) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
-    #ifdef BUILTIN_LCD
-     #ifdef BUT_ESP32
-      esp32.getScreen()->drawLine(x1, y1, x2, y2);
-      if ( isGfxAutoBlitt() ) esp32.getScreen()->blitt();
-     #else
-      display.drawLine(x1, y1, x2, y2, WHITE);
-      if ( isGfxAutoBlitt() ) display.display();
-     #endif
-    #endif
+    mcu.getScreen()->drawLine(x1, y1, x2, y2, WHITE);
   } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
     #ifdef BOARD_RPID
       rpid_gfx_line(x1, y1, x2, y2, RPID_WHITE);
@@ -797,15 +573,7 @@ void drawLine(int x1, int y1, int x2, int y2) {
 
 void drawCircle(int x1, int y1, int radius) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
-    #ifdef BUILTIN_LCD
-     #ifdef BUT_ESP32
-       esp32.getScreen()->drawCircle(x1, y1, radius);
-       if ( isGfxAutoBlitt() ) esp32.getScreen()->blitt();
-     #else
-       display.drawCircle(x1, y1, radius, WHITE);
-       if ( isGfxAutoBlitt() ) display.display();
-     #endif
-    #endif
+    mcu.getScreen()->drawCircle(x1, y1, radius, WHITE);
   } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
     #ifdef BOARD_RPID
       rpid_gfx_circle(x1, y1, radius, RPID_WHITE);
@@ -816,16 +584,7 @@ void drawCircle(int x1, int y1, int radius) {
 // 0: black else :white
 void drawPixel(int x1, int y1, int color) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
-    #ifdef BUILTIN_LCD
-     #ifdef BUT_ESP32
-      esp32.getScreen()->setColor(color == 1 ? WHITE : BLACK);
-      esp32.getScreen()->setPixel(x1, y1);
-      if ( isGfxAutoBlitt() ) esp32.getScreen()->blitt();
-     #else
-      display.drawPixel(x1, y1, color);
-      if ( isGfxAutoBlitt() ) display.display(); // see if fast enought .... else use interrupts.
-     #endif
-    #endif 
+      mcu.getScreen()->drawPixel(x1, y1, color == 1 ? WHITE : BLACK);
   } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
     #ifdef BOARD_RPID
       rpid_gfx_drawPixel(x1, y1, RPID_WHITE);
@@ -837,32 +596,7 @@ void drawPixel(int x1, int y1, int color) {
 // mode  : 0 draw / 1 fill
 void drawRect(int x, int y, int w, int h, int color, int mode) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
-    #ifdef BUILTIN_LCD
-     #ifdef BUT_ESP32
-      esp32.getScreen()->drawRect(x, y, w, h, color, mode);
-      if ( isGfxAutoBlitt() ) esp32.getScreen()->blitt();
-     #else
-      // only ~simple pseudo~ gray support @ this time
-      unsigned int c = color == 0 ? BLACK : WHITE;
-      display.drawLine(x, y, x+w, y, c);
-      display.drawLine(x+w, y, x+w, y+h, c);
-      display.drawLine(x+w, y+h, x, y+h, c);
-      display.drawLine(x, y+h, x, y, c);
-
-      if ( mode == 1 ) {
-        // fill mode
-        for(int xx=0; xx <= w; xx++) {
-          if ( color >= 2 ) {
-            // pseudo gray support
-            if (xx % color != 1) { continue; }
-          }
-          display.drawLine(x+xx, y, x+xx, y+h, c);
-        }
-      }
-
-      if ( isGfxAutoBlitt() ) display.display();
-     #endif
-    #endif
+      mcu.getScreen()->drawRect(x, y, w, h, color, mode);
   } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
     #ifdef BOARD_RPID
       // no gray support @ this time
@@ -895,66 +629,22 @@ bool drawBPPfile(char* filename) {
 
   autocomplete_fileExt(filename, ".BPP");
   
-  #ifdef FS_SUPPORT
-    #ifdef USE_SDFAT_LIB
-    // SFATLIB mode -> have to switch for regular SD lib
-    SdFile file;
-    if (! file.open( SDentryName , FILE_READ) ) {
-      host_outputString("ERR : File not ready\n");
-      return false;        
-    }
-
-    file.seekSet(0);
-    int n;
-    if ( (n = file.read(&picturebuff, PICTURE_BUFF_SIZE)) != PICTURE_BUFF_SIZE ) {
-      host_outputString("ERR : File not valid\n");
-      host_outputInt( n );
-      host_outputString(" bytes read\n");
-      file.close();
-      return false;
-    }
-    file.close();
-    #elif defined(ESP32_FS)
-      int n = esp32.getFs()->readBinFile(SDentryName, picturebuff, PICTURE_BUFF_SIZE);
-      if ( n <= 0 ) { 
-        host_outputString("ERR : File not ready\n");
-        return false;
-      } else if (n != PICTURE_BUFF_SIZE) {
-        host_outputString("ERR : File not valid\n");
-        host_outputInt( n );
-        host_outputString(" bytes read\n");
-        return false;
-      }
-    #endif
-  #endif
-
-
   // do something w/ these bytes ...
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
-    #ifdef BUILTIN_LCD
-      #ifdef BUT_ESP32
-        esp32.getScreen()->clear();
-        esp32.getScreen()->drawImg(0, 0, 128, 64, picturebuff);
-        if ( isGfxAutoBlitt() ) esp32.getScreen()->blitt();
-      #else
-        display.clearDisplay();
-        display.drawBitmap(0, 0, picturebuff, 128, 64, 0x01);
-        if ( isGfxAutoBlitt() ) display.display();
-      #endif
-    #endif
+        mcu.getScreen()->drawPictureBPP(SDentryName, 0, 0);
   } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
-    #ifdef BUILTIN_LCD
-      // TMP !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      #ifdef BUT_ESP32
-        esp32.getScreen()->clear();
-        esp32.getScreen()->drawImg(0, 0, 128, 64, picturebuff);
-        if ( isGfxAutoBlitt() ) esp32.getScreen()->blitt();
-      #else
-        display.clearDisplay();
-        display.drawBitmap(0, 0, picturebuff, 128, 64, 0x01);
-        if ( isGfxAutoBlitt() ) display.display();
-      #endif
-    #endif
+    // #ifdef BUILTIN_LCD
+    //   // TMP !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //   #ifdef BUT_ESP32
+    //     esp32.getScreen()->clear();
+    //     esp32.getScreen()->drawImg(0, 0, 128, 64, picturebuff);
+    //     if ( isGfxAutoBlitt() ) esp32.getScreen()->blitt();
+    //   #else
+    //     display.clearDisplay();
+    //     display.drawBitmap(0, 0, picturebuff, 128, 64, 0x01);
+    //     if ( isGfxAutoBlitt() ) display.display();
+    //   #endif
+    // #endif
   }
 
   return true;
@@ -1726,17 +1416,18 @@ void xts_loadTestProgram() {
 // =================================
 
 
+#ifndef DBUG_NOLN
+  void DBUG(int v) { Serial.println(v); }
+  void DBUG(float v) { Serial.println(v); }
+  void DBUG(char* v) { Serial.println(v); }
+  void DBUG(const char* v) { Serial.println(v); }
+  void DBUG(const char* v, int v2) { Serial.print(v); Serial.println(v2); }
 
-void DBUG(int v) { Serial.println(v); }
-void DBUG(float v) { Serial.println(v); }
-void DBUG(char* v) { Serial.println(v); }
-void DBUG(const char* v) { Serial.println(v); }
-void DBUG(const char* v, int v2) { Serial.print(v); Serial.println(v2); }
-
-void DBUG_NOLN(char* v) { Serial.print(v); }
-void DBUG_NOLN(const char* v) { Serial.print(v); }
-void DBUG_NOLN(const char* v, int v2) { Serial.print(v); Serial.print(v2); }
-void DBUG_NOLN(int v) { Serial.print(v); }
+  void DBUG_NOLN(char* v) { Serial.print(v); }
+  void DBUG_NOLN(const char* v) { Serial.print(v); }
+  void DBUG_NOLN(const char* v, int v2) { Serial.print(v); Serial.print(v2); }
+  void DBUG_NOLN(int v) { Serial.print(v); }
+#endif
 
 // ========= Console Ops =====================
 /*

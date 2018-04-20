@@ -80,15 +80,17 @@ void deleteBasFile(char* filename);
 
 // =================================
 
-void DBUG(int v);
-void DBUG(float v);
-void DBUG(char* v);
-void DBUG(const char* v);
-void DBUG(const char* v, int v2);
+#ifndef DBUG_NOLN
+    void DBUG(int v);
+    void DBUG(float v);
+    void DBUG(char* v);
+    void DBUG(const char* v);
+    void DBUG(const char* v, int v2);
 
-void DBUG_NOLN(char* v);
-void DBUG_NOLN(const char* v);
-void DBUG_NOLN(const char* v, int v2);
-void DBUG_NOLN(int v);
+    void DBUG_NOLN(char* v);
+    void DBUG_NOLN(const char* v);
+    void DBUG_NOLN(const char* v, int v2);
+    void DBUG_NOLN(int v);
+#endif
 
 void host_system_menu();

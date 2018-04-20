@@ -956,7 +956,7 @@ int xts_exec_cmd() {
       return esp32.getFs()->readCurrentTextLine();
     #else 
       host_outputString("freadTextLine() NYI");
-      return null;
+      return NULL;
     #endif
   }
 

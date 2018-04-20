@@ -13,7 +13,10 @@
  #define MEMORY_SIZE 256 * 1024
 #endif
 
-#define DBUG_NOLN(a,b) { Serial.printf( "%s %d", a, b ); }
+#ifndef DBUG_NOLN
+  #define DBUG_NOLN(a,b) { Serial.printf( "%s %d", a, b ); }
+  #define DBUG(a)        { Serial.printf( "%s \n", a ); }
+#endif
 
 #include "mem_utils.h"
 
@@ -28,6 +31,9 @@
 #define SCREEN_MODE_128    0
 #define SCREEN_MODE_160    1
 #define SCREEN_MODE_320    2
+
+#define WHITE 1
+#define BLACK 0
 
 class GenericMCU;
 
@@ -276,7 +282,7 @@ class GenericMCU {
           if ( getBUZZER() == NULL ) { return; }
           getBUZZER()->playTone(freq, duration);
       }
-      void noTone(int freq, int duration) {
+      void noTone() {
           if ( getBUZZER() == NULL ) { return; }
           getBUZZER()->noTone();
       }
@@ -290,7 +296,9 @@ class GenericMCU {
       // --------------------------------------
       // read system SIGNALS
       bool getSystemMenuReqState();
+      bool getSystemMenuReqEnd();
       bool getSystemResetReqState();
+      bool getSystemBreakReqState();
 
       // -====== Hardware Getters =======-
 

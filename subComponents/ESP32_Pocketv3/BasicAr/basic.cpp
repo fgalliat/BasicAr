@@ -54,13 +54,19 @@
 #include <float.h>
 #include <limits.h>
 
+#ifdef COMPUTER
+    #include "computer.h"
+#else
+  #include <Arduino.h>
+#endif
+
+// #include "mem_utils.h"
+// for mem_utils super-routines
+#define mem_routines 1
 #include "xts_arch.h"
-#ifdef BUT_TEENSY
-  //#include "xts_teensy.h"
+extern GenericMCU mcu;
 
 #ifdef BUT_ESP32
- #ifdef ESP32PCKv2
-    extern Esp32Pocketv2 esp32;
 
  #ifdef ESP32_WIFI_SUPPORT
      extern void host_outputString(char* str);
@@ -76,22 +82,6 @@
      #undef DBUGi
  #endif
 
- #else
-   extern Esp32Oled esp32;
- #endif
-
-#endif
-
-  #ifndef COMPUTER
-    #include "xts_teensy.h"
-  #else 
-    #include "computer.h"
-  #endif
-
-
-
-#else
-  #include <Arduino.h>
 #endif
 
 #include "basic.h"
@@ -99,8 +89,7 @@
 
 //#include <avr/pgmspace.h>
 
-// Xtase
-#include "mem_utils.h"
+
 
 // -------- Xtase refacto -------------
 char executeMode;
