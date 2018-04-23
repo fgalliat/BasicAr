@@ -495,17 +495,17 @@ void __playTuneT53(unsigned char* tuneStream, bool btnStop = false) {
 #define RPID_GREEN -16711936
 #define RPID_BLUE  -16776961
 
-// manually triggered
-void draw_blitt() {
-  if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
+// // manually triggered
+// void draw_blitt() {
+//   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
 
-    mcu.getScreen()->blitt( SCREEN_BLITT_AUTO ); // TODO : CHECK THAT
+//     mcu.getScreen()->blitt( SCREEN_BLITT_AUTO ); // TODO : CHECK THAT
 
-  } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
-    #ifdef BOARD_RPID
-    #endif
-  }  
-}
+//   } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
+//     #ifdef BOARD_RPID
+//     #endif
+//   }  
+// }
 
 void drawLine(int x1, int y1, int x2, int y2) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
@@ -840,9 +840,8 @@ return true;
       char* codeLine; int cpt = 0;
       while( (codeLine = mcu.getFS()->readCurrentTextLine() ) != NULL ) {
         //if ( strlen(codeLine) == 0 ) { break; }
-Serial.println( codeLine );
-        loadCallback( codeLine );
         //Serial.println( codeLine );
+        loadCallback( codeLine );
       }
       mcu.getFS()->closeCurrentTextFile();
     }

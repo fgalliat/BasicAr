@@ -701,7 +701,6 @@ char *host_readLine() {
             
             // to trigger end-of-line
             // & execute selfRun
-
             kc = PS2_ENTER;
 
             //screenBuffer[pos++] = '\n';
@@ -742,12 +741,12 @@ char *host_readLine() {
             
             char c = (kc > -1) ? kc : Serial.read();
             if (c>=32 && c<=126) {
-//                screenBuffer[pos++] = c;
+                screenBuffer[pos++] = c; // kept cf readLine !!
 mcu.print(c);
             }
             else if (c==PS2_DELETE && pos > startPos) {
 mcu.print( '\b' );
-                // screenBuffer[--pos] = 0;
+                screenBuffer[--pos] = 0; // kept cf readLine !!
             }
             else if (c==PS2_ENTER) {
                 done = true;

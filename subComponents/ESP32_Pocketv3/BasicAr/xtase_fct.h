@@ -460,15 +460,17 @@ int xts_blittMode() {
       return ERROR_BAD_PARAMETER;
     }
 
-    if ( mode == BLITT_DIRECT ) {
-      draw_blitt();
-    } else {
-      // stores only 0 & 2
-      BLITT_MODE = mode;   
-      if ( BLITT_AUTO ){
-        draw_blitt();
-      }
-    }
+    mcu.getScreen()->blitt( mode );
+
+    // if ( mode == BLITT_DIRECT ) {
+    //   draw_blitt();
+    // } else {
+    //   // stores only 0 & 2
+    //   BLITT_MODE = mode;   
+    //   if ( BLITT_AUTO ){
+    //     draw_blitt();
+    //   }
+    // }
 
   }
 
