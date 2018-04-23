@@ -632,7 +632,8 @@
     if ( !this->ready ) { return; }
 
     mcuBridge.write( SIG_SCR_DRAW_BPP );
-    // legacy not using X & Y
+    writeBridgeU16( x );
+    writeBridgeU16( y );
     mcuBridge.print( filename );
     mcuBridge.write( 0x00 );
 

@@ -23,9 +23,12 @@
   #ifdef ESP32PCKv3
     // else is slave
     #define MCU_MASTER 1
-    #define ESP32_I_TFT_eSPI 1
-    // need to be defined in <$lib$>/User_Setup_Select.h
-    #define ESP32_I_USE_ILI9341 1
+
+    #define SCREEN_BRIDGED 1
+
+    // #define ESP32_I_TFT_eSPI 1
+    // // need to be defined in <$lib$>/User_Setup_Select.h
+    // #define ESP32_I_USE_ILI9341 1
 
 #ifdef MAIN_INO_FILE
     #include "ESP32TwinMCU1.h"

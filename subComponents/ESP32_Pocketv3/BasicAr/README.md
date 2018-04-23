@@ -1,3 +1,13 @@
+// TODO : check if TFT_eSPI lib can scroll vertically
+// TO-LOOK : (https://github.com/Bodmer/TFT_eSPI/blob/master/TFT_eSPI.h)
+// 
+// void setWindow(int16_t x0, int16_t y0, int16_t x1, int16_t y1)
+// setTextWrap(boolean wrapX, boolean wrapY = false)
+// 
+
+
+
+
 # BasicAr
 Basic for Arduino'like MCUs (Teensy tested) (Xtase version)
 

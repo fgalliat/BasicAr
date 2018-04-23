@@ -1299,19 +1299,22 @@ void MCU_reset() {
   // _restart_Teensyduino_();
   host_outputString("\nRebooting\n");
   host_showBuffer();
-  #ifdef BUT_TEENSY
-    #ifdef COMPUTER
-      closeComputer();
-      exit(0);
-    #elif defined (ARDUINO_ARCH_ESP32)
-      ESP.restart();
-    #else
-      SCB_AIRCR = 0x05FA0004; // software reset
-    #endif
-  #endif
-      // void(*resetFunc)(void) = 0;
-      // resetFunc();
-      // for(;;) {}
+
+  mcu.reset();
+
+  // #ifdef BUT_TEENSY
+  //   #ifdef COMPUTER
+  //     closeComputer();
+  //     exit(0);
+  //   #elif defined (ARDUINO_ARCH_ESP32)
+  //     ESP.restart();
+  //   #else
+  //     SCB_AIRCR = 0x05FA0004; // software reset
+  //   #endif
+  // #endif
+  //     // void(*resetFunc)(void) = 0;
+  //     // resetFunc();
+  //     // for(;;) {}
 }
 
 extern bool systemHalted;

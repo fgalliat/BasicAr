@@ -176,6 +176,13 @@ void host_startupTone() {
 }
 
 void host_cls() {
+
+#ifdef SCREEN_BRIDGED
+  mcu.getScreen()->clear();
+  return;
+#endif
+
+
     if ( SCREEN_LOCKER ) { return; }
     isWriting = true;
     memset(screenBuffer, 0x00, SCREEN_WIDTH*SCREEN_HEIGHT);
@@ -196,6 +203,11 @@ void host_cls() {
 }
 
 void host_moveCursor(int x, int y) {
+#ifdef SCREEN_BRIDGED
+  mcu.getScreen()->setCursor(x,y);
+  return;
+#endif
+
     isWriting = true;
     if (x<0) x = 0;
     if (x>=SCREEN_WIDTH) x = SCREEN_WIDTH-1;
@@ -216,7 +228,14 @@ int dirtyCOunter = 0;
   char* espScreenline = NULL;
 #endif
 
+
 void host_showBuffer() {
+
+#ifdef SCREEN_BRIDGED
+  return;
+#endif
+
+
   if ( SCREEN_LOCKER ) { return; }
 
   // en plus de la lecture de ligne ....
@@ -414,6 +433,18 @@ void host_showBuffer() {
 }
 
 void scrollBuffer() {
+
+// TODO : check if TFT_eSPI lib can scroll vertically
+// TO-LOOK : (https://github.com/Bodmer/TFT_eSPI/blob/master/TFT_eSPI.h)
+// 
+// void setWindow(int16_t x0, int16_t y0, int16_t x1, int16_t y1)
+// setTextWrap(boolean wrapX, boolean wrapY = false)
+// 
+#ifdef SCREEN_BRIDGED
+  return;
+#endif
+
+
     if ( SCREEN_LOCKER ) { return; }
     isWriting = true;
     memcpy(screenBuffer, screenBuffer + SCREEN_WIDTH, SCREEN_WIDTH*(SCREEN_HEIGHT-1));
@@ -445,6 +476,11 @@ void host_outputString(const char *str) {
 }
 
 void host_outputString(char *str) {
+#ifdef SCREEN_BRIDGED
+  mcu.getScreen()->print(str);
+  return;
+#endif
+
     if ( SCREEN_LOCKER ) { return; }
     isWriting = true;
     int pos = curY*SCREEN_WIDTH+curX;
@@ -504,6 +540,12 @@ void host_outputString(char *str) {
 // }
 
 void host_outputChar(char c) {
+
+#ifdef SCREEN_BRIDGED
+  mcu.getScreen()->print(c);
+  return;
+#endif
+
     if ( SCREEN_LOCKER ) { return; }
     isWriting = true;
     int pos = curY*SCREEN_WIDTH+curX;
@@ -534,6 +576,8 @@ void host_outputChar(char c) {
     isWriting = false;
 }
 
+// TODO : faster !!
+// see if really need longs (instead of ints)
 int host_outputInt(long num) {
     isWriting = true;
     // returns len
@@ -584,11 +628,23 @@ char *host_floatToStr(float f, char *buf) {
 }
 
 void host_outputFloat(float f) {
+
+#ifdef SCREEN_BRIDGED
+  mcu.getScreen()->print(f);
+  return;
+#endif
+
     static char buf[16];
     host_outputString(host_floatToStr(f, buf));
 }
 
 void host_newLine() {
+
+#ifdef SCREEN_BRIDGED
+  mcu.getScreen()->println("");
+  return;
+#endif
+
     if ( SCREEN_LOCKER ) { return; }
     isWriting = true;
     curX = 0;
@@ -647,7 +703,10 @@ char *host_readLine() {
             // & execute selfRun
 
             kc = PS2_ENTER;
-            screenBuffer[pos++] = '\n';
+
+            //screenBuffer[pos++] = '\n';
+            host_newLine();
+
             done = true;
           }
           else if ( MODE_EDITOR && mcu.getSystemResetReqState() ) {
@@ -657,7 +716,10 @@ char *host_readLine() {
             // to trigger end-of-line
             host_click();
             kc = PS2_ENTER;
-            screenBuffer[pos++] = '\n';
+
+            //screenBuffer[pos++] = '\n';
+            host_newLine();
+
             MCU_reset();
             done = true;
           }
@@ -668,85 +730,54 @@ char *host_readLine() {
             // to trigger end-of-line
             host_click();
             kc = PS2_ENTER;
-            screenBuffer[pos++] = '\n';
+
+            // screenBuffer[pos++] = '\n';
+            host_newLine();
+
             done = true;
           }
           while ( Serial.available() ) {
             host_click();
-            // read the next key
-            // Optim try
-            //lineDirty[pos / SCREEN_WIDTH] = 1;
-            //lineDirty[pos / SCREEN_WIDTH]++;
             lineDirty[pos / SCREEN_WIDTH] = pos % SCREEN_WIDTH; // Cf VGAT + Kbd display bug
             
             char c = (kc > -1) ? kc : Serial.read();
             if (c>=32 && c<=126) {
-                screenBuffer[pos++] = c;
-                
-                #ifdef BOARD_VGA
-                    if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
-                        vgat_printCh( c );
-                    }
-                #endif
-
-                #ifdef BOARD_RPID
-                    if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
-                        rpid_printCh( c );
-                    }
-                #endif
+//                screenBuffer[pos++] = c;
+mcu.print(c);
             }
             else if (c==PS2_DELETE && pos > startPos) {
-                screenBuffer[--pos] = 0;
-                #ifdef BOARD_VGA
-                    if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
-                        vgat_printCh( '\b' );
-                    }
-                #endif
-                #ifdef BOARD_RPID
-                    if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
-                        rpid_printCh( '\b' );
-                    }
-                #endif
+mcu.print( '\b' );
+                // screenBuffer[--pos] = 0;
             }
             else if (c==PS2_ENTER) {
                 done = true;
-                //screenBuffer[pos] = 0;
-                #ifdef BOARD_VGA
-                    if ( OUTPUT_DEVICE == OUT_DEV_VGA_SERIAL ) {
-                        vgat_printCh( '\n' );
-                    }
-                #endif
-                #ifdef BOARD_RPID
-                    if ( OUTPUT_DEVICE == OUT_DEV_RPID_SERIAL ) {
-                        rpid_printCh( '\n' );
-                    }
-                #endif
+mcu.print( '\n' );
             }
-            curX = pos % SCREEN_WIDTH;
-            curY = pos / SCREEN_WIDTH;
-            // scroll if we need to
-            if (curY == SCREEN_HEIGHT) {
-                if (startPos >= SCREEN_WIDTH) {
-                    startPos -= SCREEN_WIDTH;
-                    pos -= SCREEN_WIDTH;
-                    scrollBuffer();
-                }
-                else
-                {
-                    screenBuffer[--pos] = 0;
-                    curX = pos % SCREEN_WIDTH;
-                    curY = pos / SCREEN_WIDTH;
-                }
-            }
+            // curX = pos % SCREEN_WIDTH;
+            // curY = pos / SCREEN_WIDTH;
+            // // scroll if we need to
+            // if (curY == SCREEN_HEIGHT) {
+            //     if (startPos >= SCREEN_WIDTH) {
+            //         startPos -= SCREEN_WIDTH;
+            //         pos -= SCREEN_WIDTH;
+            //         scrollBuffer();
+            //     }
+            //     else
+            //     {
+            //         screenBuffer[--pos] = 0;
+            //         curX = pos % SCREEN_WIDTH;
+            //         curY = pos / SCREEN_WIDTH;
+            //     }
+            // }
             redraw = 1;
         }
         if (redraw) {
             if (LOCAL_ECHO) { host_showBuffer(); }
         }
 
-        #ifdef COMPUTER
-        delay(50);
-        #endif
+        // #ifdef COMPUTER
+        // delay(50);
+        // #endif
 
     } // end of while(done)
     screenBuffer[pos] = 0;
@@ -754,7 +785,6 @@ char *host_readLine() {
     
     // remove the cursor
     //lineDirty[curY] = 1;
-
     if (LOCAL_ECHO) { host_showBuffer(); }
 
     return &screenBuffer[startPos];
