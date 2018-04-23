@@ -2,9 +2,14 @@
 // TO-LOOK : (https://github.com/Bodmer/TFT_eSPI/blob/master/TFT_eSPI.h)
 // 
 // void setWindow(int16_t x0, int16_t y0, int16_t x1, int16_t y1)
+//  \___ has no effect
 // setTextWrap(boolean wrapX, boolean wrapY = false)
-// 
 
+// SCREEN 1 2 3 (~OK)
+// DATAF    (2)
+// SAVE     (1)
+// DIR      (3)
+// > BLITT mechanism
 
 
 

@@ -171,8 +171,10 @@
 
     #define TOKEN_MIN              107 // min(a,b)
     #define TOKEN_MAX              108 // max(a,b)
+
+    #define TOKEN_SCREEN           109 // screen {1,2,3}
     
-    #define TOKEN_LASTONE TOKEN_MAX
+    #define TOKEN_LASTONE TOKEN_SCREEN
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT

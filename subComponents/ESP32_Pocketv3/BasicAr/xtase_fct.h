@@ -477,6 +477,27 @@ int xts_blittMode() {
   return 0;
 }
 
+int xts_screenMode() {
+  getNextToken();
+
+  int val = parseExpression();
+  if (val & _ERROR_MASK) return val;
+  if (!_IS_TYPE_NUM(val))
+      return ERROR_EXPR_EXPECTED_NUM;
+
+  if ( executeMode ) {
+    int mode = (int)stackPopNum();
+    if ( mode < BLITT_LOCKED || mode > BLITT_AUTO ) {
+      return ERROR_BAD_PARAMETER;
+    }
+
+    mcu.getScreen()->setMode( mode );
+  }
+
+  return 0;
+}
+
+
 // N.B. @ this time all params are mandatory
 int xts_dispRect() {
   getNextToken();

@@ -580,21 +580,28 @@ void host_outputChar(char c) {
 // see if really need longs (instead of ints)
 int host_outputInt(long num) {
     isWriting = true;
-    // returns len
-    long i = num, xx = 1;
-    int c = 0;
-    do {
-        c++;
-        xx *= 10;
-        i /= 10;
-    } 
-    while (i);
 
-    for (int i=0; i<c; i++) {
-        xx /= 10;
-        char digit = ((num/xx) % 10) + '0';
-        host_outputChar(digit);
-    }
+    // TODO : check that cast !!!
+    mcu.getScreen()->print( (int)num );
+
+    // returns len
+    int c = 7; // check that !!!!!
+
+    // // returns len
+    // long i = num, xx = 1;
+    // int c = 0;
+    // do {
+    //     c++;
+    //     xx *= 10;
+    //     i /= 10;
+    // } 
+    // while (i);
+
+    // for (int i=0; i<c; i++) {
+    //     xx /= 10;
+    //     char digit = ((num/xx) % 10) + '0';
+    //     host_outputChar(digit);
+    // }
     isWriting = false;
     return c;
 }

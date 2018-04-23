@@ -448,6 +448,10 @@
     clear();
     blitt( SCREEN_BLITT_AUTO );
 
+    // hosno effect for now
+    // _oled_display->setWindow(0,0,160,128);
+    _oled_display->setTextWrap(true, true);
+
     this->ready = true;
   }
 

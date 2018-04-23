@@ -242,6 +242,7 @@ TokenTableEntry tokenTable[] = {
     {"MIN",  2}, // numeric fcts
     {"MAX",  2}, // numeric fcts
 
+    {"SCREEN", 1|TKN_FMT_POST}, // set screen mode
 };
 
 
@@ -2519,6 +2520,8 @@ int parseStmts()
 
             case TOKEN_BLITT : ret = xts_blittMode(); break;
             case TOKEN_RECT  : ret = xts_dispRect(); break;
+
+            case TOKEN_SCREEN : ret = xts_screenMode(); break;
 
             // ======== Xtase cmds ============= 
 

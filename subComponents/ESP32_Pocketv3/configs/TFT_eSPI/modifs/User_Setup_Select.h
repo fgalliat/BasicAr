@@ -55,17 +55,38 @@
 /////////////////////////////////////////////////////////////////////////////////////
 
 
-// Load the right driver definition - do not tinker here !
 #if   defined (ILI9341_DRIVER)
      #include <TFT_Drivers/ILI9341_Defines.h>
+     #define  TFT_DRIVER 0x9341
 #elif defined (ST7735_DRIVER)
      #include <TFT_Drivers/ST7735_Defines.h>
+     #define  TFT_DRIVER 0x7735
 #elif defined (ILI9163_DRIVER)
      #include <TFT_Drivers/ILI9163_Defines.h>
+     #define  TFT_DRIVER 0x9163
 #elif defined (S6D02A1_DRIVER)
      #include <TFT_Drivers/S6D02A1_Defines.h>
+     #define  TFT_DRIVER 0x6D02
 #elif defined (RPI_ILI9486_DRIVER)
      #include <TFT_Drivers/RPI_ILI9486_Defines.h>
+     #define  TFT_DRIVER 0x9486
+#elif defined (ILI9481_DRIVER)
+     #include <TFT_Drivers/ILI9481_Defines.h>
+     #define  TFT_DRIVER 0x9481
+#elif defined (ILI9488_DRIVER)
+     #include <TFT_Drivers/ILI9488_Defines.h>
+     #define  TFT_DRIVER 0x9488
+#elif defined (HX8357D_DRIVER)
+     #include "TFT_Drivers/HX8357D_Defines.h"
+     #define  TFT_DRIVER 0x8357
+#elif defined (EPD_DRIVER)
+     #include "TFT_Drivers/EPD_Defines.h"
+     #define  TFT_DRIVER 0xE9D
+#elif defined (XYZZY_DRIVER)  // <<<<<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVER HERE
+     #include "TFT_Drivers/XYZZY_Defines.h"
+     #define  TFT_DRIVER 0x0000
+#else
+     #define  TFT_DRIVER 0x0000
 #endif
 
 // These are the pins for all ESP8266 boards
