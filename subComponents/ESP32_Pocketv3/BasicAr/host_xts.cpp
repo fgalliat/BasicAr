@@ -542,7 +542,9 @@ void drawPixel(int x1, int y1, int color) {
 // mode  : 0 draw / 1 fill
 void drawRect(int x, int y, int w, int h, int color, int mode) {
   if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
-      mcu.getScreen()->drawRect(x, y, w, h, color, mode);
+      // BEWARE : BASIC args order is #than one used
+      // in Generic MCU impl. !!!
+      mcu.getScreen()->drawRect(x, y, w, h, mode, color);
   } else if (GFX_DEVICE == GFX_DEV_RPID_SERIAL) {
     #ifdef BOARD_RPID
       // no gray support @ this time

@@ -6,15 +6,15 @@
 // setTextWrap(boolean wrapX, boolean wrapY = false)
 
 // SCREEN 1 2 3 (~OK)
-// DATAF    (2)   [DONE]
+// DATAF    (2)        [DONE]
 //   readCurrentFileLine()
 //
-// SAVE     (1)   [DONE] >> to be TESTED
+// SAVE     (1)        [DONE]
 //   writeCurrentFileLine( ... )
 //
-// Wifi + Telnet Stack 
+// Wifi + Telnet Stack [XX]
 //
-// DIR      (3)   [XX]
+// DIR      (3)        [inProgress]
 //   mcu.getFS()->ls( lsCallBack( name, size, type=-1(EOF) ) )
 //
 // > BLITT mechanism on #2

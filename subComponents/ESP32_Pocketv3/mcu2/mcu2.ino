@@ -73,7 +73,8 @@ bool inCmdMode = false;
 uint16_t bridge_readU16() {
   uint8_t d0 = mcuBridge.read();
   uint8_t d1 = mcuBridge.read();
-return ( uint16_t ) ((uint16_t)d0)*256 + ((uint16_t)d1);
+//return ( uint16_t ) ((uint16_t)d0)*256 + ((uint16_t)d1);
+return ( uint16_t ) (((uint16_t)d0)<<8) + ((uint16_t)d1);
 }
 
 // 0-terminated

@@ -347,7 +347,8 @@
   }
 
   static bool writeBridgeU16(int val) {
-    uint8_t d0 = val / 256; // up to 64K value
+    //uint8_t d0 = val / 256; // up to 64K value
+    uint8_t d0 = val >> 8;
     uint8_t d1 = val % 256;
 
     mcuBridge.write( d0 );

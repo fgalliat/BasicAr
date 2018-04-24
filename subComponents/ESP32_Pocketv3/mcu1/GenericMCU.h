@@ -92,6 +92,9 @@ class GenericMCU_FS {
       void uploadViaBridge();
       // copy to bridge
       void copyToBridge(char* filename);
+
+      void ls(char* filter, void (*callback)(char*, int, uint8_t) );
+
 };
 
 class GenericMCU_SCREEN {
