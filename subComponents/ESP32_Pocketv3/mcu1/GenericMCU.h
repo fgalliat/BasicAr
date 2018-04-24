@@ -84,6 +84,7 @@ class GenericMCU_FS {
 
       bool openCurrentTextFile(char* filename, bool readMode=true);
       char* readCurrentTextLine();
+      void writeCurrentText(char* line, bool autoflush=true);
       void closeCurrentTextFile();
 
       void uploadViaSerial();

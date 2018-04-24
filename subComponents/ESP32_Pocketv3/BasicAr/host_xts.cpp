@@ -793,208 +793,6 @@ return true;
 
  // ==== Load/Save source code (ascii) from SDCard ====
 
-
-  void loadCallback(char* codeLine) {
-
-    if ( codeLine == NULL ) { Serial.println("CANT HANDLE NULL LINES"); return; }
-
-    //Serial.print(">> ");Serial.println(codeLine);
-
-    // interpret line
-    int ret = tokenize((unsigned char*)codeLine, tokenBuf, TOKEN_BUF_SIZE); 
-    if (ret == 0) { ret = processInput(tokenBuf); }
-    if ( ret > 0 ) { 
-      //host_outputInt( curToken );
-      host_outputString((char *)codeLine);
-      host_outputString((char *)" ->");
-      host_outputString((char *)errorTable[ret]); 
-      host_outputString((char *)" @");
-      //host_outputInt( lineCpt );
-      host_outputInt( 999 );
-      host_outputString((char *)"\n");
-      host_showBuffer(); 
-    }
-}
-
-
- void loadAsciiBas(char* filename) {
-  if ( !STORAGE_OK ) {
-    host_outputString("ERR : Storage not ready\n");
-    host_showBuffer();
-    return;
-  }
-
-  autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
-
-
-    cleanCodeLine();
-    memset( tokenBuf, 0x00, TOKEN_BUF_SIZE );
-
-    // esp32.lockISR();
-    bool ok = mcu.getFS()->openCurrentTextFile( SDentryName );
-    if ( !ok ) {
-      Serial.println( "-FAILED-" );
-      host_outputString( "-FAILED-\n" );
-      host_showBuffer();
-    } else {
-      char* codeLine; int cpt = 0;
-      while( (codeLine = mcu.getFS()->readCurrentTextLine() ) != NULL ) {
-        //if ( strlen(codeLine) == 0 ) { break; }
-        //Serial.println( codeLine );
-        loadCallback( codeLine );
-      }
-      mcu.getFS()->closeCurrentTextFile();
-    }
-    // esp32.unlockISR();
-
-    host_outputString( "-EOF-\n" );
-    host_showBuffer();
-
-    return;
- }
-
-
-
- #ifndef FS_SUPPORT
-  // void loadAsciiBas(char* filename) {
-  //   host_outputString("ERR : NO Storage support\n");
-  //   host_showBuffer();
-  // }
-
-  void saveAsciiBas(char* filename) {
-    host_outputString("ERR : NO Storage support\n");
-    host_showBuffer();
-  }
-
-  void llistAsciiBas(char* filename) {
-    if ( filename == NULL ) {
-      // TODO
-      host_outputString("TODO: dump PRGM to Serial\n");
-      host_showBuffer();
-      return;
-    }
-    host_outputString("ERR : NO Storage support\n");
-    host_showBuffer();
-  }
-
-
- #else
-
-  #ifdef ESP32_FS
-    void loadCallback(char* codeLine) {
-
-      if ( codeLine == NULL ) { Serial.println("CANT HANDLE NULL LINES"); return; }
-
-      //Serial.print(">> ");Serial.println(codeLine);
-
-      // interpret line
-      int ret = tokenize((unsigned char*)codeLine, tokenBuf, TOKEN_BUF_SIZE); 
-      if (ret == 0) { ret = processInput(tokenBuf); }
-      if ( ret > 0 ) { 
-        //host_outputInt( curToken );
-        host_outputString((char *)codeLine);
-        host_outputString((char *)" ->");
-        host_outputString((char *)errorTable[ret]); 
-        host_outputString((char *)" @");
-        //host_outputInt( lineCpt );
-        host_outputInt( 999 );
-        host_outputString((char *)"\n");
-        host_showBuffer(); 
-      }
-    }
-  #endif
-
-
- void loadAsciiBas(char* filename) {
-  if ( !STORAGE_OK ) {
-    host_outputString("ERR : Storage not ready\n");
-    host_showBuffer();
-    return;
-  }
-
-  autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
-
-  #ifdef ESP32_FS
-
-    cleanCodeLine();
-    memset( tokenBuf, 0x00, TOKEN_BUF_SIZE );
-
-    esp32.lockISR();
-    //esp32.getFs()->readTextFile(SDentryName, loadCallback);
-    bool ok = esp32.getFs()->openCurrentTextFile( SDentryName );
-    if ( !ok ) {
-      Serial.println( "-FAILED-" );
-      host_outputString( "-FAILED-\n" );
-      host_showBuffer();
-    } else {
-      char* codeLine; int cpt = 0;
-      while( (codeLine = esp32.getFs()->readCurrentTextLine() ) != NULL ) {
-        //if ( strlen(codeLine) == 0 ) { break; }
-Serial.println( codeLine );
-        loadCallback( codeLine );
-        //Serial.println( codeLine );
-      }
-      esp32.getFs()->closeCurrentTextFile();
-    }
-    esp32.unlockISR();
-
-    host_outputString( "-EOF-\n" );
-    host_showBuffer();
-
-    return;
-  #else
-    // SFATLIB mode -> have to switch for regular SD lib
-    SdFile file;
-    if (! file.open( SDentryName , O_READ) ) {
-      led1(true);
-      host_outputString("ERR : File not ready\n");
-      host_showBuffer();
-      return;        
-    }
-
-    file.seekSet(0);
-
-    int n;
-
-    //reset(); // aka NEW -- no more Cf saveLoadCmd() call
-
-    cleanCodeLine();
-    memset( tokenBuf, 0x00, TOKEN_BUF_SIZE );
-    int lineCpt = 1;
-    while( ( n = file.fgets(codeLine, ASCII_CODELINE_SIZE) ) > 0 ) {
-      // // show line
-      // host_outputString( codeLine );
-      // if ( codeLine[n-1] != '\n' ) {
-      //   host_outputString( "\n" );
-      // }
-      // host_showBuffer();
-
-      // interpret line
-      int ret = tokenize((unsigned char*)codeLine, tokenBuf, TOKEN_BUF_SIZE); 
-      if (ret == 0) { ret = processInput(tokenBuf); }
-      if ( ret > 0 ) { 
-        //host_outputInt( curToken );
-        host_outputString((char *)codeLine);
-        host_outputString((char *)" ->");
-        host_outputString((char *)errorTable[ret]); 
-        host_outputString((char *)" @");
-        host_outputInt( lineCpt );
-        host_outputString((char *)"\n");
-        host_showBuffer(); 
-      }
-      //ret = ERROR_NONE;
-      cleanCodeLine();
-      memset( tokenBuf, 0x00, TOKEN_BUF_SIZE );
-      lineCpt++;
-    }
-    file.close();
-
-    host_outputString( "-EOF-\n" );
-    host_showBuffer();
-  #endif
-}
-
-
 void _serializeTokens(unsigned char *p, char* destLine) {
   int modeREM = 0;
   while (*p != TOKEN_EOL) {
@@ -1076,7 +874,70 @@ void _serializeTokens(unsigned char *p, char* destLine) {
 }
 
 
+  void loadCallback(char* codeLine) {
 
+    if ( codeLine == NULL ) { Serial.println("CANT HANDLE NULL LINES"); return; }
+
+    //Serial.print(">> ");Serial.println(codeLine);
+
+    // interpret line
+    int ret = tokenize((unsigned char*)codeLine, tokenBuf, TOKEN_BUF_SIZE); 
+    if (ret == 0) { ret = processInput(tokenBuf); }
+    if ( ret > 0 ) { 
+      //host_outputInt( curToken );
+      host_outputString((char *)codeLine);
+      host_outputString((char *)" ->");
+      host_outputString((char *)errorTable[ret]); 
+      host_outputString((char *)" @");
+      //host_outputInt( lineCpt );
+      host_outputInt( 999 );
+      host_outputString((char *)"\n");
+      host_showBuffer(); 
+    }
+}
+
+
+ void loadAsciiBas(char* filename) {
+  if ( !STORAGE_OK ) {
+    host_outputString("ERR : Storage not ready\n");
+    host_showBuffer();
+    return;
+  }
+
+  autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
+
+
+    cleanCodeLine();
+    memset( tokenBuf, 0x00, TOKEN_BUF_SIZE );
+
+    // esp32.lockISR();
+    bool ok = mcu.getFS()->openCurrentTextFile( SDentryName );
+    if ( !ok ) {
+      Serial.println( "-FAILED-" );
+      host_outputString( "-FAILED-\n" );
+      host_showBuffer();
+    } else {
+      char* codeLine; int cpt = 0;
+      while( (codeLine = mcu.getFS()->readCurrentTextLine() ) != NULL ) {
+        //if ( strlen(codeLine) == 0 ) { break; }
+        //Serial.println( codeLine );
+        loadCallback( codeLine );
+      }
+      mcu.getFS()->closeCurrentTextFile();
+    }
+    // esp32.unlockISR();
+
+    host_outputString( "-EOF-\n" );
+    host_showBuffer();
+
+    return;
+ }
+
+// TODO : better
+extern bool fopenTextFile(char* filename, bool forRead=true);
+extern char* freadTextLine();
+extern void fwriteText(char* str, bool autoflush=true);
+extern void fcloseFile();
 
 
 void saveAsciiBas(char* filename) {
@@ -1088,101 +949,60 @@ void saveAsciiBas(char* filename) {
 
   autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
 
-  #ifdef ESP32_FS
+  // TO MOVE INSIDE fopen()
+  mcu.getFS()->remove(SDentryName);
 
-    esp32.lockISR();
+  fopenTextFile(SDentryName, false);
+  // esp32.lockISR();
 
-    Serial.println("clean");
-    esp32.getFs()->remove(SDentryName);
-    Serial.println("open");
-    //esp32.getFs()->openCurrentTextFile(SDentryName, false);
-    //esp32.getFs()->writeCurrentTextLine("1 ' blank\n");
+  fwriteText("1 ' blank\n");
 
-    File f = SPIFFS.open(SDentryName, "w");
-    if ( !f ) { Serial.println("NOT ACCESSIBLE"); esp32.unlockISR(); return; }
-    Serial.println("seek");
-    f.seek(0);
-    Serial.println("seeked");
+  char lineNumStr[7];
 
-    char lineNumStr[7];
+  cleanCodeLine();
+  unsigned char *p = &mem[0];
+  while (p < &mem[sysPROGEND]) {
+      uint16_t lineNum = *(uint16_t*)(p+2);
+      sprintf(lineNumStr, "%d ", lineNum);
+      fwriteText(lineNumStr, false);
 
-    cleanCodeLine();
-    unsigned char *p = &mem[0];
-    while (p < &mem[sysPROGEND]) {
-        uint16_t lineNum = *(uint16_t*)(p+2);
-        // file.print(lineNum);
-        // file.print(" ");
+      _serializeTokens(p+4, codeLine);
+      fwriteText(codeLine, false);
+      cleanCodeLine();
 
-        sprintf(lineNumStr, "%d ", lineNum);
-        f.print(lineNumStr);
+      fwriteText("\r\n");
+      p+= *(uint16_t *)p;
+  }
+  fwriteText("\r\n");
+  fcloseFile();
 
-        _serializeTokens(p+4, codeLine);
-        f.print(codeLine);
-        //esp32.getFs()->writeCurrentTextLine(codeLine);
-        cleanCodeLine();
+  //esp32.unlockISR();
+  Serial.println("closed");
 
-        f.print("\r\n");
-        //esp32.getFs()->writeCurrentTextLine("\n");
-        p+= *(uint16_t *)p;
-        f.flush();
-        Serial.println("line");
-    }
-    f.print("\r\n");
-    f.flush();
-    Serial.println("flushed");
-    f.close();
-    esp32.unlockISR();
-
-    Serial.println("closed");
-    //esp32.getFs()->writeCurrentTextLine("\n");
-
-        
-    host_outputString( "-EOF-\n" );
-    host_showBuffer();
-
-    //esp32.getFs()->closeCurrentTextFile();
-
-  #else
-    // SFATLIB mode -> have to switch for regular SD lib
-    sd.remove( SDentryName );
-    SdFile file;
-
-    if (! file.open( SDentryName , FILE_WRITE) ) {
-      led1(true);
-      host_outputString("ERR : File not ready\n");
-      host_showBuffer();
-      return;        
-    }
-
-    file.seekSet(0);
-
-    // file.print("coucou1"); file.print("\n");
-    // file.flush();
-
-    cleanCodeLine();
-    unsigned char *p = &mem[0];
-    while (p < &mem[sysPROGEND]) {
-        uint16_t lineNum = *(uint16_t*)(p+2);
-            file.print(lineNum);
-            file.print(" ");
-
-            //printTokens(p+4);
-            _serializeTokens(p+4, codeLine);
-            file.print(codeLine);
-            cleanCodeLine();
-
-            file.print("\n");
-        p+= *(uint16_t *)p;
-    }
-    file.flush();
-
-    
-    host_outputString( "-EOF-\n" );
-    host_showBuffer();
-
-    file.close();
-  #endif
+      
+  host_outputString( "-EOF-\n" );
+  host_showBuffer();
 }
+
+
+
+
+
+
+ #ifndef FS_SUPPORT
+  void llistAsciiBas(char* filename) {
+    if ( filename == NULL ) {
+      // TODO
+      host_outputString("TODO: dump PRGM to Serial\n");
+      host_showBuffer();
+      return;
+    }
+    host_outputString("ERR : NO Storage support\n");
+    host_showBuffer();
+  }
+
+
+ #else
 
 // ====== LLIST ==================
 #define outSerial Serial

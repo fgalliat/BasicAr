@@ -6,11 +6,19 @@
 // setTextWrap(boolean wrapX, boolean wrapY = false)
 
 // SCREEN 1 2 3 (~OK)
-// DATAF    (2)
-// SAVE     (1)
-// DIR      (3)
-// > BLITT mechanism
-
+// DATAF    (2)   [DONE]
+//   readCurrentFileLine()
+//
+// SAVE     (1)   [DONE] >> to be TESTED
+//   writeCurrentFileLine( ... )
+//
+// Wifi + Telnet Stack 
+//
+// DIR      (3)   [XX]
+//   mcu.getFS()->ls( lsCallBack( name, size, type=-1(EOF) ) )
+//
+// > BLITT mechanism on #2
+// see if TFT_eSPI contains a getCursor() -> cls @ scroll ???
 
 
 # BasicAr

@@ -966,29 +966,20 @@ int xts_exec_cmd() {
 // ===================================================================
 
   // _________ TODO ______________________
-  bool fopenTextFile(char* filename) {
-    #ifdef ESP32PCKv2
-      return esp32.getFs()->openCurrentTextFile( filename );
-    #else 
-      host_outputString( "fopenTextFile() NYI");
-    #endif
+  bool fopenTextFile(char* filename, bool forRead=true) {
+    return mcu.getFS()->openCurrentTextFile(filename, forRead);
   }
   
   char* freadTextLine() {
-    #ifdef ESP32PCKv2
-      return esp32.getFs()->readCurrentTextLine();
-    #else 
-      host_outputString("freadTextLine() NYI");
-      return NULL;
-    #endif
+    return mcu.getFS()->readCurrentTextLine();
+  }
+
+  void fwriteText(char* str, bool autoflush=true) {
+    mcu.getFS()->writeCurrentText(str, autoflush);
   }
 
   void fcloseFile() {
-    #ifdef ESP32PCKv2
-      esp32.getFs()->closeCurrentTextFile();
-    #else 
-      host_outputString("fcloseTextFile() NYI");
-    #endif
+    mcu.getFS()->closeCurrentTextFile();
   }
   // _________ TODO ______________________
 

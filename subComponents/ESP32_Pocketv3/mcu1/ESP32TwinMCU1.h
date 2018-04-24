@@ -300,36 +300,34 @@
   //             currentFile.write( (uint8_t*)b, len );
   //             currentFile.flush();
   //         }
-  // // have to provide "\n" @ end of line
-  //         void writeCurrentTextLine(char* line) {
-  //             if ( line == NULL ) { Serial.print("CANT WRITE NULL LINE\n"); return; }
-  //             int len = strlen( line );
-  //           //   this->currentFile->write( (uint8_t*)line, len );
-  //           //   this->currentFile->flush();
-  //             currentFile.write( (uint8_t*)line, len );
-  //             currentFile.flush();
-  //         }
+
+  // have to provide "\n" @ end of line
+  void GenericMCU_FS::writeCurrentText(char* line, bool autoflush) {
+      if ( line == NULL ) { Serial.print("CANT WRITE NULL LINE\n"); return; }
+      int len = strlen( line );
+      currentFile.write( (uint8_t*)line, len );
+      if (autoflush) currentFile.flush();
+  }
 
   char* GenericMCU_FS::readCurrentTextLine() {
-//   Serial.println("readLine.1");
-            const int MAX_LINE_LEN = 256;
-            memset(__myLine, 0x00, MAX_LINE_LEN +1);
+    const int MAX_LINE_LEN = 256;
+    memset(__myLine, 0x00, MAX_LINE_LEN +1);
 
-            if ( currentFile.available() <= 0 ) {
-                return NULL;
-            }
+    if ( currentFile.available() <= 0 ) {
+        return NULL;
+    }
 
-            int ch, cpt=0;
-            for(int i=0; i < MAX_LINE_LEN; i++) {
-                if ( currentFile.available() <= 0 ) { break; }
-                ch = currentFile.read();
-                if ( ch == -1 )   { break;    }
-                if ( ch == '\r' ) { continue; }
-                if ( ch == '\n' ) { break;    }
-                __myLine[ cpt++ ] = (char)ch;
-            }
+    int ch, cpt=0;
+    for(int i=0; i < MAX_LINE_LEN; i++) {
+        if ( currentFile.available() <= 0 ) { break; }
+        ch = currentFile.read();
+        if ( ch == -1 )   { break;    }
+        if ( ch == '\r' ) { continue; }
+        if ( ch == '\n' ) { break;    }
+        __myLine[ cpt++ ] = (char)ch;
+    }
 
-            return __myLine;
+    return __myLine;
   }
 
   
