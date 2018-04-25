@@ -35,6 +35,11 @@
 #define WHITE 1
 #define BLACK 0
 
+
+#define FS_TYPE_EOF  0
+#define FS_TYPE_FILE 1
+#define FS_TYPE_DIR  2
+
 class GenericMCU;
 
 class GenericMCU_GPIO {

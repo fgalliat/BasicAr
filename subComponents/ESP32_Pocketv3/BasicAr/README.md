@@ -14,16 +14,21 @@
 //
 // Wifi + Telnet Stack [DONE]
 //
-// DIR      (3)        [inProgress]
+// DIR      (3)        [DONE]
 //   mcu.getFS()->ls( lsCallBack( name, size, type=-1(EOF) ) )
+// filter to impl      [DONE]
+//
+// DIRARRY -> list *.bas & make a dynamic launching menu !!!
 //
 // LLIST               [DONE]
 //   for Serial or telnet client
 // 
 // Prevent GFX routines from sending negative values
-//   via bridge !!!!   [XX]
+//   via bridge !!!!   [DONE]
 //
-// DIRARRY -> list *.bas & make a dynamic launching menu !!!
+// Copy to bridge "COPY" keyword
+//
+//
 //
 // > BLITT mechanism on #2
 // 

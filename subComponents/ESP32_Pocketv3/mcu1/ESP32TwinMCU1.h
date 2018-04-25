@@ -101,6 +101,7 @@
     #endif
 
     __mcuBridgeReady = false;
+    int cpt = 0;
     while(true) {
       led(0, true);
       // on MCU#1 -> use Serial.println() until 
@@ -133,6 +134,9 @@
       mcuBridge.write( 0xFF );
       mcuBridge.write( signalToSend );
       led(0, false);
+      cpt++;
+      // failed : no connected MCU 
+      if ( cpt >= 100 ) { break; }
       delay(100);
     }
     println(" Exited");
@@ -324,7 +328,54 @@
     return __myLine;
   }
 
-  
+  void GenericMCU_FS::ls(char* filter, void (*callback)(char*, int, uint8_t) ) {
+    File dir = SPIFFS.open("/");
+    File entry;
+    int entryNb = 0;
+    uint8_t type;
+    static char entName[13+1];
+    while( (entry = dir.openNextFile() ) ) {
+      if ( entry.isDirectory() ) { type = FS_TYPE_DIR; }
+      else                       { type = FS_TYPE_FILE; }
+
+      memset( entName, 0x00, 13+1 );
+      int len = strlen( entry.name() ), cpt=0;
+      // skip leading '/'
+      // skip trailing strange chars... (if any)
+      for(int i=1; i < len; i++) {
+        char ch = entry.name()[i]; 
+        if ( ch > ' ' && ch < (char)128 ) {
+          entName[cpt++] = ch;
+        } else {
+          break;
+        }
+      }
+
+      if ( filter != NULL ) {
+        int ll = strlen(filter);
+        if ( ll > 1 ) {
+          // check ONLY endsWithPattern @ this time
+          // ex. ".BAS"
+          if ( filter[ ll-1 ] != '*' ) {
+            if ( cpt >= ll ) {
+              bool found = true;
+              int e=0;
+              for(int i=cpt-ll; i < cpt; i++) {
+                if ( entName[i] != filter[e++] ) { found = false; break; }
+              }
+              // ignore entry
+              if ( !found ) { continue; }
+            }
+          }
+        }
+      }
+
+      callback( entName, (int)entry.size(), type );
+      entryNb++;
+    }
+    callback( "-EOD-", entryNb, FS_TYPE_EOF );
+    // return entryNb;
+  }
 
   // ======== Bridge ====================================================================
   static bool waitBridgeSIG(int valueToWait=0xFF) {

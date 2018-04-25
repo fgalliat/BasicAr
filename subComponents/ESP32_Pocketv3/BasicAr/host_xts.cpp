@@ -607,189 +607,223 @@ return true;
 // =
 // ==============================================
 
- #ifndef FS_SUPPORT
-  void lsStorage(char* filter=NULL, bool sendToArray=false) {
-    host_outputString("ERR : NO Storage support\n");
+  char _lsLine[64];
+
+  void lsCallbackForArray(char* entry,int size, uint8_t type) {
+    host_outputString("ERR : NYI\n");
   }
- #else
-  extern int curY;
 
-  #ifdef ESP32_FS
-
-    void esp_ls_callback(char* entry,uint32_t size) {
-      host_outputString(entry);
-      host_outputString(" (");
-      host_outputInt(size);
-      host_outputString(")\n");
-      host_showBuffer();
+  void lsCallbackForConsole(char* entry,int size, uint8_t type) {
+    // char* line = (char*)malloc( 32+1 );
+    if ( type == FS_TYPE_EOF ) {
+      sprintf( _lsLine, "-EOD- %d entries   \n", size );
+      host_outputString(_lsLine);
+      // free(line);
+      return;
     }
-
-    void lsStorage(char* filter=NULL, bool sendToArray=false) {
-      if ( sendToArray ) {
-        host_outputString("DIR2ARRAY NYI !");
-        host_showBuffer();
-        return;
-      }
-
-      esp32.lockISR();
-      int cpt = esp32.getFs()->listDir("/", esp_ls_callback);
-      esp32.unlockISR();
-
-      host_outputString("nb files : ");
-      host_outputInt( cpt );
-      host_outputString("\n");
-      host_showBuffer();
+    if ( type == FS_TYPE_FILE ) {
+      sprintf( _lsLine, "%s (%d)          \n", entry, size );
+    } else if ( type == FS_TYPE_DIR ) {
+      sprintf( _lsLine, "%s/          \n", entry );
+    } else {
+      sprintf( _lsLine, "%s ? (%d) [%d]          \n", entry, size, type );
     }
+    host_outputString(_lsLine);
+    // free(line);
+  }
 
-
-  #else
-
-    bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter, bool sendToArray);
-
-    // filter can be "*.BAS"
-    // sendToArray == true -> create "DIR$" array & fill it
-    //   instead of sending to console display
-    void lsStorage(char* filter=NULL, bool sendToArray=false) {
-      bool recurse = false;
-
-      // SdFile dirFile;
-
-      if ( !STORAGE_OK ) {
-        host_outputString("ERR : Storage not ready\n");
-        return;
-      }
-
-      if (!dirFile.open("/", O_READ)) {
-        host_outputString("ERR : opening SD root failed\n");
-        return;
-      }
-
-  //root = SD.open("/");
-
-      _lsStorage(dirFile, 0, recurse, filter, sendToArray);
-      //_lsStorage2(root, 0, recurse, filter);
-
-  // root.close();
-
-      dirFile.close();
+  void lsStorage(char* filter=NULL, bool sendToArray=false) {
+    if ( sendToArray ) {
+      mcu.getFS()->ls( filter, lsCallbackForArray );
+    } else {
+      mcu.getFS()->ls( filter, lsCallbackForConsole );
     }
+  }
+
+
+//  #ifndef FS_SUPPORT
+//   void lsStorage(char* filter=NULL, bool sendToArray=false) {
+//     host_outputString("ERR : NO Storage support\n");
+//   }
+//  #else
+//   extern int curY;
+
+//   #ifdef ESP32_FS
+
+//     void esp_ls_callback(char* entry,uint32_t size) {
+//       host_outputString(entry);
+//       host_outputString(" (");
+//       host_outputInt(size);
+//       host_outputString(")\n");
+//       host_showBuffer();
+//     }
+
+//     void lsStorage(char* filter=NULL, bool sendToArray=false) {
+//       if ( sendToArray ) {
+//         host_outputString("DIR2ARRAY NYI !");
+//         host_showBuffer();
+//         return;
+//       }
+
+//       esp32.lockISR();
+//       int cpt = esp32.getFs()->listDir("/", esp_ls_callback);
+//       esp32.unlockISR();
+
+//       host_outputString("nb files : ");
+//       host_outputInt( cpt );
+//       host_outputString("\n");
+//       host_showBuffer();
+//     }
+
+
+//   #else
+
+//     bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter, bool sendToArray);
+
+//     // filter can be "*.BAS"
+//     // sendToArray == true -> create "DIR$" array & fill it
+//     //   instead of sending to console display
+//     void lsStorage(char* filter=NULL, bool sendToArray=false) {
+//       bool recurse = false;
+
+//       // SdFile dirFile;
+
+//       if ( !STORAGE_OK ) {
+//         host_outputString("ERR : Storage not ready\n");
+//         return;
+//       }
+
+//       if (!dirFile.open("/", O_READ)) {
+//         host_outputString("ERR : opening SD root failed\n");
+//         return;
+//       }
+
+//   //root = SD.open("/");
+
+//       _lsStorage(dirFile, 0, recurse, filter, sendToArray);
+//       //_lsStorage2(root, 0, recurse, filter);
+
+//   // root.close();
+
+//       dirFile.close();
+//     }
 
 
   //  #ifndef SCREEN_HEIGHT
   //   #define SCREEN_HEIGHT       8
   //  #endif
 
-  bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter, bool sendToArray) {
-      SdFile file;
+//   bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter, bool sendToArray) {
+//       SdFile file;
 
-      if ( sendToArray ) {
-        // can't use createArray because it use expr stack
-        #define MAX_FILE_IN_ARRAY 128
-        if ( ! xts_createArray("DIR$", 1, MAX_FILE_IN_ARRAY) ) {
-          host_outputString("Could not create DIR$\n");
-          return false;
-        }
-      }
+//       if ( sendToArray ) {
+//         // can't use createArray because it use expr stack
+//         #define MAX_FILE_IN_ARRAY 128
+//         if ( ! xts_createArray("DIR$", 1, MAX_FILE_IN_ARRAY) ) {
+//           host_outputString("Could not create DIR$\n");
+//           return false;
+//         }
+//       }
 
-      int cpt = 0;
-      while (file.openNext(&dirFile, O_READ)) {
-        if (!file.isSubDir() && !file.isHidden() ) {
-          // //file.printFileSize(&Serial);
-          // //file.printModifyDateTime(&Serial);
-          // //file.printName(&Serial);
+//       int cpt = 0;
+//       while (file.openNext(&dirFile, O_READ)) {
+//         if (!file.isSubDir() && !file.isHidden() ) {
+//           // //file.printFileSize(&Serial);
+//           // //file.printModifyDateTime(&Serial);
+//           // //file.printName(&Serial);
 
-          memset(SDentryName, 0x00, 13);
-          file.getName( SDentryName, 13 );
+//           memset(SDentryName, 0x00, 13);
+//           file.getName( SDentryName, 13 );
 
-          if ( filter != NULL ) {
-            // TODO : optimize !!!!!
-            int strt = 0;
-            if ( filter[strt] == '*' ) { strt++; }
-            if ( filter[strt] == '.' ) { strt++; } // see 'else' case
+//           if ( filter != NULL ) {
+//             // TODO : optimize !!!!!
+//             int strt = 0;
+//             if ( filter[strt] == '*' ) { strt++; }
+//             if ( filter[strt] == '.' ) { strt++; } // see 'else' case
 
-            int tlen = strlen(SDentryName);
-            int flen = strlen(filter);
-            if ( tlen > 4 ) {
-              if ( SDentryName[ tlen-1-3 ] == '.' ) {
-                bool valid = true;
-                for(int i=0; i < flen-strt; i++) {
+//             int tlen = strlen(SDentryName);
+//             int flen = strlen(filter);
+//             if ( tlen > 4 ) {
+//               if ( SDentryName[ tlen-1-3 ] == '.' ) {
+//                 bool valid = true;
+//                 for(int i=0; i < flen-strt; i++) {
 
-                  //host_outputChar( SDentryName[ tlen-3+i ] ); host_outputChar(' ');host_outputChar(filter[strt+i]);host_outputChar('\n');
+//                   //host_outputChar( SDentryName[ tlen-3+i ] ); host_outputChar(' ');host_outputChar(filter[strt+i]);host_outputChar('\n');
 
-                  if ( charUpCase( SDentryName[ tlen-3+i ] ) != charUpCase(filter[strt+i]) ) {
-                    valid = false;
-                    break;
-                  }
-                }
-                if ( !valid ) { file.close(); continue; }
-              } else {
-                file.close(); 
-                continue;
-              }
-            } else {
-              file.close(); 
-              continue;
-            }
-          }
+//                   if ( charUpCase( SDentryName[ tlen-3+i ] ) != charUpCase(filter[strt+i]) ) {
+//                     valid = false;
+//                     break;
+//                   }
+//                 }
+//                 if ( !valid ) { file.close(); continue; }
+//               } else {
+//                 file.close(); 
+//                 continue;
+//               }
+//             } else {
+//               file.close(); 
+//               continue;
+//             }
+//           }
 
-          if ( !sendToArray ) {
-            host_outputInt( (cpt+1) );
-            host_outputString("\t");
-            host_outputString(SDentryName);
-          } else {
-            // SDentryName @ (cpt+1)
+//           if ( !sendToArray ) {
+//             host_outputInt( (cpt+1) );
+//             host_outputString("\t");
+//             host_outputString(SDentryName);
+//           } else {
+//             // SDentryName @ (cpt+1)
 
-            // to check
-            if ( file.isDir() ) { SDentryName[ 13-1 ] = '/'; }
-            else                { SDentryName[ 13-1 ] = 0x00; }
+//             // to check
+//             if ( file.isDir() ) { SDentryName[ 13-1 ] = '/'; }
+//             else                { SDentryName[ 13-1 ] = 0x00; }
 
-            if ( xts_setStrArrayElem( "DIR$", (cpt+1), SDentryName ) != ERROR_NONE ) {
-              host_outputInt( (cpt+1) );
-              host_outputString("\t");
-              host_outputString(SDentryName);
-              host_outputString(" : ERROR\n");
+//             if ( xts_setStrArrayElem( "DIR$", (cpt+1), SDentryName ) != ERROR_NONE ) {
+//               host_outputInt( (cpt+1) );
+//               host_outputString("\t");
+//               host_outputString(SDentryName);
+//               host_outputString(" : ERROR\n");
 
-              break;
-            }
-          }
+//               break;
+//             }
+//           }
 
-          if ( file.isDir() ) {
-            // Indicate a directory.
-            if ( !sendToArray ) {
-              host_outputString("/");
-            }
-          }
-          if ( !sendToArray ) {
-            host_outputString("\n");
+//           if ( file.isDir() ) {
+//             // Indicate a directory.
+//             if ( !sendToArray ) {
+//               host_outputString("/");
+//             }
+//           }
+//           if ( !sendToArray ) {
+//             host_outputString("\n");
 
-            // TMP - DIRTY ----- begin
-            if ( cpt % SCREEN_HEIGHT == SCREEN_HEIGHT-1 ) {
-              host_showBuffer();
-            }
-            // TMP - DIRTY ----- end
-          }
+//             // TMP - DIRTY ----- begin
+//             if ( cpt % SCREEN_HEIGHT == SCREEN_HEIGHT-1 ) {
+//               host_showBuffer();
+//             }
+//             // TMP - DIRTY ----- end
+//           }
 
-          cpt++;
+//           cpt++;
 
-        }
-        file.close();
-      }
+//         }
+//         file.close();
+//       }
 
-      if ( sendToArray ) {
-        xts_setStrArrayElem( "DIR$", (cpt+1), "-EOF-" );
-      } else {
-        host_outputString("nb files : ");
-        host_outputInt( cpt );
-        host_outputString("\n");
-        host_showBuffer();
-      }
+//       if ( sendToArray ) {
+//         xts_setStrArrayElem( "DIR$", (cpt+1), "-EOF-" );
+//       } else {
+//         host_outputString("nb files : ");
+//         host_outputInt( cpt );
+//         host_outputString("\n");
+//         host_showBuffer();
+//       }
 
-      return true;
-    }
+//       return true;
+//     }
 
-  #endif // not ESP32-FS
+//   #endif // not ESP32-FS
 
- #endif // FS_SUPPORT
+//  #endif // FS_SUPPORT
 
 
  // ==== Load/Save source code (ascii) from SDCard ====
@@ -1096,25 +1130,10 @@ return fr;
 
 
 void MCU_reset() {
-  // _restart_Teensyduino_();
   host_outputString("\nRebooting\n");
   host_showBuffer();
 
   mcu.reset();
-
-  // #ifdef BUT_TEENSY
-  //   #ifdef COMPUTER
-  //     closeComputer();
-  //     exit(0);
-  //   #elif defined (ARDUINO_ARCH_ESP32)
-  //     ESP.restart();
-  //   #else
-  //     SCB_AIRCR = 0x05FA0004; // software reset
-  //   #endif
-  // #endif
-  //     // void(*resetFunc)(void) = 0;
-  //     // resetFunc();
-  //     // for(;;) {}
 }
 
 extern bool systemHalted;

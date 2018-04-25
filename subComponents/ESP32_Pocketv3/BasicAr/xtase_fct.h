@@ -734,9 +734,7 @@ int xts_delBas(char* optFilename=NULL) {
   }
 
   if ( executeMode ) {
-    #ifdef FS_SUPPORT
-      deleteBasFile( optFilename );
-    #endif
+    deleteBasFile( optFilename );
   }
 
   return woFileMode ? 0 : 1; // 1 for true when use in saleVloadCmd(..)
