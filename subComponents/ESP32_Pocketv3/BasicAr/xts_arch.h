@@ -24,35 +24,59 @@
     // else is slave
     #define MCU_MASTER 1
 
+    #define BUILTIN_LCD 1
+    #define ARCH_TYPE "Xts_Pocket V3" 
+
+    #define ESP32_WIFI_SUPPORT 1
+
     #define SCREEN_BRIDGED 1
 
     // #define ESP32_I_TFT_eSPI 1
     // // need to be defined in <$lib$>/User_Setup_Select.h
     // #define ESP32_I_USE_ILI9341 1
 
-#ifdef MAIN_INO_FILE
-    #include "ESP32TwinMCU1.h"
-#else
-  // BEWARE w/ THAT !!!!
-  #define BTN_1    5
-  #define BTN_2    6
-  #define BTN_3    7
-#endif
+    #ifdef MAIN_INO_FILE
+        #include "ESP32TwinMCU1.h"
 
-    #define BUILTIN_LCD 1
-    #define ARCH_TYPE "Xts_Pck V3" 
+        GenericMCU mcu;
 
-// TODO : reactivate
-//     #ifdef ESP32_WIFI_SUPPORT
-//      extern void host_outputString(char* str);
-//      extern int host_outputInt(long v);
-//      #define DBUG(a) { Serial.print(a); host_outputString(a); }
-//      #define DBUGi(a) { Serial.print(a); host_outputInt(a); }
-//      #include "Esp32WifiServer.h"
-//      Esp32WifiServer telnet;
-//      #undef DBUG
-//      #undef DBUGi
-//    #endif
+        #ifdef ESP32_WIFI_SUPPORT
+            extern void host_outputString(char* str);
+            extern int host_outputInt(long v);
+            #define DBUG(a) { Serial.print(a); host_outputString(a); }
+            #define DBUGi(a) { Serial.print(a); host_outputInt(a); }
+            #include "Esp32WifiServer.h"
+            // TODO : use a Generic class Name
+            Esp32WifiServer telnet;
+            #undef DBUG
+            #undef DBUGi
+        #endif
+
+    #else
+      // BEWARE w/ THAT !!!!
+      #define BTN_1    5
+      #define BTN_2    6
+      #define BTN_3    7
+
+      #ifdef ANOTHER_CPP
+        extern GenericMCU mcu;
+
+        // TODO : better
+        #ifdef ESP32_WIFI_SUPPORT
+            extern void host_outputString(char* str);
+            extern int host_outputInt(long v);
+            #define DBUG(a) { Serial.print(a); host_outputString(a); }
+            #define DBUGi(a) { Serial.print(a); host_outputInt(a); }
+            #include "Esp32WifiServer.h"
+            // TODO : use a Generic class Name
+            extern Esp32WifiServer telnet;
+            // #undef DBUG
+            #undef DBUGi
+        #endif
+
+      #endif
+
+    #endif
 
   #endif
 

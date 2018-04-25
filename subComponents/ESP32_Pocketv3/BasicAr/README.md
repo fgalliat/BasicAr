@@ -12,14 +12,14 @@
 // SAVE     (1)        [DONE]
 //   writeCurrentFileLine( ... )
 //
-// Wifi + Telnet Stack [XX]
+// Wifi + Telnet Stack [DONE]
 //
 // DIR      (3)        [inProgress]
 //   mcu.getFS()->ls( lsCallBack( name, size, type=-1(EOF) ) )
 //
 // > BLITT mechanism on #2
 // see if TFT_eSPI contains a getCursor() -> cls @ scroll ???
-
+// just try to empty (black rect) the portion of line...
 
 # BasicAr
 Basic for Arduino'like MCUs (Teensy tested) (Xtase version)

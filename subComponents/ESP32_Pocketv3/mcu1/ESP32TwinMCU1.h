@@ -309,6 +309,13 @@
       if (autoflush) currentFile.flush();
   }
 
+  void GenericMCU_FS::writeCurrentTextBytes(char* line, int len) {
+      bool autoflush = true;
+      if ( line == NULL ) { Serial.print("CANT WRITE NULL BYTES\n"); return; }
+      currentFile.write( (uint8_t*)line, len );
+      if (autoflush) currentFile.flush();
+  }
+
   char* GenericMCU_FS::readCurrentTextLine() {
     const int MAX_LINE_LEN = 256;
     memset(__myLine, 0x00, MAX_LINE_LEN +1);

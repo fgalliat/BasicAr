@@ -11,7 +11,6 @@
 
 #define ANOTHER_CPP 1
 #include "xts_arch.h"
-extern GenericMCU mcu;
 
 #include "xts_io.h"
 

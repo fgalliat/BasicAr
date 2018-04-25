@@ -65,32 +65,11 @@
 #define mem_routines 1
 #define ANOTHER_CPP 1
 #include "xts_arch.h"
-extern GenericMCU mcu;
-
-#ifdef BUT_ESP32
-
- #ifdef ESP32_WIFI_SUPPORT
-     extern void host_outputString(char* str);
-     extern int host_outputInt(long v);
-
-     #define DBUG(a) { Serial.print(a); host_outputString(a); }
-     #define DBUGi(a) { Serial.print(a); host_outputInt(a); }
-
-     #include "Esp32WifiServer.h"
-     extern Esp32WifiServer telnet;
-     
-     #undef DBUG
-     #undef DBUGi
- #endif
-
-#endif
 
 #include "basic.h"
 #include "host.h"
 
 //#include <avr/pgmspace.h>
-
-
 
 // -------- Xtase refacto -------------
 char executeMode;

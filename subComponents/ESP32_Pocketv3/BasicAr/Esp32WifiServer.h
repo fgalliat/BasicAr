@@ -53,10 +53,10 @@
         this->APmode = false;
         this->_isWifiConnected = false;
 
-        esp32.lockISR();
-        bool ok = esp32.getFs()->openCurrentTextFile("/SSID.TXT");
+        mcu.lockISR();
+        bool ok = mcu.getFS()->openCurrentTextFile("/SSID.TXT");
         if ( !ok ) {
-          esp32.unlockISR();
+          mcu.unlockISR();
           DBUG("missing /SSID.TXT is missing !!\n");
           return false;
         }
@@ -66,20 +66,20 @@
         //char* line, *line2; // leads to the same pointer
         char* line;
         char ssid[128],key[128];
-        while( (line = esp32.getFs()->readCurrentTextLine() ) != NULL ) {
+        while( (line = mcu.getFS()->readCurrentTextLine() ) != NULL ) {
           // trim TODO + file sanity check
           if ( strlen(line) == 0 ) { break; }
           memcpy(ssid, line, strlen(line));
           ssid[strlen(line)] = 0x00;
           DBUG( "Registering SSID : " );DBUG( ssid );DBUG( "\n" ); 
-          line = esp32.getFs()->readCurrentTextLine();
+          line = mcu.getFS()->readCurrentTextLine();
           memcpy(key, line, strlen(line));
           key[strlen(line)] = 0x00;
           //DBUG( key ); DBUG( "\n" );
           wifiMulti->addAP( (const char*)ssid, (const char*)key);
         }
-        esp32.getFs()->closeCurrentTextFile();
-        esp32.unlockISR();
+        mcu.getFS()->closeCurrentTextFile();
+        mcu.unlockISR();
 
         DBUG("Connecting Wifi \n");
         for (int loops = 10; loops > 0; loops--) {
@@ -118,7 +118,7 @@
 
       // start as an AP
       bool startAP() {
-        esp32.lockISR();
+        mcu.lockISR();
 
         this->APmode = true;
         this->_isWifiConnected = false;
@@ -142,7 +142,7 @@
 
         DBUG("\n");
 
-        esp32.unlockISR();
+        mcu.unlockISR();
 
         this->_isWifiConnected = true;
         return true;
@@ -337,22 +337,22 @@
         DBUG("filesize : ");DBUGi(bytesToRead);DBUG("\n");
 
 
-        esp32.lockISR();
-        esp32.getFs()->openCurrentTextFile( _filename, false );
+        mcu.lockISR();
+        mcu.getFS()->openCurrentTextFile( _filename, false );
 
         int cpt = 0;  char buff[32]; int read;
         while( cpt < bytesToRead ) {
           while(serverClients[0].available()) { 
             //int ch = serverClients[0].read();
             read = serverClients[0].readBytes(buff, 32);
-            esp32.getFs()->writeCurrentTextBytes( buff, read );
+            mcu.getFS()->writeCurrentTextBytes( buff, read );
             cpt+=read;
           }
           delay(100);
         }
 
-        esp32.getFs()->closeCurrentTextFile();
-        esp32.unlockISR();
+        mcu.getFS()->closeCurrentTextFile();
+        mcu.unlockISR();
 
         serverClients[0].println("-EOF-");
 

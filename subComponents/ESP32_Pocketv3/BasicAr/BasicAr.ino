@@ -16,7 +16,7 @@
 
 
 #include "xts_arch.h"
-GenericMCU mcu;
+
 // __________________
 
 // // Teensy's doesn't supports FS (SD, SDFat) & PROGMEM routines
