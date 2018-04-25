@@ -349,6 +349,12 @@
     mcuBridge.write( d1 );
   }
 
+  static bool writeBridgeU16Coords(int val) {
+    if ( val < 0 )     { val = 0; }
+    if ( val > 65535 ) { val = 65535; }
+    return writeBridgeU16(val);
+  }
+
   void GenericMCU_FS::copyToBridge(char* filename) {
     // DO NOT OUTPUT TO SCREEN
     // DO NOT USE mcu->print(...)
@@ -545,10 +551,10 @@
     if ( !this->ready ) { return; }
 
     mcuBridge.write( SIG_SCR_DRAW_RECT );
-    writeBridgeU16( x );
-    writeBridgeU16( y );
-    writeBridgeU16( w );
-    writeBridgeU16( h );
+    writeBridgeU16Coords( x );
+    writeBridgeU16Coords( y );
+    writeBridgeU16Coords( w );
+    writeBridgeU16Coords( h );
     mcuBridge.write( mode ); // MODE
     writeBridgeU16( color );
 
@@ -560,9 +566,9 @@
     if ( !this->ready ) { return; }
 
     mcuBridge.write( SIG_SCR_DRAW_CIRCLE );
-    writeBridgeU16( x );
-    writeBridgeU16( y );
-    writeBridgeU16( radius );
+    writeBridgeU16Coords( x );
+    writeBridgeU16Coords( y );
+    writeBridgeU16Coords( radius );
     mcuBridge.write( mode ); // MODE
     writeBridgeU16( color );
     
@@ -573,10 +579,10 @@
     if ( !this->ready ) { return; }
 
     mcuBridge.write( SIG_SCR_DRAW_LINE );
-    writeBridgeU16( x );
-    writeBridgeU16( y );
-    writeBridgeU16( x2 );
-    writeBridgeU16( y2 );
+    writeBridgeU16Coords( x );
+    writeBridgeU16Coords( y );
+    writeBridgeU16Coords( x2 );
+    writeBridgeU16Coords( y2 );
     writeBridgeU16( color );
 
     flushBridgeRX();
@@ -586,8 +592,8 @@
     if ( !this->ready ) { return; }
 
     mcuBridge.write( SIG_SCR_DRAW_PIX );
-    writeBridgeU16( x );
-    writeBridgeU16( y );
+    writeBridgeU16Coords( x );
+    writeBridgeU16Coords( y );
     writeBridgeU16( color );
 
     flushBridgeRX();
@@ -597,8 +603,8 @@
     if ( !this->ready ) { return; }
 
     mcuBridge.write( SIG_SCR_DRAW_PCT );
-    writeBridgeU16( x );
-    writeBridgeU16( y );
+    writeBridgeU16Coords( x );
+    writeBridgeU16Coords( y );
     mcuBridge.print( filename );
     mcuBridge.write( 0x00 );
 
@@ -609,12 +615,12 @@
     if ( !this->ready ) { return; }
 
     mcuBridge.write( SIG_SCR_DRAW_PCT_SPRITE );
-    writeBridgeU16( x );
-    writeBridgeU16( y );
-    writeBridgeU16( w );
-    writeBridgeU16( h );
-    writeBridgeU16( sx );
-    writeBridgeU16( sy );
+    writeBridgeU16Coords( x );
+    writeBridgeU16Coords( y );
+    writeBridgeU16Coords( w );
+    writeBridgeU16Coords( h );
+    writeBridgeU16Coords( sx );
+    writeBridgeU16Coords( sy );
     mcuBridge.print( filename );
     mcuBridge.write( 0x00 );
 
@@ -625,8 +631,8 @@
     if ( !this->ready ) { return; }
 
     mcuBridge.write( SIG_SCR_DRAW_BPP );
-    writeBridgeU16( x );
-    writeBridgeU16( y );
+    writeBridgeU16Coords( x );
+    writeBridgeU16Coords( y );
     mcuBridge.print( filename );
     mcuBridge.write( 0x00 );
 
