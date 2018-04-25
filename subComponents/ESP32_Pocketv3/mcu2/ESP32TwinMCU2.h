@@ -516,7 +516,7 @@
     if ( !this->ready ) { return; }
     #define FONT_WIDTH (6+1)
     #define FONT_HEIGHT (8)
-    _oled_display->setCursor(x*FONT_WIDTH, y*FONT_HEIGHT);
+    _oled_display->setCursor((x*FONT_WIDTH)+screenOffsetX, (y*FONT_HEIGHT)+screenOffsetY );
 
     // !! TO remember if use ACTION_BUFFER !!
   }
