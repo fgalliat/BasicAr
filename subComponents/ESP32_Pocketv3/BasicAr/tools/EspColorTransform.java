@@ -89,8 +89,11 @@ public class EspColorTransform {
 
 
     public static void main(String[] args) throws Exception {
-        test( 0,0,255 );
-        test( 128,128,128 );
+        // test( 0,0,255 );
+        // test( 128,128,128 );
+test( 50,50,50 );
+test( 128,128,128 );
+test( 200,200,200 );
 
         if ( args != null && args.length == 1 ) {
             treatImage(args[0]);

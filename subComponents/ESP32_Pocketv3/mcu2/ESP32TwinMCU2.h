@@ -394,9 +394,14 @@
     #define CLR_BLACK       ILI9341_BLACK
     #define CLR_WHITE       ILI9341_WHITE
     //#define CLR_LIGHTGREY   TFT_LIGHTGREY // ILI9341_BLACK, ILI9341_RED, ILI9341_CYAN
-    #define CLR_LIGHTGREY   0xC618 /* 192x3 */
-    #define CLR_GREY        0x8410 /* 128,128,128 */
-    #define CLR_DARKGREY    0x7BEF /* ? 128x3 ? */
+    // #define CLR_LIGHTGREY   0xC618 /* 192x3 */
+    // #define CLR_GREY        0x8410 /* 128,128,128 */
+    // #define CLR_DARKGREY    0x7BEF /* ? 128x3 ? */
+
+    #define CLR_LIGHTGREY   0xCE59 /* 200x3 */
+    #define CLR_GREY        0x8410 /* 128x3 */
+    #define CLR_DARKGREY    0x3186 /* 50x3 */
+
     #define CLR_PINK        ILI9341_PINK
 
     #define BLACK 0x00

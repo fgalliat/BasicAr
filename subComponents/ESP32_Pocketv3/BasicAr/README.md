@@ -23,7 +23,10 @@
 // Prevent GFX routines from sending negative values
 //   via bridge !!!!   [XX]
 //
+// DIRARRY -> list *.bas & make a dynamic launching menu !!!
+//
 // > BLITT mechanism on #2
+// 
 // text now erase it's used space... (BGcolor)
 
 # BasicAr
