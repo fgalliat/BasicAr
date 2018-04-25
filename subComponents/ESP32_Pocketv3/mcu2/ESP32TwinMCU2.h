@@ -415,6 +415,7 @@
   static TFT_eSPI* _oled_display;
   static int _oled_ttyY = 0;
   static uint16_t drawColor = CLR_WHITE;
+  static uint16_t txtBgColor = CLR_BLACK;
 
   static uint16_t screenOffsetX = 0; // MY_320
   static uint16_t screenOffsetY = 0;
@@ -440,7 +441,8 @@
 
     _oled_display->fillScreen(CLR_BLACK);
 
-    _oled_display->setTextColor(drawColor);
+    // BG is transparent by default
+    _oled_display->setTextColor(drawColor, txtBgColor);
     _oled_display->setTextSize(0); // if doesn't work --> try (1)
 
     setMode( SCREEN_MODE_320 );
@@ -525,6 +527,8 @@
     if ( !this->ready ) { return; }
     
     drawColor = color;
+    // BG is transparent by default
+    _oled_display->setTextColor(drawColor, txtBgColor);
 
     // !! TO remember if use ACTION_BUFFER !!
   }

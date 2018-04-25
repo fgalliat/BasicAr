@@ -1187,31 +1187,24 @@ int xts_dataf_cmd() {
                 host_outputString( args[i] );
                 host_outputString(" column\n");
                 host_showBuffer();
-Serial.println("DATAF 8");
                 free(line);
-Serial.println("DATAF 9");
                 fcloseFile();
-Serial.println("DATAF 10");
                 return ERROR_OUT_OF_MEMORY;
               }
             }
-Serial.println("DATAF 11");
           } else {
             // regular line
 
             //char* remaining = copyOf( line );
             char* remaining = line;
             int fullLen = strlen( remaining );
-Serial.println("DATAF 12");
             for(int i=2; i < argc; i++) {
               int llen = strlen(args[i]);
               bool isStrArray = llen > 0 && args[i][ llen-1 ] == '$';
               bool col_ok = false; int err=ERROR_NONE;
-Serial.print("DATAF 13 >");Serial.print(args[i]);Serial.println("<");
               // HAVE TO make my own split() routine
               // able to escape '\;' sequence
               char* token = nextSplit( remaining, fullLen, ';', true );
-Serial.print("DATAF 14 >");Serial.print(token);Serial.println("<");
               if ( !isStrArray ) {
                 float val = atof( token );
                 Serial.print("DATAF 14bis >");Serial.print(val);Serial.println("<");
@@ -1219,7 +1212,6 @@ Serial.print("DATAF 14 >");Serial.print(token);Serial.println("<");
               } else {
                 col_ok = (err= xts_setStrArrayElem( args[i], cpt, token )) == ERROR_NONE;
               } 
-Serial.println("DATAF 15");
 
               if ( !col_ok ) {
                 host_outputString("Could not fill ");
@@ -1231,24 +1223,16 @@ Serial.println("DATAF 15");
                 host_outputString("\n");
                 host_showBuffer();
 
-Serial.println("DATAF 16");
                 // if (token != NULL) free( token );
-Serial.println("DATAF 17");
                 // free( line );
-Serial.println("DATAF 18");
 
                 fcloseFile();
-Serial.println("DATAF 19");
                 return ERROR_IN_VAL_INPUT;
               }
-Serial.println("DATAF 20");
               //if (token != NULL) free(token);
-Serial.println("DATAF 21");
             }
-Serial.println("DATAF 22");
             cpt++;
             //if (line != NULL) free( line );
-Serial.println("DATAF 23");
             if ( cpt > total ) {
               host_outputString("file truncated !");
               break;
@@ -1256,11 +1240,8 @@ Serial.println("DATAF 23");
           }
 
         }
-Serial.println("DATAF 24");
         //if (line != NULL) free(line);
-Serial.println("DATAF 25");
         fcloseFile();
-Serial.println("DATAF 26");
       } // end of argc > 0
       else {
         // missing args

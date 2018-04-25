@@ -312,6 +312,18 @@
         }
       }
 
+      void  print(int val) {
+        if ( !_isClientConnected ) { return; }
+
+        //push data to all connected telnet clients
+        for(uint8_t i = 0; i < MAX_SRV_CLIENTS; i++){
+          if (serverClients[i] && serverClients[i].connected()){
+            serverClients[i].print( val );
+            delay(1);
+          }
+        }
+      }
+
       // from telnet client to ESP32
       void uploadFile() {
         char* filename = NULL;

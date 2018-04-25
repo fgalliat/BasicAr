@@ -988,45 +988,32 @@ void saveAsciiBas(char* filename) {
 
 
 
-
-
- #ifndef FS_SUPPORT
-  void llistAsciiBas(char* filename) {
-    if ( filename == NULL ) {
-      // TODO
-      host_outputString("TODO: dump PRGM to Serial\n");
-      host_showBuffer();
-      return;
-    }
-    host_outputString("ERR : NO Storage support\n");
-    host_showBuffer();
-  }
-
-
- #else
-
-// ====== LLIST ==================
-#define outSerial Serial
-
 void llistAsciiBas(char* filename=NULL) {
   if ( filename == NULL ) {
     // just DUMP current PRGM to Serial
+    
+    #ifdef ESP32_WIFI_SUPPORT
+      #define outPrint(a) { if ( telnet.isClientConnected() ) { telnet.print(a); } else { Serial.print(a); } }
+    #else
+      #define outPrint(a) { Serial.print(a); }
+    #endif
+
     cleanCodeLine();
     unsigned char *p = &mem[0];
     while (p < &mem[sysPROGEND]) {
         uint16_t lineNum = *(uint16_t*)(p+2);
-        outSerial.print(lineNum);
-        outSerial.print(" ");
+        outPrint(lineNum);
+        outPrint(" ");
   
         _serializeTokens(p+4, codeLine);
-        outSerial.print(codeLine);
+        outPrint(codeLine);
         cleanCodeLine();
   
-        outSerial.print("\n");
+        outPrint("\n");
         p+= *(uint16_t *)p;
     }
-    outSerial.print("-EOF-\n");
-    outSerial.flush();
+    outPrint("-EOF-\n");
+    //outSerial.flush();
     return;
   }
 
@@ -1040,35 +1027,37 @@ void llistAsciiBas(char* filename=NULL) {
 
   autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
 
-  #ifdef ESP32_FS
-    host_outputString("LLIST NYI for esp32\n");
-    host_showBuffer();
-  #else
-    // SFATLIB mode -> have to switch for regular SD lib
-    SdFile file;
-    if (! file.open( SDentryName , O_READ) ) {
-      led1(true);
-      host_outputString("ERR : File not ready\n");
-      host_showBuffer();
-      return;        
-    }
+host_outputString("LLIST NYI for esp32\n");
+host_showBuffer();
 
-    file.seekSet(0);
+  // #ifdef ESP32_FS
+  //   host_outputString("LLIST NYI for esp32\n");
+  //   host_showBuffer();
+  // #else
+  //   // SFATLIB mode -> have to switch for regular SD lib
+  //   SdFile file;
+  //   if (! file.open( SDentryName , O_READ) ) {
+  //     led1(true);
+  //     host_outputString("ERR : File not ready\n");
+  //     host_showBuffer();
+  //     return;        
+  //   }
 
-    int n;
+  //   file.seekSet(0);
 
-    cleanCodeLine();
-    while( ( n = file.fgets(codeLine, ASCII_CODELINE_SIZE) ) > 0 ) {
-      outSerial.print( codeLine );
-      if ( codeLine[n-1] != '\n' ) {
-        outSerial.print( "\n" );
-      }
-    }
-    outSerial.print( "-EOF-\n" );
-    outSerial.flush();
+  //   int n;
 
-    file.close();
-  #endif
+  //   cleanCodeLine();
+  //   while( ( n = file.fgets(codeLine, ASCII_CODELINE_SIZE) ) > 0 ) {
+  //     outSerial.print( codeLine );
+  //     if ( codeLine[n-1] != '\n' ) {
+  //       outSerial.print( "\n" );
+  //     }
+  //   }
+  //   outSerial.print( "-EOF-\n" );
+  //   outSerial.flush();
+
+  //   file.close();
 }
 
 
@@ -1082,17 +1071,8 @@ void deleteBasFile(char* filename) {
 
   autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
 
-  #ifdef ESP32_FS
-    esp32.getFs()->remove( SDentryName );
-  #else
-    // SFATLIB mode -> have to switch for regular SD lib
-    sd.remove( SDentryName );
-  #endif
+  mcu.getFS()->remove( SDentryName );
 }
-
-
- #endif
-
 
 
 

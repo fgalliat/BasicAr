@@ -17,9 +17,11 @@
 // DIR      (3)        [inProgress]
 //   mcu.getFS()->ls( lsCallBack( name, size, type=-1(EOF) ) )
 //
+// LLIST               [inProgress]
+//   for Serial or telnet client
+// 
 // > BLITT mechanism on #2
-// see if TFT_eSPI contains a getCursor() -> cls @ scroll ???
-// just try to empty (black rect) the portion of line...
+// text now erase it's used space... (BGcolor)
 
 # BasicAr
 Basic for Arduino'like MCUs (Teensy tested) (Xtase version)
