@@ -15,13 +15,13 @@
 107 RR = R / 57
 112 COSR = COS(RR)
 113 XI = COSR: YI = SIN(RR): Xa = X: Ya = Y
-114 Xa = Xa + XI: Ya = Ya + YI
-115 XX = (Xa / 16) : IF XX < 1 THEN XX = 1
-116 IF XX > 7 THEN XX = 7
-117 YY = (Ya / 16) : IF YY < 1 THEN YY = 1
-118 IF YY > 7 THEN YY = 7
+114 Xa = Xa + XI: Ya = Ya + YI : VD = 1
+115 XX = (Xa / 16) : IF XX < 1 THEN XX = 1 : VD=0
+116 IF XX > 7 THEN XX = 7 : VD=0
+117 YY = (Ya / 16) : IF YY < 1 THEN YY = 1 : VD=0
+118 IF YY > 7 THEN YY = 7 : VD=0
 119 WO = L( XX, YY ) : ' wall object
-120 IF WO = 0 THEN GOTO 114
+120 IF WO = 0 AND VD = 1 THEN GOTO 114
 121 ' Dist comp + fishbowl eye fix
 122 D = ABS((X - Xa) / COSR): D = D * COS( F/57 - RR )
 125 H = (1816 / D) / 3
