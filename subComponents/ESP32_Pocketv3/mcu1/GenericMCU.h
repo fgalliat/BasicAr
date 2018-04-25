@@ -99,7 +99,7 @@ class GenericMCU_FS {
       // copy to bridge
       void copyToBridge(char* filename);
 
-      void ls(char* filter, void (*callback)(char*, int, uint8_t) );
+      void ls(char* filter, void (*callback)(char*, int, uint8_t, int) );
 
 };
 

@@ -328,7 +328,7 @@
     return __myLine;
   }
 
-  void GenericMCU_FS::ls(char* filter, void (*callback)(char*, int, uint8_t) ) {
+  void GenericMCU_FS::ls(char* filter, void (*callback)(char*, int, uint8_t, int) ) {
     File dir = SPIFFS.open("/");
     File entry;
     int entryNb = 0;
@@ -370,10 +370,10 @@
         }
       }
 
-      callback( entName, (int)entry.size(), type );
+      callback( entName, (int)entry.size(), type, entryNb );
       entryNb++;
     }
-    callback( "-EOD-", entryNb, FS_TYPE_EOF );
+    callback( "-EOD-", entryNb, FS_TYPE_EOF, entryNb );
     // return entryNb;
   }
 

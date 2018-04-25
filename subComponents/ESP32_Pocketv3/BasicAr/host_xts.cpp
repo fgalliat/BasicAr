@@ -609,11 +609,21 @@ return true;
 
   char _lsLine[64];
 
-  void lsCallbackForArray(char* entry,int size, uint8_t type) {
-    host_outputString("ERR : NYI\n");
+  void lsCallbackForArray(char* entry,int size, uint8_t type, int index) {
+    if ( type == FS_TYPE_EOF ) {
+      xts_setStrArrayElem( "DIR$", (index+1), "-EOF-" );
+    } else if ( type == FS_TYPE_DIR ) {
+      sprintf( _lsLine, "%s/", entry );
+      xts_setStrArrayElem( "DIR$", (index+1), _lsLine );
+    } else if ( type == FS_TYPE_FILE ) {
+      sprintf( _lsLine, "%s", entry );
+      xts_setStrArrayElem( "DIR$", (index+1), _lsLine );
+    } else {
+      xts_setStrArrayElem( "DIR$", (index+1), "ERROR" );
+    }
   }
 
-  void lsCallbackForConsole(char* entry,int size, uint8_t type) {
+  void lsCallbackForConsole(char* entry,int size, uint8_t type, int index) {
     // char* line = (char*)malloc( 32+1 );
     if ( type == FS_TYPE_EOF ) {
       sprintf( _lsLine, "-EOD- %d entries   \n", size );
@@ -634,6 +644,13 @@ return true;
 
   void lsStorage(char* filter=NULL, bool sendToArray=false) {
     if ( sendToArray ) {
+      // can't use createArray because it use expr stack
+      #define MAX_FILE_IN_ARRAY 128
+      if ( ! xts_createArray("DIR$", 1, MAX_FILE_IN_ARRAY) ) {
+        host_outputString("Could not create DIR$\n");
+        //return false;
+        return;
+      }
       mcu.getFS()->ls( filter, lsCallbackForArray );
     } else {
       mcu.getFS()->ls( filter, lsCallbackForConsole );
@@ -641,72 +658,6 @@ return true;
   }
 
 
-//  #ifndef FS_SUPPORT
-//   void lsStorage(char* filter=NULL, bool sendToArray=false) {
-//     host_outputString("ERR : NO Storage support\n");
-//   }
-//  #else
-//   extern int curY;
-
-//   #ifdef ESP32_FS
-
-//     void esp_ls_callback(char* entry,uint32_t size) {
-//       host_outputString(entry);
-//       host_outputString(" (");
-//       host_outputInt(size);
-//       host_outputString(")\n");
-//       host_showBuffer();
-//     }
-
-//     void lsStorage(char* filter=NULL, bool sendToArray=false) {
-//       if ( sendToArray ) {
-//         host_outputString("DIR2ARRAY NYI !");
-//         host_showBuffer();
-//         return;
-//       }
-
-//       esp32.lockISR();
-//       int cpt = esp32.getFs()->listDir("/", esp_ls_callback);
-//       esp32.unlockISR();
-
-//       host_outputString("nb files : ");
-//       host_outputInt( cpt );
-//       host_outputString("\n");
-//       host_showBuffer();
-//     }
-
-
-//   #else
-
-//     bool _lsStorage(SdFile dirFile, int numTabs, bool recurse, char* filter, bool sendToArray);
-
-//     // filter can be "*.BAS"
-//     // sendToArray == true -> create "DIR$" array & fill it
-//     //   instead of sending to console display
-//     void lsStorage(char* filter=NULL, bool sendToArray=false) {
-//       bool recurse = false;
-
-//       // SdFile dirFile;
-
-//       if ( !STORAGE_OK ) {
-//         host_outputString("ERR : Storage not ready\n");
-//         return;
-//       }
-
-//       if (!dirFile.open("/", O_READ)) {
-//         host_outputString("ERR : opening SD root failed\n");
-//         return;
-//       }
-
-//   //root = SD.open("/");
-
-//       _lsStorage(dirFile, 0, recurse, filter, sendToArray);
-//       //_lsStorage2(root, 0, recurse, filter);
-
-//   // root.close();
-
-//       dirFile.close();
-//     }
 
 
   //  #ifndef SCREEN_HEIGHT

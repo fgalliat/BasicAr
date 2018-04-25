@@ -19,6 +19,7 @@
 // filter to impl      [DONE]
 //
 // DIRARRY -> list *.bas & make a dynamic launching menu !!!
+//                     [DONE]
 //
 // LLIST               [DONE]
 //   for Serial or telnet client
