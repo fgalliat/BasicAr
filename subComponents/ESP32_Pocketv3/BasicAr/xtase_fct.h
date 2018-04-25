@@ -497,6 +497,32 @@ int xts_screenMode() {
   return 0;
 }
 
+int xts_copyToBridge() {
+  getNextToken();
+
+  int val = parseExpression();
+  if (val & _ERROR_MASK) return val;
+  if (!_IS_TYPE_STR(val))
+      return ERROR_EXPR_EXPECTED_STR;
+
+  if ( executeMode ) {
+    char* file = stackPopStr();
+
+    int stlen = strlen(file);
+    char* tmp = (char*)malloc( stlen+1+1 ); // +1 for leading '/'
+    // TODO : that shoud be inside FS::copyToBridge(..)
+    tmp[0] = '/';
+    for(int i=0; i < stlen; i++) { tmp[i+1] = charUpCase( file[i] ); }
+    tmp[ stlen ] = 0x00;
+
+    mcu.getFS()->copyToBridge( tmp );
+
+    free(tmp);
+  }
+
+  return 0;
+}
+
 
 // N.B. @ this time all params are mandatory
 int xts_dispRect() {

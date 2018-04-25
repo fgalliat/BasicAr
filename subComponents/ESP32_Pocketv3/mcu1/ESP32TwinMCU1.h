@@ -407,8 +407,10 @@
   }
 
   void GenericMCU_FS::copyToBridge(char* filename) {
+    
     // DO NOT OUTPUT TO SCREEN
     // DO NOT USE mcu->print(...)
+    
     File f = SPIFFS.open( filename, "w" );
     if ( !f ) {
       Serial.println("File not ready !");

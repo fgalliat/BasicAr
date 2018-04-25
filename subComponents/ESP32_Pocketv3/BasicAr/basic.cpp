@@ -222,6 +222,8 @@ TokenTableEntry tokenTable[] = {
     {"MAX",  2}, // numeric fcts
 
     {"SCREEN", 1|TKN_FMT_POST}, // set screen mode
+
+    {"COPY",1|TKN_ARG1_TYPE_STR|TKN_FMT_POST}, // copy to MCU#2
 };
 
 
@@ -2501,6 +2503,8 @@ int parseStmts()
             case TOKEN_RECT  : ret = xts_dispRect(); break;
 
             case TOKEN_SCREEN : ret = xts_screenMode(); break;
+
+            case TOKEN_COPY: ret = xts_copyToBridge(); break;
 
             // ======== Xtase cmds ============= 
 

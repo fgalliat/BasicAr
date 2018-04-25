@@ -173,8 +173,10 @@
     #define TOKEN_MAX              108 // max(a,b)
 
     #define TOKEN_SCREEN           109 // screen {1,2,3}
+
+    #define TOKEN_COPY             110 // COPY "TOTO.PCT" (copy via bridge)
     
-    #define TOKEN_LASTONE TOKEN_SCREEN
+    #define TOKEN_LASTONE TOKEN_COPY
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT
