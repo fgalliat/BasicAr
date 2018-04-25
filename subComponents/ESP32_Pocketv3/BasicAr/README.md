@@ -17,9 +17,12 @@
 // DIR      (3)        [inProgress]
 //   mcu.getFS()->ls( lsCallBack( name, size, type=-1(EOF) ) )
 //
-// LLIST               [inProgress]
+// LLIST               [DONE]
 //   for Serial or telnet client
 // 
+// Prevent GFX routines from sending negative values
+//   via bridge !!!!   [XX]
+//
 // > BLITT mechanism on #2
 // text now erase it's used space... (BGcolor)
 
