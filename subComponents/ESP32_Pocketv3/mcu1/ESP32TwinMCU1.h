@@ -267,39 +267,26 @@
     currentFileValid = false;
     if ( readMode && !SPIFFS.exists(filename) ) { return false; }
     delay(100);
-    //this->currentFile = NULL; // free ?
-    Serial.println("RIGHT HERE");
+    // Serial.println("RIGHT HERE");
     currentFile = SPIFFS.open(filename, readMode ? "r" : "w");
-    Serial.println("RIGHT NOW");
-    // if ( !f ) { Serial.println("failed"); return false; }
+    // Serial.println("RIGHT NOW");
     if ( !currentFile ) { Serial.println("failed"); return false; }
 
     currentFile.seek(0);
-    delay(100);
-    Serial.println("RIGHT ...");
+    delay(50);
+    // Serial.println("RIGHT ...");
     currentFileValid = true;
-    Serial.println("opened");
+    // Serial.println("opened");
     return true;
   }
 
   void  GenericMCU_FS::closeCurrentTextFile() {
-    Serial.println("closing");
     if ( currentFileValid ) {
         currentFile.flush();
         currentFile.close();
         currentFileValid = false;
     }
-    Serial.println("closed");
   }
-
-  // void writeCurrentTextByte(char b) {
-  //             currentFile.write( (uint8_t*)b, 1 );
-  //             //currentFile.flush();
-  //         }
-  //         void writeCurrentTextBytes(char* b, int len) {
-  //             currentFile.write( (uint8_t*)b, len );
-  //             currentFile.flush();
-  //         }
 
   // have to provide "\n" @ end of line
   void GenericMCU_FS::writeCurrentText(char* line, bool autoflush) {

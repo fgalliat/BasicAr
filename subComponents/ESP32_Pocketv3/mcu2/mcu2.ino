@@ -214,7 +214,7 @@ void loop() {
           y  = bridge_readU16();
           w  = bridge_readU16();
           h  = bridge_readU16();
-          tmp2 = bridge_readU16(); // mode
+          tmp2 = mcuBridge.read(); // mode
           tmp = bridge_readU16();  // color
           mcu.getScreen()->drawRect(x, y, w, h, tmp2, tmp);
           break;
@@ -222,7 +222,7 @@ void loop() {
           x  = bridge_readU16();
           y  = bridge_readU16();
           w  = bridge_readU16();
-          tmp2 = bridge_readU16(); // mode
+          tmp2 = mcuBridge.read(); // mode
           tmp = bridge_readU16();  // color
           mcu.getScreen()->drawCircle(x, y, w, tmp2, tmp);
           break;
