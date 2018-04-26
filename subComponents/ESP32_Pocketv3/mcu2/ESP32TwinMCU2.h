@@ -225,7 +225,8 @@
       if ( ch == '\n' ) { return cpt; }
       dest[cpt++] = (char)ch;
 
-      if ( cpt >= destSize ) { break; }
+      //if ( cpt >= destSize ) { break; }
+      if ( cpt > destSize ) { break; }
 
       while( mcuBridge.available() == 0 ) { 
         yield(); delay(50); 
@@ -254,17 +255,21 @@
     for (int i=readed; i < 1+8+1+3+1; i++) { entryName[i]=0x00; }
     mcu->println("writing ");mcu->println(entryName);
 
+    delay(100);
+
     char entrySizeS[11+1];
     readed = _readBridgeLine(entrySizeS, 11+0);
     if ( readed < 0 ) { mcu->println("size timeout !"); return; }
     if ( readed == 0 ) { mcu->println("size empty !"); return; }
     for (int i=readed; i < 11+1; i++) { entrySizeS[i]=0x00; }
-    // mcu->println("long ");mcu->println(entrySizeS);
-    // for(int i=0; i < readed; i++) { Serial.print( (int)entrySizeS[i] ); Serial.print(", "); }
-    // Serial.println("");
+
+    // TODO : remove
+    mcu->println("long (STR) ");mcu->println(entrySizeS);
+    for(int i=0; i < readed; i++) { mcu->print( (int)entrySizeS[i] ); mcu->print(", "); }
+    mcu->println("");
 
     int entrySize = atoi( entrySizeS );
-    mcu->println("long ");Serial.println(entrySize);
+    mcu->println("long ");mcu->println(entrySize);
 
     #define BRIDGE_UPL_PACKET_SIZE 32
     char content[BRIDGE_UPL_PACKET_SIZE];
@@ -283,8 +288,8 @@
       while( mcuBridge.available() <= 0 ) { 
         yield(); delay(10); 
         if ( millis() - t0 > 3000 ) {
-          Serial.print( total );
-          mcu->println("timeout !");
+          mcu->print( total );
+          mcu->println(" timeout !");
           f.flush(); f.close();
           return;
         }

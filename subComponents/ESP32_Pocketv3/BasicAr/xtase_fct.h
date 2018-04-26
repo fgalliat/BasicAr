@@ -513,7 +513,7 @@ int xts_copyToBridge() {
     // TODO : that shoud be inside FS::copyToBridge(..)
     tmp[0] = '/';
     for(int i=0; i < stlen; i++) { tmp[i+1] = charUpCase( file[i] ); }
-    tmp[ stlen ] = 0x00;
+    tmp[ stlen+1 ] = 0x00; // +1 Cf '/'
 
     mcu.getFS()->copyToBridge( tmp );
 

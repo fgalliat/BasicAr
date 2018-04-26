@@ -425,7 +425,7 @@
 
     Serial.println(" Upload sending filename");
     mcuBridge.println(filename);
-    delay(200);
+    delay(10);
 
     int fileSize = f.size(); // TODO chech that
 
