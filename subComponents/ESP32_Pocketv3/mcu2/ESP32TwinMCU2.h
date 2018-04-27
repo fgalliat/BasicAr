@@ -269,7 +269,7 @@
     mcu->println("");
 
     int entrySize = atoi( entrySizeS );
-    mcu->println("long ");mcu->println(entrySize);
+    mcu->println("long ");mcu->print(entrySize);mcu->println("");
 
     #define BRIDGE_UPL_PACKET_SIZE 32
     char content[BRIDGE_UPL_PACKET_SIZE];

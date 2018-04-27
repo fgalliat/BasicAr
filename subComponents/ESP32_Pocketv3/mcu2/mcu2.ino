@@ -12,10 +12,15 @@
 // else is slave
 // #define MCU_MASTER 1
 
+#define SCREEEN_BUFFER 1
+
 #include "GenericMCU.h"
 #include "ESP32TwinMCU2.h"
 
 GenericMCU mcu;
+#ifdef SCREEEN_BUFFER
+ #include "ScreenBuffer.h"
+#endif
 // __________________
 
 
