@@ -15,12 +15,18 @@
 #define SCREEEN_BUFFER 1
 
 #include "GenericMCU.h"
+
+#ifdef SCREEEN_BUFFER
+  void _b_doBlitt();
+#endif
 #include "ESP32TwinMCU2.h"
+
 
 GenericMCU mcu;
 #ifdef SCREEEN_BUFFER
  #include "ScreenBuffer.h"
 #endif
+
 // __________________
 
 
@@ -154,50 +160,80 @@ void loop() {
         case SIG_SCR_MODE:
           tmp = mcuBridge.read();
           if ( tmp == 0xFF ) { tmp = SCREEN_MODE_320; }
-          mcu.getScreen()->setMode( tmp );
+          #ifdef SCREEEN_BUFFER
+            storeAction(cmd, tmp);
+          #else
+            mcu.getScreen()->setMode( tmp );
+          #endif
           break;
 
         case SIG_SCR_CLEAR:
-          mcu.getScreen()->clear();
+          #ifdef SCREEEN_BUFFER
+            storeAction(cmd);
+          #else
+            mcu.getScreen()->clear();
+          #endif
           break;
 
         case SIG_SCR_CURSOR:
           x = mcuBridge.read(); // in nb of chars
           y = mcuBridge.read(); // in nb of chars
-          mcu.getScreen()->setCursor(x,y);
+          #ifdef SCREEEN_BUFFER
+            storeAction(cmd, x, y);
+          #else
+            mcu.getScreen()->setCursor(x,y);
+          #endif
           break;
         case SIG_SCR_COLOR:
           tmp = bridge_readU16();
+          // TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           mcu.getScreen()->setColor(tmp);
           break;
 
         case SIG_SCR_BLITT:
           tmp = mcuBridge.read();
+          // TODO : CHeck !!!!!!!!!!!!!!!!!!
           mcu.getScreen()->blitt(tmp);
           break;
 
         case SIG_SCR_PRINT_CH:
           tmp = mcuBridge.read();
-          mcu.getScreen()->print( (char)tmp );
+          #ifdef SCREEEN_BUFFER
+            storeAction(cmd, tmp);
+          #else
+            mcu.getScreen()->print( (char)tmp );
+          #endif
           break;
         case SIG_SCR_PRINT_STR:
           tmp = mcuBridge.available();
           // BEWARE w/ THAT
           // tmp = mcuBridge.readBytes( str, tmp );
           bridge_readString(str, 0, 256);
-          mcu.getScreen()->print(str);
+          #ifdef SCREEEN_BUFFER
+            storeAction(cmd, str);
+          #else
+            mcu.getScreen()->print(str);
+          #endif
           break;
         case SIG_SCR_PRINT_INT:
           tmp = mcuBridge.readBytes( num, 4 );
           // from mem_utils.h
           tmpf = getFloatFromBytes(num, 0);
-          mcu.getScreen()->print( (int)tmpf );
+          #ifdef SCREEEN_BUFFER
+            storeAction(cmd, (int)tmpf);
+          #else
+            mcu.getScreen()->print( (int)tmpf );
+          #endif
           break;
         case SIG_SCR_PRINT_NUM:
           tmp = mcuBridge.readBytes( num, 4 );
           // from mem_utils.h
           tmpf = getFloatFromBytes(num, 0);
-          mcu.getScreen()->print(tmpf);
+          #ifdef SCREEEN_BUFFER
+            storeAction(cmd, tmpf);
+          #else
+            mcu.getScreen()->print(tmpf);
+          #endif
           break;
 
         case SIG_SCR_DRAW_PIX:
