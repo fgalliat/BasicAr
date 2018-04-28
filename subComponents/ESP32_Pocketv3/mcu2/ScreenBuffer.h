@@ -33,7 +33,7 @@
      _b_doBlitt();  
    }  
  }
-
+ bool storeAction(uint8_t type, int val);
 
  void ttyCLS() {
      memset( tty_memseg, 0x00, ttyWidth*ttyHeight );
@@ -50,7 +50,8 @@
      tty_cursorY++;
      if ( tty_cursorY >= ttyHeight ) {
          // TODO : see if scroll -or- not
-         ttyCLS();
+         // ttyCLS();
+         storeAction( SIG_SCR_CLEAR, 0 );
      }
      // TODO : see if empty the current line
  }
@@ -118,6 +119,16 @@
      static char num[16+1];
      sprintf( num, "%f", val );
      ttyString( (const char*) num );
+ }
+
+ // used for setCursor ONLY, @ this time
+ void ttyFillLine( int ttyY ) {
+   //for(int i=0; i < ttyWidth; i++) {
+   for(int i=0; i < tty_cursorX; i++) {
+     if ( tty_memseg[ (tty_cursorY * ttyWidth) + i ] == 0x00 ) {
+         tty_memseg[ (tty_cursorY * ttyWidth) + i ] = ' ';
+     }
+   }
  }
 
  // can be (x,y,w,h,m,c)
@@ -249,11 +260,19 @@
         _b_blittIfNeeded();
         return true;
     } else if ( type == SIG_SCR_CLEAR ) {
-        // type is already stored...
+        // type is already stored... for screen clear ...
         ttyCLS();
     } else if ( type == SIG_SCR_CURSOR ) {
+        if ( x < 0 || x >= ttyWidth || y < 0 || y >= ttyHeight ) {
+            // quit w/o increment act_cursor !!!
+            return true;
+        }
         tty_cursorX = x;
         tty_cursorY = y;
+        // else line will be ignored !!!
+        ttyFillLine( tty_cursorY );
+        // tty_memseg[ (tty_cursorY * ttyWidth) + 0 ] = ' ';
+        
         // quit w/o increment act_cursor !!!
         // _b_blittIfNeeded();
         return true;
@@ -291,20 +310,20 @@
 
  //bool storeAction(uint8_t type, uint16_t x=0, uint16_t y=0, uint16_t w=0, uint16_t h=0, uint16_t sx=0, uint16_t sy=0, char* filename=NULL, float val=-1.0) {
  bool storeAction(uint8_t type, float val) {
-     storeAction(type, 0, 0, 0, 0, 0, 0, NULL, val);
+     return storeAction(type, 0, 0, 0, 0, 0, 0, NULL, val);
  }
 
  bool storeAction(uint8_t type, int val) {
-     storeAction(type, val, 0, 0, 0, 0, 0, NULL, -1.0);
+     return storeAction(type, val, 0, 0, 0, 0, 0, NULL, -1.0);
  }
 
 
  bool storeAction(uint8_t type, char ch) {
-     storeAction(type, ch, 0, 0, 0, 0, 0, NULL, -1.0);
+     return storeAction(type, ch, 0, 0, 0, 0, 0, NULL, -1.0);
  }
 
  bool storeAction(uint8_t type, char* str) {
-     storeAction(type, 0, 0, 0, 0, 0, 0, str, -1.0);
+     return storeAction(type, 0, 0, 0, 0, 0, 0, str, -1.0);
  }
 
  uint16_t ___readACTU16(int addr) {
