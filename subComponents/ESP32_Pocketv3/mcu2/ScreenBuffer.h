@@ -127,7 +127,7 @@
    int addr = (tty_cursorY * ttyWidth);
    for(int i=0; i < tty_cursorX; i++) {
      if ( tty_memseg[ addr + i ] == 0x00 ) {
-         tty_memseg[ addr + i ] = ' ';
+         tty_memseg[ addr + i ] = 0xFF;
      }
    }
  }
@@ -460,12 +460,19 @@
     act_cursor = 0;
  }
 
- int array_copy(char* dest, int off0, char* source, int off1, int len, char stopOnChar) {
-    char ch;
+ int array_copy(char* dest, int off0, char* source, int off1, int len, char stopOnChar, char skipChar, int &start ) {
+    char ch; bool yet = false; int cpt=0;
     for(int i=0; i < len; i++) {
         ch = source[off1+i];
+        if ( ch == skipChar && ! yet) {
+            continue;
+        }
+        if ( !yet ) {
+            start = i;
+        }
+        yet = true;
         if ( ch == stopOnChar ) { return i; }
-        dest[off0+i] = ch;
+        dest[off0+cpt] = ch; cpt++;
     }
     return len;
  }
@@ -473,13 +480,15 @@
  // DON'T FORGET the ttyMem blitt
  void _b_doBlittText() {
      static char line[MAX_TTY_WIDTH+1];
+     int start = 0;
      for(int i=0; i < ttyHeight; i++) {
+         start = 0;
          // int howMany = array_copy(line, 0, tty_memseg, (i*MAX_TTY_WIDTH), ttyWidth, 0x00);
-         int howMany = array_copy(line, 0, tty_memseg, (i*ttyWidth), ttyWidth, 0x00);
-         line[howMany] = 0x00;
+         int howMany = array_copy(line, 0, tty_memseg, (i*ttyWidth), ttyWidth, 0x00, 0xFF, start);
+         line[howMany-start] = 0x00;
          // see if emty line ...?
          if ( howMany > 0 ) {
-            mcu.getScreen()->setCursor(0, i);
+            mcu.getScreen()->setCursor(start, i);
             mcu.getScreen()->print( line );
          }
      }

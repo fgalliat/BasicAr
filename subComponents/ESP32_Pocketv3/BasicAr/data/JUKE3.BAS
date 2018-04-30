@@ -1,6 +1,6 @@
 1 ' Xts-uPocket V2 MP3 Player
 2 ' MP trackNum / MPUS nb of track
-4 SCREEN 1 : XO=2 : YO=2
+4 SCREEN 1 : XO=3 : YO=4
 5 MPUS = 0
 10 DATAF "juke","MPUS","MPNUM$","MPNAM$"
 20 cls : drawpct "mp3_gui",0,0 : MP = 1 : VOL = 20 : PAU = 1 : PLY = 0 : PLF = 0
@@ -48,7 +48,7 @@
 840 ? MP;
 850 RETURN
 870 locate 0+XO,0+YO : ? MPNUM$(MP); : ' valued trackNum
-880 MSG$ = MPNAM$( MP ) + "   " : I = 1 : ' set baneer as trkName
+880 MSG$ = MPNAM$( MP ) + "  " : I = 1 : ' set baneer as trkName
 890 RETURN
 1000 ' SCROLL TEXT TO LEFT (sub)
 1020 ' I = 1
@@ -61,7 +61,7 @@
 1048 BLITT 0
 1050 ' RECT 0,64-8,128,8, 0, 1
 1055 LOCATE 0+XO,7+YO
-1060 ? MID$( MSG$, I, C );
+1060 ? MID$( MSG$, I, C-1 );
 1065 BLITT 2
 1070 I = I + 1
 1080 RETURN
