@@ -71,6 +71,7 @@ void setup() {
   mcu.getScreen()->setMode( SCREEN_MODE_320 );
   // mcu.getScreen()->setMode( SCREEN_MODE_160 );
 
+  mcu.getScreen()->blitt( SCREEN_BLITT_AUTO );
 }
 
 
@@ -194,6 +195,9 @@ void loop() {
           tmp = mcuBridge.read();
           // TODO : CHeck !!!!!!!!!!!!!!!!!!
           mcu.getScreen()->blitt(tmp);
+          if ( tmp > SCREEN_BLITT_LOCKED ) {
+            _b_doBlitt();
+          }
           break;
 
         case SIG_SCR_PRINT_CH:
@@ -240,7 +244,11 @@ void loop() {
           x = bridge_readU16();
           y = bridge_readU16();
           tmp = bridge_readU16();
-          mcu.getScreen()->drawPixel(x, y, tmp);
+          #ifdef SCREEEN_BUFFER
+            storeAction(cmd, x, y, tmp, 0, 0, 0, NULL, -1.0);
+          #else
+            mcu.getScreen()->drawPixel(x, y, tmp);
+          #endif
           break;
         case SIG_SCR_DRAW_LINE:
           x = bridge_readU16();
@@ -248,7 +256,11 @@ void loop() {
           x2 = bridge_readU16();
           y2 = bridge_readU16();
           tmp = bridge_readU16();
-          mcu.getScreen()->drawLine(x, y, x2, y2, tmp);
+          #ifdef SCREEEN_BUFFER
+            storeAction(cmd, x, y, x2, y2, tmp, 0, NULL, -1.0);
+          #else
+            mcu.getScreen()->drawLine(x, y, x2, y2, tmp);
+          #endif
           break;
         case SIG_SCR_DRAW_RECT:
           x  = bridge_readU16();
@@ -257,7 +269,11 @@ void loop() {
           h  = bridge_readU16();
           tmp2 = mcuBridge.read(); // mode
           tmp = bridge_readU16();  // color
-          mcu.getScreen()->drawRect(x, y, w, h, tmp2, tmp);
+          #ifdef SCREEEN_BUFFER
+            storeAction(cmd, x, y, w, h, tmp2, tmp, NULL, -1.0);
+          #else
+            mcu.getScreen()->drawRect(x, y, w, h, tmp2, tmp);
+          #endif
           break;
         case SIG_SCR_DRAW_CIRCLE:
           x  = bridge_readU16();
@@ -265,7 +281,11 @@ void loop() {
           w  = bridge_readU16();
           tmp2 = mcuBridge.read(); // mode
           tmp = bridge_readU16();  // color
-          mcu.getScreen()->drawCircle(x, y, w, tmp2, tmp);
+          #ifdef SCREEEN_BUFFER
+            storeAction(cmd, x, y, w, tmp2, tmp, 0, NULL, -1.0);
+          #else
+            mcu.getScreen()->drawCircle(x, y, w, tmp2, tmp);
+          #endif
           break;
         case SIG_SCR_DRAW_TRIANGLE:
           break;
@@ -273,24 +293,33 @@ void loop() {
           x = bridge_readU16();
           y = bridge_readU16();
           bridge_readString(str, 0, 256);
-          if ( strlen( str ) == 0 ) {
-            // recall last GFX area
-            mcu.getScreen()->drawPictureBPP((char*)NULL, x, y);
-          } else {
-            mcu.getScreen()->drawPictureBPP(str, x, y);
-          }
+
+          #ifdef SCREEEN_BUFFER
+            storeAction(cmd, x, y, 0, 0, 0, 0, str, -1.0);
+          #else
+            if ( strlen( str ) == 0 ) {
+              // recall last GFX area
+              mcu.getScreen()->drawPictureBPP((char*)NULL, x, y);
+            } else {
+              mcu.getScreen()->drawPictureBPP(str, x, y);
+            }
+          #endif
           break;
         case SIG_SCR_DRAW_PCT:
           x = bridge_readU16();
           y = bridge_readU16();
           tmp = mcuBridge.available();
           bridge_readString(str, 0, 256);
-          if ( strlen( str ) == 0 ) {
-            // recall last GFX area
-            mcu.getScreen()->drawPicture565((char*)NULL, x, y);
-          } else {
-            mcu.getScreen()->drawPicture565(str, x, y);
-          }
+          #ifdef SCREEEN_BUFFER
+            storeAction(cmd, x, y, 0, 0, 0, 0, str, -1.0);
+          #else
+            if ( strlen( str ) == 0 ) {
+              // recall last GFX area
+              mcu.getScreen()->drawPicture565((char*)NULL, x, y);
+            } else {
+              mcu.getScreen()->drawPicture565(str, x, y);
+            }
+          #endif
           break;
         case SIG_SCR_DRAW_PCT_SPRITE:
           x  = bridge_readU16();
@@ -301,12 +330,16 @@ void loop() {
           y2 = bridge_readU16();
           tmp = mcuBridge.available();
           bridge_readString(str, 0, 256);
-          if ( strlen( str ) == 0 ) {
-            // recall last GFX area
-            mcu.getScreen()->drawPicture565Sprite((char*)NULL, x, y, w, h, x2, y2);
-          } else {
-            mcu.getScreen()->drawPicture565Sprite(str, x, y, w, h, x2, y2);
-          }
+          #ifdef SCREEEN_BUFFER
+            storeAction(cmd, x, y, w, h, x2, y2, str, -1.0);
+          #else
+            if ( strlen( str ) == 0 ) {
+              // recall last GFX area
+              mcu.getScreen()->drawPicture565Sprite((char*)NULL, x, y, w, h, x2, y2);
+            } else {
+              mcu.getScreen()->drawPicture565Sprite(str, x, y, w, h, x2, y2);
+            }
+          #endif
           break;
         default:
           mcu.print("NYI cmd...");

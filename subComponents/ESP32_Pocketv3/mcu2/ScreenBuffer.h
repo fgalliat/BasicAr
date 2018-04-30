@@ -124,9 +124,10 @@
  // used for setCursor ONLY, @ this time
  void ttyFillLine( int ttyY ) {
    //for(int i=0; i < ttyWidth; i++) {
+   int addr = (tty_cursorY * ttyWidth);
    for(int i=0; i < tty_cursorX; i++) {
-     if ( tty_memseg[ (tty_cursorY * ttyWidth) + i ] == 0x00 ) {
-         tty_memseg[ (tty_cursorY * ttyWidth) + i ] = ' ';
+     if ( tty_memseg[ addr + i ] == 0x00 ) {
+         tty_memseg[ addr + i ] = ' ';
      }
    }
  }
@@ -144,53 +145,53 @@
 
     if ( type == SIG_SCR_DRAW_RECT ) {
         int off = 1;
-        act_memseg[ base_addr + (off++) ] = x>>8;
-        act_memseg[ base_addr + (off++) ] = x%256;
-        act_memseg[ base_addr + (off++) ] = y>>8;
-        act_memseg[ base_addr + (off++) ] = y%256;
-        act_memseg[ base_addr + (off++) ] = w>>8;
-        act_memseg[ base_addr + (off++) ] = w%256;
-        act_memseg[ base_addr + (off++) ] = h>>8;
-        act_memseg[ base_addr + (off++) ] = h%256;
-        act_memseg[ base_addr + (off++) ] = (uint8_t)sx; // mode
-        act_memseg[ base_addr + (off++) ] = sy>>8;       // color
-        act_memseg[ base_addr + (off++) ] = sy%256;
+        act_memseg[ base_addr + (off++) ] = (uint8_t)(x/256);
+        act_memseg[ base_addr + (off++) ] = (uint8_t)(x%256);
+        act_memseg[ base_addr + (off++) ] = (uint8_t)(y/256);
+        act_memseg[ base_addr + (off++) ] = (uint8_t)(y%256);
+        act_memseg[ base_addr + (off++) ] = (uint8_t)(w/256);
+        act_memseg[ base_addr + (off++) ] = (uint8_t)(w%256);
+        act_memseg[ base_addr + (off++) ] = (uint8_t)(h/256);
+        act_memseg[ base_addr + (off++) ] = (uint8_t)(h%256);
+        act_memseg[ base_addr + (off++) ] = (uint8_t)sx;        // mode
+        act_memseg[ base_addr + (off++) ] = (uint8_t)(sy/256);  // color
+        act_memseg[ base_addr + (off++) ] = (uint8_t)(sy%256);
     } else if ( type == SIG_SCR_DRAW_CIRCLE ) {
         int off = 1;
-        act_memseg[ base_addr + (off++) ] = x>>8;
+        act_memseg[ base_addr + (off++) ] = x/256;
         act_memseg[ base_addr + (off++) ] = x%256;
-        act_memseg[ base_addr + (off++) ] = y>>8;
+        act_memseg[ base_addr + (off++) ] = y/256;
         act_memseg[ base_addr + (off++) ] = y%256;
-        act_memseg[ base_addr + (off++) ] = w>>8;        // radius
+        act_memseg[ base_addr + (off++) ] = w/256;        // radius
         act_memseg[ base_addr + (off++) ] = w%256;
         act_memseg[ base_addr + (off++) ] = (uint8_t)sx; // mode
-        act_memseg[ base_addr + (off++) ] = sy>>8;       // color
+        act_memseg[ base_addr + (off++) ] = sy/256;       // color
         act_memseg[ base_addr + (off++) ] = sy%256;
     } else if ( type == SIG_SCR_DRAW_LINE ) {
         int off = 1;
-        act_memseg[ base_addr + (off++) ] = x>>8;
+        act_memseg[ base_addr + (off++) ] = x/256;
         act_memseg[ base_addr + (off++) ] = x%256;
-        act_memseg[ base_addr + (off++) ] = y>>8;
+        act_memseg[ base_addr + (off++) ] = y/256;
         act_memseg[ base_addr + (off++) ] = y%256;
-        act_memseg[ base_addr + (off++) ] = w>>8;        // x2
+        act_memseg[ base_addr + (off++) ] = w/256;        // x2
         act_memseg[ base_addr + (off++) ] = w%256;
-        act_memseg[ base_addr + (off++) ] = h>>8;        // y2
+        act_memseg[ base_addr + (off++) ] = h/256;        // y2
         act_memseg[ base_addr + (off++) ] = h%256;
-        act_memseg[ base_addr + (off++) ] = sx>>8;       // color
+        act_memseg[ base_addr + (off++) ] = sx/256;       // color
         act_memseg[ base_addr + (off++) ] = sx%256;
     } else if ( type == SIG_SCR_DRAW_PIX ) {
         int off = 1;
-        act_memseg[ base_addr + (off++) ] = x>>8;
+        act_memseg[ base_addr + (off++) ] = x/256;
         act_memseg[ base_addr + (off++) ] = x%256;
-        act_memseg[ base_addr + (off++) ] = y>>8;
+        act_memseg[ base_addr + (off++) ] = y/256;
         act_memseg[ base_addr + (off++) ] = y%256;
-        act_memseg[ base_addr + (off++) ] = w>>8;        // color
+        act_memseg[ base_addr + (off++) ] = w/256;        // color
         act_memseg[ base_addr + (off++) ] = w%256;
     } else if ( type == SIG_SCR_DRAW_BPP ) {
         int off = 1;
-        act_memseg[ base_addr + (off++) ] = x>>8;
+        act_memseg[ base_addr + (off++) ] = x/256;
         act_memseg[ base_addr + (off++) ] = x%256;
-        act_memseg[ base_addr + (off++) ] = y>>8;
+        act_memseg[ base_addr + (off++) ] = y/256;
         act_memseg[ base_addr + (off++) ] = y%256;
         
         int len=strlen( filename );
@@ -201,9 +202,9 @@
 
     } else if ( type == SIG_SCR_DRAW_PCT ) {
         int off = 1;
-        act_memseg[ base_addr + (off++) ] = x>>8;
+        act_memseg[ base_addr + (off++) ] = x/256;
         act_memseg[ base_addr + (off++) ] = x%256;
-        act_memseg[ base_addr + (off++) ] = y>>8;
+        act_memseg[ base_addr + (off++) ] = y/256;
         act_memseg[ base_addr + (off++) ] = y%256;
         
         int len=strlen( filename );
@@ -214,17 +215,17 @@
 
     } else if ( type == SIG_SCR_DRAW_PCT_SPRITE ) {
         int off = 1;
-        act_memseg[ base_addr + (off++) ] = x>>8;
+        act_memseg[ base_addr + (off++) ] = x/256;
         act_memseg[ base_addr + (off++) ] = x%256;
-        act_memseg[ base_addr + (off++) ] = y>>8;
+        act_memseg[ base_addr + (off++) ] = y/256;
         act_memseg[ base_addr + (off++) ] = y%256;
-        act_memseg[ base_addr + (off++) ] = w>>8;
+        act_memseg[ base_addr + (off++) ] = w/256;
         act_memseg[ base_addr + (off++) ] = w%256;
-        act_memseg[ base_addr + (off++) ] = h>>8;
+        act_memseg[ base_addr + (off++) ] = h/256;
         act_memseg[ base_addr + (off++) ] = h%256;
-        act_memseg[ base_addr + (off++) ] = sx>>8;
+        act_memseg[ base_addr + (off++) ] = sx/256;
         act_memseg[ base_addr + (off++) ] = sx%256;
-        act_memseg[ base_addr + (off++) ] = sy>>8;
+        act_memseg[ base_addr + (off++) ] = sy/256;
         act_memseg[ base_addr + (off++) ] = sy%256;
 
         int len=strlen( filename );
@@ -327,7 +328,7 @@
  }
 
  uint16_t ___readACTU16(int addr) {
-     return (uint16_t) (( (uint16_t) act_memseg[addr+0] ) << 8) + act_memseg[addr+1];
+     return (uint16_t) (( (uint16_t) act_memseg[addr+0] ) * 256) + act_memseg[addr+1];
  }
 
  char* ___readACTFILEN(int addr) {
@@ -347,70 +348,101 @@
 
     static GenericMCU_SCREEN* screen = mcu.getScreen();
 
+    // mcu.println("_b_doBlitt()");
+
     for(int curAct=0; curAct < act_cursor; curAct++) {
-        int base_addr = (ACTION_REC_SIZE*curAct);
-        int sub_addr = 1;
-        uint8_t type = act_memseg[base_addr];
+
+        // mcu.println("_b_doBlitt() action loop");
+
         uint16_t x,y,w,h,sx,sy,color;
         uint8_t mode;
         char* filename;
 
+        int base_addr = (ACTION_REC_SIZE*curAct);
+        int sub_addr = 1;
+        uint8_t type = act_memseg[base_addr];
+
         switch( type ) {
             case SIG_SCR_DRAW_BPP:
-               x = ___readACTU16( base_addr+(sub_addr+=2) );
-               y = ___readACTU16( base_addr+(sub_addr+=2) );
+               x = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               y = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
                filename = ___readACTFILEN( base_addr+sub_addr );
-               screen->drawPictureBPP( filename, x, y );
+               if ( strlen(filename) == 0 ) {
+                screen->drawPictureBPP( (char*)NULL, x, y );
+               } else {
+                screen->drawPictureBPP( filename, x, y );
+               }
               break;
 
             case SIG_SCR_DRAW_PCT:
-               x = ___readACTU16( base_addr+(sub_addr+=2) );
-               y = ___readACTU16( base_addr+(sub_addr+=2) );
+               x = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               y = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
                filename = ___readACTFILEN( base_addr+sub_addr );
-               screen->drawPicture565( filename, x, y );
+               if ( strlen(filename) == 0 ) {
+                screen->drawPicture565( (char*)NULL, x, y );
+               } else {
+                screen->drawPicture565( filename, x, y );
+               }
               break;
 
             case SIG_SCR_DRAW_PCT_SPRITE:
-               x  = ___readACTU16( base_addr+(sub_addr+=2) );
-               y  = ___readACTU16( base_addr+(sub_addr+=2) );
-               w  = ___readACTU16( base_addr+(sub_addr+=2) );
-               h  = ___readACTU16( base_addr+(sub_addr+=2) );
-               sx = ___readACTU16( base_addr+(sub_addr+=2) );
-               sy = ___readACTU16( base_addr+(sub_addr+=2) );
+               x  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               y  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               w  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               h  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               sx = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               sy = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
                filename = ___readACTFILEN( base_addr+sub_addr );
-               screen->drawPicture565( filename, x, y );
+               if ( strlen(filename) == 0 ) {
+                screen->drawPicture565Sprite( (char*)NULL, x, y, w, h, sx, sy );
+               } else {
+                screen->drawPicture565Sprite( filename, x, y, w, h, sx, sy );
+               }
               break;
 
             case SIG_SCR_DRAW_RECT:
-               x  = ___readACTU16( base_addr+(sub_addr+=2) );
-               y  = ___readACTU16( base_addr+(sub_addr+=2) );
-               w  = ___readACTU16( base_addr+(sub_addr+=2) );
-               h  = ___readACTU16( base_addr+(sub_addr+=2) );
-               mode = act_memseg[ base_addr+(sub_addr+=1) ];
-               color = ___readACTU16( base_addr+(sub_addr+=2) );
+               x  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               y  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               w  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               h  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               mode = act_memseg[ base_addr+sub_addr ]; sub_addr+=1;
+               color = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+
+                /*
+                mcu.print( "== rect ==\n" );
+                mcu.print( x ); mcu.print( ' ' );
+                mcu.print( y ); mcu.print( ' ' );
+                mcu.print( w ); mcu.print( ' ' );
+                mcu.print( h ); mcu.print( ' ' );
+                mcu.print( mode ); mcu.print( ' ' );
+                mcu.print( color ); mcu.print( ' ' );
+                mcu.print( '\n' );
+                */
+                
+
                screen->drawRect( x, y, w, h, mode, color );
               break;
             case SIG_SCR_DRAW_CIRCLE:
-               x  = ___readACTU16( base_addr+(sub_addr+=2) );
-               y  = ___readACTU16( base_addr+(sub_addr+=2) );
-               w  = ___readACTU16( base_addr+(sub_addr+=2) );
-               mode = act_memseg[ base_addr+(sub_addr+=1) ];
-               color = ___readACTU16( base_addr+(sub_addr+=2) );
+               x  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               y  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               w  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               mode = act_memseg[ base_addr+sub_addr ]; sub_addr+=1;
+               color = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
                screen->drawCircle( x, y, w, mode, color );
               break;
             case SIG_SCR_DRAW_LINE:
-               x  = ___readACTU16( base_addr+(sub_addr+=2) );
-               y  = ___readACTU16( base_addr+(sub_addr+=2) );
+               x  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               y  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
                // x2 & y2
-               w  = ___readACTU16( base_addr+(sub_addr+=2) );
-               h  = ___readACTU16( base_addr+(sub_addr+=2) );
-               color = ___readACTU16( base_addr+(sub_addr+=2) );
+               w  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               h  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               color = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
                screen->drawLine( x, y, w, h, color );
               break;
             case SIG_SCR_DRAW_PIX:
-               x  = ___readACTU16( base_addr+(sub_addr+=2) );
-               y  = ___readACTU16( base_addr+(sub_addr+=2) );
-               color = ___readACTU16( base_addr+(sub_addr+=2) );
+               x  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               y  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               color = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
                screen->drawPixel( x, y, color );
               return;
 
