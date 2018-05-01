@@ -215,9 +215,11 @@ int xts_buttonRead(int btnNum) {
 
   // button mapping Hard <-> BASIC
   // BEWARE : here, we do not read builtin btn
-  const uint8_t map[] = { -1, 5, 6, 7, 3, 4, 1, 2, -1, -1, -1 };
+  //                       0  1  2  3  4  5  6  7   8   9  10
+  static const int map[] = { -1, 5, 6, 7, 3, 4, 1, 2, -1, -1, -1 };
 
   if ( btnNum < 1 || btnNum > 10 ) { return 0; }
+  if ( map[ btnNum ] < 0 ) { return 0; }
 
   return mcu.btn( map[ btnNum ] ) ? 1 : 0;
 }
