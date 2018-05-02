@@ -217,7 +217,7 @@ class GenericMCU {
       bool lookAtISR = false;
       // see if can redef.
       void setupISR();
-      void doISR();
+      //void doISR();
 
       void builtinLED(bool state);
       bool builtinBTN();
@@ -235,10 +235,16 @@ class GenericMCU {
       GenericMCU()  { init(); }
       ~GenericMCU() {}
 
-      void lockISR()   { lookAtISR = false; }
-      void unlockISR() { lookAtISR = true; }
+    //   void lockISR()   { lookAtISR = false; }
+    //   void unlockISR() { lookAtISR = true; }
+    void lockISR();
+    void unlockISR();
+
+      void doISR();
 
       void setup() {
+          lockISR();
+
           setupPreInternal();
 
           if ( getGPIO()        != NULL ) { getGPIO()->setup();        }
@@ -247,9 +253,12 @@ class GenericMCU {
           if ( getFS()          != NULL ) { getFS()->setup();          }
           if ( getMusicPlayer() != NULL ) { getMusicPlayer()->setup(); }
 
-          setupISR();
 
           setupPostInternal();
+
+          setupISR();
+          
+          unlockISR();
       }
 
       // soft reset the MCU

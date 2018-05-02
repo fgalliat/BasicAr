@@ -319,24 +319,24 @@ void loop() {
   routine is run between each time loop() runs, so using delay inside loop can
   delay response. Multiple bytes of data may be available.
 */
-void xts_serialEvent() {
-    // //while ( isWriting ) { delay(5); Serial.print('X'); }
-    // Serial.flush();
-    // while (Serial.available()) {
-    //   // get the new byte:
-    //   char inChar = (char)Serial.read();
+// void xts_serialEvent() {
+//     // //while ( isWriting ) { delay(5); Serial.print('X'); }
+//     // Serial.flush();
+//     // while (Serial.available()) {
+//     //   // get the new byte:
+//     //   char inChar = (char)Serial.read();
 
-    //   if ( inChar == '\n' ) { continue; }
+//     //   if ( inChar == '\n' ) { continue; }
 
-    //   // add it to the inputString:
-    //   inputString += inChar;
-    //   // if the incoming character is a newline, set a flag so the main loop can
-    //   // do something about it:
-    //   if (inChar == '\n'|| inChar == '\r' ) {
-    //     stringComplete = true;
-    //   }
-    // }
-  }
+//     //   // add it to the inputString:
+//     //   inputString += inChar;
+//     //   // if the incoming character is a newline, set a flag so the main loop can
+//     //   // do something about it:
+//     //   if (inChar == '\n'|| inChar == '\r' ) {
+//     //     stringComplete = true;
+//     //   }
+//     // }
+//   }
 
 
 

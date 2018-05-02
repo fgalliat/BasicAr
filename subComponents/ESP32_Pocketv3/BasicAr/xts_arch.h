@@ -40,6 +40,10 @@
 
         GenericMCU mcu;
 
+  static void IRAM_ATTR _doISR() {
+      mcu.doISR();
+  }
+
         #ifdef ESP32_WIFI_SUPPORT
             extern void host_outputString(char* str);
             extern int host_outputInt(long v);

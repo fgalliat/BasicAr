@@ -153,9 +153,7 @@
   void GenericMCU::setupPostInternal() { 
   }
 
-  void GenericMCU::setupISR() { 
-    // TODO
-  }
+  // ISR managment further ....
 
   void GenericMCU::builtinLED(bool state) { digitalWrite( BUILTIN_LED, state ? HIGH : LOW ); }
   bool GenericMCU::builtinBTN() { return digitalRead( BUILTIN_BTN ) == LOW; }
@@ -197,12 +195,82 @@
 
   // 0-based
   void GenericMCU_GPIO::led(uint8_t ledNum, bool state) { ; }
+
+  static bool btns[11];
+
   // 0-based
   bool GenericMCU_GPIO::btn(uint8_t btnNum) {
-    if ( !this->ready ) { return false; }
-    // + 8 -> cf rewiring
-    return _ext_GPIO.digitalRead(SX1509_BTN_PIN + 8 + btnNum) == LOW;
+    // if ( !this->ready ) { return false; }
+    // // + 8 -> cf rewiring
+    // return _ext_GPIO.digitalRead(SX1509_BTN_PIN + 8 + btnNum) == LOW;
+
+    // Cf btns[0] is builtinBtn
+    return btns[btnNum+1];
   }
+
+
+  // ===============================
+  static bool isISRLOCKED = false;
+
+  static void IRAM_ATTR _doISR();
+
+  // static void IRAM_ATTR _doISR() {
+  //     if ( isISRLOCKED ) { return; }
+  //     mcu.doISR();
+  // }
+
+  void GenericMCU::setupISR() { 
+    /* create a hardware timer */
+    hw_timer_t * timer = NULL;
+
+    /* Use 1st timer of 4 */
+    /* 1 tick take 1/(80MHZ/80) = 1us so we set divider 80 and count up */
+    timer = timerBegin(0, 80, true);
+
+    /* Attach onTimer function to our timer */
+    timerAttachInterrupt(timer, &(_doISR), true);
+
+    /* Set alarm to call onTimer function every second 1 tick is 1us
+    => 1 second is 1000000us */
+    /* Repeat the alarm (third parameter) */
+    uint64_t tVal = 1000000;
+    tVal = 50000; // 50millis
+    tVal = 100000; // 100 millis
+    timerAlarmWrite(timer, tVal, true);
+
+    /* Start an alarm */
+    timerAlarmEnable(timer);
+  }
+
+  void GenericMCU::lockISR() { isISRLOCKED = true; }
+  void GenericMCU::unlockISR() { isISRLOCKED = false; }
+
+
+  static bool inISR = false;
+
+  void GenericMCU::doISR() { 
+    if ( isISRLOCKED ) { 
+      //yield(); 
+      inISR = false;
+      return; 
+    }
+
+    if ( inISR ) { return; }  
+    inISR = true;
+    btns[0] = builtinBTN();
+    if ( !this->gpio->isReady() ) { return; }
+
+    for(int i=0; i < 7; i++) {
+      // 0-based
+      // + 8 -> cf rewiring
+      btns[1+i] = _ext_GPIO.digitalRead(SX1509_BTN_PIN + 8 + i) == LOW;
+    }
+    for(int i=8; i < 11; i++) {
+      btns[i] = false;
+    }
+    inISR = false;
+  }
+
 
   // ======== Buzzer ====================================================================
 
@@ -249,7 +317,9 @@
 
   void GenericMCU_FS::remove(char* filename) {
     // if (!SPIFFS.exists(filename) ) { return; }
+    mcu->lockISR();
     SPIFFS.remove(filename);
+    mcu->unlockISR();
     delay(100);
   }
 
@@ -266,6 +336,7 @@
   #endif
 
   bool  GenericMCU_FS::openCurrentTextFile(char* filename, bool readMode) {
+    mcu->lockISR();
     if ( filename == NULL ) { Serial.print("CAN'T OPEN NULL FILE\n"); return false; }
     Serial.print("opening "); Serial.println(filename);
     currentFileValid = false;
@@ -274,44 +345,52 @@
     // Serial.println("RIGHT HERE");
     currentFile = SPIFFS.open(filename, readMode ? "r" : "w");
     // Serial.println("RIGHT NOW");
-    if ( !currentFile ) { Serial.println("failed"); return false; }
+    if ( !currentFile ) { Serial.println("failed"); mcu->unlockISR(); return false; }
 
     currentFile.seek(0);
     delay(50);
     // Serial.println("RIGHT ...");
     currentFileValid = true;
     // Serial.println("opened");
+    mcu->unlockISR();
     return true;
   }
 
   void  GenericMCU_FS::closeCurrentTextFile() {
+    mcu->lockISR();
     if ( currentFileValid ) {
         currentFile.flush();
         currentFile.close();
         currentFileValid = false;
     }
+    mcu->unlockISR();
   }
 
   // have to provide "\n" @ end of line
   void GenericMCU_FS::writeCurrentText(char* line, bool autoflush) {
       if ( line == NULL ) { Serial.print("CANT WRITE NULL LINE\n"); return; }
+      mcu->lockISR();
       int len = strlen( line );
       currentFile.write( (uint8_t*)line, len );
       if (autoflush) currentFile.flush();
+      mcu->unlockISR();
   }
 
   void GenericMCU_FS::writeCurrentTextBytes(char* line, int len) {
       bool autoflush = true;
       if ( line == NULL ) { Serial.print("CANT WRITE NULL BYTES\n"); return; }
+      mcu->lockISR();
       currentFile.write( (uint8_t*)line, len );
       if (autoflush) currentFile.flush();
+      mcu->unlockISR();
   }
 
   char* GenericMCU_FS::readCurrentTextLine() {
     const int MAX_LINE_LEN = 256;
     memset(__myLine, 0x00, MAX_LINE_LEN +1);
-
+    mcu->lockISR();
     if ( currentFile.available() <= 0 ) {
+        mcu->unlockISR();
         return NULL;
     }
 
@@ -325,10 +404,12 @@
         __myLine[ cpt++ ] = (char)ch;
     }
 
+    mcu->unlockISR();
     return __myLine;
   }
 
   void GenericMCU_FS::ls(char* filter, void (*callback)(char*, int, uint8_t, int) ) {
+    mcu->lockISR();
     File dir = SPIFFS.open("/");
     File entry;
     int entryNb = 0;
@@ -375,6 +456,7 @@
     }
     callback( "-EOD-", entryNb, FS_TYPE_EOF, entryNb );
     // return entryNb;
+    mcu->unlockISR();
   }
 
   // ======== Bridge ====================================================================
@@ -407,7 +489,7 @@
   }
 
   void GenericMCU_FS::copyToBridge(char* filename) {
-    
+    mcu->lockISR();
     // DO NOT OUTPUT TO SCREEN
     // DO NOT USE mcu->print(...)
     
@@ -459,6 +541,8 @@
 
     Serial.println("Upload complete");
     flushBridgeRX();
+
+    mcu->unlockISR();
   }
 
 

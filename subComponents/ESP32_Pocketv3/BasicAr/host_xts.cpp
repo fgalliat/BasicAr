@@ -896,7 +896,7 @@ void _serializeTokens(unsigned char *p, char* destLine) {
     cleanCodeLine();
     memset( tokenBuf, 0x00, TOKEN_BUF_SIZE );
 
-    // esp32.lockISR();
+    mcu.lockISR();
     bool ok = mcu.getFS()->openCurrentTextFile( SDentryName );
     if ( !ok ) {
       Serial.println( "-FAILED-" );
@@ -911,7 +911,7 @@ void _serializeTokens(unsigned char *p, char* destLine) {
       }
       mcu.getFS()->closeCurrentTextFile();
     }
-    // esp32.unlockISR();
+    mcu.unlockISR();
 
     host_outputString( "-EOF-\n" );
     host_showBuffer();
@@ -939,7 +939,7 @@ void saveAsciiBas(char* filename) {
   mcu.getFS()->remove(SDentryName);
 
   fopenTextFile(SDentryName, false);
-  // esp32.lockISR();
+  mcu.lockISR();
 
   fwriteText("1 ' blank\n");
 
@@ -962,7 +962,7 @@ void saveAsciiBas(char* filename) {
   fwriteText("\r\n");
   fcloseFile();
 
-  //esp32.unlockISR();
+  mcu.unlockISR();
   Serial.println("closed");
 
       

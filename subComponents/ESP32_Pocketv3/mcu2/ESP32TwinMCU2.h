@@ -469,14 +469,12 @@
 
   // ------------------------------
   static void __doBlitt() {
-    // SEE LATER when a screenBuffer strategy will be defined
-
 #ifdef SCREEEN_BUFFER
     // _b_doBlitt();
-#endif
-
+#else
     // ESP8266 specific impl. of yield() (Cf Wifi ops & deadlocks ....) (see AdaGFX samples)
     yield();
+#endif
   }
 
   static void __blittIfNeeded() {
