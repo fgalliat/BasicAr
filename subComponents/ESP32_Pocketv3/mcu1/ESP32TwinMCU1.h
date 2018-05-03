@@ -410,12 +410,16 @@
 
   // filename = "/toto.txt"
   // returns nb of bytes readed
-  int GenericMCU_FS::readBinFile(char* filename, uint8_t* dest, int maxLen) {
+  // start = 0 by default
+  int GenericMCU_FS::readBinFile(char* filename, uint8_t* dest, int maxLen, int start) {
     mcu->lockISR();
     if (!SPIFFS.exists(filename) ) { mcu->unlockISR(); return -1; }
 
     File f = SPIFFS.open(filename, "r");
     if ( !f ) { mcu->unlockISR(); return -1; }
+
+    f.seek( start );
+
     int readed = f.readBytes( (char*)dest, maxLen);
     f.close();
 

@@ -93,7 +93,7 @@ class GenericMCU_FS {
       void writeCurrentTextBytes(char* bytes, int len);
       void closeCurrentTextFile();
 
-      int readBinFile(char* filename, uint8_t* dest, int maxLen);
+      int readBinFile(char* filename, uint8_t* dest, int maxLen, int start=0);
 
       void uploadViaSerial();
       // receive from bridge

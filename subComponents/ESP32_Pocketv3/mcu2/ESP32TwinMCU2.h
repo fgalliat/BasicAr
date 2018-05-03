@@ -148,9 +148,9 @@
   void GenericMCU::setupPostInternal() { 
   }
 
-  void GenericMCU::setupISR() { 
-    // TODO
-  }
+  void GenericMCU::setupISR() {}
+  void GenericMCU::lockISR() {}
+  void GenericMCU::unlockISR() {}
 
   void GenericMCU::builtinLED(bool state) { digitalWrite( BUILTIN_LED, state ? HIGH : LOW ); }
   bool GenericMCU::builtinBTN() { return digitalRead( BUILTIN_BTN ) == LOW; }
