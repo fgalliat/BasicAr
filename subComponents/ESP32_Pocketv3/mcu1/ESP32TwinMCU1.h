@@ -408,6 +408,21 @@
     return __myLine;
   }
 
+  // filename = "/toto.txt"
+  // returns nb of bytes readed
+  int GenericMCU_FS::readBinFile(char* filename, uint8_t* dest, int maxLen) {
+    mcu->lockISR();
+    if (!SPIFFS.exists(filename) ) { mcu->unlockISR(); return -1; }
+
+    File f = SPIFFS.open(filename, "r");
+    if ( !f ) { mcu->unlockISR(); return -1; }
+    int readed = f.readBytes( (char*)dest, maxLen);
+    f.close();
+
+    mcu->unlockISR();
+    return readed;
+  }
+
   void GenericMCU_FS::ls(char* filter, void (*callback)(char*, int, uint8_t, int) ) {
     mcu->lockISR();
     File dir = SPIFFS.open("/");

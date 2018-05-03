@@ -93,6 +93,8 @@ class GenericMCU_FS {
       void writeCurrentTextBytes(char* bytes, int len);
       void closeCurrentTextFile();
 
+      int readBinFile(char* filename, uint8_t* dest, int maxLen);
+
       void uploadViaSerial();
       // receive from bridge
       void uploadViaBridge();
@@ -257,7 +259,7 @@ class GenericMCU {
           setupPostInternal();
 
           setupISR();
-          
+
           unlockISR();
       }
 

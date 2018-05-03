@@ -255,17 +255,15 @@ void playTuneFromStorage(char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bo
   if ( lastCh >= 'a' && lastCh <= 'z' ) { lastCh = lastCh - 'a' + 'A'; }
   tuneStreamName[ tlen-1 ] = lastCh;
 
-  #ifdef ESP32_FS
-    char ftuneStreamName[8+1+3+1];
+  // TODO BEWARE w/ that !!!!!!!
+  // #ifdef ESP32_FS
+    static char ftuneStreamName[8+1+3+1];
     strcpy(ftuneStreamName, "/");
     strcat(ftuneStreamName, tuneStreamName);
-  #else
-    char ftuneStreamName[8+1+3];
-    strcpy(ftuneStreamName, tuneStreamName);
-  #endif
-
-  
-  
+  // #else
+  //   char ftuneStreamName[8+1+3];
+  //   strcpy(ftuneStreamName, tuneStreamName);
+  // #endif
 
   if ( !(( lastCh == 'K' || lastCh == '3') && (tlen >= 2 && tuneStreamName[ tlen-2 ] == '5') ) ) {
     if ( format == AUDIO_FORMAT_T5K ) {
@@ -282,16 +280,20 @@ void playTuneFromStorage(char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bo
   //  return;        
   // }
 
-  #ifdef ESP32_FS
+  // #ifdef ESP32_FS
     // host_outputString("ZIK NYI for esp32\n");
     // host_showBuffer();
-    unsigned char preBuff[2];
-    int n = esp32.getFs()->readBinFile(ftuneStreamName, preBuff, 2);
+
+    mcu.lockISR();
+
+    static unsigned char preBuff[2];
+    int n = mcu.getFS()->readBinFile(ftuneStreamName, preBuff, 2);
     if ( n <= 0 ) {
       host_outputString( ftuneStreamName );
       host_outputString("\n");
       host_outputString("ZIK File not ready\n");
       host_showBuffer();
+      mcu.unlockISR();
       return;
     }
 
@@ -303,8 +305,8 @@ void playTuneFromStorage(char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bo
     }
 
     //file.read( audiobuff, fileLen );
-    n = esp32.getFs()->readBinFile(ftuneStreamName, audiobuff, fileLen);
-
+    n = mcu.getFS()->readBinFile(ftuneStreamName, audiobuff, fileLen);
+    mcu.unlockISR();
     led3(false);
 
     if ( format == AUDIO_FORMAT_T5K ) {
@@ -313,38 +315,38 @@ void playTuneFromStorage(char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bo
       __playTuneT53( audiobuff, btnStop );  
     }
 
-  #elif defined(TOTO_TEENSY)
-    // sdfat lib
-    SdFile file;
-    if (! file.open( ftuneStreamName , O_READ) ) {
-      led1(true);
-      return;        
-    }
+  // #elif defined(TOTO_TEENSY)
+  //   // sdfat lib
+  //   SdFile file;
+  //   if (! file.open( ftuneStreamName , O_READ) ) {
+  //     led1(true);
+  //     return;        
+  //   }
 
-    //  host_outputString( "OK : Opening : " );
-    //  host_outputString( (char*)tuneStreamName );
-    //  host_outputString( "\n" );
-    //zik.rewind();
+  //   //  host_outputString( "OK : Opening : " );
+  //   //  host_outputString( (char*)tuneStreamName );
+  //   //  host_outputString( "\n" );
+  //   //zik.rewind();
 
-    int nbNotes = (file.read()<<8)|file.read();
-    file.seekSet(0);
-    int fileLen = (nbNotes*sizeof(Note))+2+16+2;
-    if ( format == AUDIO_FORMAT_T53 ) {
-      fileLen = (nbNotes*(3+3+3))+2+16+2;
-    }
-    //file.readBytes( audiobuff, fileLen );
-    file.read( audiobuff, fileLen );
+  //   int nbNotes = (file.read()<<8)|file.read();
+  //   file.seekSet(0);
+  //   int fileLen = (nbNotes*sizeof(Note))+2+16+2;
+  //   if ( format == AUDIO_FORMAT_T53 ) {
+  //     fileLen = (nbNotes*(3+3+3))+2+16+2;
+  //   }
+  //   //file.readBytes( audiobuff, fileLen );
+  //   file.read( audiobuff, fileLen );
 
-    led3(false);
-    file.close();
+  //   led3(false);
+  //   file.close();
 
-    if ( format == AUDIO_FORMAT_T5K ) {
-      __playTune( audiobuff, btnStop );  
-    } else {
-      __playTuneT53( audiobuff, btnStop );  
-    }
+  //   if ( format == AUDIO_FORMAT_T5K ) {
+  //     __playTune( audiobuff, btnStop );  
+  //   } else {
+  //     __playTuneT53( audiobuff, btnStop );  
+  //   }
 
-    #endif
+  //   #endif
   
   mcu.noTone(); // MANDATORY for ESP32Oled
  }
@@ -353,8 +355,8 @@ void playTuneFromStorage(char* tuneStreamName, int format = AUDIO_FORMAT_T5K, bo
 void __playTune(unsigned char* tuneStream, bool btnStop = false) {
   mcu.noTone();
 
-  short nbNotes = (*tuneStream++ << 8) | (*tuneStream++);
-  char songname[16];
+  static short nbNotes = (*tuneStream++ << 8) | (*tuneStream++);
+  static char songname[16];
   for(int i=0; i < 16; i++) {
     songname[i] = *tuneStream++;
   }
