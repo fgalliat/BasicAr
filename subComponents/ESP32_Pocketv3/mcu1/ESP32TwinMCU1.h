@@ -188,6 +188,8 @@
       // + 8 -> cf rewiring
       _ext_GPIO.pinMode(SX1509_BTN_PIN + 8 + btn, INPUT_PULLUP);
     }
+    // MP3 TRIGGER
+    _ext_GPIO.pinMode(SX1509_BTN_PIN + 0, INPUT);
 
     this->ready = true;
     mcu->println("Ext GPIO ready !");
@@ -271,6 +273,9 @@
     for(int i=8; i < 11; i++) {
       btns[i] = false;
     }
+    // really low : inv. logic
+    btns[10] = _ext_GPIO.digitalRead(SX1509_BTN_PIN + 0) == LOW;
+
     inISR = false;
   }
 
@@ -614,7 +619,7 @@
   bool GenericMCU_MUSIC_PLAYER::isPlaying() {
     if ( !this->ready ) { return false; }
     // TODO : better -> leads to GPIO pin #0
-    return mcu->getGPIO()->btn( -8 );
+    return mcu->btn( 10 );
   }
 
   // ======== Screen ====================================================================
