@@ -590,7 +590,9 @@ bool drawBPPfile(char* filename) {
 }
 
 bool drawPCTfile(char* filename, int x, int y) {
-  if ( filename == NULL || strlen(filename) <= 0 ) { 
+  //if ( filename == NULL || strlen(filename) <= 0 ) { 
+  // if empty filename -> cached image
+  if ( filename == NULL  ) { 
     host_outputString("ERR : invalid file\n");
     return false;
   }
@@ -603,7 +605,9 @@ return true;
 }
 
 bool drawSPRITEfile(char* filename, int x, int y, int w, int h, int sx, int sy) {
-  if ( filename == NULL || strlen(filename) <= 0 ) { 
+  //if ( filename == NULL || strlen(filename) <= 0 ) { 
+  // if empty filename -> cached image
+  if ( filename == NULL  ) { 
     host_outputString("ERR : invalid file\n");
     return false;
   }
@@ -950,11 +954,12 @@ void saveAsciiBas(char* filename) {
 
   autocomplete_fileExt(filename, BASIC_ASCII_FILE_EXT);
 
-  // TO MOVE INSIDE fopen()
+  mcu.lockISR();
+
   mcu.getFS()->remove(SDentryName);
 
   fopenTextFile(SDentryName, false);
-  mcu.lockISR();
+  // mcu.lockISR();
 
   fwriteText("1 ' blank\n");
 
