@@ -8,6 +8,10 @@
 * Xtase - fgalliat @ Apr. 2018
 */
 
+  #define TEXT_OVERWRITE 0x00 // w/ BG
+  #define TEXT_INCRUST   0x01 // w/o BG
+  
+
   #define SIG_MCU_RESET       0x01
   #define SIG_MCU_MASTER_SYNC 0x02 // Query
   #define SIG_MCU_SLAVE_SYNC  0x03 // Answer
@@ -24,6 +28,7 @@
   #define SIG_SCR_CURSOR        0x23 // TTY cursor
   #define SIG_SCR_COLOR         0x24 // Text + Shapes ?
   #define SIG_SCR_BLITT         0x25
+  #define SIG_SCR_TXTMODE       0x26
   
   #define SIG_SCR_PRINT_CH      0x31
   #define SIG_SCR_PRINT_STR     0x32
@@ -83,7 +88,7 @@
     2, // 0x23 cursor
     2, // 0x24 color
     1, // 0x25 blitt
-   -2, // 0x26
+    5, // 0x26 text mode
    -2, // 0x27
    -2, // 0x28
    -2, // 0x29

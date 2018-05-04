@@ -224,6 +224,10 @@ TokenTableEntry tokenTable[] = {
     {"SCREEN", 1|TKN_FMT_POST}, // set screen mode
 
     {"COPY",1|TKN_ARG1_TYPE_STR|TKN_FMT_POST}, // copy to MCU#2
+
+    {"DATAU", TKN_FMT_POST},  // DATAF "<service>","<sizeVar>","<ARRAY_VAR>"[,"<ARRAY_VAR>","<ARRAY_VAR>"...]
+    {"DRAWSPRT",7|TKN_ARG1_TYPE_STR|TKN_FMT_POST}, // DRAWSPRT "TEST",0,0, 32, 32, 20, 20, 
+    {"TEXT", 1|TKN_FMT_POST}, // set text mode (0 -or- 1)
 };
 
 
@@ -2487,6 +2491,7 @@ int parseStmts()
 
             case TOKEN_DRAWBPP: ret = xts_dispBPP(); break;
             case TOKEN_DRAWPCT: ret = xts_dispPCT(); break;
+            case TOKEN_DRAWSPRITE: ret = xts_dispSPRITE(); break;
 
             case TOKEN_CIRCLE : ret = xts_dispCircle(); break;
             case TOKEN_LINE   : ret = xts_dispLine(); break;
@@ -2498,11 +2503,13 @@ int parseStmts()
 
             case TOKEN_EXT_EXEC: ret = xts_exec_cmd(); break;
             case TOKEN_DATAF: ret = xts_dataf_cmd(); break;
+            case TOKEN_DATAU: ret = xts_datau_cmd(); break;
 
             case TOKEN_BLITT : ret = xts_blittMode(); break;
             case TOKEN_RECT  : ret = xts_dispRect(); break;
 
             case TOKEN_SCREEN : ret = xts_screenMode(); break;
+            case TOKEN_TEXT : ret = xts_textMode(); break;
 
             case TOKEN_COPY: ret = xts_copyToBridge(); break;
 

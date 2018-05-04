@@ -194,7 +194,10 @@
   }
 
   // 0-based
-  void GenericMCU_GPIO::led(uint8_t ledNum, bool state) { ; }
+  void GenericMCU_GPIO::led(uint8_t ledNum, bool state) {
+    // tmp code
+    this->mcu->led(0, state);
+  }
 
   static bool btns[11];
 
@@ -686,6 +689,16 @@
     if ( !this->ready ) { return; }
     mcuBridge.write( SIG_SCR_MODE );
     mcuBridge.write( mode );
+    flushBridgeRX();
+  }
+
+  // mode : TEXT_OVERWRITE / TEXT_INCRUST
+  void GenericMCU_SCREEN::setTextMode(uint8_t mode, uint16_t fg, uint16_t bg) {
+    if ( !this->ready ) { return; }
+    mcuBridge.write( SIG_SCR_TXTMODE );
+    mcuBridge.write( mode );
+    writeBridgeU16( fg );
+    writeBridgeU16( bg );
     flushBridgeRX();
   }
 

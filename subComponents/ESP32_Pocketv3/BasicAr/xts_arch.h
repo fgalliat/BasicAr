@@ -62,6 +62,9 @@
       #define BTN_2    6
       #define BTN_3    7
 
+  #define TEXT_OVERWRITE 0x00 // w/ BG
+  #define TEXT_INCRUST   0x01 // w/o BG
+
       #ifdef ANOTHER_CPP
         extern GenericMCU mcu;
 

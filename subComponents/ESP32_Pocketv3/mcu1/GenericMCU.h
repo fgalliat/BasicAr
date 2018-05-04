@@ -126,6 +126,9 @@ class GenericMCU_SCREEN {
       // 2 - 320x240 64K
       void setMode(uint8_t mode);
 
+      // mode : TEXT_OVERWRITE / TEXT_INCRUST
+      void setTextMode(uint8_t mode, uint16_t fg, uint16_t bg);
+
       // one of : SCREEN_BLITT_xxx
       // BASIC no more calls doBlitt() itself
       // it just sets the mode

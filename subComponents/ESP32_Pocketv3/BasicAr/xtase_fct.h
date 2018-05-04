@@ -448,6 +448,57 @@ int xts_dispPCT() {
   return 0;
 }
 
+int xts_dispSPRITE() {
+  getNextToken();
+
+  int val = parseExpression();
+  if (val & _ERROR_MASK) return val;
+  if (!_IS_TYPE_STR(val))
+      return _ERROR_EXPR_EXPECTED_STR;
+
+  getNextToken();
+  val = expectNumber();  // X1
+  if (val) return val;	// error
+  
+  getNextToken();
+  val = expectNumber();  // Y1
+  if (val) return val;	// error
+
+  getNextToken();
+  val = expectNumber();  // W
+  if (val) return val;	// error
+  
+  getNextToken();
+  val = expectNumber();  // H
+  if (val) return val;	// error
+
+  getNextToken();
+  val = expectNumber();  // SX
+  if (val) return val;	// error
+  
+  getNextToken();
+  val = expectNumber();  // SY
+  if (val) return val;	// error
+      
+  if ( executeMode ) {
+    int sy = stackPopNum();
+    int sx = stackPopNum();
+    int h = stackPopNum();
+    int w = stackPopNum();
+    int y = stackPopNum();
+    int x = stackPopNum();
+    //int x = 0, y = 0;
+    char* pictStr = stackPopStr();
+    if ( drawSPRITEfile( pictStr, x, y, w, h, sx, sy ) ) {
+      return 0;
+    } else {
+      return ERROR_UNEXPECTED_TOKEN;
+    }
+  }
+
+  return 0;
+}
+
 int xts_blittMode() {
   getNextToken();
 
@@ -494,6 +545,26 @@ int xts_screenMode() {
     }
 
     mcu.getScreen()->setMode( mode );
+  }
+
+  return 0;
+}
+
+int xts_textMode() {
+  getNextToken();
+
+  int val = parseExpression();
+  if (val & _ERROR_MASK) return val;
+  if (!_IS_TYPE_NUM(val))
+      return ERROR_EXPR_EXPECTED_NUM;
+
+  if ( executeMode ) {
+    int mode = (int)stackPopNum();
+    if ( mode < TEXT_OVERWRITE || mode > TEXT_INCRUST ) {
+      return ERROR_BAD_PARAMETER;
+    }
+
+    mcu.getScreen()->setTextMode( mode, WHITE, BLACK );
   }
 
   return 0;
@@ -1278,6 +1349,60 @@ int xts_dataf_cmd() {
 
   return 0;
 }
+
+// Web remote ~CSV reading
+int xts_datau_cmd() {
+  getNextToken();
+  
+  const int MAX_ARGS = 12; // <service>, <sizeVar>, <10 arrays>
+  char* args[MAX_ARGS];    // string args
+  int   argc = 0;
+
+  int val = -1;
+  while (curToken != TOKEN_EOL && curToken != TOKEN_CMD_SEP) {
+    val = parseExpression();
+    //if (val & _ERROR_MASK) return val;
+    if (val & _ERROR_MASK) break;
+
+    // STRING 1st arg is optional
+    if (_IS_TYPE_STR(val)) {
+      if ( executeMode && argc < MAX_ARGS) {
+        char* tt = stackPopStr();
+        int stlen = strlen(tt);
+        char* tmp = (char*)malloc( stlen+1 ); // BEWARE w/ free()
+        for(int i=0; i < stlen; i++) { tmp[i] = charUpCase( tt[i] ); }
+        tmp[ stlen ] = 0x00;
+        args[argc++] = tmp;
+      }
+    } else {
+      return ERROR_BAD_PARAMETER;
+    }
+
+    if ( curToken == TOKEN_COMMA ) {
+      getNextToken();
+    }
+  }
+
+  if ( !executeMode ) {
+    if (val & _ERROR_MASK) return val;
+  }
+  
+  if ( executeMode ) {
+      if ( argc >= 2 ) {
+        mcu.println( "Read Remote Content : " );
+        mcu.println( args[0] );
+      }
+      else {
+        // missing args
+        return ERROR_BAD_PARAMETER;
+      }
+  }
+
+  return 0;
+}
+
+
+
 
 // ===================================================================
 

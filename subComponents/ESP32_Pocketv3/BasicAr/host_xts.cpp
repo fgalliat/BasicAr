@@ -602,6 +602,19 @@ bool drawPCTfile(char* filename, int x, int y) {
 return true;
 }
 
+bool drawSPRITEfile(char* filename, int x, int y, int w, int h, int sx, int sy) {
+  if ( filename == NULL || strlen(filename) <= 0 ) { 
+    host_outputString("ERR : invalid file\n");
+    return false;
+  }
+
+  autocomplete_fileExt(filename, ".PCT");
+
+  mcu.getScreen()->drawPicture565Sprite(SDentryName, x, y, w, h, sx, sy);
+
+return true;
+}
+
 
 // ==============================================
 // =
