@@ -33,7 +33,7 @@ public class DFPlayerFileList {
         Iterator<String> itFile = result.iterator();
         for(int i=0; itFile.hasNext(); i++) {
             String name = itFile.next();
-            String num = (i < 9 ? "0" : "")+ (i+1);
+            String num = (i < 99 ? "0" : "")+ (i < 9 ? "0" : "")+ (i+1);
             System.out.println(num+";"+name);
             outF.println(num+";"+name);
         }
@@ -59,9 +59,9 @@ public class DFPlayerFileList {
         Iterator<String> itFile = result.iterator();
         for(int i=0; itFile.hasNext(); i++) {
             String name = itFile.next();
-            String num = (i < 9 ? "0" : "")+ (i+1);
-            if ( name.indexOf("_") != 2 ) { continue; }
-            String newName = num + name.substring(2);
+            String num = (i < 99 ? "0" : "")+ (i < 9 ? "0" : "")+ (i+1);
+            // if ( name.indexOf("_") != 2 ) { continue; }
+            String newName = num +'_'+ name.substring( name.indexOf('_')+1 );
             System.out.println(num+"| "+name+"   =>   "+newName);
 
             if ( true ) { new File(f, name).renameTo(new File(f, newName)); }
@@ -71,7 +71,13 @@ public class DFPlayerFileList {
 
     public static void main(String[] args) throws Exception {
         //reindexDir("./MP3");
-        treatDir("./MP3", "./data/JUKE.BAD");
+        //treatDir("./MP3", "./data/JUKE.BAD");
+        if ( args == null || args.length < 1 ) {
+            System.out.println("dir name required");
+            return;
+        }
+        // reindexDir( args[0] );
+        treatDir(args[0], "../data/JUKE.BAD");
     }
 
 
