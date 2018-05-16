@@ -76,7 +76,7 @@ public class DFPlayerFileList {
             System.out.println("dir name required");
             return;
         }
-        // reindexDir( args[0] );
+        //reindexDir( args[0] );
         treatDir(args[0], "../data/JUKE.BAD");
     }
 

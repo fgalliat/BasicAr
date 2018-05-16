@@ -13,7 +13,8 @@ public class Main implements IPrinter {
         String ip = "192.168.4.1";
 
         // ===== TEMP =====
-        ip = "127.0.0.1";
+        // ip = "127.0.0.1";
+        // ip = "192.168.1.11";
         // ===== TEMP =====
 
         if (args != null && args.length > 0) {

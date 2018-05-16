@@ -47,7 +47,7 @@
 830 IF MP < 10 THEN ? "0"; : locate 1+XO,0+YO
 840 ? MP;
 850 RETURN
-870 locate 0+XO,0+YO : ? MPNUM$(MP); : ' valued trackNum
+870 locate 0+XO-1,0+YO : ? MPNUM$(MP); : ' valued trackNum
 880 MSG$ = MPNAM$( MP ) + "  " : I = 1 : ' set baneer as trkName
 890 RETURN
 1000 ' SCROLL TEXT TO LEFT (sub)
