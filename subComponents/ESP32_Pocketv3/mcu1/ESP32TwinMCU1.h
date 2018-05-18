@@ -216,6 +216,7 @@
 
   // ===============================
   static bool isISRLOCKED = false;
+  static bool MASTER_LOCK_ISR = false; // beware w/ that
 
   static void IRAM_ATTR _doISR();
 
@@ -250,12 +251,16 @@
   void GenericMCU::lockISR() { isISRLOCKED = true; }
   void GenericMCU::unlockISR() { isISRLOCKED = false; }
 
+  void GenericMCU::MASTERlockISR() { MASTER_LOCK_ISR = true; }
+  void GenericMCU::MASTERunlockISR() { MASTER_LOCK_ISR = false; }
+
 
   static bool inISR = false;
 
-  void GenericMCU::doISR() { 
-    if ( isISRLOCKED ) { 
-      //yield(); 
+  // fcts called by an IRAM_ATTR must be IRAM_ATTR too !!!!
+  void IRAM_ATTR GenericMCU::doISR() { 
+    if ( isISRLOCKED || MASTER_LOCK_ISR ) { 
+      // yield(); 
       inISR = false;
       return; 
     }
@@ -520,7 +525,7 @@
     // DO NOT OUTPUT TO SCREEN
     // DO NOT USE mcu->print(...)
     
-    File f = SPIFFS.open( filename, "w" );
+    File f = SPIFFS.open( filename, "r" );
     if ( !f ) {
       Serial.println("File not ready !");
       return;
@@ -534,7 +539,8 @@
 
     Serial.println(" Upload sending filename");
     mcuBridge.println(filename);
-    delay(10);
+    // delay(10);
+    delay(200);
 
     int fileSize = f.size(); // TODO chech that
 

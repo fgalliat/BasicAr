@@ -248,8 +248,8 @@
 
     int t0 = millis();
 
-    char entryName[1+8+1+3+1];
-    int readed = _readBridgeLine(entryName, 1+8+1+3+0);
+    char entryName[1+8+1+3+1 +1];
+    int readed = _readBridgeLine(entryName, 1+8+1+3+0 +1);
     if ( readed < 0 ) { mcu->println("name timeout !"); return; }
     if ( readed == 0 ) { mcu->println("name empty !"); return; }
     for (int i=readed; i < 1+8+1+3+1; i++) { entryName[i]=0x00; }
@@ -257,8 +257,8 @@
 
     delay(100);
 
-    char entrySizeS[11+1];
-    readed = _readBridgeLine(entrySizeS, 11+0);
+    char entrySizeS[11+1 +1];
+    readed = _readBridgeLine(entrySizeS, 11+0 +1);
     if ( readed < 0 ) { mcu->println("size timeout !"); return; }
     if ( readed == 0 ) { mcu->println("size empty !"); return; }
     for (int i=readed; i < 11+1; i++) { entrySizeS[i]=0x00; }
@@ -287,7 +287,7 @@
       t0 = millis();
       while( mcuBridge.available() <= 0 ) { 
         yield(); delay(10); 
-        if ( millis() - t0 > 3000 ) {
+        if ( millis() - t0 > 10000 ) {
           mcu->print( total );
           mcu->println(" timeout !");
           f.flush(); f.close();

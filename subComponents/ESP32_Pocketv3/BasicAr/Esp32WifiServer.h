@@ -326,9 +326,14 @@
 
       // from telnet client to ESP32
       void uploadFile() {
-        char* filename = NULL;
-        char* filesize = NULL;
+        static char* filename = NULL;
+        static char* filesize = NULL;
+
+        mcu.MASTERlockISR();
+
         DBUG("WAITING...\n");
+
+        mcu.lockISR();
 
         while( (filename = readLine() ) == NULL ) { delay(250); }
         char _filename[13+1]; memset(_filename, 0x00, 13+1);
@@ -344,29 +349,40 @@
         int bytesToRead = atoi( filesize );
         if ( bytesToRead < 0 ) {
           DBUG("BAD filesize : ");DBUG(filesize);DBUG("\n");
+          mcu.unlockISR();
+          mcu.MASTERunlockISR();
           return;
         }
         DBUG("filesize : ");DBUGi(bytesToRead);DBUG("\n");
 
 
-        mcu.lockISR();
+        mcu.lockISR(); // dirty but Fs Ops releases ISR @ this time
+        delay(100); // to be sure ISR hangout
         mcu.getFS()->openCurrentTextFile( _filename, false );
+        mcu.lockISR();
+        delay(100); // to be sure ISR hangout
 
         int cpt = 0;  char buff[32]; int read;
         while( cpt < bytesToRead ) {
-          while(serverClients[0].available()) { 
+          while(serverClients[0].available() > 0) { 
             //int ch = serverClients[0].read();
+            mcu.lockISR();
             read = serverClients[0].readBytes(buff, 32);
             mcu.getFS()->writeCurrentTextBytes( buff, read );
+            mcu.lockISR();
             cpt+=read;
           }
           delay(100);
         }
 
+        mcu.lockISR();
+        delay(100); // to be sure ISR hangout
         mcu.getFS()->closeCurrentTextFile();
-        mcu.unlockISR();
-
+        
         serverClients[0].println("-EOF-");
+
+        mcu.unlockISR();
+        mcu.MASTERunlockISR();
 
         DBUG("Upload finished");
       }

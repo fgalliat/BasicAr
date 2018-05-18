@@ -245,6 +245,9 @@ class GenericMCU {
     void lockISR();
     void unlockISR();
 
+    void MASTERlockISR();
+    void MASTERunlockISR();
+
       void doISR();
 
       void setup() {
