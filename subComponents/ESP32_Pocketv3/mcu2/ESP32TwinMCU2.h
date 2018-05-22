@@ -204,9 +204,7 @@
     mcu->println("FS ready !");
   }
 
-  void GenericMCU_FS::uploadViaSerial() {
-    mcu->println("NYI !");
-  }
+  #define BRIDGE_UPL_PACKET_SIZE 32
 
   static int _readBridgeLine(char* dest, int destSize, int timeout=3000) {
     int t0 = millis();
@@ -219,13 +217,11 @@
     int cpt = 0;
     while(true) {
       int ch = mcuBridge.read();
-      // Serial.print(cpt);Serial.print(" ");Serial.print((char)ch);Serial.print(" ");Serial.print(ch);Serial.println("");
 
       if ( ch == -1 ) { return cpt; }
       if ( ch == '\n' ) { return cpt; }
       dest[cpt++] = (char)ch;
 
-      //if ( cpt >= destSize ) { break; }
       if ( cpt > destSize ) { break; }
 
       while( mcuBridge.available() == 0 ) { 
@@ -238,17 +234,120 @@
     return cpt;
   }
 
+  static int _readSerialLine(char* dest, int destSize, int timeout=3000) {
+    int t0 = millis();
+    while( Serial.available() == 0 ) { 
+      yield(); delay(50); 
+      if ( millis() - t0 > timeout ) {
+        return -1;
+      }
+    }
+    int cpt = 0;
+    while(true) {
+      int ch = Serial.read();
+
+      if ( ch == -1 ) { return cpt; }
+      if ( ch == '\n' ) { return cpt; }
+      dest[cpt++] = (char)ch;
+
+      if ( cpt > destSize ) { break; }
+
+      while( Serial.available() == 0 ) { 
+        yield(); delay(50); 
+        if ( millis() - t0 > 3000 ) {
+          return cpt;
+        }
+      }
+    }
+    return cpt;
+  }
+
+  void GenericMCU_FS::uploadViaSerial() {
+    Serial.write(0xFF); //mcuBridge.flush();
+
+    int t0 = millis();
+
+    static char entryName[1+8+1+3+1 +1];
+    int readed = _readSerialLine(entryName, 1+8+1+3+0 +1);
+    if ( readed < 0 ) { mcu->println("name timeout !"); return; }
+    if ( readed == 0 ) { mcu->println("name empty !"); return; }
+    for (int i=readed; i < 1+8+1+3+1; i++) { entryName[i]=0x00; }
+    mcu->println("writing ");mcu->println(entryName);
+
+    delay(100);
+
+    static char entrySizeS[11+1 +1];
+    readed = _readSerialLine(entrySizeS, 11+0 +1);
+    if ( readed < 0 ) { mcu->println("size timeout !"); return; }
+    if ( readed == 0 ) { mcu->println("size empty !"); return; }
+    for (int i=readed; i < 11+1; i++) { entrySizeS[i]=0x00; }
+
+    // TODO : remove
+    mcu->println("long (STR) ");mcu->println(entrySizeS);
+    for(int i=0; i < readed; i++) { mcu->print( (int)entrySizeS[i] ); mcu->print(", "); }
+    mcu->println("");
+
+    int entrySize = atoi( entrySizeS );
+    mcu->println("long ");mcu->print(entrySize);mcu->println("");
+
+    static char content[BRIDGE_UPL_PACKET_SIZE];
+
+    File f = SPIFFS.open( entryName, "w" );
+    if ( !f ) {
+      mcu->println("Failed to open file !");
+      return;
+    }
+
+    f.seek(0);
+
+    int total = 0;
+    readed = 0;
+
+    while(true) {
+      t0 = millis();
+      while( Serial.available() <= 0 ) { 
+        yield(); delay(10); 
+        if ( millis() - t0 > 10000 ) {
+          mcu->print( total );
+          mcu->println(" timeout !");
+          f.flush(); f.close();
+          return;
+        }
+      }
+      readed = Serial.readBytes(content, BRIDGE_UPL_PACKET_SIZE);
+
+      if ( readed > 0 ) {
+        mcu->print( (int)content[0] );
+        mcu->print( ' ' );
+        mcu->print( (char)content[0] );
+        mcu->print( '/' );
+      }
+
+      if ( readed <= 0 ) {
+          mcu->println("Oups !");
+          f.flush(); f.close();
+          return;
+      }
+      f.write( (const uint8_t*)content, readed);
+      f.flush();
+
+      Serial.write(0xFE); // mcuBridge.flush();
+      total += readed;
+      if ( total >= entrySize ) { break; }
+      delay(2); yield();
+    }
+    f.flush(); f.close();
+    Serial.write(0xFF); //mcuBridge.flush();
+    mcu->println("DONE !");
+  }
+
+
   void GenericMCU_FS::uploadViaBridge() {
-    // mcu->getScreen()->lock();
-
-    // dirties the UART input
-    //mcuBridge.flush();
-
     mcuBridge.write(0xFF); //mcuBridge.flush();
 
     int t0 = millis();
 
-    char entryName[1+8+1+3+1 +1];
+    static char entryName[1+8+1+3+1 +1];
     int readed = _readBridgeLine(entryName, 1+8+1+3+0 +1);
     if ( readed < 0 ) { mcu->println("name timeout !"); return; }
     if ( readed == 0 ) { mcu->println("name empty !"); return; }
@@ -257,7 +356,7 @@
 
     delay(100);
 
-    char entrySizeS[11+1 +1];
+    static char entrySizeS[11+1 +1];
     readed = _readBridgeLine(entrySizeS, 11+0 +1);
     if ( readed < 0 ) { mcu->println("size timeout !"); return; }
     if ( readed == 0 ) { mcu->println("size empty !"); return; }
@@ -271,14 +370,15 @@
     int entrySize = atoi( entrySizeS );
     mcu->println("long ");mcu->print(entrySize);mcu->println("");
 
-    #define BRIDGE_UPL_PACKET_SIZE 32
-    char content[BRIDGE_UPL_PACKET_SIZE];
+    static char content[BRIDGE_UPL_PACKET_SIZE];
 
     File f = SPIFFS.open( entryName, "w" );
     if ( !f ) {
       mcu->println("Failed to open file !");
       return;
     }
+
+    f.seek(0);
 
     int total = 0;
     readed = 0;
@@ -295,12 +395,22 @@
         }
       }
       readed = mcuBridge.readBytes(content, BRIDGE_UPL_PACKET_SIZE);
+
+      if ( readed > 0 ) {
+        mcu->print( (int)content[0] );
+        mcu->print( ' ' );
+        mcu->print( (char)content[0] );
+        mcu->print( '/' );
+      }
+
       if ( readed <= 0 ) {
           mcu->println("Oups !");
           f.flush(); f.close();
           return;
       }
       f.write( (const uint8_t*)content, readed);
+      f.flush();
+
       //mcu->print('.'); Serial.flush();
       mcuBridge.write(0xFE); // mcuBridge.flush();
       total += readed;
@@ -312,6 +422,59 @@
     mcuBridge.write(0xFF); //mcuBridge.flush();
     mcu->println("DONE !");
   }
+
+
+  void GenericMCU_FS::ls(char* filter, void (*callback)(char*, int, uint8_t, int) ) {
+    mcu->lockISR();
+    File dir = SPIFFS.open("/");
+    File entry;
+    int entryNb = 0;
+    uint8_t type;
+    static char entName[13+1];
+    while( (entry = dir.openNextFile() ) ) {
+      if ( entry.isDirectory() ) { type = FS_TYPE_DIR; }
+      else                       { type = FS_TYPE_FILE; }
+
+      memset( entName, 0x00, 13+1 );
+      int len = strlen( entry.name() ), cpt=0;
+      // skip leading '/'
+      // skip trailing strange chars... (if any)
+      for(int i=1; i < len; i++) {
+        char ch = entry.name()[i]; 
+        if ( ch > ' ' && ch < (char)128 ) {
+          entName[cpt++] = ch;
+        } else {
+          break;
+        }
+      }
+
+      if ( filter != NULL ) {
+        int ll = strlen(filter);
+        if ( ll > 1 ) {
+          // check ONLY endsWithPattern @ this time
+          // ex. ".BAS"
+          if ( filter[ ll-1 ] != '*' ) {
+            if ( cpt >= ll ) {
+              bool found = true;
+              int e=0;
+              for(int i=cpt-ll; i < cpt; i++) {
+                if ( entName[i] != filter[e++] ) { found = false; break; }
+              }
+              // ignore entry
+              if ( !found ) { continue; }
+            }
+          }
+        }
+      }
+
+      callback( entName, (int)entry.size(), type, entryNb );
+      entryNb++;
+    }
+    callback( "-EOD-", entryNb, FS_TYPE_EOF, entryNb );
+    // return entryNb;
+    mcu->unlockISR();
+  }
+
 
 
   // ======== MusicPlayer ===============================================================
@@ -712,6 +875,7 @@
     if ( filename != NULL ) {
       File f = SPIFFS.open(filename, "r");
       if ( !f ) { mcu->println("File not ready"); return; }
+      f.seek(0);
       int readed = f.readBytes( (char*)header, PCT_HEADER_LEN);
       
       if ( header[0] == '6' && header[1] == '4' && header[2] == 'K' ) {
@@ -719,7 +883,13 @@
           h = ((int)header[5]*256) + ((int)header[6]);
       } else {
           mcu->println( "Wrong PCT header" );
-          mcu->println( header );
+          mcu->print( (int)header[0] );
+          mcu->print( ',' );
+          mcu->print( (int)header[1] );
+          mcu->print( ',' );
+          mcu->print( (int)header[2] );
+          mcu->println( "");
+          // mcu->println( header );
       }
       // Serial.print("A.2 "); Serial.print(w); Serial.print('x');Serial.print(h);Serial.println("");
       if( w <= 0 || h <= 0 ) {

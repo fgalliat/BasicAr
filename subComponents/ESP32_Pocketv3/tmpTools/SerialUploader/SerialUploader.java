@@ -55,8 +55,14 @@ public class SerialUploader {
         } catch(Exception ex) {}
 
         System.out.println("SENT SIG UPLOAD");
-        // upload via bridge SIGNAL
-        serWrite( 0x04 );
+        
+        if ( false ) {
+            // upload via bridge SIGNAL
+            serWrite( 0x04 );
+        } else {
+            // upload via SERIAL SIGNAL
+            serWrite( 0x06 );
+        }
         Zzz(200);
 
         // wait for 0xFF -- ACK

@@ -107,8 +107,34 @@ void flushBridgeTX(bool ok) {
   // mcuBridge.write( 'A' );
 }
 
+// ==================================
+  char _lsLine[64];
+  void lsCallbackForConsole(char* entry,int size, uint8_t type, int index) {
+    if ( type == FS_TYPE_EOF ) {
+      sprintf( _lsLine, "-EOD- %d entries   \n", size );
+      mcu.print(_lsLine);
+      return;
+    }
+    if ( type == FS_TYPE_FILE ) {
+      sprintf( _lsLine, "%s (%d)          \n", entry, size );
+    } else if ( type == FS_TYPE_DIR ) {
+      sprintf( _lsLine, "%s/          \n", entry );
+    } else {
+      sprintf( _lsLine, "%s ? (%d) [%d]          \n", entry, size, type );
+    }
+    mcu.print(_lsLine);
+  }
+// ==================================
 
 void loop() {
+
+  // look @ perfs.
+  if ( Serial.available() > 0 ) {
+    uint8_t cmd = Serial.read();
+    if ( cmd == SIG_MCU_UPLOAD_SER ) {
+      mcu.getFS()->uploadViaSerial();
+    }
+  }
 
   if ( mcuBridge.available() > 0 ) {
     uint8_t cmd = mcuBridge.read();
@@ -138,6 +164,12 @@ void loop() {
           break;
         case SIG_MCU_UPLOAD_BDG:
           mcu.getFS()->uploadViaBridge();
+          break;
+        case SIG_MCU_UPLOAD_SER:
+          mcu.getFS()->uploadViaSerial();
+          break;
+        case SIG_MCU_DIR2:
+          mcu.getFS()->ls( NULL, lsCallbackForConsole );
           break;
 
         case SIG_MP3_PLAY:

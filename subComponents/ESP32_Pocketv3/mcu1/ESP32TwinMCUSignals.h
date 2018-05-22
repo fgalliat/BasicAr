@@ -16,6 +16,8 @@
   #define SIG_MCU_MASTER_SYNC 0x02 // Query
   #define SIG_MCU_SLAVE_SYNC  0x03 // Answer
   #define SIG_MCU_UPLOAD_BDG  0x04 // Upload via Bridge
+  #define SIG_MCU_DIR2        0x05 // DIR onMCU#2
+  #define SIG_MCU_UPLOAD_SER  0x06 // Upload via Main Serial line
 
   #define SIG_MP3_PLAY  0x11
   #define SIG_MP3_PAUSE 0x12
@@ -55,7 +57,7 @@
     0, // 0x02 master sync
     0, // 0x03 slave sync
     0, // 0x04 upload via bridge
-   -2, // 0x05
+    0, // 0x05 dir mcu#2
    -2, // 0x06
    -2, // 0x07
    -2, // 0x08

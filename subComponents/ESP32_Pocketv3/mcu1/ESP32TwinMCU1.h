@@ -440,6 +440,13 @@
     return readed;
   }
 
+  static bool flushBridgeRX(int valueToWait=0xFF);
+
+  void GenericMCU_FS::lsMCU2() {
+    mcuBridge.write( SIG_MCU_DIR2 );
+    flushBridgeRX();
+  }
+
   void GenericMCU_FS::ls(char* filter, void (*callback)(char*, int, uint8_t, int) ) {
     mcu->lockISR();
     File dir = SPIFFS.open("/");
@@ -501,7 +508,7 @@
     return ok;
   }
 
-  static bool flushBridgeRX(int valueToWait=0xFF) {
+  static bool flushBridgeRX(int valueToWait) {
     return waitBridgeSIG(valueToWait);
   }
 
@@ -528,8 +535,11 @@
     File f = SPIFFS.open( filename, "r" );
     if ( !f ) {
       Serial.println("File not ready !");
+      mcu->unlockISR();
       return;
     }
+
+    f.seek(0);
 
     Serial.println("Upload starts");
     mcuBridge.write( SIG_MCU_UPLOAD_BDG );
@@ -549,14 +559,23 @@
     delay(500);
 
     #define BRIDGE_UPL_PACKET_SIZE 32
-    char content[BRIDGE_UPL_PACKET_SIZE];
+    static char content[BRIDGE_UPL_PACKET_SIZE];
 
     int readed,total=0;
     while(true) {
       readed = f.readBytes( content, BRIDGE_UPL_PACKET_SIZE );
 
       mcuBridge.write( (uint8_t*)content, readed );
-      delay(10);
+      // delay(10);
+      if ( readed > 2 ) {
+        Serial.print( (int)content[0] );
+        Serial.print( ' ' );
+        Serial.print( (char)content[0] );
+        Serial.print( '/' );
+        Serial.print( (int)content[1] );
+        Serial.print( ' ' );
+        Serial.print( (char)content[1] );
+      }
 
       total += readed;
 

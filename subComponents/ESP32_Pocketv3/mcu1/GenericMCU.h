@@ -102,6 +102,7 @@ class GenericMCU_FS {
       void copyToBridge(char* filename);
 
       void ls(char* filter, void (*callback)(char*, int, uint8_t, int) );
+      void lsMCU2();
 
 };
 
