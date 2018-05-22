@@ -63,6 +63,16 @@ public class Main implements IPrinter {
         console = new JTextArea(25, 80);
         consoleIn = new JTextArea(3, 80);
 
+        uploadBtn.setBackground(Color.darkGray);
+        uploadBtn.setForeground(Color.cyan.darker());
+
+        console.setBackground(Color.darkGray);
+        console.setForeground(Color.cyan.darker());
+
+        consoleIn.setBackground(Color.darkGray);
+        consoleIn.setForeground(Color.cyan.darker());
+
+
         consoleIn.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent keyEvent) {
