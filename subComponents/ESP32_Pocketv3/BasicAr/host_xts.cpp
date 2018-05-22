@@ -26,10 +26,10 @@ char* SDentryName = NULL;
   // + 1 for leading '/'
   char* autocomplete_fileExt(char* filename, const char* defFileExt) {
     if ( SDentryName == NULL ) {
-      SDentryName = (char*)malloc(13+1);
+      SDentryName = (char*)malloc(13+1 +1);
     }
     int flen = strlen(filename);
-    memset(SDentryName, 0x00, 8+1+3+1+1); // 13+1 char long
+    memset(SDentryName, 0x00, 8+1+3+1+1 +1); // 13+1 char long
     SDentryName[0] = '/';
     int l = strlen( filename );
     char ch;
@@ -676,6 +676,9 @@ return true;
     }
   }
 
+  void lsStorageMCU2() {
+    mcu.getFS()->lsMCU2();
+  }
 
 
 

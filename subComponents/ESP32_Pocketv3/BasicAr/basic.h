@@ -180,7 +180,9 @@
     #define TOKEN_DRAWSPRITE       112 // DRAWSPRT "CARO", 10, 10, 32, 32, 26, 42
     #define TOKEN_TEXT             113 // TEXT 0/1
     
-    #define TOKEN_LASTONE TOKEN_TEXT
+    #define TOKEN_DIR2             114 // dir on mcu#2
+
+    #define TOKEN_LASTONE TOKEN_DIR2
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT

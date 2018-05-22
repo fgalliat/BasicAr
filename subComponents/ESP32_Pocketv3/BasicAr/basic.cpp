@@ -228,6 +228,8 @@ TokenTableEntry tokenTable[] = {
     {"DATAU", TKN_FMT_POST},  // DATAF "<service>","<sizeVar>","<ARRAY_VAR>"[,"<ARRAY_VAR>","<ARRAY_VAR>"...]
     {"DRAWSPRT",7|TKN_ARG1_TYPE_STR|TKN_FMT_POST}, // DRAWSPRT "TEST",0,0, 32, 32, 20, 20, 
     {"TEXT", 1|TKN_FMT_POST}, // set text mode (0 -or- 1)
+
+    {"DIRM", 0|TKN_FMT_POST}, // dir on mcu#2
 };
 
 
@@ -2500,6 +2502,7 @@ int parseStmts()
  
             case TOKEN_DIR: ret = xts_fs_dir(); break;
             case TOKEN_DIRARRAY: ret = xts_fs_dir(true); break;
+            case TOKEN_DIR2: ret = xts_fs_dir_mcu2(); break;
 
             case TOKEN_EXT_EXEC: ret = xts_exec_cmd(); break;
             case TOKEN_DATAF: ret = xts_dataf_cmd(); break;

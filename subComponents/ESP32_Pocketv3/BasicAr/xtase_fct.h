@@ -97,6 +97,15 @@ int xts_locate() {
 
 // == File System
 
+int xts_fs_dir_mcu2() {
+  getNextToken();
+
+  if ( executeMode ) {
+    lsStorageMCU2();
+  }
+
+  return 0;
+}
 
 // BEWARE : no more a "SimpleCmd"
 int xts_fs_dir(bool sendToArray=false) {

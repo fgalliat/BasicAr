@@ -57,6 +57,7 @@ void drawRect(int x, int y, int w, int h, int color, int mode);
 // ============================================
 
 void lsStorage(char* filter, bool sendToArray);
+void lsStorageMCU2();
 
 void MCU_halt();
 void MCU_reset();
