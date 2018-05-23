@@ -33,12 +33,20 @@ public class Main implements IPrinter {
     public void doWork(final String mcuIP) throws Exception {
         JButton uploadBtn = new JButton("UPLOAD");
         uploadBtn.addActionListener(new ActionListener() {
+
+            protected File curDir = null;
+
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 if (mcu == null) {
                     println("NO MCU connected");
                 } else {
                     final JFileChooser choice = new JFileChooser();
+
+                    if (curDir == null) {
+                        curDir = new File(".");
+                    }
+
                     choice.setCurrentDirectory(new File("."));
                     int ret = choice.showOpenDialog(win);
                     // println("ret=" + ret);
@@ -47,6 +55,9 @@ public class Main implements IPrinter {
                         new Thread() {
                             public void run() {
                                 println("Ya selected " + choice.getSelectedFile().getName());
+
+                                curDir = choice.getSelectedFile().getParentFile();
+
                                 try {
                                     mcu.sendSomething(choice.getSelectedFile().getAbsolutePath(), false);
                                 } catch (Exception ex) {
@@ -57,6 +68,7 @@ public class Main implements IPrinter {
                         }.start();
                     }
                 }
+                consoleIn.requestFocus();
             }
         });
 
@@ -71,6 +83,24 @@ public class Main implements IPrinter {
 
         consoleIn.setBackground(Color.darkGray);
         consoleIn.setForeground(Color.cyan.darker());
+
+        console.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent keyEvent) {
+
+            }
+
+            @Override
+            public void keyPressed(KeyEvent keyEvent) {
+                consoleIn.requestFocus();
+                consoleIn.append("" + keyEvent.getKeyChar());
+            }
+
+            @Override
+            public void keyReleased(KeyEvent keyEvent) {
+
+            }
+        });
 
 
         consoleIn.addKeyListener(new KeyListener() {
@@ -116,6 +146,8 @@ public class Main implements IPrinter {
 
         win.pack();
         win.setVisible(true);
+
+        consoleIn.requestFocus();
 
         new Thread() {
             @Override
