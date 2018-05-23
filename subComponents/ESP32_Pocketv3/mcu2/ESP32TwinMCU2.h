@@ -1019,10 +1019,13 @@ void GenericMCU_SCREEN::drawPicture565Sprite( uint16_t* raster, int dx, int dy, 
 
   if (! ( lastOffset == offset && lastW == dw && lastH == dh ) ) {
     for(int yy=0; yy < dh; yy++) {
-      // TODO : find faster way !
-      for(int xx=0; xx < dw; xx++) {
-        subImage[(yy*dw)+xx] = color_picturebuff[offset+xx];
-      }
+      // // TODO : find faster way !
+      // for(int xx=0; xx < dw; xx++) {
+      //   subImage[(yy*dw)+xx] = color_picturebuff[offset+xx];
+      // }
+
+      memcpy( &subImage[(yy*dw)], &color_picturebuff[offset], dw*sizeof(uint16_t) );
+
       offset = ( (sy+yy) * sw ) + sx;
     }
   }
