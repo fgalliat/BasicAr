@@ -4,8 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.util.*;
 
-import static java.awt.SystemColor.text;
 
 public class Main implements IPrinter {
 
@@ -47,7 +47,7 @@ public class Main implements IPrinter {
                         curDir = new File(".");
                     }
 
-                    choice.setCurrentDirectory(new File("."));
+                    choice.setCurrentDirectory(curDir);
                     int ret = choice.showOpenDialog(win);
                     // println("ret=" + ret);
 
@@ -104,6 +104,10 @@ public class Main implements IPrinter {
 
 
         consoleIn.addKeyListener(new KeyListener() {
+
+            protected java.util.List<String> history = new LinkedList<String>();
+            protected int hCursor = 1;
+
             @Override
             public void keyTyped(KeyEvent keyEvent) {
 
@@ -111,15 +115,29 @@ public class Main implements IPrinter {
 
             @Override
             public void keyPressed(KeyEvent keyEvent) {
-                if (keyEvent.getKeyChar() == '\n') {
-                    String content = consoleIn.getText();
+                if (keyEvent.getKeyCode() == KeyEvent.VK_UP) {
+                    try {
+                        consoleIn.setText(history.get(history.size() - hCursor));
+                    } catch (Exception ex) {
+                    }
+                    hCursor++;
+                } else if (keyEvent.getKeyCode() == KeyEvent.VK_DOWN) {
+                    try {
+                        consoleIn.setText(history.get(history.size() + hCursor));
+                    } catch (Exception ex) {
+                    }
+                    hCursor--;
+                } else if (keyEvent.getKeyChar() == '\n') {
+                    String content = consoleIn.getText().trim();
                     println(content);
+                    history.add( content );
                     try {
                         mcu.println(content);
                     } catch (Exception ex) {
                         println("mcu not linked");
                     }
                     consoleIn.setText("");
+                    hCursor = 1;
                 }
             }
 
