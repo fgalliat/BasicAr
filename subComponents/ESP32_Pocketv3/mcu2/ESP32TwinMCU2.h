@@ -1006,23 +1006,30 @@
   // void drawPictureIndexed( uint8_t* raster, int x, int y, int w=-1, int h=-1, bool includesPalette=false );
 
 void GenericMCU_SCREEN::drawPicture565Sprite( uint16_t* raster, int dx, int dy, int dw, int dh, int sx, int sy, int sw, int sh ) {
+
+  static int lastOffset=-1,lastW=-1,lastH=-1;
+
+  // BEWARE : mem overflow !!!!!
+  // 32x64 seems to be the max @ this time
+  // static uint16_t subImage[ dw*dh ];
+  static uint16_t subImage[ 64*64 ];
+
   int startOffset = ( sy * dw ) + sx;
   int offset = startOffset;
+
+  if (! ( lastOffset == offset && lastW == dw && lastH == dh ) ) {
+    for(int yy=0; yy < dh; yy++) {
+      // TODO : find faster way !
+      for(int xx=0; xx < dw; xx++) {
+        subImage[(yy*dw)+xx] = color_picturebuff[offset+xx];
+      }
+      offset = ( (sy+yy) * sw ) + sx;
+    }
+  }
 
   dx += screenOffsetX;
   dy += screenOffsetY;
 
-  // BEWARE : mem overflow !!!!!
-  // 32x64 seems to be the max @ this time
-  uint16_t subImage[ dw*dh ];
-
-  for(int yy=0; yy < dh; yy++) {
-    // TODO : find faster way !
-    for(int xx=0; xx < dw; xx++) {
-      subImage[(yy*dw)+xx] = color_picturebuff[offset+xx];
-    }
-    offset = ( (sy+yy) * sw ) + sx;
-  }
   _oled_display->pushImage(dx, dy, dw, dh, subImage);
 
 }
