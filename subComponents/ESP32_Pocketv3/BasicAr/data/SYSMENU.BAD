@@ -1,0 +1,14 @@
+12
+# L -> linenum / P -> PRGM / C -> cmd
+S;Wifi;L;7000
+S;Volume;L;8000
+S;Hardware Test;P;PADTST
+S;Reset;C;BYE
+A;Raycaster;P;RAYC3
+A;My RPG;P;GAME
+A;Maze;P;LABY
+A;Race;P;RACING
+M;Random Song;C;EXEC "MP3","PLAY", INT(RND*63)
+M;JukeBox;C;JUKE3
+M;Monkey;C;CLS : DRAWBPP "BOOT" : PLAYT5K "MONKEY"
+M;Slide Show;P;SLIDESH
