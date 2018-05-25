@@ -338,7 +338,11 @@ void loop() {
 //     // }
 //   }
 
-
+int evalCmd(char* cmd) {
+    int ret = tokenize((unsigned char*)cmd, tokenBuf, TOKEN_BUF_SIZE);
+    ret = processInput(tokenBuf);
+    return ret;
+}
 
 // ___________________________________________________________
 #ifdef COMPUTER

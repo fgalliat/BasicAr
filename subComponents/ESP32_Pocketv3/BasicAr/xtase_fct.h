@@ -940,6 +940,27 @@ float xts_max(float arg0, float arg1) {
 // === Extended Commands
 // ===================================================================
 
+extern int evalCmd(char* cmd);
+
+// eval a string : DO "? 3.14"
+int xts_do_cmd() {
+  getNextToken();
+
+  int val = parseExpression();
+  if (val & _ERROR_MASK) return val;
+  if (!_IS_TYPE_STR(val))
+      return _ERROR_EXPR_EXPECTED_STR;
+
+  if ( executeMode ) {
+    char* cmd = stackPopStr();    
+    int ret = evalCmd(cmd);
+    // selfRun = true;
+  }
+
+return 0;
+}
+
+
 // EXEC "WIFI","PARCEL"
 // EXEC "MP3","PAUSE"
 // @ this time : only support for String args....

@@ -230,6 +230,8 @@ TokenTableEntry tokenTable[] = {
     {"TEXT", 1|TKN_FMT_POST}, // set text mode (0 -or- 1)
 
     {"DIRM", 0|TKN_FMT_POST}, // dir on mcu#2
+
+    {"DO",1|TKN_ARG1_TYPE_STR|TKN_FMT_POST}, // DO "? 3.14"
 };
 
 
@@ -2505,6 +2507,8 @@ int parseStmts()
             case TOKEN_DIR2: ret = xts_fs_dir_mcu2(); break;
 
             case TOKEN_EXT_EXEC: ret = xts_exec_cmd(); break;
+            case TOKEN_DO: ret = xts_do_cmd(); break;
+
             case TOKEN_DATAF: ret = xts_dataf_cmd(); break;
             case TOKEN_DATAU: ret = xts_datau_cmd(); break;
 

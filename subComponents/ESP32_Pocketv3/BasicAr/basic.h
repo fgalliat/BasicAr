@@ -182,7 +182,9 @@
     
     #define TOKEN_DIR2             114 // dir on mcu#2
 
-    #define TOKEN_LASTONE TOKEN_DIR2
+    #define TOKEN_DO               115 // DO "? 3.14" - eval a string
+
+    #define TOKEN_LASTONE TOKEN_DO
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT
