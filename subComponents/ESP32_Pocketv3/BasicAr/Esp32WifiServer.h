@@ -24,7 +24,7 @@
 
      // ==========================
      //WiFiMulti wifiMulti;
-     WiFiMulti* wifiMulti;
+     WiFiMulti* wifiMulti = NULL;
      //WiFiServer server(23);
      WiFiServer* server;
      WiFiClient serverClients[MAX_SRV_CLIENTS];
@@ -53,6 +53,9 @@
         this->APmode = false;
         this->_isWifiConnected = false;
 
+        delay(10);
+        WiFi.mode( WIFI_STA );
+
         mcu.lockISR();
         bool ok = mcu.getFS()->openCurrentTextFile("/SSID.TXT");
         if ( !ok ) {
@@ -61,11 +64,12 @@
           return false;
         }
 
+        DBUG( "\n" ); 
         if (wifiMulti == NULL) { wifiMulti = new WiFiMulti(); }
 
         //char* line, *line2; // leads to the same pointer
-        char* line;
-        char ssid[128],key[128];
+        static char* line;
+        static char ssid[128],key[128];
         while( (line = mcu.getFS()->readCurrentTextLine() ) != NULL ) {
           // trim TODO + file sanity check
           if ( strlen(line) == 0 ) { break; }
@@ -77,13 +81,28 @@
           key[strlen(line)] = 0x00;
           //DBUG( key ); DBUG( "\n" );
           wifiMulti->addAP( (const char*)ssid, (const char*)key);
+          delay(5);
         }
         mcu.getFS()->closeCurrentTextFile();
         mcu.unlockISR();
 
+        delay(50);
+        yield();
+
         DBUG("Connecting Wifi \n");
+        yield();
+        mcu.lockISR();
+        static int wstate;
+        Serial.setDebugOutput(true);
+
         for (int loops = 10; loops > 0; loops--) {
-          if (wifiMulti->run() == WL_CONNECTED) {
+          mcu.print(loops);mcu.print('\n');
+          yield();
+          wstate = wifiMulti->run();
+          // mcu.print("ran\n");
+          delay(2);
+
+          if (wstate == WL_CONNECTED) {
             DBUG("WiFi connected \n");
             DBUG("IP address: ");
             
@@ -101,16 +120,26 @@
             break;
           }
           else {
-            DBUGi(loops); DBUG("\n");
-            delay(1000);
+            //DBUGi(loops); DBUG("\n");
+            //mcu.print(loops);mcu.print('\n');
+            yield();
+            //delay(1000);
+            delay(500);
+            yield();
           }
+
         }
-        if (wifiMulti->run() != WL_CONNECTED) {
+
+        mcu.unlockISR();
+        delay(50);
+
+        if (wstate != WL_CONNECTED) {
           DBUG("WiFi connect failed\n");
           delay(1000);
           //ESP.restart();
           return false;
         }
+        yield();
 
         this->_isWifiConnected = true;
         return true;
