@@ -969,6 +969,56 @@
     __blittIfNeeded();
   }
 
+  // == just a try @ this time ==
+
+  // destMode is SCREEN_MODE_320
+  void drawPixShaded(int x, int y, uint16_t color, int fromMode ) {
+    int sx = 0; // screenOffsetX;
+    int sy = 0; // screenOffsetY;
+
+    // REFACTO that code
+    if ( fromMode == SCREEN_MODE_128 ) {
+      int b__screenWidth = 128;
+      int b__screenHeight = 64;
+
+      sx = (320 - b__screenWidth) / 2;
+      sy = (240 - b__screenHeight) / 2;
+    } else if ( fromMode == SCREEN_MODE_160 ) {
+      int b__screenWidth = 160;
+      int b__screenHeight = 128;
+
+      sx = (320 - b__screenWidth) / 2;
+      sy = (240 - b__screenHeight) / 2;
+    } else if ( fromMode == SCREEN_MODE_320 ) {
+      int b__screenWidth = 320;
+      int b__screenHeight = 240;
+
+      sx = 0;
+      sy = 0;
+    } 
+
+
+
+    if ( __screenMode != SCREEN_MODE_320 ) {
+      _oled_display->drawPixel(screenOffsetX+x, screenOffsetY+x, color);
+      return;
+    }
+
+    if ( fromMode == SCREEN_MODE_128 ) {
+      x*=2; int w=2;
+      y*=3; int h=3;
+      _oled_display->fillRect(sx+x, sy+x, w, h, color);
+    } else if ( fromMode == SCREEN_MODE_160 ) {
+      x*=2; int w=2;
+      y*=2; int h=2;
+      _oled_display->fillRect(sx+x, sy+x, w, h, color);
+    } else if ( fromMode == SCREEN_MODE_320 ) {
+      _oled_display->fillRect(sx+x, sy+x, 1, 1, color);
+    } 
+
+  }
+  // ============================
+
   void GenericMCU_SCREEN::drawPictureBPP( uint8_t* raster, int x, int y ) {
     if ( !ready ) { return; }
 
@@ -982,11 +1032,9 @@
 
     // TODO : lock blitt
 
-
-    // TODO : impl. pixel shaders
-    
-    // this->clear();
-    this->drawRect(sx, sy, 128, 64, 1, 0);
+    //this->drawRect(sx, sy, 128, 64, 1, 0);
+    this->clear();
+    //drawPixShadedRect(x, y, 128, 64, CLR_BLACK, SCREEN_MODE_128 );
 
     for (int yy = 0; yy < height; yy++) {
       for (int xx = 0; xx < width; xx++) {
@@ -994,8 +1042,8 @@
         if (c == 0x00) {
         }
         else {
-            // TODO : impl. pixel shaders
-            _oled_display->drawPixel(sx + xx, sy + yy, CLR_WHITE);
+            // _oled_display->drawPixel(sx + xx, sy + yy, CLR_WHITE);
+            drawPixShaded(x, y, CLR_WHITE, SCREEN_MODE_128 );
         }
       }
     }    
