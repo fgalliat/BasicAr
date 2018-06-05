@@ -977,43 +977,47 @@
     int sy = 0; // screenOffsetY;
 
     // REFACTO that code
-    if ( fromMode == SCREEN_MODE_128 ) {
-      int b__screenWidth = 128;
-      int b__screenHeight = 64;
+    // if ( fromMode == SCREEN_MODE_128 ) {
+    //   int b__screenWidth = 128;
+    //   int b__screenHeight = 64;
 
-      sx = (320 - b__screenWidth) / 2;
-      sy = (240 - b__screenHeight) / 2;
-    } else if ( fromMode == SCREEN_MODE_160 ) {
-      int b__screenWidth = 160;
-      int b__screenHeight = 128;
+    //   sx = (320 - b__screenWidth) / 2;
+    //   sy = (240 - b__screenHeight) / 2;
+    // } else if ( fromMode == SCREEN_MODE_160 ) {
+    //   int b__screenWidth = 160;
+    //   int b__screenHeight = 128;
 
-      sx = (320 - b__screenWidth) / 2;
-      sy = (240 - b__screenHeight) / 2;
-    } else if ( fromMode == SCREEN_MODE_320 ) {
-      int b__screenWidth = 320;
-      int b__screenHeight = 240;
+    //   sx = (320 - b__screenWidth) / 2;
+    //   sy = (240 - b__screenHeight) / 2;
+    // } else if ( fromMode == SCREEN_MODE_320 ) {
+    //   int b__screenWidth = 320;
+    //   int b__screenHeight = 240;
 
-      sx = 0;
-      sy = 0;
-    } 
+    //   sx = 0;
+    //   sy = 0;
+    // } 
 
 
 
     if ( __screenMode != SCREEN_MODE_320 ) {
-      _oled_display->drawPixel(screenOffsetX+x, screenOffsetY+x, color);
+      _oled_display->drawPixel(screenOffsetX+x, screenOffsetY+y, color);
       return;
     }
 
     if ( fromMode == SCREEN_MODE_128 ) {
+      sx = (320-(128*2))/2;
+      sy = (240-(64*3))/2;
       x*=2; int w=2;
       y*=3; int h=3;
-      _oled_display->fillRect(sx+x, sy+x, w, h, color);
+      _oled_display->fillRect(sx+x, sy+y, w, h, color);
     } else if ( fromMode == SCREEN_MODE_160 ) {
+      sx = (320-(160*2))/2;
+      sy = (240-(128*2))/2; // check if not overflow (256 Vs 240)
       x*=2; int w=2;
       y*=2; int h=2;
-      _oled_display->fillRect(sx+x, sy+x, w, h, color);
+      _oled_display->fillRect(sx+x, sy+y, w, h, color);
     } else if ( fromMode == SCREEN_MODE_320 ) {
-      _oled_display->fillRect(sx+x, sy+x, 1, 1, color);
+      _oled_display->fillRect(sx+x, sy+y, 1, 1, color);
     } 
 
   }
@@ -1043,7 +1047,7 @@
         }
         else {
             // _oled_display->drawPixel(sx + xx, sy + yy, CLR_WHITE);
-            drawPixShaded(x, y, CLR_WHITE, SCREEN_MODE_128 );
+            drawPixShaded(xx, yy, CLR_WHITE, SCREEN_MODE_128 );
         }
       }
     }    
