@@ -232,6 +232,9 @@ TokenTableEntry tokenTable[] = {
     {"DIRM", 0|TKN_FMT_POST}, // dir on mcu#2
 
     {"DO",1|TKN_ARG1_TYPE_STR|TKN_FMT_POST}, // DO "? 3.14"
+
+    {"CHR$", 1|TKN_RET_TYPE_STR},  // CHR$(y)
+
 };
 
 
@@ -1524,6 +1527,11 @@ int parseFnCallExpr() {
             if (!stackPushStr(xts_str_string(tmp, tmp2))) return ERROR_OUT_OF_MEMORY;
             break;
 
+        case TOKEN_STR_CHR:
+            tmp = (int)stackPopNum();
+            if (!stackPushStr(xts_str_string(1, tmp))) return ERROR_OUT_OF_MEMORY;
+            break;
+
         case TOKEN_STR_INSTR:
             tmpS1 = stackPopStr();  // inv. sorting
             if (!stackPushNum(xts_str_instr(stackPopStr(), tmpS1))) return ERROR_OUT_OF_MEMORY;
@@ -1734,6 +1742,7 @@ int parsePrimary() {
     case TOKEN_STR_SPACE: // Xtase code
     case TOKEN_STR_ASC: // Xtase code
     case TOKEN_STR_INSTR: // Xtase code
+    case TOKEN_STR_CHR: // Xtase code
 
     case TOKEN_ABS: // Xtase code
     case TOKEN_COS: // Xtase code

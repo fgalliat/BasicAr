@@ -184,7 +184,9 @@
 
     #define TOKEN_DO               115 // DO "? 3.14" - eval a string
 
-    #define TOKEN_LASTONE TOKEN_DO
+    #define TOKEN_STR_CHR          116 // ? CHR$(34)
+
+    #define TOKEN_LASTONE TOKEN_STR_CHR
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT
