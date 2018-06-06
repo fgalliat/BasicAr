@@ -8,7 +8,7 @@ A;Raycaster;P;RAYC3
 A;My RPG;P;GAME
 A;Maze;P;LABY
 A;Race;P;RACING
-M;Random Song;C;EXEC "MP3","PLAY", INT(RND*63)
+M;Random Song;P;RNDSONG
 M;JukeBox;P;JUKE3
 M;Monkey;C;CLS : DRAWBPP "METI" : PLAYT5K "MONKEY"
 M;Slide Show;P;SLIDESH
