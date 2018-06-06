@@ -198,7 +198,7 @@ void loop() {
         // get a line from the user
         MODE_EDITOR = true;
         #ifdef ESP32_WIFI_SUPPORT
-            char *input = NULL; 
+            static char *input = NULL; 
             if ( telnet.isServerStarted() ) {
                 telnet.runServerTick();
 
@@ -210,12 +210,25 @@ void loop() {
                         while( ( input = telnet.readLine() ) == NULL ) { delay(150); }
                     }
 
-                    telnet.print("> ");
-                    while( ( input = telnet.readLine() ) == NULL ) { delay(150); }
-                    if ( strcmp( input, "/quit" ) == 0) { wasNot = true; telnet.print("Bye \n"); telnet.close(); }
-                    else {
-                        telnet.print(input);
-                        telnet.print("\n");
+                    if (selfRun) {
+                        input = (char*)"\n";
+                    } else {
+                        telnet.print("> ");
+                        while( ( input = telnet.readLine() ) == NULL ) { 
+                            if (selfRun) {
+                                input = (char*)"\n";
+                                // return;
+                            }
+                            delay(150); 
+                        }
+                        if ( strcmp( input, "/quit" ) == 0) { wasNot = true; telnet.print("Bye \n"); telnet.close(); }
+                        else {
+                            telnet.print(input);
+                            telnet.print("\n");
+                        }
+                    }
+                    if ( strlen( input ) == 0 ) {
+                        input = (char*)"\n";
                     }
                 } else {
                     delay(500);
@@ -228,7 +241,7 @@ void loop() {
             }
 
         #else
-            char *input = host_readLine();
+            static char *input = host_readLine();
         #endif
         MODE_EDITOR = false;
 

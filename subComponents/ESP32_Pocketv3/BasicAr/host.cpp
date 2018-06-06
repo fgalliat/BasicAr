@@ -54,10 +54,10 @@ bool isGfxAutoBlitt() { return BLITT_MODE == BLITT_AUTO; }
 #include "xts_compat.h" 
 #include <stdlib.h> 
 
+extern bool selfRun;
 extern bool BUZZER_MUTE;
 
 int timer1_counter;
-
 
 int curX = 0, curY = 0;
 
@@ -739,6 +739,14 @@ char *host_readLine() {
             // screenBuffer[pos++] = '\n';
             host_newLine();
 
+            done = true;
+          }
+          else if ( MODE_EDITOR && selfRun ) {
+            // BUGFIX : to remove mandatory ENTER key pressing
+            //          when selfRun flag activated
+            host_click();
+            kc = PS2_ENTER;
+            host_newLine();
             done = true;
           }
           while ( Serial.available() ) {

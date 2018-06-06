@@ -11,7 +11,7 @@
 //how many clients should be able to telnet to this ESP32
 #define MAX_SRV_CLIENTS 1
 
-
+extern bool selfRun;
 
   class Esp32WifiServer {
     private:
@@ -303,13 +303,21 @@
               int cpt = 0;
               bool ok_break = false;
               while( cpt < MAX_LINE_LEN ) {
+                if ( selfRun ) { lineRead[cpt] = 0x00; ok_break = true; break; }
+
                 while(serverClients[i].available()) { 
+
+                  if ( selfRun ) { lineRead[cpt] = 0x00; ok_break = true; break; }
+
                   lineRead[cpt] = serverClients[i].read(); 
                   // DBUG( (int)lineRead[cpt] ); DBUG(' ');
                   if ( lineRead[cpt] == '\r' ) { lineRead[cpt] = 0x00; continue; }
                   if ( lineRead[cpt] == '\n' ) { lineRead[cpt] = 0x00; ok_break = true; break; }
+
+                  if ( selfRun ) { lineRead[cpt] = 0x00; ok_break = true; break; }
                   cpt++;
                 }
+
                 if ( ok_break ) { break; }
               }
 
