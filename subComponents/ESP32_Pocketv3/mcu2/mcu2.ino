@@ -89,6 +89,11 @@ uint16_t bridge_readU16() {
 return ( uint16_t ) (((uint16_t)d0)<<8) + ((uint16_t)d1);
 }
 
+uint8_t bridge_readU8() {
+  uint8_t d0 = mcuBridge.read();
+return d0;
+}
+
 // 0-terminated
 void bridge_readString(char* dest, int start, int max) {
   int i = start, tmp;
@@ -188,6 +193,9 @@ void loop() {
         case SIG_MP3_VOL:
           tmp = mcuBridge.read();
           mcu.getMusicPlayer()->setVolume(tmp);
+          break;
+        case SIG_MP3_STOP:
+          mcu.getMusicPlayer()->stop();
           break;
         // ===============================
         case SIG_SCR_MODE:
@@ -373,6 +381,15 @@ void loop() {
             }
           #endif
           break;
+        case SIG_SCR_TXTMODE:
+          // mode OVERWRITE/INCRUST
+          x  = bridge_readU8();
+          // FG
+          y  = bridge_readU16();
+          // BG
+          w  = bridge_readU16();
+          mcu.getScreen()->setTextMode(x, y, w);
+        break;
         default:
           mcu.print("NYI cmd...");
           mcu.print(cmd);

@@ -1026,6 +1026,8 @@ int xts_exec_cmd() {
               mcu.getMusicPlayer()->setVolume(volume);
             } else if ( strcmp( args[1], "PAUSE" ) == 0 ) {
               mcu.getMusicPlayer()->pause();
+            } else if ( strcmp( args[1], "STOP" ) == 0 ) {
+              mcu.getMusicPlayer()->stop();
             } else if ( strcmp( args[1], "NEXT" ) == 0 ) {
               mcu.getMusicPlayer()->next();
             } else {

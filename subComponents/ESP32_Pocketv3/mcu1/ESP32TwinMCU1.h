@@ -53,6 +53,9 @@
     // flushBridgeRX();
     __mcuBridgeReady = false;
 
+    delay(500);
+    yield();
+
     ESP.restart();
   }
 
@@ -619,6 +622,12 @@
   void GenericMCU_MUSIC_PLAYER::pause() { 
     if ( !this->ready ) { mcu->println("Music Player not ready !"); return; }
     mcuBridge.write( SIG_MP3_PAUSE );
+    flushBridgeRX();
+  }
+
+  void GenericMCU_MUSIC_PLAYER::stop() { 
+    if ( !this->ready ) { mcu->println("Music Player not ready !"); return; }
+    mcuBridge.write( SIG_MP3_STOP );
     flushBridgeRX();
   }
 

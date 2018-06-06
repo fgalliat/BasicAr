@@ -210,6 +210,7 @@ class GenericMCU_MUSIC_PLAYER {
       void pause();
       void next();
       void prev();
+      void stop();
 
       void setVolume(uint8_t volume);
 

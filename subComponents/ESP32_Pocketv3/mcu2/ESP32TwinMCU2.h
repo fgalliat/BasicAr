@@ -543,6 +543,11 @@
     return false;
   }
 
+  void GenericMCU_MUSIC_PLAYER::stop() {
+    if ( !this->ready ) { mcu->println("Music Player not ready !"); return; }
+    myDFPlayer.stop();
+  }
+
   // ======== Screen ====================================================================
   
   // TFT_eSPI Lib is pretty faster than Adafruit one
@@ -598,6 +603,24 @@
   // TODO
   static uint8_t __screenMode = -1;
   static uint8_t __screenBlittMode = -1;
+
+  // ==== Color routine ====
+  // 1 is always white
+  // 0 is always black
+
+  static uint16_t __getColor(uint16_t color) {
+    uint16_t usedColor = color;
+    if ( usedColor == BLACK ) { usedColor = CLR_BLACK; }
+    else if ( usedColor == WHITE ) { usedColor = CLR_WHITE; }
+    else if ( usedColor == 2 ) { usedColor = CLR_LIGHTGREY; }
+    else if ( usedColor == 3 ) { usedColor = CLR_GREY; }
+    else if ( usedColor == 4 ) { usedColor = CLR_DARKGREY; }
+    else if ( usedColor == 5 ) { usedColor = CLR_PINK; }
+    // else direct color value
+    // ..... use palette impl. !!!
+    return usedColor;
+  }
+
 
   void GenericMCU_SCREEN::lock() {
     this->ready = false;
@@ -735,6 +758,24 @@
     } 
   }
 
+  // mode : TEXT_OVERWRITE / TEXT_INCRUST
+  void GenericMCU_SCREEN::setTextMode(uint8_t mode, uint16_t fg, uint16_t bg) {
+    if ( !this->ready ) { return; }
+
+    uint16_t _fg = CLR_WHITE;
+    uint16_t _bg = CLR_BLACK;
+
+    _fg = __getColor(fg);
+    _bg = __getColor(bg);
+
+    if ( mode == TEXT_OVERWRITE ) {
+      _oled_display->setTextColor(_fg,_bg);
+    } else if ( mode == TEXT_INCRUST ) {
+      bg = TFT_TRANSPARENT;
+      _oled_display->setTextColor(_fg,_bg);
+    } 
+  }
+
   void GenericMCU_SCREEN::blitt(uint8_t mode) {
     if ( !this->ready ) { return; }
     __screenBlittMode = mode;
@@ -748,21 +789,7 @@
   }
 
   // === Shapes routines ===
-  // 1 is always white
-  // 0 is always black
 
-  static uint16_t __getColor(uint16_t color) {
-    uint16_t usedColor = color;
-    if ( usedColor == BLACK ) { usedColor = CLR_BLACK; }
-    else if ( usedColor == WHITE ) { usedColor = CLR_WHITE; }
-    else if ( usedColor == 2 ) { usedColor = CLR_LIGHTGREY; }
-    else if ( usedColor == 3 ) { usedColor = CLR_GREY; }
-    else if ( usedColor == 4 ) { usedColor = CLR_DARKGREY; }
-    else if ( usedColor == 5 ) { usedColor = CLR_PINK; }
-    // else direct color value
-    // ..... use palette impl. !!!
-    return usedColor;
-  }
 
   int GenericMCU_SCREEN::getWidth() {
     return __screenWidth;

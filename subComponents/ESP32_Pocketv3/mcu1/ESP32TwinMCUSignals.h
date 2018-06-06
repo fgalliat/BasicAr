@@ -24,6 +24,7 @@
   #define SIG_MP3_NEXT  0x13
   #define SIG_MP3_PREV  0x14
   #define SIG_MP3_VOL   0x15
+  #define SIG_MP3_STOP  0x16
 
   #define SIG_SCR_MODE          0x21
   #define SIG_SCR_CLEAR         0x22
@@ -74,7 +75,7 @@
     0, // 0x13 prev
     0, // 0x14 next
     1, // 0x15 vol
-   -2, // 0x16
+    0, // 0x16 stop
    -2, // 0x17
    -2, // 0x18
    -2, // 0x19
