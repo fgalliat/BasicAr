@@ -1,22 +1,25 @@
 1 ' Xts-uPocket V2 MP3 Player
 2 ' MP trackNum / MPUS nb of track
+3 RETM=1 : ' return to SYSMENU @ end
 4 SCREEN 1 : XO=3 : YO=4
 5 MPUS = 0
 10 DATAF "juke","MPUS","MPNUM$","MPNAM$"
 20 cls : drawpct "mp3_gui",0,0 : MP = 1 : VOL = 20 : PAU = 1 : PLY = 0 : PLF = 0
 30 GOSUB 800  : ' display track num
 90 MSG$ = "...Xtase is proud to present you XtsMP3Player..." : I = 1
+95 BCPT = 1 : ' Btn Counter
 100 ' === main display loop ===
 130 GOSUB 1000 : ' display main baneer
 135 BT = BTN(0)
-140 IF BT = 4 THEN STOP : ' 3rd btn
+140 IF BT = 4 THEN GOTO 2000 : ' 3rd btn
 145 IF BT = 1 THEN GOSUB 500 : ' 1st btn
 147 ' 4 left / 5 right / 6 up / 7 down
 150 IF (BTN(5) = 1 AND MP < MPUS) THEN MP = MP + 1 : GOSUB 700 : DELAY 150
 160 IF (BTN(4) = 1 AND MP > 1)    THEN MP = MP - 1 : GOSUB 700 : DELAY 150
 170 IF (BTN(6) = 1 AND VOL < 40)  THEN VOL = VOL + 5 : GOSUB 600 : DELAY 150
 180 IF (BTN(7) = 1 AND VOL > 0)   THEN VOL = VOL - 5 : GOSUB 600 : DELAY 150
-190 PLF = BTN(10) : ' is mp3 chip playing ?
+190 PLF=1 : IF BCPT >= 5 THEN BCPT=1 : PLF = BTN(10) : ' is mp3 chip playing ?
+195 BCPT = BCPT+1 : ' to slowdown mp3finished reading
 198 ' Auto play next song when prev. finished
 200 IF PAU = 0 AND PLF = 0 AND MP < MPUS THEN MP = MP + 1 : GOSUB 700 : GOSUB 640
 250 DELAY 90
@@ -65,3 +68,6 @@
 1065 BLITT 2
 1070 I = I + 1
 1080 RETURN
+2000 ' Quit Player
+2010 IF RETM<>0 THEN CHAIN "SYSMENU"
+2020 STOP
