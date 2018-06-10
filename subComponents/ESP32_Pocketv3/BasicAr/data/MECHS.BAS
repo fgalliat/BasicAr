@@ -1,0 +1,7 @@
+1 ' Mecha GAME
+5 SCREEN 2 : CLS
+10 DRAWSPRT "MECHS", (320-64)/2,20 , 64,64, 64+8,64
+20 LOCATE 19,15 : ? "Mecha Game"
+30 EXEC "MP3", "VOL", 10
+40 EXEC "MP3", "PLAY", 1
+

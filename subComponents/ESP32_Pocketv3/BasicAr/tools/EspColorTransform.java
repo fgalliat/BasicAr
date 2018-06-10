@@ -68,6 +68,13 @@ public class EspColorTransform {
                     int b = (rp) & 0xFF;
                     int c64k = color565(r, g, b);
 
+                    // transparent color managment
+                    if ( a == 0 ) {
+                        // Cf TFT_eSPI code :
+                        // #define TFT_TRANSPARENT 0x0120
+                        c64k = 0x0120;
+                    }
+
                     if ( cpt == 0 ) {
                         System.out.println("-> "+a+", "+r+", "+g+", "+b);
                         System.out.println( Integer.toHexString(c64k) );

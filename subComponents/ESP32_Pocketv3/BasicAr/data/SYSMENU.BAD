@@ -6,6 +6,7 @@ S;Hardware Test;P;PADTST
 S;Reset;C;BYE
 A;Raycaster;P;RAYC3
 A;My RPG;P;GAME
+A;Mech RPG;P;MECHS
 A;Maze;P;LABY
 A;Race;P;RACING
 M;Random Song;P;RNDSONG
