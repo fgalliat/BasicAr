@@ -771,7 +771,7 @@
     if ( mode == TEXT_OVERWRITE ) {
       _oled_display->setTextColor(_fg,_bg);
     } else if ( mode == TEXT_INCRUST ) {
-      bg = TFT_TRANSPARENT;
+      _bg = TFT_TRANSPARENT;
       _oled_display->setTextColor(_fg,_bg);
     } 
   }
