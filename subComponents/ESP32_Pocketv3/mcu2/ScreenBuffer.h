@@ -132,9 +132,10 @@
    }
  }
 
- // can be (x,y,w,h,m,c)
- //        (x,y,r,m,c)
- bool storeAction(uint8_t type, uint16_t x=0, uint16_t y=0, uint16_t w=0, uint16_t h=0, uint16_t sx=0, uint16_t sy=0, char* filename=NULL, float val=-1.0) {
+
+
+bool storeAction(uint8_t type, uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t x3, uint16_t y3, uint16_t sx, uint16_t sy, char* filename, float val) {
+ // bool storeAction(uint8_t type, uint16_t x=0, uint16_t y=0, uint16_t w=0, uint16_t h=0, uint16_t x3=0, uint16_t y3=0, uint16_t sx=0, uint16_t sy=0, char* filename=NULL, float val=-1.0) {
     if ( act_cursor >= ACTION_BUFF_SIZE ) {
         //return false;
         _b_doBlitt();
@@ -153,6 +154,26 @@
         act_memseg[ base_addr + (off++) ] = (uint8_t)(w%256);
         act_memseg[ base_addr + (off++) ] = (uint8_t)(h/256);
         act_memseg[ base_addr + (off++) ] = (uint8_t)(h%256);
+        act_memseg[ base_addr + (off++) ] = (uint8_t)sx;        // mode
+        act_memseg[ base_addr + (off++) ] = (uint8_t)(sy/256);  // color
+        act_memseg[ base_addr + (off++) ] = (uint8_t)(sy%256);
+    } else if ( type == SIG_SCR_DRAW_TRIANGLE ) {
+        int off = 1;
+        act_memseg[ base_addr + (off++) ] = (uint8_t)(x/256);
+        act_memseg[ base_addr + (off++) ] = (uint8_t)(x%256);
+        act_memseg[ base_addr + (off++) ] = (uint8_t)(y/256);
+        act_memseg[ base_addr + (off++) ] = (uint8_t)(y%256);
+
+        act_memseg[ base_addr + (off++) ] = (uint8_t)(w/256);
+        act_memseg[ base_addr + (off++) ] = (uint8_t)(w%256);
+        act_memseg[ base_addr + (off++) ] = (uint8_t)(h/256);
+        act_memseg[ base_addr + (off++) ] = (uint8_t)(h%256);
+
+        act_memseg[ base_addr + (off++) ] = (uint8_t)(x3/256);
+        act_memseg[ base_addr + (off++) ] = (uint8_t)(x3%256);
+        act_memseg[ base_addr + (off++) ] = (uint8_t)(y3/256);
+        act_memseg[ base_addr + (off++) ] = (uint8_t)(y3%256);
+
         act_memseg[ base_addr + (off++) ] = (uint8_t)sx;        // mode
         act_memseg[ base_addr + (off++) ] = (uint8_t)(sy/256);  // color
         act_memseg[ base_addr + (off++) ] = (uint8_t)(sy%256);
@@ -308,23 +329,27 @@
     return true;
  }
 
+ // can be (x,y,w,h,m,c)
+ //        (x,y,r,m,c)
+ bool storeAction(uint8_t type, uint16_t x=0, uint16_t y=0, uint16_t w=0, uint16_t h=0, uint16_t sx=0, uint16_t sy=0, char* filename=NULL, float val=-1.0) {
+     return storeAction(type, x,y,w,h, 0,0, sx, sy, filename, val);
+ }
 
- //bool storeAction(uint8_t type, uint16_t x=0, uint16_t y=0, uint16_t w=0, uint16_t h=0, uint16_t sx=0, uint16_t sy=0, char* filename=NULL, float val=-1.0) {
  bool storeAction(uint8_t type, float val) {
      return storeAction(type, 0, 0, 0, 0, 0, 0, NULL, val);
  }
 
  bool storeAction(uint8_t type, int val) {
-     return storeAction(type, val, 0, 0, 0, 0, 0, NULL, -1.0);
+     return storeAction(type, val, 0, 0, 0, 0, 0, NULL, -1.0f);
  }
 
 
  bool storeAction(uint8_t type, char ch) {
-     return storeAction(type, ch, 0, 0, 0, 0, 0, NULL, -1.0);
+     return storeAction(type, ch, 0, 0, 0, 0, 0, NULL, -1.0f);
  }
 
  bool storeAction(uint8_t type, char* str) {
-     return storeAction(type, 0, 0, 0, 0, 0, 0, str, -1.0);
+     return storeAction(type, 0, 0, 0, 0, 0, 0, str, -1.0f);
  }
 
  uint16_t ___readACTU16(int addr) {
@@ -407,21 +432,20 @@
                h  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
                mode = act_memseg[ base_addr+sub_addr ]; sub_addr+=1;
                color = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
-
-                /*
-                mcu.print( "== rect ==\n" );
-                mcu.print( x ); mcu.print( ' ' );
-                mcu.print( y ); mcu.print( ' ' );
-                mcu.print( w ); mcu.print( ' ' );
-                mcu.print( h ); mcu.print( ' ' );
-                mcu.print( mode ); mcu.print( ' ' );
-                mcu.print( color ); mcu.print( ' ' );
-                mcu.print( '\n' );
-                */
-                
-
                screen->drawRect( x, y, w, h, mode, color );
               break;
+            case SIG_SCR_DRAW_TRIANGLE:
+               x  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               y  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               w  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2; // X2
+               h  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               sx  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2; // X3
+               sy  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               mode = act_memseg[ base_addr+sub_addr ]; sub_addr+=1;
+               color = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               screen->drawTriangle( x, y, w, h, sx, sy, mode, color );
+              break;
+
             case SIG_SCR_DRAW_CIRCLE:
                x  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
                y  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;

@@ -859,8 +859,21 @@
     __blittIfNeeded();
   }
 
-  // // see if keep that
-  // void GenericMCU_SCREEN::drawTriangle(int x, int y, int x2, int y2, int x3, int y3, uint8_t mode=0, uint16_t color=1);
+  void GenericMCU_SCREEN::drawTriangle(int x, int y, int x2, int y2, int x3, int y3, uint8_t mode, uint16_t color) {
+    if ( !this->ready ) { return; }
+
+    uint16_t usedColor = __getColor(color);
+    if (mode == 0) {
+      _oled_display->drawTriangle(screenOffsetX+x,screenOffsetY+y,screenOffsetX+x2,screenOffsetY+y2, 
+                                  screenOffsetX+x3,screenOffsetY+y3, usedColor);
+    } else {
+      _oled_display->fillTriangle(screenOffsetX+x,screenOffsetY+y,screenOffsetX+x2,screenOffsetY+y2, 
+                                  screenOffsetX+x3,screenOffsetY+y3, usedColor);
+    }
+
+    __blittIfNeeded();
+  }
+
   // // see if keep that
   // void GenericMCU_SCREEN::drawPolyline(int* x, int* y, int nbPoints);
 

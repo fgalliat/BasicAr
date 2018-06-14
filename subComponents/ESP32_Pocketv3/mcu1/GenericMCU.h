@@ -190,7 +190,6 @@ class GenericMCU_SCREEN {
 
       void drawPixel(int x, int y, uint16_t color=1);
 
-      // see if keep that
       void drawTriangle(int x, int y, int x2, int y2, int x3, int y3, uint8_t mode=0, uint16_t color=1);
       // see if keep that
       void drawPolyline(int* x, int* y, int nbPoints);

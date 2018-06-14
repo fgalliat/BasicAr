@@ -328,6 +328,19 @@ void loop() {
           #endif
           break;
         case SIG_SCR_DRAW_TRIANGLE:
+          x  = bridge_readU16();
+          y  = bridge_readU16();
+          w  = bridge_readU16(); // x2
+          h  = bridge_readU16();
+          x2  = bridge_readU16(); // x3
+          y2  = bridge_readU16();
+          tmp2 = mcuBridge.read(); // mode
+          tmp = bridge_readU16();  // color
+          #ifdef SCREEEN_BUFFER
+            storeAction(cmd, x, y, w, h, x2, y2, tmp2, tmp, NULL, -1.0);
+          #else
+            mcu.getScreen()->drawTriangle(x, y, w, h, x2, y2, tmp2, tmp);
+          #endif
           break;
         case SIG_SCR_DRAW_BPP:
           x = bridge_readU16();
