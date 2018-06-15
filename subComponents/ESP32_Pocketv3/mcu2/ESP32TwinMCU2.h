@@ -564,6 +564,9 @@
 
   #define ROTATE_SCREEN 0
 
+
+    #define TFT_eSPI__color565(r, g, b) { ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3) }
+
     #define CLR_BLACK       ILI9341_BLACK
     #define CLR_WHITE       ILI9341_WHITE
     //#define CLR_LIGHTGREY   TFT_LIGHTGREY // ILI9341_BLACK, ILI9341_RED, ILI9341_CYAN
@@ -574,6 +577,10 @@
     #define CLR_LIGHTGREY   0xCE59 /* 200x3 */
     #define CLR_GREY        0x8410 /* 128x3 */
     #define CLR_DARKGREY    0x3186 /* 50x3 */
+
+    #define CLR_LIGHTGREEN  TFT_eSPI__color565( 150, 255, 150 )
+    #define CLR_GREEN       TFT_eSPI__color565( 80, 255, 80 )
+    #define CLR_DARKGREEN   TFT_eSPI__color565( 0, 150, 0 )
 
     #define CLR_PINK        ILI9341_PINK
 
@@ -615,7 +622,10 @@
     else if ( usedColor == 2 ) { usedColor = CLR_LIGHTGREY; }
     else if ( usedColor == 3 ) { usedColor = CLR_GREY; }
     else if ( usedColor == 4 ) { usedColor = CLR_DARKGREY; }
-    else if ( usedColor == 5 ) { usedColor = CLR_PINK; }
+    else if ( usedColor == 5 ) { usedColor = CLR_LIGHTGREEN; }
+    else if ( usedColor == 6 ) { usedColor = CLR_GREEN; }
+    else if ( usedColor == 7 ) { usedColor = CLR_DARKGREEN; }
+    else if ( usedColor == 8 ) { usedColor = CLR_PINK; }
     // else direct color value
     // ..... use palette impl. !!!
     return usedColor;
