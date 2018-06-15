@@ -617,11 +617,11 @@ int xts_dispRect() {
   if (val) return val;	// error
 
   getNextToken();
-  val = expectNumber();  // X2
+  val = expectNumber();  // W
   if (val) return val;	// error
 
   getNextToken();
-  val = expectNumber();  // Y2
+  val = expectNumber();  // H
   if (val) return val;	// error
 
   getNextToken();
@@ -641,6 +641,56 @@ int xts_dispRect() {
     int x = (int)stackPopNum();
     
     drawRect(x,y,w,h,color,mode);
+  }
+
+  return 0;
+}
+
+// N.B. @ this time all params are mandatory
+int xts_dispTriangle() {
+  getNextToken();
+  int val = expectNumber();  // X1
+  if (val) return val;	// error
+  
+  getNextToken();
+  val = expectNumber();  // Y1
+  if (val) return val;	// error
+
+  getNextToken();
+  val = expectNumber();  // X2
+  if (val) return val;	// error
+
+  getNextToken();
+  val = expectNumber();  // Y2
+  if (val) return val;	// error
+
+  getNextToken();
+  val = expectNumber();  // X3
+  if (val) return val;	// error
+
+  getNextToken();
+  val = expectNumber();  // Y3
+  if (val) return val;	// error
+
+  getNextToken();
+  val = expectNumber();  // COLOR
+  if (val) return val;	// error
+
+  getNextToken();
+  val = expectNumber();  // MODE
+  if (val) return val;	// error
+
+  if ( executeMode ) {
+    int mode = (int)stackPopNum();
+    int color = (int)stackPopNum();
+    int y3 = (int)stackPopNum();
+    int x3 = (int)stackPopNum();
+    int y2 = (int)stackPopNum();
+    int x2 = (int)stackPopNum();
+    int y = (int)stackPopNum();
+    int x = (int)stackPopNum();
+    
+    drawTriangle(x,y,x2,y2, x3, y3, color,mode);
   }
 
   return 0;

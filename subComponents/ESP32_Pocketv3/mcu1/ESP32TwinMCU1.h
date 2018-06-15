@@ -770,6 +770,23 @@
   }
 
   // mode = 1 : fill // mode = 0 : draw
+  void GenericMCU_SCREEN::drawTriangle(int x, int y, int x2, int y2, int x3, int y3, uint8_t mode, uint16_t color) {
+    if ( !this->ready ) { return; }
+
+    mcuBridge.write( SIG_SCR_DRAW_TRIANGLE );
+    writeBridgeU16Coords( x );
+    writeBridgeU16Coords( y );
+    writeBridgeU16Coords( x2 );
+    writeBridgeU16Coords( y2 );
+    writeBridgeU16Coords( x3 );
+    writeBridgeU16Coords( y3 );
+    mcuBridge.write( mode ); // MODE
+    writeBridgeU16( color );
+
+    flushBridgeRX();
+  }
+
+  // mode = 1 : fill // mode = 0 : draw
   void GenericMCU_SCREEN::drawCircle(int x, int y, int radius, uint8_t mode, uint16_t color) {
     if ( !this->ready ) { return; }
 

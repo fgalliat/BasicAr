@@ -161,15 +161,15 @@ TokenTableEntry tokenTable[] = {
     // ------ Xtase routines -----------
     {"MEM",0}, {"?",TKN_FMT_POST}, {"'",TKN_FMT_POST},
     {"LOCATE",2|TKN_FMT_POST}, // Oups : there was a POSITION cmd ...
-    {"LED",2}, // to switch on/off a led
-    {"BEEP",2}, {"MUTE", 0},
-    {"PLAY",1|TKN_ARG1_TYPE_STR},
+    {"LED",2|TKN_FMT_POST}, // to switch on/off a led
+    {"BEEP",2|TKN_FMT_POST}, {"MUTE", 0|TKN_FMT_POST},
+    {"PLAY",1|TKN_ARG1_TYPE_STR|TKN_FMT_POST},
     {"PLAYT5K",1|TKN_ARG1_TYPE_STR|TKN_FMT_POST},
     {"PLAYT53",1|TKN_ARG1_TYPE_STR|TKN_FMT_POST},
 
     {"BYE",TKN_FMT_POST},
 
-    {"BTN",1}, // to read btn state
+    {"BTN",1|TKN_FMT_POST}, // to read btn state
 
     {"ECHO",TKN_FMT_POST}, // to (un)lock local echo
 
@@ -231,10 +231,11 @@ TokenTableEntry tokenTable[] = {
 
     {"DIRM", 0|TKN_FMT_POST}, // dir on mcu#2
 
-    {"DO",1|TKN_ARG1_TYPE_STR|TKN_FMT_POST}, // DO "? 3.14"
+    {"DO",1|TKN_ARG1_TYPE_STR|TKN_FMT_POST}, // DO "? 3.14" as eval() in JS
 
     {"CHR$", 1|TKN_RET_TYPE_STR},  // CHR$(y)
 
+    {"TRIANGLE",  8|TKN_FMT_POST}, // TRIANGLE x,y,x2,y2,x3,y3[,color[,mode]]
 };
 
 
@@ -2523,6 +2524,7 @@ int parseStmts()
 
             case TOKEN_BLITT : ret = xts_blittMode(); break;
             case TOKEN_RECT  : ret = xts_dispRect(); break;
+            case TOKEN_TRIANGLE  : ret = xts_dispTriangle(); break;
 
             case TOKEN_SCREEN : ret = xts_screenMode(); break;
             case TOKEN_TEXT : ret = xts_textMode(); break;

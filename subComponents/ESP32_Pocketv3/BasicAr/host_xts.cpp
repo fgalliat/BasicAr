@@ -559,6 +559,15 @@ void drawRect(int x, int y, int w, int h, int color, int mode) {
   }
 }
 
+// color : 0 black / 1 white / 2 ~gray
+// mode  : 0 draw / 1 fill
+void drawTriangle(int x, int y, int x2, int y2, int x3, int y3, int color, int mode) {
+  if ( GFX_DEVICE == GFX_DEV_LCD_MINI ) {
+      mcu.getScreen()->drawTriangle(x, y, x2, y2, x3, y3, mode, color);
+  }
+}
+
+
 bool drawBPPfile(char* filename) {
 
   if ( filename == NULL || strlen(filename) <= 0 ) { 
