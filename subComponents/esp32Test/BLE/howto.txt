@@ -1,0 +1,45 @@
+sudo hcitool lescan
+ 30:AE:A4:1B:90:36 UART Service
+ 30:AE:A4:1B:90:36 UART Service
+ 30:FD:AC:E4:0A:BB (unknown)
+ 11:45:64:F7:74:F4 (unknown)
+
+sudo joe /etc/bluetooth/rfcomm.conf
+
+rfcomm0 {
+        bind no;
+        device 30:AE:A4:1B:90:36;
+        channel 1;
+        comment "ESP32 Serial Port";
+        }
+
+
+sudo rfcomm connect 0
+
+
+1) Use hcitool scan to find the Mac address of the device.
+
+The device should be set to slave mode with a known pin. If you don't use a known pin, ubuntu makes one up and you generally won't have time to enter it in the clunky menus of your measuring tool.
+
+2) I'm not entirely sure this is necessary, but in the bluetooth gui menu, pair the device.
+
+3) in /etc/bluetooth/rfcomm.conf
+
+rfcomm0 {
+        bind no;
+        device 00:07:80:44:4F:37;
+        channel 1;
+        comment "Serial Port";
+        }
+
+
+
+The "bind no" is important, otherwise it will try to autmatically bind, which presents all sorts of problems for actually accessing the device (as it's quite picky about when its associated)
+
+4) sudo rfcomm connect 0
+
+If you have errors, restart the bluetooth service.
+
+5) screen /dev/rfcomm0
+
+For actual serial commands transmitted this way, contact your vendor and beg.

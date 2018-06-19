@@ -1,0 +1,16 @@
+DOIT ESP32 DEVKIT V1, 80MHz, 921600, None sur /dev/ttyUSB...
+
+
+
+** Arduino Genuino/UNO (/dev/ttyACM0)
+
+// SX1509 - sample prgm
+Le croquis utilise 4218 octets (13%) de l'espace de stockage de programmes. Le maximum est de 32256 octets.
+Les variables globales utilisent 403 octets (19%) de mémoire dynamique, ce qui laisse 1645 octets pour les variables locales. Le maximum est de 2048 octets.
+
+
+
+
+
+
+
