@@ -13,9 +13,73 @@
 #define PICTURE_BUFF_SIZE (1024)
 #define AUDIO_BUFF_SIZE (5*1024)
 
+#if defined(COMPUTER)
+  // cf memcpy
+  #include <cstring>
+
+  #include <cstdlib>
+  #include <stdio.h>
+  #include <unistd.h>
+
+  // cf uintX_t
+  #include <cstdint>
+  #include <sys/types.h>
+
+  #include <iostream>
+  #include <fstream>
+  #include <dirent.h>
+  #include <ncurses.h>
+  #include <sys/ioctl.h>
+  #include <fcntl.h>
+  #include <linux/kd.h>
+  #include <math.h>
+  #include <SDL2/SDL.h>
+
+  #include "computerArduino.h"
+  #include "computerSerial.h"
+
+  #ifdef ANOTHER_CPP
+    extern _Serial Serial;
+  #elif defined(MAIN_INO_FILE)
+    _Serial Serial = _Serial();
+  #endif
+
+  #include "computerScreen.h"
+
+#endif
+
 #include "GenericMCU.h"
 
-#if defined(ARDUINO_ARCH_ESP32)
+#if defined(COMPUTER)
+    // Generic computer C++/SDL/CURSES
+
+    #define BUILTIN_LCD 1
+    #define ARCH_TYPE "Xts_Computer V3" 
+
+    #ifdef MAIN_INO_FILE
+        Adafruit_SSD1306 display(-1);
+
+        #include "computer.h"
+
+        GenericMCU mcu;
+    #else
+      #define TEXT_OVERWRITE 0x00 // w/ BG
+      #define TEXT_INCRUST   0x01 // w/o BG
+
+      #define BTN_1 1
+      #define BTN_2 2
+      #define BTN_3 3
+
+      #ifdef ANOTHER_CPP
+        extern _Serial Serial;
+        extern Adafruit_SSD1306 display;
+        
+        extern GenericMCU mcu;
+      #endif
+    #endif
+
+
+#elif defined(ARDUINO_ARCH_ESP32)
   #define BUT_ESP32 1
 
   #define ESP32PCKv3 1

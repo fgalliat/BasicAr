@@ -9,7 +9,7 @@
 #ifndef COMPUTER
   #include <Arduino.h>
 #else 
-  #include "computer.h"
+  #include "computerArduino.h"
 #endif
 
 #ifdef ESP32_WIFI_SUPPORT

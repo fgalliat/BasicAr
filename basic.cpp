@@ -55,7 +55,7 @@
 #include <limits.h>
 
 #ifdef COMPUTER
-    #include "computer.h"
+    #include "computerArduino.h"
 #else
   #include <Arduino.h>
 #endif

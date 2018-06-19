@@ -20,7 +20,7 @@ extern void host_system_menu();
 #ifndef COMPUTER
   #include <Arduino.h>
 #else
-  #include "computer.h"
+  #include "computerArduino.h"
 #endif
 
   #define PS2_DELETE 8

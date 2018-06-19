@@ -6,7 +6,7 @@
 #ifndef COMPUTER
   #include <Arduino.h>
 #else 
-  #include "computer.h"
+  #include "computerArduino.h"
 #endif
 
 #define ANOTHER_CPP 1

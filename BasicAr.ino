@@ -14,7 +14,6 @@
 // just to identify main cpp sourcecode
 #define MAIN_INO_FILE 1
 
-
 #include "xts_arch.h"
 
 // __________________
