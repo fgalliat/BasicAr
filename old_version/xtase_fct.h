@@ -5,6 +5,7 @@
 *******************/
 
 #include "basic.h"
+//#include "host.h"
 
 #ifndef COMPUTER
   #include <Arduino.h>
@@ -97,15 +98,6 @@ int xts_locate() {
 
 // == File System
 
-int xts_fs_dir_mcu2() {
-  getNextToken();
-
-  if ( executeMode ) {
-    lsStorageMCU2();
-  }
-
-  return 0;
-}
 
 // BEWARE : no more a "SimpleCmd"
 int xts_fs_dir(bool sendToArray=false) {
@@ -218,19 +210,31 @@ int xts_delay() {
 
 // BEWARE : Simple Function
 // 1-based // 0 for read whole mask in 1 time
-// 4 left / 5 right / 6 up / 7 down / 8 L / 9 R / 10 MP3Busy
 int xts_buttonRead(int btnNum) {
   if ( btnNum == 0 ) { return (btn1() ? 1 : 0)+(btn2() ? 2 : 0)+(btn3() ? 4 : 0); }
+  else if ( btnNum == 1 ) { return btn1() ? 1 : 0; }
+  else if ( btnNum == 2 ) { return btn2() ? 1 : 0; }
+  else if ( btnNum == 3 ) { return btn3() ? 1 : 0; }
 
-  // button mapping Hard <-> BASIC
-  // BEWARE : here, we do not read builtin btn
-  //                       0  1  2  3  4  5  6  7   8   9  10
-  static const int map[] = { -1, 7, 6, 5, 3, 4, 1, 2, -1, -1, 10 };
+#ifdef BUT_ESP32
+  // read pad as btns
+  else if ( btnNum == 4 ) { return esp32.readPadXaxis() < 0 ? 1 : 0; }
+  else if ( btnNum == 5 ) { return esp32.readPadXaxis() > 0 ? 1 : 0; }
+  else if ( btnNum == 6 ) { return esp32.readPadYaxis() > 0 ? 1 : 0; }
+  else if ( btnNum == 7 ) { return esp32.readPadYaxis() < 0 ? 1 : 0; }
 
-  if ( btnNum < 1 || btnNum > 10 ) { return 0; }
-  if ( map[ btnNum ] < 0 ) { return 0; }
+  #ifdef ESP32PCKv2
+  // Trigger A
+  else if ( btnNum == 8 ) { return esp32.readBtn(8); }
+  // Trigger B
+  else if ( btnNum == 9 ) { return esp32.readBtn(9); }
+  // MP3 BUSY
+  else if ( btnNum == 10 ) { return esp32.readBtn(10); }
+  #endif
 
-  return mcu.btn( map[ btnNum ] ) ? 1 : 0;
+#endif
+
+  return 0;
 }
 
 // == Led
@@ -247,7 +251,7 @@ int xts_led() {
     uint16_t state = (uint16_t)stackPopNum(); // 1 or 0
     uint16_t ledID = (uint16_t)stackPopNum(); // 1 based
 
-    mcu.led(ledID,state >= 1);
+    led(ledID,state >= 1);
   }
 
   return 0;
@@ -302,8 +306,7 @@ int xts_tone() {
       uint16_t note_freq = (uint16_t)stackPopNum();
 
       if ( BUZZER_MUTE ) { return 0; }
-      mcu.tone(note_freq, duration);
-      mcu.noTone(); // TODO : CHECK THAT
+      playNote(note_freq, duration);
     }
 
   return 0;    
@@ -457,57 +460,8 @@ int xts_dispPCT() {
   return 0;
 }
 
-int xts_dispSPRITE() {
-  getNextToken();
-
-  int val = parseExpression();
-  if (val & _ERROR_MASK) return val;
-  if (!_IS_TYPE_STR(val))
-      return _ERROR_EXPR_EXPECTED_STR;
-
-  getNextToken();
-  val = expectNumber();  // X1
-  if (val) return val;	// error
-  
-  getNextToken();
-  val = expectNumber();  // Y1
-  if (val) return val;	// error
-
-  getNextToken();
-  val = expectNumber();  // W
-  if (val) return val;	// error
-  
-  getNextToken();
-  val = expectNumber();  // H
-  if (val) return val;	// error
-
-  getNextToken();
-  val = expectNumber();  // SX
-  if (val) return val;	// error
-  
-  getNextToken();
-  val = expectNumber();  // SY
-  if (val) return val;	// error
-      
-  if ( executeMode ) {
-    int sy = stackPopNum();
-    int sx = stackPopNum();
-    int h = stackPopNum();
-    int w = stackPopNum();
-    int y = stackPopNum();
-    int x = stackPopNum();
-    //int x = 0, y = 0;
-    char* pictStr = stackPopStr();
-    if ( drawSPRITEfile( pictStr, x, y, w, h, sx, sy ) ) {
-      return 0;
-    } else {
-      return ERROR_UNEXPECTED_TOKEN;
-    }
-  }
-
-  return 0;
-}
-
+// BEWARE : PC emulation has not
+// indirect blitt !!!
 int xts_blittMode() {
   getNextToken();
 
@@ -522,89 +476,20 @@ int xts_blittMode() {
       return ERROR_BAD_PARAMETER;
     }
 
-    mcu.getScreen()->blitt( mode );
-
-    // if ( mode == BLITT_DIRECT ) {
-    //   draw_blitt();
-    // } else {
-    //   // stores only 0 & 2
-    //   BLITT_MODE = mode;   
-    //   if ( BLITT_AUTO ){
-    //     draw_blitt();
-    //   }
-    // }
-
-  }
-
-  return 0;
-}
-
-int xts_screenMode() {
-  getNextToken();
-
-  int val = parseExpression();
-  if (val & _ERROR_MASK) return val;
-  if (!_IS_TYPE_NUM(val))
-      return ERROR_EXPR_EXPECTED_NUM;
-
-  if ( executeMode ) {
-    int mode = (int)stackPopNum();
-    if ( mode < BLITT_LOCKED || mode > BLITT_AUTO ) {
-      return ERROR_BAD_PARAMETER;
+    if ( mode == BLITT_DIRECT ) {
+      draw_blitt();
+    } else {
+      // stores only 0 & 2
+      BLITT_MODE = mode;   
+      if ( BLITT_AUTO ){
+        draw_blitt();
+      }
     }
 
-    mcu.getScreen()->setMode( mode );
   }
 
   return 0;
 }
-
-int xts_textMode() {
-  getNextToken();
-
-  int val = parseExpression();
-  if (val & _ERROR_MASK) return val;
-  if (!_IS_TYPE_NUM(val))
-      return ERROR_EXPR_EXPECTED_NUM;
-
-  if ( executeMode ) {
-    int mode = (int)stackPopNum();
-    if ( mode < TEXT_OVERWRITE || mode > TEXT_INCRUST ) {
-      return ERROR_BAD_PARAMETER;
-    }
-
-    mcu.getScreen()->setTextMode( mode, WHITE, BLACK );
-  }
-
-  return 0;
-}
-
-int xts_copyToBridge() {
-  getNextToken();
-
-  int val = parseExpression();
-  if (val & _ERROR_MASK) return val;
-  if (!_IS_TYPE_STR(val))
-      return ERROR_EXPR_EXPECTED_STR;
-
-  if ( executeMode ) {
-    char* file = stackPopStr();
-
-    int stlen = strlen(file);
-    char* tmp = (char*)malloc( stlen+1+1 ); // +1 for leading '/'
-    // TODO : that shoud be inside FS::copyToBridge(..)
-    tmp[0] = '/';
-    for(int i=0; i < stlen; i++) { tmp[i+1] = charUpCase( file[i] ); }
-    tmp[ stlen+1 ] = 0x00; // +1 Cf '/'
-
-    mcu.getFS()->copyToBridge( tmp );
-
-    free(tmp);
-  }
-
-  return 0;
-}
-
 
 // N.B. @ this time all params are mandatory
 int xts_dispRect() {
@@ -617,11 +502,11 @@ int xts_dispRect() {
   if (val) return val;	// error
 
   getNextToken();
-  val = expectNumber();  // W
+  val = expectNumber();  // X2
   if (val) return val;	// error
 
   getNextToken();
-  val = expectNumber();  // H
+  val = expectNumber();  // Y2
   if (val) return val;	// error
 
   getNextToken();
@@ -641,56 +526,6 @@ int xts_dispRect() {
     int x = (int)stackPopNum();
     
     drawRect(x,y,w,h,color,mode);
-  }
-
-  return 0;
-}
-
-// N.B. @ this time all params are mandatory
-int xts_dispTriangle() {
-  getNextToken();
-  int val = expectNumber();  // X1
-  if (val) return val;	// error
-  
-  getNextToken();
-  val = expectNumber();  // Y1
-  if (val) return val;	// error
-
-  getNextToken();
-  val = expectNumber();  // X2
-  if (val) return val;	// error
-
-  getNextToken();
-  val = expectNumber();  // Y2
-  if (val) return val;	// error
-
-  getNextToken();
-  val = expectNumber();  // X3
-  if (val) return val;	// error
-
-  getNextToken();
-  val = expectNumber();  // Y3
-  if (val) return val;	// error
-
-  getNextToken();
-  val = expectNumber();  // COLOR
-  if (val) return val;	// error
-
-  getNextToken();
-  val = expectNumber();  // MODE
-  if (val) return val;	// error
-
-  if ( executeMode ) {
-    int mode = (int)stackPopNum();
-    int color = (int)stackPopNum();
-    int y3 = (int)stackPopNum();
-    int x3 = (int)stackPopNum();
-    int y2 = (int)stackPopNum();
-    int x2 = (int)stackPopNum();
-    int y = (int)stackPopNum();
-    int x = (int)stackPopNum();
-    
-    drawTriangle(x,y,x2,y2, x3, y3, color,mode);
   }
 
   return 0;
@@ -817,6 +652,11 @@ bool xts_chain(char* filename) {
   bool tmpExec = executeMode;
   if ( xts_loadBas(filename) == true ) {
     if ( tmpExec ) {
+      // doRunPrg();
+      // unsigned char tkb[2];
+      // tkb[0] = TOKEN_RUN;
+      // tkb[1] = 0x00;
+      // int ret = processInput( tkb );
       selfRun = true; // the only way that works : can't run inside run ...
       return true;
     }
@@ -892,7 +732,9 @@ int xts_delBas(char* optFilename=NULL) {
   }
 
   if ( executeMode ) {
-    deleteBasFile( optFilename );
+    #ifdef FS_SUPPORT
+      deleteBasFile( optFilename );
+    #endif
   }
 
   return woFileMode ? 0 : 1; // 1 for true when use in saleVloadCmd(..)
@@ -990,30 +832,14 @@ float xts_max(float arg0, float arg1) {
 // === Extended Commands
 // ===================================================================
 
-extern int evalCmd(char* cmd);
-
-// eval a string : DO "? 3.14"
-int xts_do_cmd() {
-  getNextToken();
-
-  int val = parseExpression();
-  if (val & _ERROR_MASK) return val;
-  if (!_IS_TYPE_STR(val))
-      return _ERROR_EXPR_EXPECTED_STR;
-
-  if ( executeMode ) {
-    char* cmd = stackPopStr();    
-    int ret = evalCmd(cmd);
-    // selfRun = true;
-  }
-
-return 0;
-}
-
-
 // EXEC "WIFI","PARCEL"
 // EXEC "MP3","PAUSE"
 // @ this time : only support for String args....
+
+#ifdef BOARD_SND
+  #include "dev_sound_dfplayer.h"
+#endif
+
 
 int xts_exec_cmd() {
   getNextToken();
@@ -1069,17 +895,24 @@ int xts_exec_cmd() {
             if ( strcmp( args[1], "PLAY" ) == 0 ) {    // ex. exec "mp3","play"
               int trackNum = 1;
               if ( argci > 0 ) { trackNum = argi[0]; } // ex. exec "mp3","play",2
-              mcu.getMusicPlayer()->playTrack(trackNum);
+              //host_outputString("Will play #");host_outputInt(trackNum);
+              #ifdef BOARD_SND
+                snd_playTrack(trackNum);
+              #endif
             } else if ( strcmp( args[1], "VOL" ) == 0 ) {    // ex. exec "mp3","vol"
               int volume = 10;
               if ( argci > 0 ) { volume = argi[0]; } // ex. exec "mp3","vol",30
-              mcu.getMusicPlayer()->setVolume(volume);
+              #ifdef BOARD_SND
+                snd_setVolume(volume);
+              #endif
             } else if ( strcmp( args[1], "PAUSE" ) == 0 ) {
-              mcu.getMusicPlayer()->pause();
-            } else if ( strcmp( args[1], "STOP" ) == 0 ) {
-              mcu.getMusicPlayer()->stop();
+              #ifdef BOARD_SND
+                snd_pause();
+              #endif
             } else if ( strcmp( args[1], "NEXT" ) == 0 ) {
-              mcu.getMusicPlayer()->next();
+              #ifdef BOARD_SND
+                snd_next();
+              #endif
             } else {
               free( args[0] );
               free( args[1] );
@@ -1088,12 +921,13 @@ int xts_exec_cmd() {
             free( args[1] );
           } // end of argc > 1
         } 
+        #ifdef BUT_ESP32
         else if ( strcmp( args[0], "FS" ) == 0 ) {
           if ( argc > 1 ) {
             if ( strcmp( args[1], "FORMAT" ) == 0 ) {
-              mcu.lockISR();
-              mcu.getFS()->format();
-              mcu.unlockISR();
+              esp32.lockISR();
+              esp32.getFs()->format();
+              esp32.unlockISR();
             } 
             else {
               free( args[0] );
@@ -1103,6 +937,7 @@ int xts_exec_cmd() {
             free( args[1] );
           } // end of argc > 1
         } 
+        #endif
         #ifdef ESP32_WIFI_SUPPORT
         else if ( strcmp( args[0], "WIFI" ) == 0 ) {
           if ( argc > 1 ) {
@@ -1144,21 +979,42 @@ int xts_exec_cmd() {
 
 // ===================================================================
 
+#define NIMPORTEQUOI 1
+
+#ifndef NIMPORTEQUOI
+
+int xts_dataf_cmd() {
+  host_outputString("DATAF cmd NYI !\n");
+  host_showBuffer();
+  return ERROR_BAD_PARAMETER;
+}
+
+#else 
+
   // _________ TODO ______________________
-  bool fopenTextFile(char* filename, bool forRead=true) {
-    return mcu.getFS()->openCurrentTextFile(filename, forRead);
+  bool fopenTextFile(char* filename) {
+    #ifdef ESP32PCKv2
+      return esp32.getFs()->openCurrentTextFile( filename );
+    #else 
+      host_outputString( "fopenTextFile() NYI");
+    #endif
   }
   
   char* freadTextLine() {
-    return mcu.getFS()->readCurrentTextLine();
-  }
-
-  void fwriteText(char* str, bool autoflush=true) {
-    mcu.getFS()->writeCurrentText(str, autoflush);
+    #ifdef ESP32PCKv2
+      return esp32.getFs()->readCurrentTextLine();
+    #else 
+      host_outputString("freadTextLine() NYI");
+      return null;
+    #endif
   }
 
   void fcloseFile() {
-    mcu.getFS()->closeCurrentTextFile();
+    #ifdef ESP32PCKv2
+      esp32.getFs()->closeCurrentTextFile();
+    #else 
+      host_outputString("fcloseTextFile() NYI");
+    #endif
   }
   // _________ TODO ______________________
 
@@ -1366,24 +1222,31 @@ int xts_dataf_cmd() {
                 host_outputString( args[i] );
                 host_outputString(" column\n");
                 host_showBuffer();
+Serial.println("DATAF 8");
                 free(line);
+Serial.println("DATAF 9");
                 fcloseFile();
+Serial.println("DATAF 10");
                 return ERROR_OUT_OF_MEMORY;
               }
             }
+Serial.println("DATAF 11");
           } else {
             // regular line
 
             //char* remaining = copyOf( line );
             char* remaining = line;
             int fullLen = strlen( remaining );
+Serial.println("DATAF 12");
             for(int i=2; i < argc; i++) {
               int llen = strlen(args[i]);
               bool isStrArray = llen > 0 && args[i][ llen-1 ] == '$';
               bool col_ok = false; int err=ERROR_NONE;
+Serial.print("DATAF 13 >");Serial.print(args[i]);Serial.println("<");
               // HAVE TO make my own split() routine
               // able to escape '\;' sequence
               char* token = nextSplit( remaining, fullLen, ';', true );
+Serial.print("DATAF 14 >");Serial.print(token);Serial.println("<");
               if ( !isStrArray ) {
                 float val = atof( token );
                 Serial.print("DATAF 14bis >");Serial.print(val);Serial.println("<");
@@ -1391,6 +1254,7 @@ int xts_dataf_cmd() {
               } else {
                 col_ok = (err= xts_setStrArrayElem( args[i], cpt, token )) == ERROR_NONE;
               } 
+Serial.println("DATAF 15");
 
               if ( !col_ok ) {
                 host_outputString("Could not fill ");
@@ -1402,16 +1266,24 @@ int xts_dataf_cmd() {
                 host_outputString("\n");
                 host_showBuffer();
 
+Serial.println("DATAF 16");
                 // if (token != NULL) free( token );
+Serial.println("DATAF 17");
                 // free( line );
+Serial.println("DATAF 18");
 
                 fcloseFile();
+Serial.println("DATAF 19");
                 return ERROR_IN_VAL_INPUT;
               }
+Serial.println("DATAF 20");
               //if (token != NULL) free(token);
+Serial.println("DATAF 21");
             }
+Serial.println("DATAF 22");
             cpt++;
             //if (line != NULL) free( line );
+Serial.println("DATAF 23");
             if ( cpt > total ) {
               host_outputString("file truncated !");
               break;
@@ -1419,8 +1291,11 @@ int xts_dataf_cmd() {
           }
 
         }
+Serial.println("DATAF 24");
         //if (line != NULL) free(line);
+Serial.println("DATAF 25");
         fcloseFile();
+Serial.println("DATAF 26");
       } // end of argc > 0
       else {
         // missing args
@@ -1432,59 +1307,7 @@ int xts_dataf_cmd() {
   return 0;
 }
 
-// Web remote ~CSV reading
-int xts_datau_cmd() {
-  getNextToken();
-  
-  const int MAX_ARGS = 12; // <service>, <sizeVar>, <10 arrays>
-  char* args[MAX_ARGS];    // string args
-  int   argc = 0;
-
-  int val = -1;
-  while (curToken != TOKEN_EOL && curToken != TOKEN_CMD_SEP) {
-    val = parseExpression();
-    //if (val & _ERROR_MASK) return val;
-    if (val & _ERROR_MASK) break;
-
-    // STRING 1st arg is optional
-    if (_IS_TYPE_STR(val)) {
-      if ( executeMode && argc < MAX_ARGS) {
-        char* tt = stackPopStr();
-        int stlen = strlen(tt);
-        char* tmp = (char*)malloc( stlen+1 ); // BEWARE w/ free()
-        for(int i=0; i < stlen; i++) { tmp[i] = charUpCase( tt[i] ); }
-        tmp[ stlen ] = 0x00;
-        args[argc++] = tmp;
-      }
-    } else {
-      return ERROR_BAD_PARAMETER;
-    }
-
-    if ( curToken == TOKEN_COMMA ) {
-      getNextToken();
-    }
-  }
-
-  if ( !executeMode ) {
-    if (val & _ERROR_MASK) return val;
-  }
-  
-  if ( executeMode ) {
-      if ( argc >= 2 ) {
-        mcu.println( "Read Remote Content : " );
-        mcu.println( args[0] );
-      }
-      else {
-        // missing args
-        return ERROR_BAD_PARAMETER;
-      }
-  }
-
-  return 0;
-}
-
-
-
+#endif
 
 // ===================================================================
 

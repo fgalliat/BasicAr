@@ -171,24 +171,8 @@
 
     #define TOKEN_MIN              107 // min(a,b)
     #define TOKEN_MAX              108 // max(a,b)
-
-    #define TOKEN_SCREEN           109 // screen {1,2,3}
-
-    #define TOKEN_COPY             110 // COPY "TOTO.PCT" (copy via bridge)
-
-    #define TOKEN_DATAU            111 // DATAU "weather?town=69200", "SZ", "A$", "C"
-    #define TOKEN_DRAWSPRITE       112 // DRAWSPRT "CARO", 10, 10, 32, 32, 26, 42
-    #define TOKEN_TEXT             113 // TEXT 0/1
     
-    #define TOKEN_DIR2             114 // dir on mcu#2 'DIRM'
-
-    #define TOKEN_DO               115 // DO "? 3.14" - eval a string
-
-    #define TOKEN_STR_CHR          116 // ? CHR$(34)
-
-    #define TOKEN_TRIANGLE         117 // TRIANGLE x,y,x2,y2,x3,y3,color,mode
-
-    #define TOKEN_LASTONE TOKEN_TRIANGLE
+    #define TOKEN_LASTONE TOKEN_MAX
 #else
     // non extended command set
     #define TOKEN_PRINT_QM       TOKEN_PRINT

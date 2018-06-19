@@ -46,19 +46,16 @@ void playTuneFromStorage(char* tuneName, int format, bool btnStop);
 
 bool drawBPPfile(char* filename);
 bool drawPCTfile(char* filename, int x, int y);
-bool drawSPRITEfile(char* filename, int x, int y, int w, int h, int sx, int sy);
 
 void drawLine(int x1, int y1, int x2, int y2);
 void drawCircle(int x1, int y1, int radius);
 void drawPixel(int x1, int y1, int color); // 0: black else :white
 void draw_blitt();
 void drawRect(int x, int y, int w, int h, int color, int mode);
-void drawTriangle(int x, int y, int x2, int y2, int x3, int y3, int color, int mode);
 
 // ============================================
 
 void lsStorage(char* filter, bool sendToArray);
-void lsStorageMCU2();
 
 void MCU_halt();
 void MCU_reset();
@@ -83,17 +80,15 @@ void deleteBasFile(char* filename);
 
 // =================================
 
-#ifndef DBUG_NOLN
-    void DBUG(int v);
-    void DBUG(float v);
-    void DBUG(char* v);
-    void DBUG(const char* v);
-    void DBUG(const char* v, int v2);
+void DBUG(int v);
+void DBUG(float v);
+void DBUG(char* v);
+void DBUG(const char* v);
+void DBUG(const char* v, int v2);
 
-    void DBUG_NOLN(char* v);
-    void DBUG_NOLN(const char* v);
-    void DBUG_NOLN(const char* v, int v2);
-    void DBUG_NOLN(int v);
-#endif
+void DBUG_NOLN(char* v);
+void DBUG_NOLN(const char* v);
+void DBUG_NOLN(const char* v, int v2);
+void DBUG_NOLN(int v);
 
 void host_system_menu();

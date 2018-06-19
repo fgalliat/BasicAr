@@ -54,22 +54,53 @@
 #include <float.h>
 #include <limits.h>
 
-#ifdef COMPUTER
+#include "xts_arch.h"
+#ifdef BUT_TEENSY
+  //#include "xts_teensy.h"
+
+#ifdef BUT_ESP32
+ #ifdef ESP32PCKv2
+    extern Esp32Pocketv2 esp32;
+
+ #ifdef ESP32_WIFI_SUPPORT
+     extern void host_outputString(char* str);
+     extern int host_outputInt(long v);
+
+     #define DBUG(a) { Serial.print(a); host_outputString(a); }
+     #define DBUGi(a) { Serial.print(a); host_outputInt(a); }
+
+     #include "Esp32WifiServer.h"
+     extern Esp32WifiServer telnet;
+     
+     #undef DBUG
+     #undef DBUGi
+ #endif
+
+ #else
+   extern Esp32Oled esp32;
+ #endif
+
+#endif
+
+  #ifndef COMPUTER
+    #include "xts_teensy.h"
+  #else 
     #include "computer.h"
+  #endif
+
+
+
 #else
   #include <Arduino.h>
 #endif
-
-// #include "mem_utils.h"
-// for mem_utils super-routines
-#define mem_routines 1
-#define ANOTHER_CPP 1
-#include "xts_arch.h"
 
 #include "basic.h"
 #include "host.h"
 
 //#include <avr/pgmspace.h>
+
+// Xtase
+#include "mem_utils.h"
 
 // -------- Xtase refacto -------------
 char executeMode;
@@ -161,15 +192,15 @@ TokenTableEntry tokenTable[] = {
     // ------ Xtase routines -----------
     {"MEM",0}, {"?",TKN_FMT_POST}, {"'",TKN_FMT_POST},
     {"LOCATE",2|TKN_FMT_POST}, // Oups : there was a POSITION cmd ...
-    {"LED",2|TKN_FMT_POST}, // to switch on/off a led
-    {"BEEP",2|TKN_FMT_POST}, {"MUTE", 0|TKN_FMT_POST},
-    {"PLAY",1|TKN_ARG1_TYPE_STR|TKN_FMT_POST},
+    {"LED",2}, // to switch on/off a led
+    {"BEEP",2}, {"MUTE", 0},
+    {"PLAY",1|TKN_ARG1_TYPE_STR},
     {"PLAYT5K",1|TKN_ARG1_TYPE_STR|TKN_FMT_POST},
     {"PLAYT53",1|TKN_ARG1_TYPE_STR|TKN_FMT_POST},
 
     {"BYE",TKN_FMT_POST},
 
-    {"BTN",1|TKN_FMT_POST}, // to read btn state
+    {"BTN",1}, // to read btn state
 
     {"ECHO",TKN_FMT_POST}, // to (un)lock local echo
 
@@ -221,21 +252,6 @@ TokenTableEntry tokenTable[] = {
     {"MIN",  2}, // numeric fcts
     {"MAX",  2}, // numeric fcts
 
-    {"SCREEN", 1|TKN_FMT_POST}, // set screen mode
-
-    {"COPY",1|TKN_ARG1_TYPE_STR|TKN_FMT_POST}, // copy to MCU#2
-
-    {"DATAU", TKN_FMT_POST},  // DATAF "<service>","<sizeVar>","<ARRAY_VAR>"[,"<ARRAY_VAR>","<ARRAY_VAR>"...]
-    {"DRAWSPRT",7|TKN_ARG1_TYPE_STR|TKN_FMT_POST}, // DRAWSPRT "TEST",0,0, 32, 32, 20, 20, 
-    {"TEXT", 1|TKN_FMT_POST}, // set text mode (0 -or- 1)
-
-    {"DIRM", 0|TKN_FMT_POST}, // dir on mcu#2
-
-    {"DO",1|TKN_ARG1_TYPE_STR|TKN_FMT_POST}, // DO "? 3.14" as eval() in JS
-
-    {"CHR$", 1|TKN_RET_TYPE_STR},  // CHR$(y)
-
-    {"TRIANGLE",  8|TKN_FMT_POST}, // TRIANGLE x,y,x2,y2,x3,y3[,color[,mode]]
 };
 
 
@@ -1528,11 +1544,6 @@ int parseFnCallExpr() {
             if (!stackPushStr(xts_str_string(tmp, tmp2))) return ERROR_OUT_OF_MEMORY;
             break;
 
-        case TOKEN_STR_CHR:
-            tmp = (int)stackPopNum();
-            if (!stackPushStr(xts_str_string(1, tmp))) return ERROR_OUT_OF_MEMORY;
-            break;
-
         case TOKEN_STR_INSTR:
             tmpS1 = stackPopStr();  // inv. sorting
             if (!stackPushNum(xts_str_instr(stackPopStr(), tmpS1))) return ERROR_OUT_OF_MEMORY;
@@ -1743,7 +1754,6 @@ int parsePrimary() {
     case TOKEN_STR_SPACE: // Xtase code
     case TOKEN_STR_ASC: // Xtase code
     case TOKEN_STR_INSTR: // Xtase code
-    case TOKEN_STR_CHR: // Xtase code
 
     case TOKEN_ABS: // Xtase code
     case TOKEN_COS: // Xtase code
@@ -2320,19 +2330,18 @@ int parseLoadSaveCmd() {
 #endif
         }
         else {
-            if (op == TOKEN_SAVE) {
+            if (op == TOKEN_SAVE)
 #ifdef FS_SUPPORT
   return ERROR_BAD_PARAMETER;
 #else
-                // host_saveProgram(autoexec);
+                host_saveProgram(autoexec);
 #endif
-            }
             else if (op == TOKEN_LOAD) {
 #ifdef FS_SUPPORT
   return ERROR_BAD_PARAMETER;
 #else
                 reset();
-                // host_loadProgram();
+                host_loadProgram();
 #endif
             }
             else
@@ -2505,7 +2514,6 @@ int parseStmts()
 
             case TOKEN_DRAWBPP: ret = xts_dispBPP(); break;
             case TOKEN_DRAWPCT: ret = xts_dispPCT(); break;
-            case TOKEN_DRAWSPRITE: ret = xts_dispSPRITE(); break;
 
             case TOKEN_CIRCLE : ret = xts_dispCircle(); break;
             case TOKEN_LINE   : ret = xts_dispLine(); break;
@@ -2514,22 +2522,12 @@ int parseStmts()
  
             case TOKEN_DIR: ret = xts_fs_dir(); break;
             case TOKEN_DIRARRAY: ret = xts_fs_dir(true); break;
-            case TOKEN_DIR2: ret = xts_fs_dir_mcu2(); break;
 
             case TOKEN_EXT_EXEC: ret = xts_exec_cmd(); break;
-            case TOKEN_DO: ret = xts_do_cmd(); break;
-
             case TOKEN_DATAF: ret = xts_dataf_cmd(); break;
-            case TOKEN_DATAU: ret = xts_datau_cmd(); break;
 
             case TOKEN_BLITT : ret = xts_blittMode(); break;
             case TOKEN_RECT  : ret = xts_dispRect(); break;
-            case TOKEN_TRIANGLE  : ret = xts_dispTriangle(); break;
-
-            case TOKEN_SCREEN : ret = xts_screenMode(); break;
-            case TOKEN_TEXT : ret = xts_textMode(); break;
-
-            case TOKEN_COPY: ret = xts_copyToBridge(); break;
 
             // ======== Xtase cmds ============= 
 

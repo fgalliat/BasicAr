@@ -11,7 +11,7 @@
 //how many clients should be able to telnet to this ESP32
 #define MAX_SRV_CLIENTS 1
 
-extern bool selfRun;
+
 
   class Esp32WifiServer {
     private:
@@ -24,7 +24,7 @@ extern bool selfRun;
 
      // ==========================
      //WiFiMulti wifiMulti;
-     WiFiMulti* wifiMulti = NULL;
+     WiFiMulti* wifiMulti;
      //WiFiServer server(23);
      WiFiServer* server;
      WiFiClient serverClients[MAX_SRV_CLIENTS];
@@ -53,56 +53,37 @@ extern bool selfRun;
         this->APmode = false;
         this->_isWifiConnected = false;
 
-        delay(10);
-        WiFi.mode( WIFI_STA );
-
-        mcu.lockISR();
-        bool ok = mcu.getFS()->openCurrentTextFile("/SSID.TXT");
+        esp32.lockISR();
+        bool ok = esp32.getFs()->openCurrentTextFile("/SSID.TXT");
         if ( !ok ) {
-          mcu.unlockISR();
+          esp32.unlockISR();
           DBUG("missing /SSID.TXT is missing !!\n");
           return false;
         }
 
-        DBUG( "\n" ); 
         if (wifiMulti == NULL) { wifiMulti = new WiFiMulti(); }
 
         //char* line, *line2; // leads to the same pointer
-        static char* line;
-        static char ssid[128],key[128];
-        while( (line = mcu.getFS()->readCurrentTextLine() ) != NULL ) {
+        char* line;
+        char ssid[128],key[128];
+        while( (line = esp32.getFs()->readCurrentTextLine() ) != NULL ) {
           // trim TODO + file sanity check
           if ( strlen(line) == 0 ) { break; }
           memcpy(ssid, line, strlen(line));
           ssid[strlen(line)] = 0x00;
           DBUG( "Registering SSID : " );DBUG( ssid );DBUG( "\n" ); 
-          line = mcu.getFS()->readCurrentTextLine();
+          line = esp32.getFs()->readCurrentTextLine();
           memcpy(key, line, strlen(line));
           key[strlen(line)] = 0x00;
           //DBUG( key ); DBUG( "\n" );
           wifiMulti->addAP( (const char*)ssid, (const char*)key);
-          delay(5);
         }
-        mcu.getFS()->closeCurrentTextFile();
-        mcu.unlockISR();
-
-        delay(50);
-        yield();
+        esp32.getFs()->closeCurrentTextFile();
+        esp32.unlockISR();
 
         DBUG("Connecting Wifi \n");
-        yield();
-        mcu.lockISR();
-        static int wstate;
-        Serial.setDebugOutput(true);
-
         for (int loops = 10; loops > 0; loops--) {
-          mcu.print(loops);mcu.print('\n');
-          yield();
-          wstate = wifiMulti->run();
-          // mcu.print("ran\n");
-          delay(2);
-
-          if (wstate == WL_CONNECTED) {
+          if (wifiMulti->run() == WL_CONNECTED) {
             DBUG("WiFi connected \n");
             DBUG("IP address: ");
             
@@ -120,26 +101,16 @@ extern bool selfRun;
             break;
           }
           else {
-            //DBUGi(loops); DBUG("\n");
-            //mcu.print(loops);mcu.print('\n');
-            yield();
-            //delay(1000);
-            delay(500);
-            yield();
+            DBUGi(loops); DBUG("\n");
+            delay(1000);
           }
-
         }
-
-        mcu.unlockISR();
-        delay(50);
-
-        if (wstate != WL_CONNECTED) {
+        if (wifiMulti->run() != WL_CONNECTED) {
           DBUG("WiFi connect failed\n");
           delay(1000);
           //ESP.restart();
           return false;
         }
-        yield();
 
         this->_isWifiConnected = true;
         return true;
@@ -147,7 +118,7 @@ extern bool selfRun;
 
       // start as an AP
       bool startAP() {
-        mcu.lockISR();
+        esp32.lockISR();
 
         this->APmode = true;
         this->_isWifiConnected = false;
@@ -171,7 +142,7 @@ extern bool selfRun;
 
         DBUG("\n");
 
-        mcu.unlockISR();
+        esp32.unlockISR();
 
         this->_isWifiConnected = true;
         return true;
@@ -303,21 +274,13 @@ extern bool selfRun;
               int cpt = 0;
               bool ok_break = false;
               while( cpt < MAX_LINE_LEN ) {
-                if ( selfRun ) { lineRead[cpt] = 0x00; ok_break = true; break; }
-
                 while(serverClients[i].available()) { 
-
-                  if ( selfRun ) { lineRead[cpt] = 0x00; ok_break = true; break; }
-
                   lineRead[cpt] = serverClients[i].read(); 
                   // DBUG( (int)lineRead[cpt] ); DBUG(' ');
                   if ( lineRead[cpt] == '\r' ) { lineRead[cpt] = 0x00; continue; }
                   if ( lineRead[cpt] == '\n' ) { lineRead[cpt] = 0x00; ok_break = true; break; }
-
-                  if ( selfRun ) { lineRead[cpt] = 0x00; ok_break = true; break; }
                   cpt++;
                 }
-
                 if ( ok_break ) { break; }
               }
 
@@ -349,28 +312,11 @@ extern bool selfRun;
         }
       }
 
-      void  print(int val) {
-        if ( !_isClientConnected ) { return; }
-
-        //push data to all connected telnet clients
-        for(uint8_t i = 0; i < MAX_SRV_CLIENTS; i++){
-          if (serverClients[i] && serverClients[i].connected()){
-            serverClients[i].print( val );
-            delay(1);
-          }
-        }
-      }
-
       // from telnet client to ESP32
       void uploadFile() {
-        static char* filename = NULL;
-        static char* filesize = NULL;
-
-        mcu.MASTERlockISR();
-
+        char* filename = NULL;
+        char* filesize = NULL;
         DBUG("WAITING...\n");
-
-        mcu.lockISR();
 
         while( (filename = readLine() ) == NULL ) { delay(250); }
         char _filename[13+1]; memset(_filename, 0x00, 13+1);
@@ -386,40 +332,29 @@ extern bool selfRun;
         int bytesToRead = atoi( filesize );
         if ( bytesToRead < 0 ) {
           DBUG("BAD filesize : ");DBUG(filesize);DBUG("\n");
-          mcu.unlockISR();
-          mcu.MASTERunlockISR();
           return;
         }
         DBUG("filesize : ");DBUGi(bytesToRead);DBUG("\n");
 
 
-        mcu.lockISR(); // dirty but Fs Ops releases ISR @ this time
-        delay(100); // to be sure ISR hangout
-        mcu.getFS()->openCurrentTextFile( _filename, false );
-        mcu.lockISR();
-        delay(100); // to be sure ISR hangout
+        esp32.lockISR();
+        esp32.getFs()->openCurrentTextFile( _filename, false );
 
         int cpt = 0;  char buff[32]; int read;
         while( cpt < bytesToRead ) {
-          while(serverClients[0].available() > 0) { 
+          while(serverClients[0].available()) { 
             //int ch = serverClients[0].read();
-            mcu.lockISR();
             read = serverClients[0].readBytes(buff, 32);
-            mcu.getFS()->writeCurrentTextBytes( buff, read );
-            mcu.lockISR();
+            esp32.getFs()->writeCurrentTextBytes( buff, read );
             cpt+=read;
           }
           delay(100);
         }
 
-        mcu.lockISR();
-        delay(100); // to be sure ISR hangout
-        mcu.getFS()->closeCurrentTextFile();
-        
-        serverClients[0].println("-EOF-");
+        esp32.getFs()->closeCurrentTextFile();
+        esp32.unlockISR();
 
-        mcu.unlockISR();
-        mcu.MASTERunlockISR();
+        serverClients[0].println("-EOF-");
 
         DBUG("Upload finished");
       }
