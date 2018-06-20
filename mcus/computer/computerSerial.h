@@ -30,28 +30,58 @@
           nodelay(w, TRUE); // prevent getch() from blocking !!!!!!
       }
 
-      int available() {
+      #define PS2_ENTER 13
+      char serBuff[32+1];
+      int  serBuffCursor = 0;
 
+      int available() {
           PC_ISR(); // by computer available() call
+
+          if ( serBuffCursor >= 32 ) {
+              return 32;
+          }
 
           lastKC = getch(); // ncurses version
 
-          if (lastKC > -1) { std::printf(">%d<(%c)\r\n", lastKC, lastKC); }
-
-          return lastKC > -1 ? 1 : 0;
-      }
-
-      #define PS2_ENTER 13
-
-      int read() {
-          int ret = lastKC;
-
-          if ( ret == '\n' ) {
-              ret = PS2_ENTER;
+          if ( lastKC < 0 ) {
+              return serBuffCursor;
           }
 
-          lastKC = -1;
-          return ret;
+          if ( lastKC == '\r' ) {
+              // ....
+          } else if ( lastKC == '\n' ) {
+            serBuff[ serBuffCursor++ ] = '\r';
+            // serBuff[ serBuffCursor++ ] = '\n';
+            serBuff[ serBuffCursor ] = 0x00;
+          } else {
+            serBuff[ serBuffCursor++ ] = lastKC;
+            serBuff[ serBuffCursor ] = 0x00;
+          }
+
+          // if (lastKC > -1) { std::printf(">%d<(%c)\r\n", lastKC, lastKC); }
+
+          if ( serBuffCursor < 0 ) { serBuffCursor = 0; }
+          return serBuffCursor;
+      }
+
+
+      int read() {
+          if ( serBuffCursor <= 0 ) {
+              return -1;
+          }
+
+          int kc = serBuff[0];
+          // std::printf(">%d<(%c) ---->(%d)\r\n", kc, kc, serBuffCursor);
+
+          // TODO : better
+          for(int i=1; i < serBuffCursor; i++) {
+              serBuff[i-1] = serBuff[i];
+          }
+          serBuff[serBuffCursor] = 0x00;
+          serBuffCursor--;
+          serBuff[serBuffCursor] = 0x00;
+
+          return kc;
       }
 
       void _printAt(int x, int y, char *str) {

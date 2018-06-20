@@ -13,7 +13,6 @@
 
 // just to identify main cpp sourcecode
 #define MAIN_INO_FILE 1
-
 #include "xts_arch.h"
 
 // __________________
@@ -106,13 +105,8 @@ void setScreenSize(int cols, int rows) {
 bool addAutorunFlag = false;
 
 void setup() {
-
-Serial.println("setup.1");
-
     mcu.setup();
-Serial.println("setup.2");
     STORAGE_OK = mcu.getFS()->isReady();
-Serial.println("setup.3");
     // BUZZER_MUTE = true;
     // inputString.reserve(200);
     
@@ -244,7 +238,12 @@ void loop() {
             }
 
         #else
+            #ifdef COMPUTER
+            // else makes loop
+            char *input = host_readLine();
+            #else
             static char *input = host_readLine();
+            #endif
         #endif
         MODE_EDITOR = false;
 
@@ -382,6 +381,9 @@ int evalCmd(char* cmd) {
 PC_ISR(); // by SDL call
 
         delay( 10 );
+
+        // break;
+
     }
 
     // to call.....

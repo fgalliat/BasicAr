@@ -115,10 +115,14 @@ class Adafruit_SSD1306
         this->y = y;
     }
 
-    void println(char *str)
-    {
-        for (int i = 0; i < strlen(str); i++)
-        {
+    void print(char *str) {
+        for (int i = 0; i < strlen(str); i++) {
+            print(str[i]);
+        }
+    }
+
+    void println(char *str) {
+        for (int i = 0; i < strlen(str); i++) {
             print(str[i]);
         }
         y += 8;
@@ -138,12 +142,18 @@ class Adafruit_SSD1306
         {
             this->x = 0;
             this->y += 8;
+            
+            // TEMP
+            if ( this->y > 8*8 ) { this->clearDisplay(); }
+
             // scrollIfNeeded();
             return;
         }
 
         // see also : https://github.com/watterott/Arduino-Libs/blob/master/GraphicsLib/fonts.h
         DrawChar(ch, this->x, this->y, 1);
+
+        std::printf( "%c", ch );
 
         this->x += 6;
     }

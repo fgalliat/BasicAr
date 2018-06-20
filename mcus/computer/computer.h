@@ -68,7 +68,7 @@
     musicPlayer = new GenericMCU_MUSIC_PLAYER(this);
     screen = new GenericMCU_SCREEN(this);
 
-    display.__init();
+    // display.__init();
   }
   void GenericMCU::setupPreInternal() { printf("pre-internal\n"); }
   void GenericMCU::setupPostInternal() { 
@@ -162,18 +162,26 @@
     this->ready = true;
   }
 
-  void GenericMCU_SCREEN::clear()          { Serial.print("\n\n\n\n\n\n\n\n\n"); }
-  void GenericMCU_SCREEN::print(char* str) { Serial.print(str);  }
-  void GenericMCU_SCREEN::print(char ch)   { Serial.print(ch); }
-  void GenericMCU_SCREEN::print(int   val) { Serial.print(val); }
-  void GenericMCU_SCREEN::print(float val) { Serial.print(val); }
+  // void GenericMCU_SCREEN::clear()          { Serial.print("\n\n\n\n\n\n\n\n\n"); }
+  // void GenericMCU_SCREEN::print(char* str) { Serial.print(str);  }
+  // void GenericMCU_SCREEN::print(char ch)   { Serial.print(ch); }
+  // void GenericMCU_SCREEN::print(int   val) { Serial.print(val); }
+  // void GenericMCU_SCREEN::print(float val) { Serial.print(val); }
 
-  void GenericMCU_SCREEN::setCursor(int x, int y) { }
+  static char tmpStr[64+1];
+  void GenericMCU_SCREEN::clear()          { display.clearDisplay(); }
+  void GenericMCU_SCREEN::print(char* str) { display.print(str);  }
+  void GenericMCU_SCREEN::print(char ch)   { display.print(ch); }
+  void GenericMCU_SCREEN::print(int   val) { sprintf(tmpStr, "%d", val); display.print(tmpStr); }
+  void GenericMCU_SCREEN::print(float val) { sprintf(tmpStr, "%f", val); display.print(tmpStr); }
+
+  void GenericMCU_SCREEN::setCursor(int x, int y) { display.setCursor(x,y); }
   void GenericMCU_SCREEN::setColor(uint16_t color) { }
 
   void GenericMCU_SCREEN::setMode(uint8_t mode) { }
   void GenericMCU_SCREEN::setTextMode(uint8_t mode, uint16_t fg, uint16_t bg) { }
   void GenericMCU_SCREEN::blitt(uint8_t mode) { }
+  
   void GenericMCU_SCREEN::drawRect(int x, int y, int w, int h, uint8_t mode, uint16_t color) { }
   void GenericMCU_SCREEN::drawTriangle(int x, int y, int x2, int y2, int x3, int y3, uint8_t mode, uint16_t color) { }
   void GenericMCU_SCREEN::drawCircle(int x, int y, int radius, uint8_t mode, uint16_t color) { }

@@ -58,6 +58,7 @@
 
     // ==== TEMP ======
     #define BUT_ESP32 1
+    #define ESP32PCKv3 1
 
     #define BUILTIN_LCD 1
     #define ARCH_TYPE "Xts_Computer V3" 

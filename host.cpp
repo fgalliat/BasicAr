@@ -750,7 +750,7 @@ char *host_readLine() {
             host_newLine();
             done = true;
           }
-          while ( Serial.available() ) {
+          while ( Serial.available() > 0 ) {
             host_click();
             lineDirty[pos / SCREEN_WIDTH] = pos % SCREEN_WIDTH; // Cf VGAT + Kbd display bug
             
