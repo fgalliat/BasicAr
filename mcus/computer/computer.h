@@ -58,9 +58,24 @@
   #define KBD_BREAK 1000
 
 
-  void GenericMCU::init() { }
-  void GenericMCU::setupPreInternal() {  }
-  void GenericMCU::setupPostInternal() {  }
+  void GenericMCU::init() { 
+    Serial.begin(115200);
+
+    gpio = new GenericMCU_GPIO(this);
+    buzzer = new GenericMCU_BUZZER(this);
+    fs = new GenericMCU_FS(this);
+
+    musicPlayer = new GenericMCU_MUSIC_PLAYER(this);
+    screen = new GenericMCU_SCREEN(this);
+
+    display.__init();
+  }
+  void GenericMCU::setupPreInternal() { printf("pre-internal\n"); }
+  void GenericMCU::setupPostInternal() { 
+    Serial.println(">>coucou from Serial");
+    this->println(">>coucou from MCU");
+    printf("post-internal\n"); 
+  }
 
   void GenericMCU::reset() { this->println("> RESET REQUEST"); PC_halt(); }
   void GenericMCU::builtinLED(bool state) { this->println("> LED REQUEST"); }
@@ -88,16 +103,16 @@
   #define BTN_LEFT  6
   #define BTN_RIGHT 7
 
-  void GenericMCU_GPIO::setup() { }
+  void GenericMCU_GPIO::setup() { this->ready = true; }
   void GenericMCU_GPIO::led(uint8_t ledNum, bool state) { }
   bool GenericMCU_GPIO::btn(uint8_t btnNum) { return false;  }
 
 
-  void GenericMCU_BUZZER::setup() { }
+  void GenericMCU_BUZZER::setup() { this->ready = true; }
   void GenericMCU_BUZZER::playTone(int freq, int duration) { }
   void GenericMCU_BUZZER::noTone() { }
 
-  void GenericMCU_FS::setup() { }
+  void GenericMCU_FS::setup() { this->ready = true; }
   void GenericMCU_FS::format() { mcu->println("> FS FORMAT REQUEST"); }
 
   void GenericMCU_FS::remove(char* filename) {
@@ -123,7 +138,7 @@
 
   void GenericMCU_FS::copyToBridge(char* filename) { }
 
-  void GenericMCU_MUSIC_PLAYER::setup() { }
+  void GenericMCU_MUSIC_PLAYER::setup() { this->ready = true; }
   void GenericMCU_MUSIC_PLAYER::playTrack(int trckNum) {
     mcu->println("play MP3()");
   }
@@ -144,6 +159,7 @@
         std::cout << "SDL_Init Error: " << SDL_GetError() << std::endl;
         exit(1);
     }
+    this->ready = true;
   }
 
   void GenericMCU_SCREEN::clear()          { Serial.print("\n\n\n\n\n\n\n\n\n"); }

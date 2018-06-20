@@ -32,6 +32,9 @@
   #include <sys/ioctl.h>
   #include <fcntl.h>
   #include <linux/kd.h>
+
+  #include <ncurses.h>
+
   #include <math.h>
   #include <SDL2/SDL.h>
 
@@ -52,6 +55,9 @@
 
 #if defined(COMPUTER)
     // Generic computer C++/SDL/CURSES
+
+    // ==== TEMP ======
+    #define BUT_ESP32 1
 
     #define BUILTIN_LCD 1
     #define ARCH_TYPE "Xts_Computer V3" 

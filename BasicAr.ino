@@ -107,9 +107,12 @@ bool addAutorunFlag = false;
 
 void setup() {
 
-    mcu.setup();
-    STORAGE_OK = mcu.getFS()->isReady();
+Serial.println("setup.1");
 
+    mcu.setup();
+Serial.println("setup.2");
+    STORAGE_OK = mcu.getFS()->isReady();
+Serial.println("setup.3");
     // BUZZER_MUTE = true;
     // inputString.reserve(200);
     
@@ -146,7 +149,7 @@ void setup() {
     host_showBuffer();
 
     addAutorunFlag = true;
-
+Serial.println("setup.10");
 }
 
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -168,6 +171,7 @@ bool systemHalted = false;
 bool wasNot = true;
 
 void loop() {
+// Serial.println("loop.1");
     int ret = ERROR_NONE;
 
     if ( systemHalted ) {

@@ -35,11 +35,21 @@
           PC_ISR(); // by computer available() call
 
           lastKC = getch(); // ncurses version
+
+          if (lastKC > -1) { std::printf(">%d<(%c)\r\n", lastKC, lastKC); }
+
           return lastKC > -1 ? 1 : 0;
       }
 
+      #define PS2_ENTER 13
+
       int read() {
           int ret = lastKC;
+
+          if ( ret == '\n' ) {
+              ret = PS2_ENTER;
+          }
+
           lastKC = -1;
           return ret;
       }

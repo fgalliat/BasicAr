@@ -18,7 +18,8 @@ class Adafruit_SSD1306
 {
   private:
     int y = 0, x = 0;
-    int SCREEN_HEIGHT = 64, SCREEN_WIDTH = 128;
+    //int SCREEN_HEIGHT = 64, SCREEN_WIDTH = 128;
+    int SCREEN_HEIGHT = 240, SCREEN_WIDTH = 320;
     Uint32 *pixels = NULL;
 
     SDL_Window *window;
@@ -80,6 +81,9 @@ class Adafruit_SSD1306
         black.r = 0;
         black.g = 0;
         black.b = 0;
+
+        printf("created surface !!!!\n");
+
     }
 
     ~Adafruit_SSD1306() {}
@@ -370,6 +374,7 @@ static void __DrawPixel(int x, int y, int brightness)
 
 static void PC_ISR()
 {
+    SDL_Delay(100);
     display._MEGABlitt();
 }
 
