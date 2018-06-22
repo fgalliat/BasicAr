@@ -219,6 +219,21 @@ class Adafruit_SSD1306
         SDL_FillRect(surface, &r, SDL_MapRGB(surface->format, usedColor.r, usedColor.g, usedColor.b));
     }
 
+    void fillRect(int x, int y, int w, int h, unsigned int color)
+    {
+        int zoom = 1;
+        SDL_Rect r;
+        r.x = x * zoom;
+        r.y = y * zoom;
+        r.w = w * zoom;
+        r.h = h * zoom;
+
+        SDL_Color usedColor = color == 0x00 ? this->black : this->color;
+
+        // draw a rect
+        SDL_FillRect(surface, &r, SDL_MapRGB(surface->format, usedColor.r, usedColor.g, usedColor.b));
+    }
+
     void drawCircle(int x, int y, int radius, unsigned int color)
     {
         // very slow impl.

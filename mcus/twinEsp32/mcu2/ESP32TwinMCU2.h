@@ -1026,29 +1026,6 @@
     int sx = 0; // screenOffsetX;
     int sy = 0; // screenOffsetY;
 
-    // REFACTO that code
-    // if ( fromMode == SCREEN_MODE_128 ) {
-    //   int b__screenWidth = 128;
-    //   int b__screenHeight = 64;
-
-    //   sx = (320 - b__screenWidth) / 2;
-    //   sy = (240 - b__screenHeight) / 2;
-    // } else if ( fromMode == SCREEN_MODE_160 ) {
-    //   int b__screenWidth = 160;
-    //   int b__screenHeight = 128;
-
-    //   sx = (320 - b__screenWidth) / 2;
-    //   sy = (240 - b__screenHeight) / 2;
-    // } else if ( fromMode == SCREEN_MODE_320 ) {
-    //   int b__screenWidth = 320;
-    //   int b__screenHeight = 240;
-
-    //   sx = 0;
-    //   sy = 0;
-    // } 
-
-
-
     if ( __screenMode != SCREEN_MODE_320 ) {
       _oled_display->drawPixel(screenOffsetX+x, screenOffsetY+y, color);
       return;

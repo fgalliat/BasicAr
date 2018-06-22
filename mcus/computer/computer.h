@@ -40,7 +40,7 @@
     display.close();
     SDL_Quit();
 
-    // exit(0);
+    exit(0);
   }
 
 
@@ -70,11 +70,13 @@
 
     // display.__init();
   }
-  void GenericMCU::setupPreInternal() { printf("pre-internal\n"); }
+  void GenericMCU::setupPreInternal() { 
+    // printf("pre-internal\n"); 
+  }
   void GenericMCU::setupPostInternal() { 
-    Serial.println(">>coucou from Serial");
-    this->println(">>coucou from MCU");
-    printf("post-internal\n"); 
+    // Serial.println(">>coucou from Serial");
+    // this->println(">>coucou from MCU");
+    // printf("post-internal\n"); 
   }
 
   void GenericMCU::reset() { this->println("> RESET REQUEST"); PC_halt(); }
@@ -118,19 +120,96 @@
   void GenericMCU_FS::remove(char* filename) {
     mcu->println("> remove()");
   }
+
+  FILE *file;
+  bool fileOpened = false;
+
   bool  GenericMCU_FS::openCurrentTextFile(char* filename, bool readMode) {
-    mcu->println("> openFile()");
-    return false;
+    // "data"+"/TOTO.BAS"
+    char entryName[4 + 1+ 8+1+3 +1];
+    strcpy(entryName, "data");
+    strcat(entryName, filename);
+
+    printf(">> openFIle(%s, %d)", entryName, readMode?1:0);
+
+    file = fopen(entryName, readMode ? "r" : "w");
+    if (!file) {
+      fileOpened = false;
+      return false;
+    }
+
+    fileOpened = true;
+    return true;
   }
 
-  void  GenericMCU_FS::closeCurrentTextFile() { }
-  void GenericMCU_FS::writeCurrentText(char* line, bool autoflush) { }
-  void GenericMCU_FS::writeCurrentTextBytes(char* line, int len) { }
+  void  GenericMCU_FS::closeCurrentTextFile() { 
+    if (file != NULL && fileOpened) {
+      fclose(file);
+    }
+  }
 
-  char* GenericMCU_FS::readCurrentTextLine() { return NULL; }
+  void GenericMCU_FS::writeCurrentText(char* line, bool autoflush) {
+    if (file != NULL && fileOpened) {
+      fputs(line, file);
+    }
+  }
+
+  void GenericMCU_FS::writeCurrentTextBytes(char* line, int len) {
+    if (file != NULL && fileOpened) {
+      for(int i=0; i < len; i++) {
+        fputc( line[i], file );
+      }
+    }
+  }
+
+    const int __myLineLen = 256;
+    char __myLine[__myLineLen+1];
+
+  char* GenericMCU_FS::readCurrentTextLine() { 
+
+    const int MAX_LINE_LEN = 256;
+    memset(__myLine, 0x00, MAX_LINE_LEN +1);
+
+    char c;
+    int cpt = 0;
+    while ((c = fgetc(file)) != EOF && cpt < MAX_LINE_LEN) {
+        if (c == '\r' ) {
+          //continue;
+          break;
+        }
+        if (c == '\n') {
+          break;
+        }
+        __myLine[cpt++] = c;
+    }
+    __myLine[cpt] = 0x00;
+
+    if ( c == EOF && cpt == 0 ) {
+      return NULL;
+    }
+
+    printf( ">%s<\n", __myLine );
+
+    return __myLine;
+  }
+
   int GenericMCU_FS::readBinFile(char* filename, uint8_t* dest, int maxLen, int start) {
-    mcu->println("readBin()");
-    return 0;
+    // "data"+"/TOTO.BAS"
+    char entryName[4 + 1+ 8+1+3 +1];
+    strcpy(entryName, "data");
+    strcat(entryName, filename);
+
+    printf(">> readBinFile(%s, %d)", entryName);
+
+    file = fopen(entryName, "r");
+    if ( !file ) {
+      return -1;
+    }
+    fseek(file, start, SEEK_SET);
+    int readed = fread(dest, 1, maxLen, file);
+    fclose( file );
+
+    return readed;
   }
 
   void GenericMCU_FS::lsMCU2() { }
@@ -168,6 +247,15 @@
   // void GenericMCU_SCREEN::print(int   val) { Serial.print(val); }
   // void GenericMCU_SCREEN::print(float val) { Serial.print(val); }
 
+  int screenOffsetX=0, screenOffsetY=0;
+  int __screenMode = SCREEN_MODE_320;
+  #define CLR_WHITE 1
+  #ifdef MAIN_INO_FILE
+    uint8_t bpp_picturebuff[ 1024 ];
+  #else
+    extern uint8_t bpp_picturebuff[];
+  #endif
+
   static char tmpStr[64+1];
   void GenericMCU_SCREEN::clear()          { display.clearDisplay(); }
   void GenericMCU_SCREEN::print(char* str) { display.print(str);  }
@@ -182,14 +270,103 @@
   void GenericMCU_SCREEN::setTextMode(uint8_t mode, uint16_t fg, uint16_t bg) { }
   void GenericMCU_SCREEN::blitt(uint8_t mode) { }
   
+  // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  // destMode is SCREEN_MODE_320
+  void drawPixShaded(int x, int y, uint16_t color, int fromMode ) {
+    int sx = 0; // screenOffsetX;
+    int sy = 0; // screenOffsetY;
+
+    if ( __screenMode != SCREEN_MODE_320 ) {
+      display.drawPixel(screenOffsetX+x, screenOffsetY+y, color);
+      return;
+    }
+
+    if ( fromMode == SCREEN_MODE_128 ) {
+      sx = (320-(128*2))/2;
+      sy = (240-(64*3))/2;
+      x*=2; int w=2;
+      y*=3; int h=3;
+      display.fillRect(sx+x, sy+y, w, h, color);
+    } else if ( fromMode == SCREEN_MODE_160 ) {
+      sx = (320-(160*2))/2;
+      sy = (240-(128*2))/2; // check if not overflow (256 Vs 240)
+      x*=2; int w=2;
+      y*=2; int h=2;
+      display.fillRect(sx+x, sy+y, w, h, color);
+    } else if ( fromMode == SCREEN_MODE_320 ) {
+      display.fillRect(sx+x, sy+y, 1, 1, color);
+    } 
+
+  }
+  // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+
   void GenericMCU_SCREEN::drawRect(int x, int y, int w, int h, uint8_t mode, uint16_t color) { }
   void GenericMCU_SCREEN::drawTriangle(int x, int y, int x2, int y2, int x3, int y3, uint8_t mode, uint16_t color) { }
   void GenericMCU_SCREEN::drawCircle(int x, int y, int radius, uint8_t mode, uint16_t color) { }
   void GenericMCU_SCREEN::drawLine(int x, int y, int x2, int y2, uint16_t color) { }
   void GenericMCU_SCREEN::drawPixel(int x, int y, uint16_t color) { }
+
   void GenericMCU_SCREEN::drawPicture565( char* filename, int x, int y, int _w, int _h ) { }
   void GenericMCU_SCREEN::drawPicture565Sprite( char* filename, int x, int y, int w, int h, int sx, int sy ) { }
-  void GenericMCU_SCREEN::drawPictureBPP( char* filename, int x, int y ) { }
+
+  void GenericMCU_SCREEN::drawPictureBPP( char* filename, int x, int y ) {
+    if ( !ready ) { return; }
+
+    if ( filename != NULL ) {
+
+      int readed = mcu->getFS()->readBinFile( filename, (uint8_t*)bpp_picturebuff, 1024, 0 );
+      if ( readed < 0 ) { mcu->println("File not ready"); return; }
+
+      int w = 128;
+      int h = 64;
+
+      if( w <= 0 || h <= 0 ) {
+        return;
+      }
+
+      // int readed = f.readBytes( (char*)bpp_picturebuff, 1024);
+      this->drawPictureBPP(bpp_picturebuff, x, y);
+      // f.close();
+
+    } else {
+      // recall last MEM_RAST area
+      this->drawPictureBPP(bpp_picturebuff, x, y);
+    }
+
+    // __blittIfNeeded();
+  }
+
+  void GenericMCU_SCREEN::drawPictureBPP( uint8_t* raster, int x, int y ) {
+    if ( !ready ) { return; }
+
+    int sx = screenOffsetX + x;
+    int sy = screenOffsetY + y;
+
+    int width = 128;
+    int height = 64;
+
+    unsigned char c;
+
+    // TODO : lock blitt
+
+    //this->drawRect(sx, sy, 128, 64, 1, 0);
+    this->clear();
+    //drawPixShadedRect(x, y, 128, 64, CLR_BLACK, SCREEN_MODE_128 );
+
+    for (int yy = 0; yy < height; yy++) {
+      for (int xx = 0; xx < width; xx++) {
+        c = (raster[(yy * (width / 8)) + (xx / 8)] >> (7 - ((xx) % 8))) % 2;
+        if (c == 0x00) {
+        }
+        else {
+            // _oled_display->drawPixel(sx + xx, sy + yy, CLR_WHITE);
+            drawPixShaded(xx, yy, CLR_WHITE, SCREEN_MODE_128 );
+        }
+      }
+    }   
+  }
 
   bool GenericMCU::getSystemMenuReqState()  { return this->btn( BTN_UP ) && this->btn( BTN_1 ) && this->btn( BTN_2 ); }
   bool GenericMCU::getSystemMenuReqEnd()    { return !this->btn( BTN_UP ) && !this->btn( BTN_1 ) && !this->btn( BTN_2 ); }
