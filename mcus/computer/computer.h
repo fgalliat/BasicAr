@@ -130,7 +130,7 @@
     strcpy(entryName, "data");
     strcat(entryName, filename);
 
-    printf(">> openFIle(%s, %d)", entryName, readMode?1:0);
+    // printf(">> openFIle(%s, %d)", entryName, readMode?1:0);
 
     file = fopen(entryName, readMode ? "r" : "w");
     if (!file) {
@@ -188,7 +188,7 @@
       return NULL;
     }
 
-    printf( ">%s<\n", __myLine );
+    // printf( ">%s<\n", __myLine );
 
     return __myLine;
   }
@@ -302,13 +302,142 @@
 
 
 
-  void GenericMCU_SCREEN::drawRect(int x, int y, int w, int h, uint8_t mode, uint16_t color) { }
   void GenericMCU_SCREEN::drawTriangle(int x, int y, int x2, int y2, int x3, int y3, uint8_t mode, uint16_t color) { }
-  void GenericMCU_SCREEN::drawCircle(int x, int y, int radius, uint8_t mode, uint16_t color) { }
-  void GenericMCU_SCREEN::drawLine(int x, int y, int x2, int y2, uint16_t color) { }
-  void GenericMCU_SCREEN::drawPixel(int x, int y, uint16_t color) { }
+  
+  void GenericMCU_SCREEN::drawRect(int x, int y, int w, int h, uint8_t mode, uint16_t color) {
+    if ( mode == 1 ) {
+      display.fillRect(x,y,w,h,color);
+    } else {
+      display.drawRect(x,y,w,h,color);
+    }
+  }
 
-  void GenericMCU_SCREEN::drawPicture565( char* filename, int x, int y, int _w, int _h ) { }
+  void GenericMCU_SCREEN::drawCircle(int x, int y, int radius, uint8_t mode, uint16_t color) { 
+    // TODO : fillCIrlce
+    display.drawCircle(x, y, radius, color);
+  }
+
+  void GenericMCU_SCREEN::drawLine(int x, int y, int x2, int y2, uint16_t color) { 
+    display.drawLine(x, y, x2, y2, color);
+  }
+
+  void GenericMCU_SCREEN::drawPixel(int x, int y, uint16_t color) { 
+    display.drawPixel( x, y, color );
+  }
+
+  #define MEM_RAST_HEIGHT  128
+  #define MEM_RAST_WIDTH   160
+  #define MEM_RAST_LEN_u16 MEM_RAST_WIDTH * MEM_RAST_HEIGHT
+  #define MEM_RAST_LEN_u8  MEM_RAST_LEN_u16 * 2
+
+  #define PCT_HEADER_LEN 7
+
+  #ifdef MAIN_INO_FILE
+    uint16_t color_picturebuff[ MEM_RAST_LEN_u16 ];
+  #else
+    extern uint16_t color_picturebuff[];
+  #endif
+
+  void GenericMCU_SCREEN::drawPicture565( char* filename, int x, int y, int _w, int _h ) {
+    #ifndef COMPUTER
+    static int w=-1, h=-1; // img size
+    static char header[PCT_HEADER_LEN];
+    #else
+    int w=-1, h=-1; // img size
+    uint8_t header[PCT_HEADER_LEN];
+    #endif
+
+
+    if ( !ready ) { return; }
+    // uint8_t prevBlittMode = __screenBlittMode;
+    // __screenBlittMode = SCREEN_BLITT_LOCKED;
+
+    if ( filename != NULL ) {
+
+    char entryName[4 + 1+ 8+1+3 +1];
+    strcpy(entryName, "data");
+    strcat(entryName, filename);
+
+    //printf("try to open picture '%s' \n", entryName);
+
+
+      //FILE* f = fopen(filename, "r");
+      FILE* f = fopen(entryName, "r");
+      if ( !f ) { mcu->println("File not ready"); return; }
+      fseek(f, 0, SEEK_SET);
+      //int readed = f.readBytes( (char*)header, PCT_HEADER_LEN);
+      int readed = fread( header, 1, PCT_HEADER_LEN, f );
+
+//printf("PCT.1\n");
+      if ( header[0] == '6' && header[1] == '4' && header[2] == 'K' ) {
+          w = ((uint16_t)header[3]*256) + ((uint16_t)header[4]);
+          h = ((uint16_t)header[5]*256) + ((uint16_t)header[6]);
+//printf("PCT.2\n");
+      } else {
+          mcu->println( "Wrong PCT header" );
+          mcu->print( (int)header[0] );
+          mcu->print( ',' );
+          mcu->print( (int)header[1] );
+          mcu->print( ',' );
+          mcu->print( (int)header[2] );
+          mcu->println( "");
+          // mcu->println( header );
+      }
+printf("PCT.3 %d x %d \n", w, h);
+      // Serial.print("A.2 "); Serial.print(w); Serial.print('x');Serial.print(h);Serial.println("");
+      if( w <= 0 || h <= 0 ) {
+        mcu->print("Wrong size ");
+        mcu->print(w);
+        mcu->print("x");
+        mcu->print(h);
+        mcu->println("");
+        fclose(f);
+        return;
+      }
+//printf("PCT.4\n");
+      int scanZoneSize = w*MEM_RAST_HEIGHT*2; // *2 -> u16
+      int startX = screenOffsetX+x;
+      int startY = screenOffsetY+y;
+//printf("PCT.5\n");
+      int yy = 0;
+      while( true ) { 
+        // BEWARE : @ this time : h need to be 128
+        // readed = f.readBytes( (char*)color_picturebuff, scanZoneSize);
+        readed = fread( (uint8_t*)color_picturebuff, 1, scanZoneSize, f );
+
+        // // Intel endian ?
+        // for(int i=0; i < scanZoneSize-2; i+=2) {
+        //   uint8_t swap = (((uint8_t*)color_picturebuff)[ i+0 ]);
+        //   ((uint8_t*)color_picturebuff)[ i+0 ] = ((uint8_t*)color_picturebuff)[ i+1 ];
+        //   ((uint8_t*)color_picturebuff)[ i+1 ] = swap;
+        // }
+
+//printf("PCT.6\n");
+        //Serial.print("A.2 bis"); Serial.print(readed); Serial.print(" of ");Serial.print(w*h*2);Serial.println("");
+
+        display.pushImage(startX, startY+yy, w, MEM_RAST_HEIGHT, color_picturebuff);
+//printf("PCT.7\n");
+        yy += MEM_RAST_HEIGHT;
+        if ( yy + (MEM_RAST_HEIGHT) > h ) { break; }
+      }
+
+printf("PCT.8 %d x %d \n", w, h);
+      fclose(f);
+//printf("PCT.9\n");
+    } else {
+      // recall last MEM_RAST area
+      int scanZoneSize = w*MEM_RAST_HEIGHT*2; // *2 -> u16
+      int startX = screenOffsetX+x;
+      int startY = screenOffsetY+y;
+      display.pushImage(startX, startY, w, MEM_RAST_HEIGHT, color_picturebuff);
+    }
+//printf("PCT.10\n");
+    //__screenBlittMode = prevBlittMode;
+    //__blittIfNeeded();
+  }
+  
+
+
   void GenericMCU_SCREEN::drawPicture565Sprite( char* filename, int x, int y, int w, int h, int sx, int sy ) { }
 
   void GenericMCU_SCREEN::drawPictureBPP( char* filename, int x, int y ) {

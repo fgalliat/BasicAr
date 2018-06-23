@@ -39,7 +39,7 @@ class Adafruit_SSD1306
   public:
     Adafruit_SSD1306(int rstPin)
     {
-        printf("je passe ICI\n");
+       // printf("je passe ICI\n");
     }
 
     void __init()
@@ -82,7 +82,7 @@ class Adafruit_SSD1306
         black.g = 0;
         black.b = 0;
 
-        printf("created surface !!!!\n");
+        // printf("created surface !!!!\n");
 
     }
 
@@ -144,7 +144,7 @@ class Adafruit_SSD1306
             this->y += 8;
             
             // TEMP
-            if ( this->y > 8*8 ) { this->clearDisplay(); }
+            if ( this->y > 240/8 ) { this->clearDisplay(); }
 
             // scrollIfNeeded();
             return;
@@ -153,7 +153,7 @@ class Adafruit_SSD1306
         // see also : https://github.com/watterott/Arduino-Libs/blob/master/GraphicsLib/fonts.h
         DrawChar(ch, this->x, this->y, 1);
 
-        std::printf( "%c", ch );
+        // std::printf( "%c", ch );
 
         this->x += 6;
     }
@@ -204,6 +204,36 @@ class Adafruit_SSD1306
         // __blit();
     }
 
+#define INTEL_MODE 1
+
+    // 16bpp
+    void pushImage(int x, int y, int scanSize, int height, uint16_t *picBuff)
+    {
+        int width = scanSize / height / 2;
+        width = scanSize; //???
+// printf("PSH.1 %d %d %d \n", width, scanSize, height);
+        uint16_t c;
+        for (int yy = 0; yy < height; yy++)
+        {
+            for (int xx = 0; xx < width; xx++)
+            {
+// printf("PSH.2\n");
+                c = picBuff[(yy * width) + (xx)];
+                
+                // Intel endian ?
+                #ifdef INTEL_MODE
+                c = (c%256)*256 + c/256;
+                #endif
+
+                drawPixel(x + xx, y + yy, c);
+// printf("PSH.3\n");
+            }
+        }
+// printf("PSH.4\n");
+    }
+
+#define TFT_eSPI__color565(r, g, b) { ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3) }
+
     void drawPixel(int x, int y, unsigned int color)
     {
         int zoom = 1;
@@ -213,7 +243,13 @@ class Adafruit_SSD1306
         r.w = zoom;
         r.h = zoom;
 
-        SDL_Color usedColor = color == 0x00 ? this->black : this->color;
+        SDL_Color _color;
+        _color.r = (color >> 8) & 0xF8;
+        _color.g = (color >> 3) & 0xFC;
+        _color.b = (int)( (float)(color & 0xF8) * 0.8F);
+
+
+        SDL_Color usedColor = color == 0x00 ? this->black : color == 0x01 ? this->color : _color;
 
         // draw a rect
         SDL_FillRect(surface, &r, SDL_MapRGB(surface->format, usedColor.r, usedColor.g, usedColor.b));
@@ -232,6 +268,21 @@ class Adafruit_SSD1306
 
         // draw a rect
         SDL_FillRect(surface, &r, SDL_MapRGB(surface->format, usedColor.r, usedColor.g, usedColor.b));
+    }
+
+    void drawRect(int x, int y, int w, int h, unsigned int color)
+    {
+        int zoom = 1;
+        SDL_Rect r;
+        r.x = x * zoom;
+        r.y = y * zoom;
+        r.w = w * zoom;
+        r.h = h * zoom;
+
+        this->drawLine(x, y, x+w, y, color);
+        this->drawLine(x+w, y, x+w, y+h, color);
+        this->drawLine(x+w, y+h, x, y+h, color);
+        this->drawLine(x, y+h, x, y, color);
     }
 
     void drawCircle(int x, int y, int radius, unsigned int color)
