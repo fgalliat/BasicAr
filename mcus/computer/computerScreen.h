@@ -73,9 +73,9 @@ class Adafruit_SSD1306
 
         texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-        // monochrome blue
-        color.r = 50;
-        color.g = 50;
+        // white
+        color.r = 255;
+        color.g = 255;
         color.b = 255;
 
         black.r = 0;
@@ -211,26 +211,15 @@ class Adafruit_SSD1306
     {
         int width = scanSize / height / 2;
         width = scanSize; //???
-// printf("PSH.1 %d %d %d \n", width, scanSize, height);
         uint16_t c;
         for (int yy = 0; yy < height; yy++)
         {
             for (int xx = 0; xx < width; xx++)
             {
-// printf("PSH.2\n");
                 c = picBuff[(yy * width) + (xx)];
-                
-// if ( yy == 0 && xx < 3 ) {
-//     printf("%d ", c);
-// }
-
-
                 drawPixel(x + xx, y + yy, c, false && ( yy == 0 && xx < 3 ) );
-// printf("PSH.3\n");
             }
         }
-        // printf("\n");
-// printf("PSH.4\n");
     }
 
 #define TFT_eSPI__color565(r, g, b) { ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3) }
@@ -246,7 +235,7 @@ class Adafruit_SSD1306
 
         SDL_Color _color;
 
-if (! (color == 0 || color==1) ) {
+if ( color > 8 ) {
       #ifdef INTEL_MODE
         // Intel endian ?
         color = (color%256)*256 + color/256;
@@ -259,13 +248,47 @@ if (! (color == 0 || color==1) ) {
 if (_DBUG) {
     printf("r=%d g=%d b=%d \n", _r, _g, _b);
 }
-
-        // _b *= (255/31);
-
         _color.r = _r;
         _color.g = _g;
         _color.b = _b;
-
+} else {
+    SDL_Color _color;
+    if ( color == 2 ) {
+        // LIGHTGREY
+        _color.r = 200;
+        _color.g = 200;
+        _color.b = 200;
+    } else if ( color == 3 ) {
+        // GREY
+        _color.r = 128;
+        _color.g = 128;
+        _color.b = 128;
+    } else if ( color == 4 ) {
+        // DARKGREY
+        _color.r = 50;
+        _color.g = 50;
+        _color.b = 50;
+    } else if ( color == 5 ) {
+        // LIGHTGREEN
+        _color.r = 150;
+        _color.g = 255;
+        _color.b = 150;
+    } else if ( color == 6 ) {
+        // GREEN
+        _color.r = 80;
+        _color.g = 255;
+        _color.b = 80;
+    } else if ( color == 7 ) {
+        // DARKGREEN
+        _color.r = 0;
+        _color.g = 150;
+        _color.b = 0;
+    } else if ( color == 8 ) {
+        // PINK
+        _color.r = 249;
+        _color.g = 13;
+        _color.b = 234;
+    } 
 }
 
 

@@ -405,12 +405,6 @@ printf("PCT.3 %d x %d \n", w, h);
         // readed = f.readBytes( (char*)color_picturebuff, scanZoneSize);
         readed = fread( (uint8_t*)color_picturebuff, 1, scanZoneSize, f );
 
-        // // Intel endian ?
-        // for(int i=0; i < scanZoneSize-2; i+=2) {
-        //   uint8_t swap = (((uint8_t*)color_picturebuff)[ i+0 ]);
-        //   ((uint8_t*)color_picturebuff)[ i+0 ] = ((uint8_t*)color_picturebuff)[ i+1 ];
-        //   ((uint8_t*)color_picturebuff)[ i+1 ] = swap;
-        // }
 
 //printf("PCT.6\n");
         //Serial.print("A.2 bis"); Serial.print(readed); Serial.print(" of ");Serial.print(w*h*2);Serial.println("");
@@ -437,8 +431,104 @@ printf("PCT.8 %d x %d \n", w, h);
   }
   
 
+  // ===================================================
+  void GenericMCU_SCREEN::drawPicture565Sprite( uint16_t* raster, int dx, int dy, int dw, int dh, int sx, int sy, int sw, int sh ) {
+    #ifndef COMPUTER
+    static int lastOffset=-1,lastW=-1,lastH=-1;
+    // BEWARE : mem overflow !!!!!
+    // 32x64 seems to be the max @ this time
+    // static uint16_t subImage[ dw*dh ];
+    static uint16_t subImage[ 64*64 ];
+    #else
+    int lastOffset=-1,lastW=-1,lastH=-1;
+    uint16_t subImage[ 64*64 ];
+    #endif
 
-  void GenericMCU_SCREEN::drawPicture565Sprite( char* filename, int x, int y, int w, int h, int sx, int sy ) { }
+    int startOffset = ( sy * dw ) + sx;
+    int offset = startOffset;
+
+    if (! ( lastOffset == offset && lastW == dw && lastH == dh ) ) {
+      for(int yy=0; yy < dh; yy++) {
+        // // TODO : find faster way !
+        // for(int xx=0; xx < dw; xx++) {
+        //   subImage[(yy*dw)+xx] = color_picturebuff[offset+xx];
+        // }
+        // cf Intel Endian ??? -- seems no diff
+        memcpy( &subImage[(yy*dw)], &color_picturebuff[offset], dw*sizeof(uint16_t) );
+
+        offset = ( (sy+yy) * sw ) + sx;
+      }
+    }
+
+    dx += screenOffsetX;
+    dy += screenOffsetY;
+
+    display.pushImage(dx, dy, dw, dh, subImage);
+
+  }
+
+  void GenericMCU_SCREEN::drawPicture565Sprite( char* filename, int dx, int dy, int dw, int dh, int sx, int sy ) {
+    #ifndef COMPUTER
+    static int pctW=-1, pctH=-1;
+    static char header[PCT_HEADER_LEN];
+    #else
+    static int pctW=-1, pctH=-1;
+    uint8_t header[PCT_HEADER_LEN];
+    #endif
+
+    if ( sx < 0 ) { sx = 0; }
+    if ( sy < 0 ) { sy = 0; }
+    // spe test case .....
+    if ( filename != NULL && strcmp(filename, "/.PCT") != 0 ) {
+
+        char entryName[4 + 1+ 8+1+3 +1];
+        strcpy(entryName, "data");
+        strcat(entryName, filename);
+
+        FILE* f = fopen(entryName, "r");
+
+      if ( !f ) { mcu->println("File not ready"); printf("File not ready (%s)\n", filename); return; }
+      fseek(f, 0, SEEK_SET);
+      //int readed = f.readBytes( (char*)header, PCT_HEADER_LEN);
+      int readed = fread( header, 1, PCT_HEADER_LEN, f );
+
+//printf("PCT.1\n");
+        if ( header[0] == '6' && header[1] == '4' && header[2] == 'K' ) {
+            pctW = ((uint16_t)header[3]*256) + ((uint16_t)header[4]);
+            pctH = ((uint16_t)header[5]*256) + ((uint16_t)header[6]);
+  //printf("PCT.2\n");
+        } else {
+            mcu->println( "Wrong PCT header" );
+            mcu->println( (char*)header );
+
+            fclose(f);
+            return;
+        }
+
+printf("PCTSprt.3 w=%d h=%d\n", pctW, pctH);
+
+        // need to store the whole sprite in mem.
+        // in order that # subSprites to be recalled
+
+        int toRead = (pctW * pctH)*2; // x2 Cf U16
+
+        // readed = f.readBytes( (char*)color_picturebuff, toRead);
+        readed = fread( (uint8_t*)color_picturebuff, 1, toRead, f );
+        fclose(f);
+
+        if ( dw < 0 ) { dw = pctW; }
+        if ( dh < 0 ) { dh = pctH; }
+        this->drawPicture565Sprite(color_picturebuff, dx, dy, dw, dh, sx, sy, pctW, pctH);
+
+    } else {
+        if ( dw < 0 ) { dw = pctW; }
+        if ( dh < 0 ) { dh = pctH; }
+        this->drawPicture565Sprite(color_picturebuff, dx, dy, dw, dh, sx, sy, pctW, pctH);
+    }
+    
+  }
+  // ===================================================
+
 
   void GenericMCU_SCREEN::drawPictureBPP( char* filename, int x, int y ) {
     if ( !ready ) { return; }
