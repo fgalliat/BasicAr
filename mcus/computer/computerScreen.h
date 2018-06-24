@@ -220,21 +220,22 @@ class Adafruit_SSD1306
 // printf("PSH.2\n");
                 c = picBuff[(yy * width) + (xx)];
                 
-                // Intel endian ?
-                #ifdef INTEL_MODE
-                c = (c%256)*256 + c/256;
-                #endif
+// if ( yy == 0 && xx < 3 ) {
+//     printf("%d ", c);
+// }
 
-                drawPixel(x + xx, y + yy, c);
+
+                drawPixel(x + xx, y + yy, c, false && ( yy == 0 && xx < 3 ) );
 // printf("PSH.3\n");
             }
         }
+        // printf("\n");
 // printf("PSH.4\n");
     }
 
 #define TFT_eSPI__color565(r, g, b) { ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3) }
 
-    void drawPixel(int x, int y, unsigned int color)
+    void drawPixel(int x, int y, uint16_t color, bool _DBUG=false)
     {
         int zoom = 1;
         SDL_Rect r;
@@ -244,9 +245,28 @@ class Adafruit_SSD1306
         r.h = zoom;
 
         SDL_Color _color;
-        _color.r = (color >> 8) & 0xF8;
-        _color.g = (color >> 3) & 0xFC;
-        _color.b = (int)( (float)(color & 0xF8) * 0.8F);
+
+if (! (color == 0 || color==1) ) {
+      #ifdef INTEL_MODE
+        // Intel endian ?
+        color = (color%256)*256 + color/256;
+      #endif
+
+      int _r = (unsigned int)((color >> 11) * (255/31) /* % (unsigned char)0xF8*/ );
+      int _g = (unsigned int)(( ((color) >> 5) % (unsigned char)0x40) * (255/63) /*% (unsigned char)0xFC*/);
+      int _b = (unsigned int)(color % (unsigned char)0x20) * (255/31);
+
+if (_DBUG) {
+    printf("r=%d g=%d b=%d \n", _r, _g, _b);
+}
+
+        // _b *= (255/31);
+
+        _color.r = _r;
+        _color.g = _g;
+        _color.b = _b;
+
+}
 
 
         SDL_Color usedColor = color == 0x00 ? this->black : color == 0x01 ? this->color : _color;
