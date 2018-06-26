@@ -49,6 +49,7 @@ static void swap(int& a, int& b) { int swp=a; a=b; b=swp; }
   // arduino compat. functions
   static void delay(long millis) {
     // usleep( millis * 1000 );
+    printf("delay(%d)\n", millis);
     SDL_Delay(millis);
   }
 

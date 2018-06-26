@@ -252,7 +252,6 @@ if (_DBUG) {
         _color.g = _g;
         _color.b = _b;
 } else {
-    SDL_Color _color;
     if ( color == 2 ) {
         // LIGHTGREY
         _color.r = 200;
