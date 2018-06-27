@@ -28,7 +28,9 @@ void setup_DISABLED() {
 	digitalWrite(BUILTIN_LED, HIGH);
 	Serial.begin(115200);
 	Serial.println("Formatting starts");
+	#ifdef BUT_ESP32
 	SPIFFS.format();
+	#endif
 	Serial.println("Formatting stops");
 	digitalWrite(BUILTIN_LED, LOW);
 }
@@ -57,68 +59,70 @@ void setup() {
 		ili9341_settextcolour(CYAN,BLACK);
 
 		ili9341_setcursor(vsetx,vsety);
-		_delay_ms(2);
+		// _delay_ms(2);
 		ili9341_settextsize(3);
 		ili9341_write('1');
-		_delay_ms(2);
+		// _delay_ms(2);
 		ili9341_write('0');
-		_delay_ms(2);
+		// _delay_ms(2);
 		ili9341_write('.');
-		_delay_ms(2);
+		// _delay_ms(2);
 		ili9341_write('2');
-		_delay_ms(2);
-		ili9341_write('3');
-		_delay_ms(2);
+		// _delay_ms(2);
+		//ili9341_write('3');
+		ili9341_write(  ('0' + (char)(random(10)) ) );
+		// _delay_ms(2);
+
+_delay_ms(200);
+
+
+		// ili9341_setcursor(vactualx,vactualy);
+		// _delay_ms(2);
+		// ili9341_settextsize(5);
+		// ili9341_write('1');
+		// _delay_ms(2);
+		// ili9341_write('0');
+		// _delay_ms(2);
+		// ili9341_write('.');
+		// _delay_ms(2);
+		// ili9341_write('2');
+		// _delay_ms(2);
+		// ili9341_write('3');
+		// _delay_ms(2);
+
+		// _delay_ms(2000);
+
+		// ili9341_setcursor(vsetx,vsety);
+		// _delay_ms(2);
+		// ili9341_settextsize(3);
+		// ili9341_write('9');
+		// _delay_ms(2);
+		// ili9341_write('0');
+		// _delay_ms(2);
+		// ili9341_write('.');
+		// _delay_ms(2);
+		// ili9341_write('4');
+		// _delay_ms(2);
+		// ili9341_write('5');
+		// _delay_ms(2);
 
 
 
-		ili9341_setcursor(vactualx,vactualy);
-		_delay_ms(2);
-		ili9341_settextsize(5);
-		ili9341_write('1');
-		_delay_ms(2);
-		ili9341_write('0');
-		_delay_ms(2);
-		ili9341_write('.');
-		_delay_ms(2);
-		ili9341_write('2');
-		_delay_ms(2);
-		ili9341_write('3');
-		_delay_ms(2);
+		// ili9341_setcursor(vactualx,vactualy);
+		// _delay_ms(2);
+		// ili9341_settextsize(5);
+		// ili9341_write('9');
+		// _delay_ms(2);
+		// ili9341_write('0');
+		// _delay_ms(2);
+		// ili9341_write('.');
+		// _delay_ms(2);
+		// ili9341_write('4');
+		// _delay_ms(2);
+		// ili9341_write('5');
+		// _delay_ms(2);
 
-		_delay_ms(2000);
-
-		ili9341_setcursor(vsetx,vsety);
-		_delay_ms(2);
-		ili9341_settextsize(3);
-		ili9341_write('9');
-		_delay_ms(2);
-		ili9341_write('0');
-		_delay_ms(2);
-		ili9341_write('.');
-		_delay_ms(2);
-		ili9341_write('4');
-		_delay_ms(2);
-		ili9341_write('5');
-		_delay_ms(2);
-
-
-
-		ili9341_setcursor(vactualx,vactualy);
-		_delay_ms(2);
-		ili9341_settextsize(5);
-		ili9341_write('9');
-		_delay_ms(2);
-		ili9341_write('0');
-		_delay_ms(2);
-		ili9341_write('.');
-		_delay_ms(2);
-		ili9341_write('4');
-		_delay_ms(2);
-		ili9341_write('5');
-		_delay_ms(2);
-
-		_delay_ms(2000);
+		// _delay_ms(2000);
 	}
 }
 

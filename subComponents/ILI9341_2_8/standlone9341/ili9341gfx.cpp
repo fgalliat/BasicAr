@@ -477,5 +477,6 @@ void display_init(void)//display initial data regarding my power supply
 	cursor_y=cursor_y+48;
 	ili9341_settextsize(5);
 	printf("00.00");
-	_delay_ms(2000);
+	// _delay_ms(2000);
+	_delay_ms(200);
 }

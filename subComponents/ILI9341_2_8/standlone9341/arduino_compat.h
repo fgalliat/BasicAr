@@ -15,7 +15,13 @@
   #ifdef COMPUTER
     // for usleep
     #include <unistd.h>
+
+    #include <stdio.h>
+
     typedef unsigned char uint8_t; 
+
+    #define BUILTIN_LED 2
+    #define BUILTIN_BTN 0
   #else
     #include <Arduino.h>
     #include <SPI.h>
@@ -29,8 +35,8 @@
     // connected to EN pin
     #define TFT_RST   -1
 
-  #define BUILTIN_LED 2
-  #define BUILTIN_BTN 0
+    #define BUILTIN_LED 2
+    #define BUILTIN_BTN 0
 
   #endif
 
@@ -46,12 +52,32 @@
   }
 
   #ifdef COMPUTER
+
+    class _Serial {
+      public:
+        void begin(int speed) {}
+        void println(char* str) { printf("%s\n", str); }
+    };
+
+    static _Serial Serial;
+
     static void _delay_ms(long millis) {
         usleep( millis * 1000 );
     }
 
     static void _delay_us(long micros) {
         usleep( micros );
+    }
+
+    #define LOW 0
+    #define HIGH 255
+
+    #define OUTPUT 1
+
+    static void pinMode(int pin, int mode) {
+    }
+
+    static void digitalWrite(int pin, int val) {
     }
   #else
     static void _delay_ms(long millis) {

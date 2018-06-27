@@ -43,6 +43,8 @@ void ili9341_hard_init(void)//init hardware
 
 void ili9341_spi_init(void)//set spi speed and settings 
 {
+	hspi->beginTransaction(SPISettings(spiClk, MSBFIRST, SPI_MODE0));
+
 	// DDRB |=(1<<1)|(1<<2)|(1<<3)|(1<<5);//CS,SS,MOSI,SCK as output(although SS will be unused throughout the program)
 	// SPCR=(1<<SPE)|(1<<MSTR);//mode 0,fosc/4
 	// SPSR |=(1<<SPI2X);//doubling spi speed.i.e final spi speed-fosc/2
@@ -58,12 +60,12 @@ void ili9341_spi_init(void)//set spi speed and settings
 void ili9341_writecommand8(uint8_t com)//command write
 {
 	#ifdef BUT_ESP32
-		hspi->beginTransaction(SPISettings(spiClk, MSBFIRST, SPI_MODE0));
+		// hspi->beginTransaction(SPISettings(spiClk, MSBFIRST, SPI_MODE0));
 		digitalWrite(DCPIN, LOW);
 		digitalWrite(CSPIN, LOW);
 		hspi->transfer(com);
 		digitalWrite(CSPIN, HIGH);
-		hspi->endTransaction();
+		// hspi->endTransaction();
 	#endif
 
 	// controlport &=~((1<<dc)|(1<<cs));//dc and cs both low to send command
@@ -75,12 +77,12 @@ void ili9341_writecommand8(uint8_t com)//command write
 void ili9341_writedata8(uint8_t data)//data write
 {
 	#ifdef BUT_ESP32
-		hspi->beginTransaction(SPISettings(spiClk, MSBFIRST, SPI_MODE0));
+		// hspi->beginTransaction(SPISettings(spiClk, MSBFIRST, SPI_MODE0));
 		digitalWrite(DCPIN, HIGH);
 		digitalWrite(CSPIN, LOW);
 		hspi->transfer(data);
 		digitalWrite(CSPIN, HIGH);
-		hspi->endTransaction();
+		// hspi->endTransaction();
 	#endif
 
 	// controlport |=(1<<dc);//set dc high for data

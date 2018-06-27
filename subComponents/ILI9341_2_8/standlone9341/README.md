@@ -5,9 +5,9 @@ https://gist.github.com/postmodern/ed6e670999f456ad9f13
 Generic code for ILI9341
 
 1) test on ESP32
-    > format + copyViaSerial some assets
-    > test mcu#2 code + wiring
-    > test this code on same ESP32
+    > format [v] + copyViaSerial some assets [x]
+    > test mcu#2 code + wiring               [v]
+    > test this code on same ESP32           [v]
 
 2) try to compile on Omega2+
 
