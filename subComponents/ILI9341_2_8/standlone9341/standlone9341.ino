@@ -53,6 +53,7 @@ void setup() {
 	display_init(); //display initial data
 
 	Serial.println("Ready");
+	ili9341_settextsize(2);
 
 	while (1)
 	{
@@ -60,7 +61,8 @@ void setup() {
 
 		ili9341_setcursor(vsetx,vsety);
 		// _delay_ms(2);
-		ili9341_settextsize(3);
+		//ili9341_settextsize(3);
+		
 		ili9341_write('1');
 		// _delay_ms(2);
 		ili9341_write('0');
@@ -72,6 +74,14 @@ void setup() {
 		//ili9341_write('3');
 		ili9341_write(  ('0' + (char)(random(10)) ) );
 		// _delay_ms(2);
+
+ ili9341_setcursor(vactualx,vactualy);
+ ili9341_write('0');
+		ili9341_write('8');
+		ili9341_write('.');
+		ili9341_write(  ('0' + (char)(random(10)) ) );
+		ili9341_write('2');
+
 
 _delay_ms(200);
 

@@ -79,6 +79,11 @@
 
     static void digitalWrite(int pin, int val) {
     }
+
+    static long random(long t) {
+      // TODO : better
+      return t / 2;
+    }
   #else
     static void _delay_ms(long millis) {
         delay( millis );

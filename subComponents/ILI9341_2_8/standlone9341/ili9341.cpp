@@ -43,7 +43,9 @@ void ili9341_hard_init(void)//init hardware
 
 void ili9341_spi_init(void)//set spi speed and settings 
 {
+	#ifdef BUT_ESP32
 	hspi->beginTransaction(SPISettings(spiClk, MSBFIRST, SPI_MODE0));
+	#endif
 
 	// DDRB |=(1<<1)|(1<<2)|(1<<3)|(1<<5);//CS,SS,MOSI,SCK as output(although SS will be unused throughout the program)
 	// SPCR=(1<<SPE)|(1<<MSTR);//mode 0,fosc/4
