@@ -322,7 +322,9 @@ void loop() {
           tmp2 = mcuBridge.read(); // mode
           tmp = bridge_readU16();  // color
           #ifdef SCREEEN_BUFFER
-            storeAction(cmd, x, y, w, tmp2, tmp, 0, NULL, -1.0);
+            //storeAction(cmd, x, y, w, tmp2, tmp, 0, NULL, -1.0);
+            // MODIF DU 05/07/2018
+            storeAction(cmd, x, y, w, 0, tmp2, tmp, NULL, -1.0);
           #else
             mcu.getScreen()->drawCircle(x, y, w, tmp2, tmp);
           #endif
@@ -342,6 +344,22 @@ void loop() {
             mcu.getScreen()->drawTriangle(x, y, w, h, x2, y2, tmp2, tmp);
           #endif
           break;
+
+        case SIG_SCR_DRAW_SHAPE_BALL:
+          x  = bridge_readU16();
+          y  = bridge_readU16();
+          w  = bridge_readU16(); // radius
+          tmp2 = 0; 
+          tmp = bridge_readU16();  // color
+          #ifdef SCREEEN_BUFFER
+            //storeAction(cmd, x, y, w, tmp2, tmp, 0, NULL, -1.0);
+            // MODIF DU 05/07/2018
+            storeAction(cmd, x, y, w, 0, tmp2, tmp, NULL, -1.0);
+          #else
+            // mcu.getScreen()->drawCircle(x, y, w, tmp2, tmp);
+          #endif
+          break;
+
         case SIG_SCR_DRAW_BPP:
           x = bridge_readU16();
           y = bridge_readU16();

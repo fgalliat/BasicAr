@@ -188,6 +188,17 @@ bool storeAction(uint8_t type, uint16_t x, uint16_t y, uint16_t w, uint16_t h, u
         act_memseg[ base_addr + (off++) ] = (uint8_t)sx; // mode
         act_memseg[ base_addr + (off++) ] = sy/256;       // color
         act_memseg[ base_addr + (off++) ] = sy%256;
+    } else if ( type == SIG_SCR_DRAW_SHAPE_BALL ) {
+        int off = 1;
+        act_memseg[ base_addr + (off++) ] = x/256;
+        act_memseg[ base_addr + (off++) ] = x%256;
+        act_memseg[ base_addr + (off++) ] = y/256;
+        act_memseg[ base_addr + (off++) ] = y%256;
+        act_memseg[ base_addr + (off++) ] = w/256;        // radius
+        act_memseg[ base_addr + (off++) ] = w%256;
+        act_memseg[ base_addr + (off++) ] = (uint8_t)sx; // mode
+        act_memseg[ base_addr + (off++) ] = sy/256;       // color
+        act_memseg[ base_addr + (off++) ] = sy%256;
     } else if ( type == SIG_SCR_DRAW_LINE ) {
         int off = 1;
         act_memseg[ base_addr + (off++) ] = x/256;
@@ -454,6 +465,20 @@ bool storeAction(uint8_t type, uint16_t x, uint16_t y, uint16_t w, uint16_t h, u
                color = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
                screen->drawCircle( x, y, w, mode, color );
               break;
+
+            case SIG_SCR_DRAW_SHAPE_BALL:
+               x  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               y  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+               w  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2; // radius
+               mode = act_memseg[ base_addr+sub_addr ]; sub_addr+=1;
+               color = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
+
+               screen->drawCircle( x, y, w+1, 1, 0 ); // fill black
+               screen->drawCircle( x, y, w, 0, color ); // draw white
+               screen->drawCircle( x+(w/2)-1, y+(w/2)-1, w/2, 1, color ); // fill white
+
+              break;
+
             case SIG_SCR_DRAW_LINE:
                x  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
                y  = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;

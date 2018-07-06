@@ -47,7 +47,9 @@
   #define SIG_SCR_DRAW_PCT      0x47
   #define SIG_SCR_DRAW_PCT_SPRITE 0x48
 
-  #define SIG_LAST SIG_SCR_DRAW_PCT_SPRITE
+  #define SIG_SCR_DRAW_SHAPE_BALL 0x51
+
+  #define SIG_LAST SIG_SCR_DRAW_SHAPE_BALL
 
   // bytes to read per cmd
   // -2 : nothing to read ...
@@ -126,6 +128,9 @@
    -1, // 0x46 bpp file
    -1, // 0x47 pct file
    -1, // 0x48 pct sprite file
+   -2, // 0x49 
+   -2, // 0x50 
+    8, // 0x51 draw ball -- x,y,radius,color
   };
 
 
