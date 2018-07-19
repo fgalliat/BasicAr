@@ -851,6 +851,21 @@
     __blittIfNeeded();
   }
 
+  void GenericMCU_SCREEN::drawBall(int x, int y, int radius, uint8_t mode, uint16_t color) {
+    if ( !this->ready ) { return; }
+
+    uint16_t usedColor = __getColor(color);
+    // if ( mode == 0 ) {
+
+
+    this->drawCircle( x, y, radius+1, 1, 0 ); // fill black
+    this->drawCircle( x, y, radius, 0, color ); // draw white
+    this->drawCircle( x+(radius/2)-1, y+(radius/2)-1, radius/2, 1, color ); // fill white
+    //_oled_display->fillCircle(screenOffsetX+x,screenOffsetY+y,radius, usedColor);
+
+    __blittIfNeeded();
+  }
+
   void GenericMCU_SCREEN::drawLine(int x, int y, int x2, int y2, uint16_t color){
     if ( !this->ready ) { return; }
 

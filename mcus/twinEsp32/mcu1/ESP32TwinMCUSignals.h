@@ -49,7 +49,9 @@
 
   #define SIG_SCR_DRAW_SHAPE_BALL 0x51
 
-  #define SIG_LAST SIG_SCR_DRAW_SHAPE_BALL
+  #define SIG_SCR_DRAW_NATIVBACKG 0x61
+
+  #define SIG_LAST SIG_SCR_DRAW_NATIVBACKG
 
   // bytes to read per cmd
   // -2 : nothing to read ...
@@ -131,6 +133,16 @@
    -2, // 0x49 
    -2, // 0x50 
     8, // 0x51 draw ball -- x,y,radius,color
+   -2, // 0x52
+   -2, // 0x53
+   -2, // 0x54
+   -2, // 0x55
+   -2, // 0x56
+   -2, // 0x57
+   -2, // 0x58
+   -2, // 0x59
+   -2, // 0x60
+    9, // 0x61
   };
 
 

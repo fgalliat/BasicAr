@@ -473,10 +473,7 @@ bool storeAction(uint8_t type, uint16_t x, uint16_t y, uint16_t w, uint16_t h, u
                mode = act_memseg[ base_addr+sub_addr ]; sub_addr+=1;
                color = ___readACTU16( base_addr+sub_addr ); sub_addr+=2;
 
-               screen->drawCircle( x, y, w+1, 1, 0 ); // fill black
-               screen->drawCircle( x, y, w, 0, color ); // draw white
-               screen->drawCircle( x+(w/2)-1, y+(w/2)-1, w/2, 1, color ); // fill white
-
+               screen->drawBall( x, y, w, mode, color );
               break;
 
             case SIG_SCR_DRAW_LINE:
