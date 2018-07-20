@@ -184,7 +184,7 @@ void drawStarFieldFrame() {
       int yy = y-(zz/2); if ( yy < 0 ) { yy=0; }
       
       //screen.drawRect( xx, yy, zz,zz, 1, 1 );
-      mcu.getScreen()->drawRect( xx, yy, zz,zz, 1, 1 );
+      mcu.getScreen()->drawRect( xx, yy, zz,zz, 1, color );
     }
   }
   
