@@ -101,8 +101,8 @@ void drawWallScene() {
   
   // STILL TODO : draw floor & sky
   //screen.cls();
-  mcu.getScreen()->drawRect(15, 0, 290, 120, 1, 9); // light-blue sky
-  mcu.getScreen()->drawRect(15, 120, 290, 120, 1, 5); // light-green floor
+  mcu.getScreen()->drawRect(5, 0, 300, 120, 1, 9); // light-blue sky
+  mcu.getScreen()->drawRect(5, 120, 300, 120, 1, 5); // light-green floor
   
   uint8_t wall;
   for(int i=0; i < 30; i++) {
