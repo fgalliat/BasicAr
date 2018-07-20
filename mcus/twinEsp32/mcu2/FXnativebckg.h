@@ -5,6 +5,8 @@
 
  void runNativeBackGroundStars(uint16_t starsNb,uint16_t speed,uint16_t mode=1,uint16_t color=1);
 
+ void runNativeBackGroundWalls(uint8_t* scene);
+
 
 
 #endif

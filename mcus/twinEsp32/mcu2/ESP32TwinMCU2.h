@@ -582,6 +582,10 @@
     #define CLR_GREEN       TFT_eSPI__color565( 80, 255, 80 )
     #define CLR_DARKGREEN   TFT_eSPI__color565( 0, 150, 0 )
 
+    #define CLR_LIGHTBLUE  TFT_eSPI__color565( 150, 150, 255 )
+    #define CLR_BLUE       TFT_eSPI__color565( 80, 80, 255 )
+    #define CLR_DARKBLUE   TFT_eSPI__color565( 0, 0, 150 )
+
     #define CLR_PINK        ILI9341_PINK
 
     #define BLACK 0x00
@@ -626,6 +630,11 @@
     else if ( usedColor == 6 ) { usedColor = CLR_GREEN; }
     else if ( usedColor == 7 ) { usedColor = CLR_DARKGREEN; }
     else if ( usedColor == 8 ) { usedColor = CLR_PINK; }
+
+    else if ( usedColor == 9  ) { usedColor = CLR_LIGHTBLUE; }
+    else if ( usedColor == 10 ) { usedColor = CLR_BLUE; }
+    else if ( usedColor == 11 ) { usedColor = CLR_DARKBLUE; }
+
     // else direct color value
     // ..... use palette impl. !!!
     return usedColor;

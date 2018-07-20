@@ -426,16 +426,23 @@ void loop() {
 
         case SIG_SCR_DRAW_NATIVBACKG:
           tmp  = bridge_readU8(); // native animated background num
-          x    = bridge_readU16(); // m1 ex. angleX
-          y    = bridge_readU16(); // m2 ex. angleY
-          w    = bridge_readU16(); // m3 ex. angleZ
-          h    = bridge_readU16(); // m4 ex. color
+          if ( tmp == 3 ) {
+            tmp2 = mcuBridge.available();
+            bridge_readString(str, 0, 256);
+          } else {
+            x    = bridge_readU16(); // m1 ex. angleX
+            y    = bridge_readU16(); // m2 ex. angleY
+            w    = bridge_readU16(); // m3 ex. angleZ
+            h    = bridge_readU16(); // m4 ex. color
+          }
 
           // BEWARE : not buffered
           if ( tmp == 1 ) {
             runNativeBackGroundBalls(x,y,w,h);
-          } else {
+          } else if ( tmp == 2 ) {
             runNativeBackGroundStars(x,y,w,h);
+          }  else if ( tmp == 3 ) {
+            runNativeBackGroundWalls( (uint8_t*)str);
           }
           break;
 
