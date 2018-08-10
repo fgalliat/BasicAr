@@ -34,6 +34,11 @@ public class DFPlayerFileList {
         for(int i=0; itFile.hasNext(); i++) {
             String name = itFile.next();
             String num = (i < 99 ? "0" : "")+ (i < 9 ? "0" : "")+ (i+1);
+
+            if ( name.endsWith(".mp3") ) {
+                name = name.substring(0, name.length()-4);
+            }
+
             System.out.println(num+";"+name);
             outF.println(num+";"+name);
         }

@@ -9,7 +9,35 @@ import javax.imageio.ImageIO;
 public class EspColorTransform {
     
     static int color565(int r, int g, int b) {
+
+        System.out.print("r="+ ( (r & 0xF8) << 8)  +" ");
+        System.out.print("g="+ ((g & 0xFC) << 3) +" ");
+        System.out.println("b="+ (b >> 3) +" ");
+
+        System.out.print("r="+ ( (r & 0xF8) )  +" ");
+        System.out.print("g="+ ((g & 0xFC) ) +" ");
+        System.out.println("b="+ (b >> 3) +" ");
+
         return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
+    }
+
+    static int color565toRGB(int c565) {
+        int r = (c565>>8) & 0xF8;
+        int g = (c565>>5) & 0xFC;
+        int b = (c565) % 0x20;
+
+        System.out.print("r="+ r +" ");
+        System.out.print("g="+ g +" ");
+        System.out.println("b="+ b );
+
+        b = b*255/31;
+        g = g*255/252;
+        r = r*255/248;
+        System.out.print("r="+ r +" ");
+        System.out.print("g="+ g +" ");
+        System.out.println("b="+ b );
+
+        return ((r & 0xFF) << 8) | ((g & 0xFC) << 3) | (b >> 3);
     }
 
     static void test(int r, int g, int b) {
@@ -98,9 +126,15 @@ public class EspColorTransform {
     public static void main(String[] args) throws Exception {
         // test( 0,0,255 );
         // test( 128,128,128 );
-test( 50,50,50 );
-test( 128,128,128 );
-test( 200,200,200 );
+// test( 50,50,50 );
+// test( 128,128,128 );
+// test( 200,200,200 );
+
+int c565 = color565(255,255,255);
+System.out.println( c565 );
+
+int rgb = color565toRGB(c565);
+System.out.println( rgb );
 
         if ( args != null && args.length == 1 ) {
             treatImage(args[0]);
